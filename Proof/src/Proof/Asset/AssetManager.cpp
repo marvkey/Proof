@@ -18,6 +18,7 @@
 #include "Proof/Scene/Material.h"
 #include "Proof/Physics/PhysicsMaterial.h"
 #include "Proof/Audio/Audio.h"
+#include "AssetCustomData/AssetCustomDataManager.h"
 #include <future>
 namespace Proof
 {
@@ -37,8 +38,8 @@ namespace Proof
 	static Special< AssetManagerData> s_AssetManagerData;
 
 	void AssetManager::Init(AssetManagerConfiguration& assetManagerConfiguration) {
-		Timer time;
 
+		ScopeTimer scopeTimer(__FUNCTION__);
 		s_AssetManagerData =CreateSpecial< AssetManagerData>();
 
 		s_AssetManagerData->AssetDirectory = assetManagerConfiguration.AssetDirectory;
@@ -92,7 +93,9 @@ namespace Proof
 					assetInfo.State = AssetState::Ready;
 				else
 					assetInfo.State = AssetState::Unloaded;
-				InternalAddAsset(assetInfo, nullptr);
+
+				if(FileSystem::Exists( AssetManager::GetAssetFileSystemPath(path)))
+					InternalAddAsset(assetInfo, nullptr);
 				//s_AssetManagerData->Assets.insert({ assetID,{assetInfo,nullptr} });// setting the asset as null as we will load it in another thread
 				//s_AssetManagerData->AssetPath.insert({ path,assetID });
 			}
@@ -171,7 +174,8 @@ namespace Proof
 					break;
 			}
 		});
-		PF_ENGINE_INFO("Asset Manager Initialized {}m/s", time.ElapsedMillis());
+
+		AssetCustomDataManager::Init();
 	}
 	void AssetManager::ShutDown() {
 		Timer time;
@@ -387,6 +391,7 @@ namespace Proof
 		auto info = s_AssetManagerData->Assets.at(ID).Info;
 		s_AssetManagerData->Assets.erase(ID);
 		s_AssetManagerData->AssetPath.erase(info.Path);
+		AssetCustomDataManager::DeleteAsset(ID);
 	}
 
 	const AssetInfo& AssetManager::GetAssetInfo(const std::filesystem::path& path)
@@ -463,6 +468,7 @@ namespace Proof
 		std::ofstream found(s_AssetManagerData->AssetRegistry);
 		found << out.c_str();
 		found.close();
+		AssetCustomDataManager::SaveAssetCustomData();
 	}
 	void AssetManager::SaveAssetManager() 
 	{
@@ -487,6 +493,7 @@ namespace Proof
 		std::ofstream found(s_AssetManagerData->AssetRegistry);
 		found << out.c_str();
 		found.close();
+		AssetCustomDataManager::SaveAssetCustomData();
 	}
 	void AssetManager::LoadMultipleAsset(std::set<AssetID> assetLoadIn){
 		Timer time;

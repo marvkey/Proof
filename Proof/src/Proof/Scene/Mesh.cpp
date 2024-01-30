@@ -16,8 +16,10 @@
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/Buffer.h"
 #include "Proof/Asset/AssetManager.h"
-namespace Proof{
-    static glm::mat4 AIMatrixToGLM(const aiMatrix4x4& aiMatrix) {
+namespace Proof
+{
+    static glm::mat4 AIMatrixToGLM(const aiMatrix4x4& aiMatrix) 
+    {
         glm::mat4 glmMatrix;
         // glm::mat4 and aiMatrix4x4 are both column-major matrices,
         // so we can copy the values directly
@@ -279,4 +281,5 @@ namespace Proof{
     {
         return std::find(m_SubMeshes.begin(), m_SubMeshes.end(), subMeshIndex) != m_SubMeshes.end();
     }
+
 }

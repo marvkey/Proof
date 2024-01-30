@@ -16,6 +16,7 @@
 #include "VulkanComputePass.h"
 #include "VulkanImage.h"
 #include "VulkanComputePipeline.h"
+#include "VulkanUtils/VulkanConvert.h"
 namespace Proof
 {
 	std::map < uint32_t, std::tuple < Count<TextureCube>, Count<Texture2D>,Count<ComputePass>>> keepFromDelete;
@@ -57,15 +58,64 @@ namespace Proof
 	{
 		Renderer::Submit([commandBuffer, image = image.As<VulkanImage2D>()]
 		{
+				
 			const auto vulkanCommandBuffer = commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer();
+
+			const auto oldImageLayout = image->m_DescriptorImageInfo.imageLayout;
+		
+			
+			VkImageAspectFlags aspectMask;
+			if (Utils::IsDepthFormat(image->m_Specification.Format))
+			{
+				aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+				if (Utils::ContainStencilFormat(image->m_Specification.Format))
+					aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+			}
+			else
+			{
+				aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+			}
+
 			VkImageSubresourceRange subresourceRange{};
-			subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			subresourceRange.aspectMask = aspectMask;
 			subresourceRange.baseMipLevel = 0;
 			subresourceRange.levelCount = image->GetSpecification().Mips;
 			subresourceRange.layerCount = image->GetSpecification().Layers;
+			{
+				VkImageMemoryBarrier imageMemoryBarrier{};
+				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+				imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+				imageMemoryBarrier.oldLayout = oldImageLayout;
+				imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				imageMemoryBarrier.image = image->GetinfoRef().ImageAlloc.Image;
 
+				imageMemoryBarrier.subresourceRange = subresourceRange;
+
+				vkCmdPipelineBarrier(vulkanCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+					0, nullptr,
+					0, nullptr,
+					1, &imageMemoryBarrier);
+			}
 			VkClearColorValue clearColor{ 0.f, 0.f, 0.f, 0.f };
-			vkCmdClearColorImage(vulkanCommandBuffer, image->GetinfoRef().ImageAlloc.Image, image->GetDescriptorInfoVulkan().imageLayout , &clearColor, 1, &subresourceRange);
+			vkCmdClearColorImage(vulkanCommandBuffer, image->GetinfoRef().ImageAlloc.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &subresourceRange);
+			{
+				VkImageMemoryBarrier imageMemoryBarrier{};
+				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				imageMemoryBarrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+				imageMemoryBarrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+				imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				imageMemoryBarrier.newLayout = oldImageLayout;
+				imageMemoryBarrier.image = image->GetinfoRef().ImageAlloc.Image;
+				imageMemoryBarrier.subresourceRange = subresourceRange;
+
+
+				vkCmdPipelineBarrier(vulkanCommandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+					0, nullptr,
+					0, nullptr,
+					1, &imageMemoryBarrier);
+			}
 		});
 	}
 

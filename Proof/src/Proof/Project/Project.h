@@ -13,6 +13,7 @@ namespace Proof{
 		std::filesystem::path AssetManager = {};
 
 		std::filesystem::path ScriptModuleDirectory = {};
+		std::filesystem::path AssetCustomDataDirectory = { "AssetCustomData" };
 
 		uint64_t StartWorld = 0;
 		uint64_t StartWorldEdit = 0;
@@ -23,6 +24,7 @@ namespace Proof{
 			AssetDirectory = "Assets";
 			AssetManager = AssetDirectory / "AssetManager.ProofAssetManager";
 			ScriptModuleDirectory = "Binaries/ScriptApp";
+			AssetCustomDataDirectory = "AssetCustomData";
 		}
 
 		// name and the direcotyr, it creates a sub directory with the name then sotres the 

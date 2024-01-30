@@ -54,7 +54,7 @@ namespace Proof
         //    deserializer->ReadArray(instance.Submeshes);
         //    deserializer->ReadString(instance.Name);
         //    deserializer->ReadRaw(instance.LocalTransform);
-        //}
+        //}   
     };
     class MeshSource : public Asset
     {
@@ -92,6 +92,7 @@ namespace Proof
         std::vector<SubMesh> m_SubMeshes;
         Count<MaterialTable> m_Materials;
         friend class MeshImporter;
+        friend class MeshSourceAssetSerializer;
     };
 
     class MeshBase : public Asset
@@ -171,4 +172,6 @@ namespace Proof
         Count<MeshSource> m_MeshSource;
 
     };
+
+    
 }

@@ -217,6 +217,9 @@ namespace Proof{
 		template<class U>
 		inline constexpr Count<U> As()const;
 
+		template<class U>
+		inline constexpr bool Is() const;
+
 	private:
 		T* m_Ptr = nullptr;
 
@@ -326,6 +329,13 @@ namespace Proof{
 	inline constexpr Count<U> Count<T>::As()const
 	{
 		return Dynamic_Count_cast<U>(*this);
+	}
+
+	template<typename T>
+	template<class U>
+	inline constexpr bool Count<T>::Is() const
+	{
+		return As<U> != nullptr;
 	}
 
 	template<class T>

@@ -1,0 +1,87 @@
+MeshSourceSavedSetting:
+  MeshSources:
+    - MeshSource: 13564261338370398344
+      MaterialTable:
+        - Material: ""
+          AssetID: 3461116628258711027
+          Index: 0
+        - Material: ""
+          AssetID: 17040156938545747191
+          Index: 1
+        - Material: ""
+          AssetID: 14511545060328195718
+          Index: 2
+        - Material: ""
+          AssetID: 6991134401632355207
+          Index: 3
+        - Material: ""
+          AssetID: 14687614798077115474
+          Index: 4
+        - Material: ""
+          AssetID: 1576436635531369569
+          Index: 5
+        - Material: ""
+          AssetID: 16275171494929627919
+          Index: 6
+        - Material: ""
+          AssetID: 18408534186521686835
+          Index: 7
+        - Material: ""
+          AssetID: 14908838397653922825
+          Index: 8
+        - Material: ""
+          AssetID: 3596554951770806333
+          Index: 9
+        - Material: ""
+          AssetID: 6625542616059251808
+          Index: 10
+        - Material: ""
+          AssetID: 13843504228138388703
+          Index: 11
+        - Material: ""
+          AssetID: 14556727127494832766
+          Index: 12
+        - Material: ""
+          AssetID: 14823080827209432223
+          Index: 13
+        - Material: ""
+          AssetID: 1102597322696202405
+          Index: 14
+        - Material: ""
+          AssetID: 13968975959786083192
+          Index: 15
+        - Material: ""
+          AssetID: 12402007054238579940
+          Index: 16
+        - Material: ""
+          AssetID: 982691089313897402
+          Index: 17
+        - Material: ""
+          AssetID: 8586781629955885440
+          Index: 18
+        - Material: ""
+          AssetID: 18129439120641747327
+          Index: 19
+        - Material: ""
+          AssetID: 9720527536139830543
+          Index: 20
+        - Material: ""
+          AssetID: 17572680179015020734
+          Index: 21
+        - Material: ""
+          AssetID: 2942961631193394840
+          Index: 22
+        - Material: ""
+          AssetID: 13854219062191981311
+          Index: 23
+        - Material: ""
+          AssetID: 17480760584879573516
+          Index: 24
+        - Material: ""
+          AssetID: 4219895937517327460
+          Index: 25
+    - MeshSource: 14216463513304954599
+      MaterialTable:
+        - Material: ""
+          AssetID: 16080984740752890334
+          Index: 0

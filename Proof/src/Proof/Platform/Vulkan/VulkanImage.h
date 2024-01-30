@@ -106,6 +106,7 @@ namespace Proof
 
 		//layer, mip
 		std::map<uint32_t, std::map<uint32_t, Count<ImageView>>> m_ImageViews;
+		friend class VulkanRenderer;
 	};
 
 	class VulkanImageView : public ImageView 

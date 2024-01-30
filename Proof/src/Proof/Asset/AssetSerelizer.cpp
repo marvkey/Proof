@@ -19,6 +19,7 @@
 #include "Proof/Utils/StringUtils.h"
 #include "Proof/Scene/SceneSerializer.h"
 #include "MeshImpoter.h"
+#include "Proof/Asset/AssetCustomData/MeshSourceSavedSettings.h"
 namespace Proof {
 	void AssetSerializer::SetID(const AssetInfo& data, const Count<class Asset>& asset)
 	{
@@ -279,8 +280,27 @@ namespace Proof {
 	Count<class Asset> MeshSourceAssetSerializer::TryLoadAsset(const AssetInfo& data) const
 	{
 		MeshImporter importer(AssetManager::GetAssetFileSystemPath(data.Path));
-		Count<MeshSource> source = importer.ImportToMeshSource();
+
+		bool meshSourceContains = MeshSourceSavedSettings::HasMeshSourceMetaData(data.ID);
+		Count<MeshSource> source = importer.ImportToMeshSource(!meshSourceContains);
 		SetID(data, source);
+		if (!meshSourceContains)
+			importer.UpdateMeshSourceAssetCustomSettings(source);
+		if (meshSourceContains)
+		{
+			const auto& meshSourceMetaData = MeshSourceSavedSettings::GetMeshSourceMetaData(data.ID);
+			for (auto [materialIndex, materialID] : meshSourceMetaData.MaterialList)
+			{
+				if (AssetManager::HasAsset(materialID))
+				{
+					if (AssetManager::GetAssetInfo(materialID).Type == AssetType::Material)
+						source->m_Materials->SetMaterial(materialIndex, AssetManager::GetAsset<Material>(materialID));
+				}
+				else
+					source->m_Materials->SetMaterial(materialIndex, AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Material).As<Material>());
+
+			}
+		}
 		return source;
 	}
 

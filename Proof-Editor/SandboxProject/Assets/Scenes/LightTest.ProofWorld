@@ -21,34 +21,6 @@ World:
               - NameID: SandboxProject.ScriptSpawner.AmountCubes
                 Type: Int32
                 Data: 0
-    - Entity: 16806434247594503258
-      TagComponent:
-        Tag: Sponza
-        tags: []
-      TransformComponent:
-        Location: [0, -1.41932726, 0]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 18141853162402936448
-      MeshColliderComponent:
-        ColliderID: 8549697145489638546
-        IsTrigger: false
-        UseSharedShape: false
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
     - Entity: 417248771471866783
       TagComponent:
         Tag: Sky Light
@@ -70,27 +42,6 @@ World:
         HosekWilkieTurbidity: 4
         HosekWilkieGroundReflectance: 0.100000001
         PreethamTurbidity: 4
-    - Entity: 11173311192095012575
-      TagComponent:
-        Tag: Point Light
-        tags: []
-      TransformComponent:
-        Location: [-5.9000001, 10.1999998, 0]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      PointLightComponent:
-        Color: [0.128739581, 0.720807016, 0.862903237]
-        Intensity: 1
-        MinRadius: 0
-        Radius: 5
-        Falloff: 1
-        CastsShadows: false
-        SoftShadows: false
-        ShadowStrength: 0.5
-        ShadowSoftness: 0.5
     - Entity: 5042990045985491529
       TagComponent:
         Tag: Cube
@@ -146,6 +97,27 @@ World:
         Intensity: 1
         MinRadius: 0
         Radius: 5.26999998
+        Falloff: 1
+        CastsShadows: false
+        SoftShadows: false
+        ShadowStrength: 0.5
+        ShadowSoftness: 0.5
+    - Entity: 11173311192095012575
+      TagComponent:
+        Tag: Point Light
+        tags: []
+      TransformComponent:
+        Location: [-5.9000001, 10.1999998, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      PointLightComponent:
+        Color: [0.128739581, 0.720807016, 0.862903237]
+        Intensity: 1
+        MinRadius: 0
+        Radius: 5
         Falloff: 1
         CastsShadows: false
         SoftShadows: false
@@ -251,3 +223,31 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 1
+    - Entity: 8899569074263704560
+      TagComponent:
+        Tag: SponzaObj
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [0.100000001, 0.100000001, 0.100000001]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 9198335892109955724
+      MeshColliderComponent:
+        ColliderID: 3433678201497629285
+        IsTrigger: false
+        UseSharedShape: false
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete

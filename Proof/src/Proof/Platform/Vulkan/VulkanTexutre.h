@@ -75,6 +75,7 @@ namespace Proof
 					return VK_SAMPLER_ADDRESS_MODE_REPEAT;
 					break;
 				case Proof::TextureWrap::MirroredRepeat:
+
 					return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 					break;
 				case Proof::TextureWrap::ClampEdge:

@@ -1,0 +1,12 @@
+AssetType: Material
+ID: 13930939436844538324
+AlbedoColour: [1, 1, 1]
+Roughness: 0.5
+Metallness: 0
+Emission: 0
+Tiling: [1, 1]
+Offset: [0, 0]
+AlbedoTexture: 10829469110059815449
+NormalTexture: 2544452180859250295
+MetallicTexture: 0
+RoughnessTexture: 0

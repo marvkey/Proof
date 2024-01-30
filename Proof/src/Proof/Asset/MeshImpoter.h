@@ -9,7 +9,8 @@ namespace Proof
 	public:
 		MeshImporter(const std::filesystem::path& path);
 
-		Count<class MeshSource> ImportToMeshSource();
+		Count<class MeshSource> ImportToMeshSource(bool importMaterialAndTextures = true);
+		void UpdateMeshSourceAssetCustomSettings(Count<class MeshSource> meshSource);
 		//bool ImportSkeleton(Scope<Skeleton>& skeleton);
 		//bool ImportAnimations(const uint32_t animationIndex, const Skeleton& skeleton, std::vector<Scope<Animation>>& animations);
 		//bool IsCompatibleSkeleton(const uint32_t animationIndex, const Skeleton& skeleton);

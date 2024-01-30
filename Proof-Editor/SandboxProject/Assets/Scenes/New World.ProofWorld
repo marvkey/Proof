@@ -1,6 +1,34 @@
 World:
   ID: 13511578038632716699
   Entities:
+    - Entity: 14645712128092624267
+      TagComponent:
+        Tag: Sponza
+        tags: []
+      TransformComponent:
+        Location: [0, 0.0143343359, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 18141853162402936448
+      MeshColliderComponent:
+        ColliderID: 12902208667846413922
+        IsTrigger: false
+        UseSharedShape: false
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 4119770921961056104
       TagComponent:
         Tag: Sphere
@@ -33,34 +61,37 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 14645712128092624267
+    - Entity: 13351935947672091411
       TagComponent:
-        Tag: Sponza
+        Tag: Plane
         tags: []
       TransformComponent:
-        Location: [0, 0.0143343359, 0]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
+        Location: [6.32818842, 3.13599992, -0.255285859]
+        Rotation: [0, -0, 1.61093891]
+        Scale: [4.89999962, 1, 2.79999995]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
       MeshComponent:
-        MeshAssetPointerID: 18141853162402936448
-      MeshColliderComponent:
-        ColliderID: 12902208667846413922
-        IsTrigger: false
-        UseSharedShape: false
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
+        MeshAssetPointerID: 56
+        MaterialTable:
+          - Material: ""
+            AssetID: 9906847331754832331
+            Index: 0
+    - Entity: 17419211597430694452
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 2.43531799, 0]
+        Rotation: [0.157079637, 0.502654791, 0.17976892]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [0.75555557, 0.635226369, 0.635226369]
+        Intensity: 1.77999997
     - Entity: 8653500929971714399
       TagComponent:
         Tag: Sky Light
@@ -82,50 +113,6 @@ World:
         HosekWilkieTurbidity: 4
         HosekWilkieGroundReflectance: 0.100000001
         PreethamTurbidity: 4
-    - Entity: 17419211597430694452
-      TagComponent:
-        Tag: Directional Light
-        tags: []
-      TransformComponent:
-        Location: [0, 2.43531799, 0]
-        Rotation: [0.157079637, 0.502654791, 0.17976892]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      DirectionalLightComponent:
-        Color: [0.75555557, 0.635226369, 0.635226369]
-        Intensity: 1.77999997
-    - Entity: 13351935947672091411
-      TagComponent:
-        Tag: Plane
-        tags: []
-      TransformComponent:
-        Location: [6.32818842, 3.13599992, -0.255285859]
-        Rotation: [0, -0, 1.61093891]
-        Scale: [4.89999962, 1, 2.79999995]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 56
-        MaterialTable:
-          - Material: ""
-            AssetID: 9906847331754832331
-            Index: 0
-    - Entity: 15655579723025469437
-      TagComponent:
-        Tag: Cube
-        tags: []
-      TransformComponent:
-        Location: [-0.300000012, 2.46479583, -1]
-        Rotation: [-0.562434077, -0.151792958, -0.0447002985]
-        Scale: [0.999997556, 0.999998927, 0.999998987]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
     - Entity: 13037840155052305891
       TagComponent:
         Tag: Sphere
@@ -143,6 +130,19 @@ World:
           - Material: ""
             AssetID: 14983098330679523653
             Index: 0
+    - Entity: 15655579723025469437
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [-0.300000012, 2.46479583, -1]
+        Rotation: [-0.562434077, -0.151792958, -0.0447002985]
+        Scale: [0.999997556, 0.999998927, 0.999998987]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
     - Entity: 18190513093595672128
       TagComponent:
         Tag: Plane
@@ -174,7 +174,7 @@ World:
       MeshComponent:
         MeshAssetPointerID: 18348114341737718825
       MeshColliderComponent:
-        ColliderID: 13970559319545821454
+        ColliderID: 7860669280761188212
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0

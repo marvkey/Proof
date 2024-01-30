@@ -152,10 +152,14 @@ namespace Proof
 					return std::to_string(counter);
 			}();  // Pad with 0 if < 10;
 
-			std::string newFileName = fmt::format("{} ({})", Utils::RemoveExtension(filepath.filename().string()), counterStr);
+			//std::string newFileName = fmt::format("{} ({})", Utils::RemoveExtension(filepath.filename().string()), counterStr);
 
-			if (filepath.has_extension())
-				newFileName = fmt::format("{}{}", newFileName, filepath.extension().string());
+			std::string newFileName = fmt::format("{} ({})", GetFileName(filepath), counterStr);
+			if (!GetFullFileExtension(filepath).empty())
+				newFileName = fmt::format("{}{}", newFileName, GetFullFileExtension(filepath));
+
+			//if (filepath.has_extension())
+			//	newFileName = fmt::format("{}{}", newFileName, filepath.extension().string());
 
 			if (std::filesystem::exists(filepath.parent_path() / newFileName))
 				return checkID(checkID);

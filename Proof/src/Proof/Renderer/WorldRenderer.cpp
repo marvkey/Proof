@@ -698,6 +698,7 @@ namespace Proof
 					FFX_SSSR_PASS_COUNT
 				} FfxSssrPass;
 				*/
+				//https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/main/sdk/src/components/sssr/ffx_sssr.cpp
 				//ssr			
 				{
 					ImageConfiguration imageSpec;
@@ -1220,8 +1221,8 @@ namespace Proof
 			SetPasses();
 			ShadowPass();
 			PreDepthPass();
-			HZBPass();
-			PreIntegrationPass();
+			//HZBPass();
+			//PreIntegrationPass();
 			LightFrustrumAndCullingPass();
 			GeometryPass();
 			CompositePass();
@@ -1844,7 +1845,7 @@ namespace Proof
 		AmbientOcclusionPass();
 		{
 
-			PreConvolutePass();
+			//PreConvolutePass();
 			//SSRPass();
 		}
 		BloomPass();

@@ -6,8 +6,8 @@ World:
         Tag: Sky Light
         tags: []
       TransformComponent:
-        Location: [0, 0, -0.000125527382]
-        Rotation: [0.0349065848, 0.0174532924, -1.74649573e-10]
+        Location: [0, 1.12306035, -0.000125527382]
+        Rotation: [0.0349065848, 0.0174532924, -9.89680893e-10]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
@@ -21,4 +21,17 @@ World:
         TextureDataImage: 0
         HosekWilkieTurbidity: 4
         HosekWilkieGroundReflectance: 0.100000001
-        PreethamTurbidity: 4
+        PreethamTurbidity: 6.06599998
+    - Entity: 6273702841354910295
+      TagComponent:
+        Tag: PBRGun
+        tags: []
+      TransformComponent:
+        Location: [0.308068305, 0.208904892, 0.0680041611]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 18348114341737718825
