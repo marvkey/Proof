@@ -4,7 +4,12 @@
 const float PI = 3.1415926535897932384626433832795f;
 const float TWO_PI = 2 * PI;
 const float Epsilon = 0.00001;
-layout(set = 3, binding = 0) uniform CameraData
+layout(set = 3, binding = 0) uniform FrameData
+{
+	uint FrameCount;
+	float AppTime;
+}u_FrameData;
+layout(set = 3, binding = 1) uniform CameraData
 {
   	mat4 Projection;
 	mat4 InverseProjection;
@@ -16,16 +21,22 @@ layout(set = 3, binding = 0) uniform CameraData
 
 	vec3 Position;
 	float NearPlane;
-	float FarPlane;
 
+	float FarPlane;
 	float Fov;
 	vec2 NDCToViewMul;
 
 	vec2 NDCToViewAdd;
 	vec2 DepthUnpackConsts;
+
+	vec4 JitterData;	// Halton sequence jitter data, .xy is current frame jitter data, .zw is prev frame jitter data.
+
+	uint JitterPeriod;        // jitter period for jitter data.
+	bool bEnableJitter;       // Is main camera enable jitter in this frame.
+
 } u_Camera;
 
-layout (set = 3, binding = 1) uniform ScreenData
+layout (set = 3, binding = 2) uniform ScreenData
 {
 	vec2 FullResolution;
 	vec2 InverseFullResolution;
@@ -35,6 +46,19 @@ layout (set = 3, binding = 1) uniform ScreenData
 	float ResolutionScaling;
 } u_ScreenData;
 
+layout(set = 3, binding = 3) uniform sampler u_PointClampEdgeSampler;
+layout(set = 3, binding = 4) uniform sampler u_PointClampBorder0000Sampler;
+layout(set = 3, binding = 5) uniform sampler u_PointRepeatSampler;
+layout(set = 3, binding = 6) uniform sampler u_PointClampBorder1111Sampler;
+
+layout(set = 3, binding = 7) uniform sampler u_LinearClampEdgeSampler;
+layout(set = 3, binding = 8) uniform sampler u_LinearClampBorder0000Sampler;
+layout(set = 3, binding = 9) uniform sampler u_LinearRepeatSampler;
+layout(set = 3, binding = 10) uniform sampler u_LinearClampBorder1111Sampler;
+
+// With mip filter
+layout(set = 3, binding = 11) uniform sampler u_LinearClampEdgeMipFilterSampler;
+layout(set = 3, binding = 12) uniform sampler u_LinearRepeatMipFilterSampler;
 
 float ConvertSRGBFromLinear(float value)
 {
@@ -89,4 +113,55 @@ vec3 GetViewPosition(vec2 texcoord, float depth)
 	vec4 homogenousLocation = clipSpaceLocation * u_Camera.InverseProjection;
 	return homogenousLocation.xyz / homogenousLocation.w;
 }
+
+float luminance(vec3 color)
+{
+    // human eye aware lumiance function.
+    return dot(color, vec3(0.299, 0.587, 0.114));
+}
+
+// Quad schedule style, fake pixel shader dispatch style.
+// Input-> [0, 63]
+//
+// Output:
+//  00 01 08 09 10 11 18 19
+//  02 03 0a 0b 12 13 1a 1b
+//  04 05 0c 0d 14 15 1c 1d
+//  06 07 0e 0f 16 17 1e 1f
+//  20 21 28 29 30 31 38 39
+//  22 23 2a 2b 32 33 3a 3b
+//  24 25 2c 2d 34 35 3c 3d
+//  26 27 2e 2f 36 37 3e 3f
+uvec2 Remap8x8(uint lane) // gl_LocalInvocationIndex in 8x8 threadgroup.
+{
+    return uvec2(
+        (((lane >> 2) & 0x0007) & 0xFFFE) | lane & 0x0001,
+        ((lane >> 1) & 0x0003) | (((lane >> 3) & 0x0007) & 0xFFFC)
+    );
+}
+
+// Build one TBN matrix from normal input.
+// 
+mat3 CreateTBN(vec3 N) 
+{
+    vec3 U;
+    if (abs(N.z) > 0.0) 
+    {
+        float k = sqrt(N.y * N.y + N.z * N.z);
+        U.x = 0.0; 
+        U.y = -N.z / k; 
+        U.z = N.y / k;
+    }
+    else 
+    {
+        float k = sqrt(N.x * N.x + N.y * N.y);
+        U.x = N.y / k; 
+        U.y = -N.x / k; 
+        U.z = 0.0;
+    }
+
+    mat3 TBN = mat3(U, cross(N, U), N);
+    return transpose(TBN);
+}
+
 #endif // COMMON_GLSL_H

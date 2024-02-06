@@ -18,12 +18,20 @@ namespace Proof {
 		float GetMaxMipCount();
 	};
 
-	struct CurrentFrame {
+	struct CurrentFrame 
+	{
 		uint32_t FrameinFlight;
 		uint32_t ImageIndex;
 	};
 	
-	class Renderer {
+	struct TemporalBlueNoise
+	{
+		Count<class StorageBuffer>  SBSobolBuffer;
+		Count<class StorageBuffer>  SBRankingTileBuffer;
+		Count<class StorageBuffer>  SBScramblingTileBuffer;
+	};
+	class Renderer 
+	{
 	public:
 		enum class API {
 			None =0, OpenGL =1, Vulkan=2
@@ -112,7 +120,7 @@ namespace Proof {
 			});
 		}
 		static const class RendererAPI* GetRenderAPI();
-
+		static TemporalBlueNoise GetSPP1();
 	private:
 		static class CommandQueue& GetRenderCommandQueue();
 		static class CommandQueue& GetRenderResourceReleaseQueue(uint32_t index);

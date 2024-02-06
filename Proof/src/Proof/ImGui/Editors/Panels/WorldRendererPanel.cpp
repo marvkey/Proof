@@ -12,6 +12,30 @@ namespace Proof
 	WorldRendererPanel::WorldRendererPanel()
 	{
 	}
+
+	static void WorldRendererPanelImageMip(const std::string& name, uint32_t& mip,Count<Image2D> image)
+	{
+		const float size = ImGui::GetContentRegionAvail().x;
+		UI::AttributeLabel(name);
+		UI::AttributeSlider(fmt::format("{} Mip", name), mip, 0, image->GetSpecification().Mips - 1);
+		UI::ImageMip(image, mip, { size, size * (0.9f / 1.6f) }, { 0, 1 }, { 1, 0 });
+	}
+	static void WorldRendererPanelImageMip(const std::string& name, uint32_t& mip, Count<Texture2D> texture)
+	{
+		WorldRendererPanelImageMip(name, mip, texture->GetImage());
+	}
+
+	static void WorldRendererPanelImage(const std::string& name, Count<Image2D> image)
+	{
+		const float size = ImGui::GetContentRegionAvail().x;
+		UI::AttributeLabel(name);
+		UI::Image(image, { size, size * (0.9f / 1.6f) }, { 0, 1 }, { 1, 0 });
+	}
+
+	static void WorldRendererPanelTexture(const std::string& name, Count<Texture2D> texture)
+	{
+		WorldRendererPanelImage(name, texture->GetImage());
+	}
 	void WorldRendererPanel::OnImGuiRender(const char* dsiplayName, bool& isOpen)
 	{
 		if (ImGui::Begin(dsiplayName, &isOpen))
@@ -150,6 +174,30 @@ namespace Proof
 				}
 				UI::EndTreeNode();
 			}
+
+			if (UI::AttributeTreeNode("NewSSR"))
+			{
+				if (UI::AttributeTreeNode("Debug Views", false))
+				{
+					if (m_WorldRenderer->m_ResourcesCreatedGPU)
+					{
+						static uint32_t Hzbmip = 0;
+						WorldRendererPanelImageMip("HZB Depth", Hzbmip, m_WorldRenderer->m_SSR.HierarchicalDepthTexture->GetImage());
+
+						WorldRendererPanelImage("Variance",  m_WorldRenderer->m_NewSSR.Variance);
+						WorldRendererPanelImage("Previous Variance", m_WorldRenderer->m_NewSSR.PreviousVariance);
+
+						WorldRendererPanelImage("Radiance",m_WorldRenderer->m_NewSSR.Radiance);
+						WorldRendererPanelImage("Previous Radiance", m_WorldRenderer->m_NewSSR.PreviousRadiance);
+
+						WorldRendererPanelImage("ExtractRoughness", m_WorldRenderer->m_NewSSR.ExtractRoughness);
+						WorldRendererPanelImage("Previous ExtractRoughness", m_WorldRenderer->m_NewSSR.PreviousExtractRoughness);
+					}
+					UI::EndTreeNode();
+				}
+				UI::EndTreeNode();
+			}
+			/*
 			if (UI::AttributeTreeNode("SSR"))
 			{
 				auto& ssrOptions = m_WorldRenderer->SSRSettings;
@@ -199,6 +247,7 @@ namespace Proof
 				}
 				UI::EndTreeNode();
 			}
+			*/
 			if (UI::AttributeTreeNode("Ambient Occlusion"))
 			{
 				UI::BeginPropertyGrid();

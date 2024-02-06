@@ -336,6 +336,40 @@ namespace Proof
 			Count<Texture2D> VisibilityTexture;//Pre-integration texture
 			glm::uvec3 WorkGroups{ 1u };
 		} m_SSR;
+
+		struct NewSSR
+		{
+			Count<ComputePass> TileClassification;
+			Count<ComputePass> IntersectArgs;
+
+			Count<StorageBufferSet> SBRayCounter;
+			Count<StorageBufferSet> SBRayList;
+			Count<StorageBufferSet> SBDenoiseList;
+			Count<StorageBufferSet> SBIntersectCommand;
+			Count<StorageBufferSet> SBDenoiseCommand;
+
+			Count<Image2D> Variance;
+			Count<Image2D> PreviousVariance;
+
+			Count<Image2D> Radiance;
+			Count<Image2D> PreviousRadiance;
+
+			Count<Image2D> ExtractRoughness;
+			Count<Image2D> PreviousExtractRoughness;
+			Count<class GlobalBufferSet> GlobalBuffer;
+			struct RayCounterData			
+			{
+				uint32_t RayCount;
+				uint32_t DenoiseTileCount;
+			};
+			struct GPUDispatchIndirectCommand
+			{
+				uint32_t x;
+				uint32_t y;
+				uint32_t z;
+				uint32_t pad;
+			};
+		} m_NewSSR;
 		//bloom
 		Count<ComputePass> m_BloomComputePass;
 		Count<Texture2D> m_BloomDirtTexture;
@@ -371,6 +405,7 @@ namespace Proof
 		void DOFPass();
 
 		void SSRPass();
+		void NewSSRPass();
 		void DrawScene();
 		void ClearPass(Count<RenderPass> renderPass, bool explicitClear);
 		// tehse are static so basically when wer are writng code we avoid errors of 

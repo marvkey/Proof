@@ -4,6 +4,7 @@
 #include "VulkanShader.h"
 #include "VulkanResourceBuffer.h"
 #include "VulkanTexutre.h"
+#include "VulkanSampler.h"
 
 #include <map>
 
@@ -24,7 +25,8 @@ namespace Proof
 		ImageView,
 		ImageViewSet,
 		Image,		//temporyarr 
-		ImageSet	//temporyarr 
+		ImageSet,	//temporyarr 
+		Sampler	//temporyarr 
 	};
 	/*
 	enum class RenderPassInputType {
@@ -86,6 +88,12 @@ namespace Proof
 		}
 		RenderPassInput(Count<class Image2D> resource) :
 			Type(RenderPassResourceType::Image2D), Input(std::vector<Count<RefCounted>>(1, resource))
+		{
+
+		}
+
+		RenderPassInput(Count<class RenderSampler> resource) :
+			Type(RenderPassResourceType::Sampler), Input(std::vector<Count<RefCounted>>(1, resource))
 		{
 
 		}

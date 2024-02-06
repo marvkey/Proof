@@ -31,6 +31,9 @@ namespace Proof
 
 		VkRenderPass GetRenderPass() { return m_CompatibilityRenderPass; }
 		ImageFormat GetDepthFormat() { return m_DepthFormat; }
+
+		virtual uint32_t GetWidth() const { return m_Config.Width; }
+		virtual uint32_t GetHeight() const {return m_Config.Height;}
 	private:
 
 		void RT_Build();

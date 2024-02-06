@@ -78,6 +78,11 @@ namespace Proof
 	public:
 		void SetData(const std::string& name, Count<StorageBufferSet> set);
 		void SetData(const std::string& name, Count<UniformBufferSet> set);
+		void SetData(const std::string& name, Count<StorageBuffer> set);
+		void SetData(const std::string& name, Count<UniformBuffer> set);
+		void SetData(const std::string& name, Count<class Image> set);
+		void SetData(const std::string& name, Count<class Texture> set);
+		void SetData(const std::string& name, Count<class RenderSampler> set);
 		const std::unordered_map<std::string, std::pair<RendererResourceType, Count<RefCounted>>>& GetBuffers() { return m_Buffers; }
 	private:
 		std::unordered_map<std::string, std::pair<RendererResourceType, Count<RefCounted>>> m_Buffers;

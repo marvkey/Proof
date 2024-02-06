@@ -497,7 +497,7 @@ namespace Proof
             auto& storageBuffer = m_ShaderDescriptorSet[descriptorSet].StorageBuffers[binding];
             storageBuffer.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
             storageBuffer = { resource.name,DescriptorResourceType::StorageBuffer, (int)storageBuffer.Stage,1 };
-            PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
+            //PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
             m_InputDeclaration[resource.name] = { descriptorSet,binding };
         }
         PF_ENGINE_TRACE("push constant buffers:");
@@ -559,7 +559,7 @@ namespace Proof
 
             if (nImages == 0)nImages = 1;
             sampledImage = { resource.name,DescriptorResourceType::ImageSampler, (int)sampledImage.Stage,nImages };
-            PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
+            //PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), fmt::format("Dont use the same name: {} for shader data", resource.name).c_str());
             
             PF_ENGINE_TRACE("   {}", resource.name);
             PF_ENGINE_TRACE("   ID = {}", resource.id);
@@ -597,13 +597,14 @@ namespace Proof
             if (nImages == 0)nImages = 1;
 
             sampledImage = { resource.name,DescriptorResourceType::ImageSampler, (int)sampledImage.Stage,nImages };
-            PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
+            //PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
 
             PF_ENGINE_TRACE("   {}", resource.name);
             PF_ENGINE_TRACE("   ID = {}", resource.id);
             PF_ENGINE_TRACE("   Count = {}", nImages);
             m_InputDeclaration[resource.name] = { descriptorSet,binding };
         }
+#if 1
         PF_ENGINE_TRACE("Seperate Samplers:");
         for (const auto& resource : resources.separate_samplers)
         {
@@ -615,18 +616,18 @@ namespace Proof
             seperateSampler.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
 
 
-             //https://github.com/KhronosGroup/SPIRV-Cross/wiki/Reflection-API-user-guide
-            //( why  we need  this)
-            /**
-             uniform sampler2D uSampler[10]; .
-             for (const Resource &resource : res.sampled_images)
-             {
-                const SPIRType &type = comp.get_type(resource.type_id); // Notice how we're using type_id here because we need the array information and not decoration information.
-                print(type.array.size()); // 1, because it's one dimension.
-                print(type.array[0]); // 10
-                print(type.array_size_literal[0]); // true
-             }
-             */
+            //https://github.com/KhronosGroup/SPIRV-Cross/wiki/Reflection-API-user-guide
+           //( why  we need  this)
+           /**
+            uniform sampler2D uSampler[10]; .
+            for (const Resource &resource : res.sampled_images)
+            {
+               const SPIRType &type = comp.get_type(resource.type_id); // Notice how we're using type_id here because we need the array information and not decoration information.
+               print(type.array.size()); // 1, because it's one dimension.
+               print(type.array[0]); // 10
+               print(type.array_size_literal[0]); // true
+            }
+            */
             uint32_t nImages = 0;
             uint32_t arraySize = type.array.size();
             for (int i = 0; i < arraySize; i++)
@@ -637,14 +638,14 @@ namespace Proof
             if (nImages == 0)nImages = 1;
 
             seperateSampler = { resource.name,DescriptorResourceType::ImageSampler, (int)seperateSampler.Stage,nImages };
-            PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
+            //PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), fmt::format("Dont use the same name: {} for shader data", resource.name).c_str());
 
             PF_ENGINE_TRACE("   {}", resource.name);
             PF_ENGINE_TRACE("   ID = {}", resource.id);
             PF_ENGINE_TRACE("   Count = {}", nImages);
             m_InputDeclaration[resource.name] = { descriptorSet,binding };
         }
-
+#endif
         PF_ENGINE_TRACE("Seperate Textures:");
         for (const auto& resource : resources.separate_images)
         {
@@ -676,7 +677,7 @@ namespace Proof
             if (nImages == 0)nImages = 1;
 
             seperateTextures = { resource.name,DescriptorResourceType::ImageSampler, (int)seperateTextures.Stage,nImages };
-            PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
+            //PF_CORE_ASSERT(!m_InputDeclaration.contains(resource.name), "Dont use the same name for shader data");
 
             PF_ENGINE_TRACE("   {}", resource.name);
             PF_ENGINE_TRACE("   ID = {}", resource.id);

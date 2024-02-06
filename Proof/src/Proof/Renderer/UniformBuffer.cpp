@@ -3,6 +3,7 @@
 #include "Proof/Platform/Vulkan/VulkanResourceBuffer.h"
 #include "Proof/Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Proof/Platform/Vulkan/VulkanTexutre.h"
+#include "RendererSampler.h"
 #include "Renderer.h"
 namespace Proof
 {
@@ -105,6 +106,26 @@ namespace Proof
 	void GlobalBufferSet::SetData(const std::string& name, Count<UniformBufferSet> set)
 	{
 		m_Buffers[name] = { RendererResourceType::UniformBufferSet, set };
+	}
+	void GlobalBufferSet::SetData(const std::string& name, Count<StorageBuffer> set)
+	{
+		m_Buffers[name] = { set->GetRendererResourceType(), set };
+	}
+	void GlobalBufferSet::SetData(const std::string& name, Count<UniformBuffer> set)
+	{
+		m_Buffers[name] = { set->GetRendererResourceType(), set };
+	}
+	void GlobalBufferSet::SetData(const std::string& name, Count<class Image> set)
+	{
+		m_Buffers[name] = { set->GetRendererResourceType(), set};
+	}
+	void GlobalBufferSet::SetData(const std::string& name, Count<class Texture> set)
+	{
+		m_Buffers[name] = { set->GetRendererResourceType(), set };
+	}
+	void GlobalBufferSet::SetData(const std::string& name, Count<class RenderSampler> set)
+	{
+		m_Buffers[name] = { set->GetRendererResourceType(), set };
 	}
 }
 

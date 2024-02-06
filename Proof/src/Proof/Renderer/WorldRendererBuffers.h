@@ -89,6 +89,13 @@ namespace Proof
 
 		glm::vec2 NDCToViewAdd;
 		glm::vec2 DepthUnpackConsts;
+
+		// Halton sequence jitter data, .xy is current frame jitter data, .zw is prev frame jitter data.
+		glm::vec4 JitterData;
+
+		uint32_t JitterPeriod;        // jitter period for jitter data.
+		int bEnableJitter;       // Is main camera enable jitter in this frame.
+
 	};
 	struct UBRenderData
 	{
@@ -167,5 +174,11 @@ namespace Proof
 		int bEnableConeTracing = true;
 		float LuminanceFactor = 1.0f;
 		uint32_t AmbientOcclusionType = 0; // 0 none, 1 is HBAO , 2 GTAO
+	};
+
+	struct alignas(16) UBFrameData
+	{
+		uint32_t FrameCount;
+		float AppTime;
 	};
 }

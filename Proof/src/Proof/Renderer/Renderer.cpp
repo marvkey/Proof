@@ -29,6 +29,7 @@
 #include "Proof/Core/RenderThread.h"
 #include "HosekDataRGB.h"
 #include "Proof/Asset/AssetManager.h"
+#include "RendererSampler.h"
 namespace Proof {
 
 	/*
@@ -73,6 +74,7 @@ namespace Proof {
 		bool CommandBufferRecording = false;
 
 		Count<ComputePass> HosekWilkiePass;
+		TemporalBlueNoise BlueNoiseSpp1Data;
 	};
 	static RendererAPI* InitRendererAPI()
 	{
@@ -88,6 +90,11 @@ namespace Proof {
 	float RendererConfig::GetMaxMipCount()
 	{
 		return (float)Utils::GetMipLevelCount(EnvironmentMapResolution, EnvironmentMapResolution);
+	}
+	namespace blueNoise_1_Spp
+	{
+		// blue noise sampler 1spp.
+		#include <Proof/Utils/samplerCPP/samplerBlueNoiseErrorDistribution_128x128_OptimizedFor_2d2d2d2d_1spp.cpp>
 	}
 	void Renderer::Init()
 	{
@@ -150,6 +157,13 @@ namespace Proof {
 		ShaderLibrary->LoadShader("PreIntegration", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/PreIntegration.glsl");
 		ShaderLibrary->LoadShader("SSRComposite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/SSRComposite.glsl");
 		ShaderLibrary->LoadShader("SSR", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/SSR.glsl");
+		
+		
+		ShaderLibrary->LoadShader("SSSRTileClassification", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRTileClassification.glsl");
+		ShaderLibrary->LoadShader("SSSRIntersectArgs", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRIntersectArgs.glsl");
+		//ShaderLibrary->LoadShader("SSSRIntersect", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRIntersect.glsl");
+		//ShaderLibrary->LoadShader("SSRReproject", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSRReproject.glsl");
+		//ShaderLibrary->LoadShader("SSSRIntersectArgs", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRIntersectArgs.glsl");
 
 
 		//2D
@@ -158,8 +172,10 @@ namespace Proof {
 		ShaderLibrary->LoadShader("Line2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Line2D.glsl");
 		ShaderLibrary->LoadShader("Circle2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Circle2D.glsl");
 
+		
 		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
+		SamplerFactory::Init();
 		s_BaseTextures = pnew BaseTextures();
 		Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
 		Renderer::SubmitCommandBuffer(s_Data->RenderCommandBuffer);
@@ -235,9 +251,15 @@ namespace Proof {
 			s_Data->QuadVertexBuffer = VertexBuffer::Create(data, 4 * sizeof(QuadVertex));
 			uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
 			s_Data->QuadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+
+			{
+				TemporalBlueNoise& blueNoise = s_Data->BlueNoiseSpp1Data;
+				blueNoise.SBSobolBuffer = StorageBuffer::Create(Buffer(blueNoise_1_Spp::sobol_256spp_256d, sizeof(blueNoise_1_Spp::sobol_256spp_256d)));
+				blueNoise.SBRankingTileBuffer = StorageBuffer::Create(Buffer(blueNoise_1_Spp::rankingTile, sizeof(blueNoise_1_Spp::rankingTile)));
+				blueNoise.SBScramblingTileBuffer = StorageBuffer::Create(Buffer(blueNoise_1_Spp::scramblingTile, sizeof(blueNoise_1_Spp::scramblingTile)));
+			}
 		}
 		
-
 		PF_ENGINE_INFO("Renderer Initialized {}m/s",time.ElapsedMillis());
 	}
 
@@ -257,6 +279,8 @@ namespace Proof {
 		pdelete s_BaseTextures;
 		ShaderLibrary = nullptr;
 		pdelete s_Data;
+		SamplerFactory::ShutDown();
+
 		s_RendererAPI->ShutDown();
 		pdelete s_RendererAPI;
 
@@ -962,6 +986,11 @@ namespace Proof {
 	const RendererAPI* Renderer::GetRenderAPI()
 	{
 		return s_RendererAPI;
+	}
+
+	TemporalBlueNoise Renderer::GetSPP1()
+	{
+		return s_Data->BlueNoiseSpp1Data;
 	}
 
 }

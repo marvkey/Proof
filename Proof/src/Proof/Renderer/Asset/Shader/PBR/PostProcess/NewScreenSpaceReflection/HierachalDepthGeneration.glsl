@@ -59,7 +59,7 @@ void DepthDownsample(uint group_index, uvec3 group_id, uvec3 dispatch_thread_id)
 
 }
 layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
-void main()
+void mainv  
 {
     DepthDownsample(gl_LocalInvocationIndex, gl_WorkGroupID, gl_GlobalInvocationID);
 }

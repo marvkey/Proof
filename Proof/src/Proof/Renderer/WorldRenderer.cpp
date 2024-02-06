@@ -34,6 +34,7 @@
 #include "Proof/Platform/Vulkan/VulkanComputePass.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Core/Core.h"
+#include "RendererSampler.h"
 
 #include "VertexArray.h"
 #include <glm/glm.hpp>
@@ -118,6 +119,11 @@ namespace Proof
 			texture->Resize(noiseScale, noiseScale, buffer);
 
 		}
+	}
+
+	static inline uint32_t GetGroupCount(uint32_t threadCount, uint32_t localSize)
+	{
+		return (threadCount + localSize - 1) / localSize;
 	}
 	static std::array<glm::vec4, 16> HBAOJitter()
 	{
@@ -241,6 +247,20 @@ namespace Proof
 		{
 			m_GlobalInputs->SetData("CameraData", m_UBCameraBuffer);
 			m_GlobalInputs->SetData("ScreenData", m_UBScreenBuffer);
+
+			m_GlobalInputs->SetData("u_PointClampEdgeSampler", SamplerFactory::GetPointClampEdge());
+			m_GlobalInputs->SetData("u_PointClampBorder0000Sampler", SamplerFactory::GetPointClampBorder0000());
+			m_GlobalInputs->SetData("u_PointRepeatSampler", SamplerFactory::GetPointRepeat());
+			m_GlobalInputs->SetData("u_PointClampBorder1111Sampler", SamplerFactory::GetPointClampBorder1111());
+
+			m_GlobalInputs->SetData("u_LinearClampEdgeSampler", SamplerFactory::GetLinearClampEdge());
+			m_GlobalInputs->SetData("u_LinearClampBorder0000Sampler", SamplerFactory::GetLinearClampBorder0000MipPoint());
+			m_GlobalInputs->SetData("u_LinearRepeatSampler", SamplerFactory::GetLinearRepeat());
+			m_GlobalInputs->SetData("u_LinearClampBorder1111Sampler", SamplerFactory::GetLinearClampBorder1111MipPoint());
+
+			m_GlobalInputs->SetData("u_LinearClampEdgeMipFilterSampler", SamplerFactory::GetLinearClampEdgeMipPoint());
+			m_GlobalInputs->SetData("u_LinearRepeatMipFilterSampler", SamplerFactory::GetLinearRepeatMipPoint());
+
 		}
 		Count<VertexArray> staticVertexArray= VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshInstanceVertex), VertexInputRate::Instance} });
 		staticVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Position));
@@ -741,6 +761,96 @@ namespace Proof
 					}
 				}
 
+				// NEW SSR
+				{
+
+					m_NewSSR.GlobalBuffer = Count<GlobalBufferSet>::Create();
+					auto ssrGlobalBuffer = m_NewSSR.GlobalBuffer;
+					ssrGlobalBuffer->SetData("SobolBuffer", Renderer::GetSPP1().SBSobolBuffer);
+					ssrGlobalBuffer->SetData("RankingTileBuffer", Renderer::GetSPP1().SBRankingTileBuffer);
+					ssrGlobalBuffer->SetData("ScramblingTileBuffer", Renderer::GetSPP1().SBScramblingTileBuffer);
+					//buffer
+					{
+						//https://github.com/qiutang98/flower/blob/main/source/engine/renderer/pass/sssr_pass.cpp
+						//line 330
+
+						const uint32_t maxRayCount = m_PreDepthPass->GetTargetFrameBuffer()->GetWidth() * m_PreDepthPass->GetTargetFrameBuffer()->GetHeight(); // Max case is one pixel one ray.
+						const uint32_t maxDenoiseListCount = maxRayCount / (8 * 8) + 1; // Tile run in 8x8.
+
+						m_NewSSR.SBRayCounter = StorageBufferSet::Create(sizeof(NewSSR::RayCounterData));
+						m_NewSSR.SBRayList = StorageBufferSet::Create(maxRayCount * sizeof(uint32_t));
+						m_NewSSR.SBDenoiseList = StorageBufferSet::Create(maxDenoiseListCount * sizeof(uint32_t));
+						m_NewSSR.SBIntersectCommand = StorageBufferSet::Create(sizeof(NewSSR::GPUDispatchIndirectCommand));
+						m_NewSSR.SBDenoiseCommand = StorageBufferSet::Create(sizeof(NewSSR::GPUDispatchIndirectCommand));
+
+						ssrGlobalBuffer->SetData("SSSRRayCounterSSBO", m_NewSSR.SBRayCounter);
+						ssrGlobalBuffer->SetData("SSSRRayListSSBO", m_NewSSR.SBRayList);
+						ssrGlobalBuffer->SetData("SSSRDenoiseTileListSSBO", m_NewSSR.SBDenoiseList);
+						ssrGlobalBuffer->SetData("SSSRIntersectCmdSSBO", m_NewSSR.SBIntersectCommand);
+						ssrGlobalBuffer->SetData("SSSRDenoiseCmdSSBO", m_NewSSR.SBDenoiseCommand);
+
+
+					}
+					//textures
+					{
+						ssrGlobalBuffer->SetData("u_DepthMap", m_PreDepthPass->GetOutput(0));
+						ssrGlobalBuffer->SetData("u_NormalMap", m_GeometryPass->GetOutput(1));
+						//radiance
+						{
+							ImageConfiguration imageConfig;
+							imageConfig.DebugName = "SSSRRadiance";
+							imageConfig.Width = 1;
+							imageConfig.Height = 1;
+							imageConfig.Format = ImageFormat::RGBA16F;
+							imageConfig.Usage = ImageUsage::Storage;
+
+							m_NewSSR.Radiance = Image2D::Create(imageConfig);
+							//imageConfig.DebugName = "SSSRPreviousRadiance";
+							m_NewSSR.PreviousRadiance = Image2D::Create(imageConfig);
+						}
+						//extract roughness
+						{
+							ImageConfiguration imageConfig;
+							imageConfig.DebugName = "SSSRExtractRoughness";
+							imageConfig.Width = 1;
+							imageConfig.Height = 1;
+							imageConfig.Format = ImageFormat::R;
+							imageConfig.Usage = ImageUsage::Storage;
+
+							m_NewSSR.ExtractRoughness = Image2D::Create(imageConfig);
+							//imageConfig.DebugName = "SSSRPreviousExtractRoughness";
+							m_NewSSR.PreviousExtractRoughness = Image2D::Create(imageConfig);
+						}
+					}
+					//tile classification
+					{
+						ImageConfiguration imageConfig;
+						imageConfig.DebugName = "SSSRVariance";
+						imageConfig.Width = 1;
+						imageConfig.Height = 1;
+						imageConfig.Format = ImageFormat::R16F;
+						imageConfig.Usage = ImageUsage::Storage;
+
+						m_NewSSR.Variance = Image2D::Create(imageConfig);
+						//imageConfig.DebugName = "SSSRPreviousVariance";
+						m_NewSSR.PreviousVariance = Image2D::Create(imageConfig);
+						ComputePipelineConfig pipelineConfig;
+						pipelineConfig.DebugName = "SSSRTileClassification";
+						pipelineConfig.Shader = Renderer::GetShader("SSSRTileClassification");
+						m_NewSSR.TileClassification = ComputePass::Create(ComputePassConfiguration{ "SSSRTileClassification",ComputePipeline::Create(pipelineConfig) });
+						m_NewSSR.TileClassification->AddGlobalInput(m_GlobalInputs);
+						m_NewSSR.TileClassification->AddGlobalInput(ssrGlobalBuffer);
+					}
+					//intersect args 
+					{
+						ComputePipelineConfig pipelineConfig;
+						pipelineConfig.DebugName = "SSSRIntersectArgs";
+						pipelineConfig.Shader = Renderer::GetShader("SSSRIntersectArgs");
+						m_NewSSR.IntersectArgs = ComputePass::Create(ComputePassConfiguration{ "SSSRIntersectArgs",ComputePipeline::Create(pipelineConfig) });
+						m_NewSSR.IntersectArgs->AddGlobalInput(m_GlobalInputs);
+						m_NewSSR.IntersectArgs->AddGlobalInput(ssrGlobalBuffer);
+					}
+				}
 				//HZB
 				{
 					
@@ -1089,6 +1199,28 @@ namespace Proof
 			
 			}
 
+			//new ssr
+			{
+				const uint32_t maxRayCount = m_PreDepthPass->GetTargetFrameBuffer()->GetWidth() * m_PreDepthPass->GetTargetFrameBuffer()->GetHeight(); // Max case is one pixel one ray.
+				const uint32_t maxDenoiseListCount = maxRayCount / (8 * 8) + 1; // Tile run in 8x8.
+
+
+				for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
+				{
+					m_NewSSR.SBRayList->Resize(i,maxRayCount * sizeof(uint32_t));
+					m_NewSSR.SBDenoiseList->Resize(i,maxDenoiseListCount * sizeof(uint32_t));
+				}
+				m_NewSSR.Variance->Resize(viewportSize.x, viewportSize.y);
+				m_NewSSR.PreviousVariance->Resize(viewportSize.x, viewportSize.y);
+
+				m_NewSSR.Radiance->Resize(viewportSize.x, viewportSize.y);
+				m_NewSSR.PreviousRadiance->Resize(viewportSize.x, viewportSize.y);
+			
+
+				m_NewSSR.ExtractRoughness->Resize(viewportSize.x, viewportSize.y);
+				m_NewSSR.PreviousExtractRoughness->Resize(viewportSize.x, viewportSize.y);
+			}
+
 			//HBAO
 			{
 				m_AmbientOcclusion.HBAO.ReinterleavePass->GetTargetFrameBuffer()->Resize(viewportSize);
@@ -1221,7 +1353,7 @@ namespace Proof
 			SetPasses();
 			ShadowPass();
 			PreDepthPass();
-			//HZBPass();
+			HZBPass();
 			//PreIntegrationPass();
 			LightFrustrumAndCullingPass();
 			GeometryPass();
@@ -1842,11 +1974,12 @@ namespace Proof
 		Timer compositeTimer;
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		
-		AmbientOcclusionPass();
+		//AmbientOcclusionPass();
 		{
 
 			//PreConvolutePass();
 			//SSRPass();
+			NewSSRPass();
 		}
 		BloomPass();
 		//DOFPass();
@@ -2608,6 +2741,55 @@ namespace Proof
 			Renderer::EndComputePass(preConvolutePass);
 
 		}
+	}
+
+	void WorldRenderer::NewSSRPass()
+	{
+		struct SSSRPush
+		{
+			uint32_t SamplesPerQuad;
+			uint32_t TemporalVarianceGuidedTracingEnabled;
+			uint32_t MostDetailedMip = 0;
+			float RoughnessThreshold; // Max roughness stop to reflection sample.
+			float TemporalVarianceThreshold;
+		};
+
+		SSSRPush pushConst =
+		{
+			.SamplesPerQuad = 1,
+			.TemporalVarianceGuidedTracingEnabled = 1,
+			.MostDetailedMip = 0,
+			.RoughnessThreshold = 0.2f,
+			.TemporalVarianceThreshold = 0.0f,
+		};
+		//Tile Classification
+		{
+			m_NewSSR.TileClassification->SetInput("u_CubeMapPrefilter", m_Environment->GetPrefilterMap());
+			m_NewSSR.TileClassification->SetInput("u_HZB", m_SSR.HierarchicalDepthTexture);
+			m_NewSSR.TileClassification->SetInput("u_SSRVarianceHistory", m_NewSSR.PreviousVariance);
+			m_NewSSR.TileClassification->SetInput("o_SSRIntersection", m_NewSSR.Radiance);
+			m_NewSSR.TileClassification->SetInput("o_SSRExtractRoughness", m_NewSSR.ExtractRoughness);
+			m_NewSSR.TileClassification->SetInput("u_MetalnessRoughness", m_GeometryPass->GetOutput(2));
+			Renderer::BeginComputePass(m_CommandBuffer, m_NewSSR.TileClassification);
+			m_NewSSR.TileClassification->PushData("u_PushData", &pushConst);
+			m_NewSSR.TileClassification->Dispatch(GetGroupCount(m_UBScreenData.FullResolution.x, 8), GetGroupCount(m_UBScreenData.FullResolution.y, 8), 1.);
+			Renderer::EndComputePass(m_NewSSR.TileClassification);
+		}
+
+		// Intersect Args
+		{
+			Renderer::BeginComputePass(m_CommandBuffer, m_NewSSR.IntersectArgs);
+			m_NewSSR.IntersectArgs->PushData("u_PushData", &pushConst);
+			m_NewSSR.IntersectArgs->Dispatch(1, 1, 1);
+			Renderer::EndComputePass(m_NewSSR.IntersectArgs);
+		}
+
+		//endindg
+		{
+			Math::Swap(m_NewSSR.Variance, m_NewSSR.PreviousVariance);
+			Math::Swap(m_NewSSR.Radiance, m_NewSSR.PreviousRadiance);
+			Math::Swap(m_NewSSR.ExtractRoughness, m_NewSSR.PreviousExtractRoughness);
+		} 
 	}
 	void WorldRenderer::SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws)
 	{

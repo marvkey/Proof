@@ -5,7 +5,7 @@ namespace Proof{
 	using ResourceDescriptorInfo = void*;
 	enum class RendererResourceType
 	{
-		None =0,
+		None = 0,
 		Image2D,
 		ImageView,
 		Texture2D,
@@ -13,7 +13,8 @@ namespace Proof{
 		UniformBuffer,
 		UniformBufferSet,
 		StorageBuffer,
-		StorageBufferSet
+		StorageBufferSet,
+		Sampler
 	};
 	#define RENDER_VIEW_RESOURCE_CLASS_TYPE(type) static RendererResourceType GetStaticRendererResourceType() { return RendererResourceType::type; }\
 								virtual RendererResourceType GetRendererResourceType() const override { return GetStaticRendererResourceType(); }

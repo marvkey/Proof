@@ -7,6 +7,7 @@
 #include "VulkanTexutre.h"
 #include "VulkanDevice.h"
 #include "VulkanImage.h"
+#include "VulkanSampler.h"
 namespace Proof 
 {
     /**
@@ -531,6 +532,12 @@ namespace Proof
                             write.descriptorCount = 1;
                         }
                         break;
+                    case Proof::RenderPassResourceType::Sampler:
+                        {
+                            write.pImageInfo = (VkDescriptorImageInfo*)resource.Input[0].As<RendererResource>()->GetResourceDescriptorInfo();
+                            write.descriptorCount = 1;
+                        }
+                     break;
                     case Proof::RenderPassResourceType::ImageSet:
                         {
                             imageUniquePos++;
@@ -546,6 +553,7 @@ namespace Proof
                         }
                         break;
                     default:
+                        PF_CORE_ASSERT(false,"Type not supported");
                         break;
                 }
             }
@@ -580,15 +588,42 @@ namespace Proof
             {
                 case Proof::RendererResourceType::None:
                     break;
+                case Proof::RendererResourceType::Sampler:
+                    {
+
+                    Count<RenderSampler> storageBufferSet = inputData.second.As<RenderSampler>();
+                    m_Inputs[decl->Set][decl->Binding] = RenderPassInput(storageBufferSet);
+                    }
+                break;
                 case Proof::RendererResourceType::Image2D:
+                    {
+                        Count<Image2D> storageBufferSet = inputData.second.As<Image2D>();
+                        m_Inputs[decl->Set][decl->Binding] = RenderPassInput(storageBufferSet);
+                    }
                     break;
                 case Proof::RendererResourceType::ImageView:
+                    {
+                        Count<ImageView> storageBufferSet = inputData.second.As<ImageView>();
+                        m_Inputs[decl->Set][decl->Binding] = RenderPassInput(storageBufferSet);
+                    }
                     break;
                 case Proof::RendererResourceType::Texture2D:
+                    {
+                        Count<Texture2D> storageBufferSet = inputData.second.As<Texture2D>();
+                        m_Inputs[decl->Set][decl->Binding] = RenderPassInput(storageBufferSet);
+                    }
                     break;
                 case Proof::RendererResourceType::TextureCube:
+                    {
+                        Count<TextureCube> storageBufferSet = inputData.second.As<TextureCube>();
+                        m_Inputs[decl->Set][decl->Binding] = RenderPassInput(storageBufferSet);
+                    }
                     break;
                 case Proof::RendererResourceType::UniformBuffer:
+                {
+                    Count<UniformBuffer> storageBufferSet = inputData.second.As<UniformBuffer>();
+                    m_Inputs[decl->Set][decl->Binding] = RenderPassInput(storageBufferSet);
+                }
                     break;
                 case Proof::RendererResourceType::UniformBufferSet:
                     {
@@ -597,6 +632,10 @@ namespace Proof
                     }
                     break;
                 case Proof::RendererResourceType::StorageBuffer:
+                    {
+                        Count<StorageBuffer> storageBufferSet = inputData.second.As<StorageBuffer>();
+                        m_Inputs[decl->Set][decl->Binding] = RenderPassInput(storageBufferSet);
+                    }
                     break;
                 case Proof::RendererResourceType::StorageBufferSet:
                     {
@@ -605,6 +644,7 @@ namespace Proof
                     }
                     break;
                 default:
+                    PF_CORE_ASSERT(false, "Type not supported");
                     break;
             }
         }
@@ -680,7 +720,7 @@ namespace Proof
             vkSet = nullptr;
             VK_CHECK_RESULT( vkAllocateDescriptorSets(device, &allocInfo, &vkSet));
         }
-        VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_DESCRIPTOR_SET, fmt::format("{} descriptorSet frame: {}", m_Config.DebugName, frame), vkSet);
+        VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_DESCRIPTOR_SET, fmt::format("{} descriptorSet RenderFrame: {} Set:{}", m_Config.DebugName, frame,set), vkSet);
         m_DescriptorSets[frame][set].Set = vkSet;
     }
     void VulkanDescriptorManager::InvalidateDescriptors()

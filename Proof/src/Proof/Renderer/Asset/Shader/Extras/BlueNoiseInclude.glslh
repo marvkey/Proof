@@ -1,0 +1,40 @@
+//https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/main/sdk/include/FidelityFX/gpu/sssr/ffx_sssr_prepare_blue_noise_texture.h
+//https://github.com/qiutang98/flower/blob/0414798840c1c4aef4e742f521696378695e7897/source/shader/common/shared_bluenoise.glsl
+#ifndef BLUE_NOISE_INCLUDE_GLSL
+#define BLUE_NOISE_INCLUDE_GLSL
+
+const uint kBlueNoiseDim = 128;
+
+#ifdef BLUE_NOISE_BUFFER_BEGIN_BINDING
+
+    layout(set = 1, binding = BLUE_NOISE_BUFFER_BEGIN_BINDING) readonly buffer SobolBuffer { uint s_Sobol_256spp_256d[]; };
+    layout(set = 1, binding = BLUE_NOISE_BUFFER_BEGIN_BINDING + 1) readonly buffer RankingTileBuffer { uint s_RankingTile[]; };
+    layout(set = 1, binding = BLUE_NOISE_BUFFER_BEGIN_BINDING + 2) readonly buffer ScramblingTileBuffer { uint s_ScramblingTile[]; };
+
+    float SampleRandomNumber(uint pixel_i, uint pixel_j, uint sampleIndex, uint sampleDimension)
+    {
+        // wrap arguments
+        pixel_i = pixel_i & 127u;
+        pixel_j = pixel_j & 127u;
+        sampleIndex = sampleIndex & 255u;
+        sampleDimension = sampleDimension & 255u;
+
+        // xor index based on optimized ranking
+        uint rankedSampleIndex = sampleIndex ^ s_RankingTile[sampleDimension + (pixel_i + pixel_j * 128u) * 8u];
+
+        // fetch value in sequence
+        uint value = s_Sobol_256spp_256d[sampleDimension + rankedSampleIndex * 256u];
+
+        // If the dimension is optimized, xor sequence value based on optimized scrambling
+        value = value ^ s_ScramblingTile[(sampleDimension%8) + (pixel_i + pixel_j * 128u) * 8u];
+
+        // convert to float and return
+        float v = (0.5f + value) / 256.0f;
+
+        return v;
+    }
+
+
+#endif
+#endif
+

@@ -24,8 +24,16 @@ project "Proof"
     }
 	removefiles
 	{
-		"src/Platform/OpenGl/**.h",
-		"src/Platform/OpenGl/**.cpp"
+		"src/Proof/Platform/OpenGl/**.h",
+		"src/Proof/Platform/OpenGl/**.cpp",
+		"src/Proof/Utils/samplerCPP/samplerBlueNoiseErrorDistribution_128x128_OptimizedFor_2d2d2d2d_2spp.cpp",
+		"src/Proof/Utils/samplerCPP/samplerBlueNoiseErrorDistribution_128x128_OptimizedFor_2d2d2d2d_4spp.cpp",
+		"src/Proof/Utils/samplerCPP/samplerBlueNoiseErrorDistribution_128x128_OptimizedFor_2d2d2d2d_8spp.cpp",
+		"src/Proof/Utils/samplerCPP/samplerBlueNoiseErrorDistribution_128x128_OptimizedFor_2d2d2d2d_16spp.cpp",
+		"src/Proof/Utils/samplerCPP/samplerBlueNoiseErrorDistribution_128x128_OptimizedFor_2d2d2d2d_32spp.cpp",
+		"src/Proof/Utils/samplerCPP/samplerBlueNoiseErrorDistribution_128x128_OptimizedFor_2d2d2d2d_64spp.cpp",
+		"src/Proof/Utils/samplerCPP/samplerBlueNoiseErrorDistribution_128x128_OptimizedFor_2d2d2d2d_128spp.cpp",
+		"src/Proof/Utils/samplerCPP/samplerBlueNoiseErrorDistribution_128x128_OptimizedFor_2d2d2d2d_256spp.cpp",
 	}
     includedirs 
 	{
@@ -99,6 +107,8 @@ project "Proof"
 	filter "files:vendor/ImGuizmo/**.cpp"
 	flags { "NoPCH" }
 	filter "files:src/Platform/Vulkan/ktx/**.cpp"
+	flags { "NoPCH" }
+	filter "files:src/Proof/Utils/samplerCPP/**.cpp"
 	flags { "NoPCH" }
 
 	filter "system:windows"
