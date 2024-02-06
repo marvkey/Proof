@@ -247,7 +247,9 @@ namespace Proof
 
 		Count<class StorageBufferSet> m_SBDirectionalLights;
 
-		std::map<MeshKey, TransformMapData> m_MeshTransformMap;
+		std::map<MeshKey, TransformMapData> m_MeshTransformMap[2];
+		std::map<MeshKey, TransformMapData>* m_CurTransformMap;
+		std::map<MeshKey, TransformMapData>* m_PrevTransformMap;
 
 		std::map<MeshKey, MeshDrawInfo> m_MeshDrawList;
 		std::map<MeshKey, DynamicMeshDrawInfo> m_DynamicMeshDrawList;
@@ -421,6 +423,7 @@ namespace Proof
 		static void RenderDynamicMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount);
 		friend class Editore3D;
 		friend class WorldRendererPanel;
+		friend class ViewPortEditorWorkspace;
 	};	
 }
 

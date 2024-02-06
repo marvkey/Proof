@@ -150,6 +150,7 @@ namespace Proof
 	struct MeshInstanceVertex {
 
 		glm::mat4 Transform;
+		glm::mat4 PrevTransform;
 	};
 	#define SHADOWMAP_CASCADE_COUNT  4
 
@@ -274,6 +275,11 @@ namespace Proof
 		staticVertexArray->AddData(6, DataType::Vec4, (sizeof(glm::vec4) * 1), 1);
 		staticVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
 		staticVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
+
+		staticVertexArray->AddData(9, DataType::Vec4, (sizeof(glm::vec4) * 4), 1);
+		staticVertexArray->AddData(10, DataType::Vec4, (sizeof(glm::vec4) * 5), 1);
+		staticVertexArray->AddData(11, DataType::Vec4, (sizeof(glm::vec4) * 6), 1);
+		staticVertexArray->AddData(12, DataType::Vec4, (sizeof(glm::vec4) * 7), 1);
 
 		Count<VertexArray> quadVertexArray = VertexArray::Create({ sizeof(QuadVertex) });
 		quadVertexArray->AddData(0, DataType::Vec3, offsetof(QuadVertex, QuadVertex::Position));
@@ -418,13 +424,13 @@ namespace Proof
 			geoFramebufferConfig.ClearDepthOnLoad = false;	
 			geoFramebufferConfig.ClearColorOnLoad = false;
 			//geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
-			geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA, ImageFormat::DEPTH32F }; // color, view limuncance, metallnessroughness
+			geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA, ImageFormat::RG16F,ImageFormat::DEPTH32F }; // color, view limuncance, metallnessroughness,velocity
 			geoFramebufferConfig.ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
-			geoFramebufferConfig.Attachments.Attachments[3].ExistingImage = m_PreDepthPass->GetOutput(0);
+			geoFramebufferConfig.Attachments.Attachments[4].ExistingImage = m_PreDepthPass->GetOutput(0);
 			auto frameBuffer = FrameBuffer::Create(geoFramebufferConfig);
 
 			GraphicsPipelineConfiguration pipelinelineConfig;
-			pipelinelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA, ImageFormat::DEPTH32F }; // color, view limuncance, metallness, roughness
+			pipelinelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA,ImageFormat::RG16F, ImageFormat::DEPTH32F }; // color, view limuncance, metallnessroughness,velocity
 			// Don't blend with luminance in the alpha channel.
 			pipelinelineConfig.Attachments.Attachments[1].Blend = false;
 
@@ -1126,6 +1132,19 @@ namespace Proof
 			return;
 
 		m_InContext = true;
+		static bool isFlip = false;
+		if (!isFlip)
+		{
+			m_CurTransformMap = &m_MeshTransformMap[0];
+			m_PrevTransformMap = &m_MeshTransformMap[1];
+		}
+		else
+		{
+			m_CurTransformMap = &m_MeshTransformMap[1];
+			m_PrevTransformMap = &m_MeshTransformMap[0];
+		}
+		isFlip = !isFlip;
+		m_CurTransformMap->clear();
 
 		//reset stats
 		m_Stats = {};
@@ -1295,6 +1314,8 @@ namespace Proof
 
 		// camera buffer
 		{
+			m_UBCameraData.PrevViewProjection = m_UBCameraData.ViewProjection;
+
 			m_UBCameraData.Projection = camera.Camera.GetProjectionMatrix();
 			m_UBCameraData.InverseProjection = glm::inverse(m_UBCameraData.Projection);
 			m_UBCameraData.UnreversedProjectionMatrix = camera.Camera.GetUnReversedProjectionMatrix();
@@ -1306,7 +1327,6 @@ namespace Proof
 			m_UBCameraData.NearPlane = camera.NearPlane;
 			m_UBCameraData.FarPlane = camera.FarPlane;
 			m_UBCameraData.Fov = camera.Fov;
-
 			float depthLinearizeMul = -(camera.FarPlane * camera.NearPlane) / (camera.FarPlane - camera.NearPlane);
 			float depthLinearizeAdd = camera.FarPlane / (camera.FarPlane - camera.NearPlane);
 			m_UBCameraData.DepthUnpackConsts = { depthLinearizeMul, depthLinearizeAdd };
@@ -1379,7 +1399,7 @@ namespace Proof
 		// clear data
 		//mesh Pass
 		{
-			m_MeshTransformMap.clear();
+			//m_MeshTransformMap.clear();
 
 			m_MeshDrawList.clear();
 			m_DynamicMeshDrawList.clear();
@@ -1500,15 +1520,28 @@ namespace Proof
 		{
 			uint32_t offset = 0;
 			uint64_t submeshTransformSize = m_SubmeshTransformBuffers[frameIndex].Buffer->GetVertexSize() / sizeof(TransformVertexData);
-			for (auto& [key, transformData] : m_MeshTransformMap)
+			for (auto& [key, transformData] : *m_CurTransformMap)
 			{
 				transformData.TransformOffset = offset * sizeof(TransformVertexData);
+				auto& prevTransformData = (*m_PrevTransformMap)[key];
+
+				uint32_t transformIndex = 0;
 				for (const auto& transform : transformData.Transforms)
 				{
-					if (offset >= submeshTransformSize)
-						PF_CORE_ASSERT(false, "Need to resize submeshTransforms to small");
+					PF_CORE_ASSERT(offset <= submeshTransformSize, "Need to resize SubMeshTransforms to small");
 					m_SubmeshTransformBuffers[frameIndex].Data[offset] = transform;
 					offset++;
+
+					//prev model matrix
+
+					PF_CORE_ASSERT(offset <= submeshTransformSize, "Need to resize SubMeshTransforms to small");
+					if(prevTransformData.Transforms.size() > transformIndex)
+					m_SubmeshTransformBuffers[frameIndex].Data[offset] = prevTransformData.Transforms[transformIndex];
+					else
+						m_SubmeshTransformBuffers[frameIndex].Data[offset] = transform;
+
+					offset++;
+					transformIndex++;
 				}
 
 			}
@@ -1518,6 +1551,8 @@ namespace Proof
 		//very important because its not cleared and images are recreating for the limunance
 		// it affects the HBAO so much
 		Renderer::ClearImage(m_CommandBuffer, m_GeometryPass->GetOutput(1).As<Image2D>());
+		Renderer::ClearImage(m_CommandBuffer, m_GeometryPass->GetOutput(2).As<Image2D>()); //clear metallnessRougness
+		Renderer::ClearImage(m_CommandBuffer, m_GeometryPass->GetOutput(3).As<Image2D>()); //clear velocity
 		m_Timers.SetPasses = setPassesTimer.ElapsedMillis();
 	}
 	void WorldRenderer::CalculateCascadesManualSplit(CascadeData* cascades, const glm::vec3& lightDirection)
@@ -1791,13 +1826,13 @@ namespace Proof
 			Renderer::BeginRenderPass(m_CommandBuffer, cascadePass);
 			for (auto& [meshKey, dc] : m_MeshShadowDrawList)
 			{
-				const auto& transformData = m_MeshTransformMap.at(meshKey);
+				const auto& transformData = m_CurTransformMap->at(meshKey);
 				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 				RenderMesh(m_CommandBuffer, dc.Mesh,cascadePass,m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount, Buffer(&cascade,sizeof(uint32_t)),"u_CascadeInfo");
 			}
 			for (auto& [meshKey, dc] : m_DynamicMeshShadowDrawList)
 			{
-				const auto& transformData = m_MeshTransformMap.at(meshKey);
+				const auto& transformData = m_CurTransformMap->at(meshKey);
 				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 				RenderDynamicMesh(m_CommandBuffer, dc.Mesh, cascadePass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset,  dc.InstanceCount, Buffer(&cascade, sizeof(uint32_t)), "u_CascadeInfo");
 			}
@@ -1837,13 +1872,13 @@ namespace Proof
 
 		for (auto& [meshKey, dc] : m_MeshDrawList)
 		{
-			const auto& transformData = m_MeshTransformMap.at(meshKey);
+			const auto& transformData = m_CurTransformMap->at(meshKey);
 			uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 			RenderMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 		}
 		for (auto& [meshKey, dc] : m_DynamicMeshDrawList)
 		{
-			const auto& transformData = m_MeshTransformMap.at(meshKey);
+			const auto& transformData = m_CurTransformMap->at(meshKey);
 			uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 			RenderDynamicMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset,  dc.InstanceCount);
 		}
@@ -1942,7 +1977,7 @@ namespace Proof
 
 				for (auto& [meshKey, dc] : m_MeshDrawList)
 				{
-					const auto& transformData = m_MeshTransformMap.at(meshKey);
+					const auto& transformData = m_CurTransformMap->at(meshKey);
 					uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 					RenderMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, dc.MaterialTable, m_GeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 				}
@@ -2030,7 +2065,7 @@ namespace Proof
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, wireFramePass);
 			for (auto& [meshKey, dc] : m_ColliderDrawList)
 			{
-				const auto& transformData = m_MeshTransformMap.at(meshKey);
+				const auto& transformData = m_CurTransformMap->at(meshKey);
 				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 				RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, m_GeometryWireFramePassMaterial,
 					wireFramePass,
@@ -2039,7 +2074,7 @@ namespace Proof
 
 			for (auto& [meshKey, dc] : m_DynamicColliderDrawList)
 			{
-				const auto& transformData = m_MeshTransformMap.at(meshKey);
+				const auto& transformData = m_CurTransformMap->at(meshKey);
 				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 				RenderDynamicMeshWithMaterial(m_CommandBuffer, dc.Mesh, m_GeometryWireFramePassMaterial,
 					wireFramePass,
@@ -2812,9 +2847,13 @@ namespace Proof
 			PF_CORE_ASSERT(materialHandle,"Material ID cannot be zero");
 
 			MeshKey meshKey = { meshID, materialHandle, submeshIndex, false };
-			auto& transformStorage = m_MeshTransformMap[meshKey].Transforms.emplace_back();
+			auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
 			transformStorage.Transform = subMeshTransform;
 
+			if ((*m_PrevTransformMap).find(meshKey) == (*m_PrevTransformMap).end())
+			{
+				(*m_PrevTransformMap)[meshKey] = (*m_CurTransformMap)[meshKey];
+			}
 			// geo pass
 			{
 				auto& dc = m_MeshDrawList[meshKey];
@@ -2855,9 +2894,13 @@ namespace Proof
 		PF_CORE_ASSERT(materialHandle, "Material ID cannot be zero");
 
 		MeshKey meshKey = { meshID, materialHandle, subMeshIndex, false };
-		auto& transformStorage = m_MeshTransformMap[meshKey].Transforms.emplace_back();
+		auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
 		transformStorage.Transform = subMeshTransform;
 
+		if ((*m_PrevTransformMap).find(meshKey) == (*m_PrevTransformMap).end())
+		{
+			(*m_PrevTransformMap)[meshKey] = (*m_CurTransformMap)[meshKey];
+		}
 		// geo pass
 		{
 			auto& dc = m_DynamicMeshDrawList[meshKey];
@@ -2901,9 +2944,13 @@ namespace Proof
 			PF_CORE_ASSERT(materialHandle, "Material ID cannot be zero");
 
 			MeshKey meshKey = { meshID, materialHandle, submeshIndex, false };
-			auto& transformStorage = m_MeshTransformMap[meshKey].Transforms.emplace_back();
+			auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
 			transformStorage.Transform = subMeshTransform;
 
+			if ((*m_PrevTransformMap).find(meshKey) == (*m_PrevTransformMap).end())
+			{
+				(*m_PrevTransformMap)[meshKey] = (*m_CurTransformMap)[meshKey];
+			}
 			// geo pass
 			{
 				auto& dc = m_ColliderDrawList[meshKey];
@@ -2935,9 +2982,13 @@ namespace Proof
 		PF_CORE_ASSERT(materialHandle, "Material ID cannot be zero");
 
 		MeshKey meshKey = { meshID, materialHandle, subMeshIndex, false };
-		auto& transformStorage = m_MeshTransformMap[meshKey].Transforms.emplace_back();
+		auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
 		transformStorage.Transform = subMeshTransform;
 
+		if ((*m_PrevTransformMap).find(meshKey) == (*m_PrevTransformMap).end())
+		{
+			(*m_PrevTransformMap)[meshKey] = (*m_CurTransformMap)[meshKey];
+		}
 		// geo pass
 		{
 			auto& dc = m_DynamicColliderDrawList[meshKey];

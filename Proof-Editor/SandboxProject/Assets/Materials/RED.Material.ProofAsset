@@ -5,6 +5,7 @@ Roughness: 0
 Metallness: 1
 Emission: 0
 Tiling: [0, 0]
+NormalTextureToggle: false
 Offset: [0, 0]
 AlbedoTexture: 0
 NormalTexture: 0

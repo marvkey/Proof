@@ -9,6 +9,7 @@ layout(location = 2) in vec2 aTexCoords;
 layout(location = 3) in vec3 aTangent;
 layout(location = 4) in vec3 aBitangent;
 layout(location = 5) in mat4 aTransform;
+layout(location = 9) in mat4 aPrevTransform;
 // Transform buffer
 //layout(location = 5) in vec4 a_MRow0;
 //layout(location = 6) in vec4 a_MRow1;
@@ -27,6 +28,9 @@ struct VertexOutput
     vec3 ShadowMapCoords[4];
 
     vec3 ViewPosition;
+
+    vec4 NormalizePositionCur; // nomralize device position current
+	vec4 NormalizePositionPrev;
 };
 layout(location = 0) out VertexOutput Output;
 
@@ -68,6 +72,12 @@ void main() {
     Output.ViewPosition = vec3(u_Camera.View * vec4(Output.WorldPosition, 1.0));
     Output.CameraView = mat3(u_Camera.View);
 
+    vec4 posProjPrev = (u_Camera.PrevViewProjectionMatrix * aPrevTransform * vec4(aPosition, 1.0));
+	vec4 posProjCur = (u_Camera.ViewProjectionMatrix * aTransform * vec4(aPosition,1.0));
+	
+	Output.NormalizePositionCur = posProjCur;
+	Output.NormalizePositionPrev = posProjPrev;
+
     gl_Position =  u_Camera.Projection * u_Camera.View * vec4(Output.WorldPosition, 1.0);
 }
 
@@ -95,6 +105,7 @@ layout(location = 0) out vec4 out_FragColor;
 // on the specific rendering pipeline and shader's purpose within it.
 layout(location = 1) out vec4 out_ViewNormalsLuminance;
 layout(location = 2) out vec4 out_MetalnessRoughness; //RGBA //R= metallnes, G = Roughness
+layout(location = 3) out vec2 out_Velocity; //R16G16 float, velocity
 // pbr map
 layout(set = 0, binding = 5) uniform sampler2D u_AlbedoMap;
 layout(set = 0, binding = 6) uniform sampler2D u_NormalMap;
@@ -125,6 +136,9 @@ struct VertexOutput
     vec3 ShadowMapCoords[4];
 
     vec3 ViewPosition;
+
+    vec4 NormalizePositionCur; // nomralize device position current
+	vec4 NormalizePositionPrev;
 };
 layout(location = 0) in VertexOutput Input;
 
@@ -409,7 +423,8 @@ void main()
 
     if(u_RendererData.ShowCascades)
     {
-        switch(cascadeIndex) {
+        switch(cascadeIndex) 
+        {
 			    case 0 : 
 				    out_FragColor.rgb *= vec3(1.0f, 0.25f, 0.25f);
 				    break;
@@ -423,5 +438,19 @@ void main()
 				    out_FragColor.rgb *= vec3(1.0f, 1.0f, 0.25f);
 				    break;
 		    }
-        }
+    }
+    vec4 ndcPre = Input.NormalizePositionPrev;
+	ndcPre = ndcPre/ndcPre.w;
+
+	vec4 ndcCur = Input.NormalizePositionCur;
+	ndcCur = ndcCur/ndcCur.w;
+
+	vec2 screenPosCur = (ndcCur.xy * vec2(0.5f, 0.5f) ) +vec2(0.5);
+	vec2 screenPosPrev = (ndcPre.xy* vec2(0.5f, 0.5f)) + vec2(0.5);
+
+	out_Velocity = screenPosPrev - screenPosCur;
+
+    //out_Velocity = (Input.NormalizePositionPrev.xy / Input.NormalizePositionPrev.w) - (Input.NormalizePositionCur.xy / Input.NormalizePositionCur.w);
+
+    //out_Velocity *= vec2(0.5f, -0.5f);
 }   

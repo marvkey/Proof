@@ -5,6 +5,7 @@ Roughness: 0.5
 Metallness: 0
 Emission: 0
 Tiling: [1, 1]
+NormalTextureToggle: true
 Offset: [0, 0]
 AlbedoTexture: 16785147169373453248
 NormalTexture: 8437151876257247732

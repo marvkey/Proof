@@ -19,6 +19,8 @@ layout(set = 3, binding = 1) uniform CameraData
 	mat4 ViewProjectionMatrix;// projection * view
 	mat4 InverseViewProjectionMatrix;  //inversProjection * view
 
+	mat4 PrevViewProjectionMatrix; // project * view from last frame
+
 	vec3 Position;
 	float NearPlane;
 
@@ -29,7 +31,8 @@ layout(set = 3, binding = 1) uniform CameraData
 	vec2 NDCToViewAdd;
 	vec2 DepthUnpackConsts;
 
-	vec4 JitterData;	// Halton sequence jitter data, .xy is current frame jitter data, .zw is prev frame jitter data.
+	vec2 JitterData;// Halton sequence jitter data
+	vec2 PrevJitterData;// Halton sequence jitter data
 
 	uint JitterPeriod;        // jitter period for jitter data.
 	bool bEnableJitter;       // Is main camera enable jitter in this frame.

@@ -17,6 +17,16 @@ namespace Proof
 		AssetSelectionContext SelectionContext = AssetSelectionContext::Prefab;
 		UUID SelectionContextID = 0;
 	};
+
+	enum class ViewportEditorImage
+	{
+		FinalImage =0,
+		Normal,
+		MetalnessRoughness,
+		Velocity,
+		LightingOnly,
+		Depth
+	};
 	class ViewPortEditorWorkspace : public EditorWorkspace
 	{
 	public:
@@ -53,7 +63,7 @@ namespace Proof
 		float m_SnapValue = 0.5f;
 		float m_RotationSnapValue = 45.0f;
 		ViewPortEditorData m_ViewPortEditorData;
-
+		ViewportEditorImage m_EditorImage = ViewportEditorImage::FinalImage;
 		// icons
 		bool m_ShowComponentsIcon = true;
 		float m_IconSize = 1;

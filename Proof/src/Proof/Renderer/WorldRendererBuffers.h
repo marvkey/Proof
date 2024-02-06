@@ -80,6 +80,8 @@ namespace Proof
 		glm::mat4 ViewProjection;// projection * view
 		glm::mat4 InverseViewProjection;
 
+		glm::mat4 PrevViewProjection;
+
 		glm::vec3 Position;
 		float NearPlane;
 
@@ -91,7 +93,8 @@ namespace Proof
 		glm::vec2 DepthUnpackConsts;
 
 		// Halton sequence jitter data, .xy is current frame jitter data, .zw is prev frame jitter data.
-		glm::vec4 JitterData;
+		glm::vec2 JitterData;
+		glm::vec2 PrevJitterData;
 
 		uint32_t JitterPeriod;        // jitter period for jitter data.
 		int bEnableJitter;       // Is main camera enable jitter in this frame.
@@ -179,6 +182,6 @@ namespace Proof
 	struct alignas(16) UBFrameData
 	{
 		uint32_t FrameCount;
-		float AppTime;
+		float AppTimeSeconds;
 	};
 }

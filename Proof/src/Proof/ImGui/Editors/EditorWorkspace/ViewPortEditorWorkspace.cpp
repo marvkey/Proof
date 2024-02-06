@@ -5,6 +5,7 @@
 #include "Proof/Scene/Entity.h"
 #include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Renderer/Renderer2D.h"
+#include "Proof/Renderer/RenderPass.h"
 #include "Proof/ImGui/Editors/EditorResources.h"
 #include "Proof/Math/Ray.h"
 #include "Proof/Math/BasicCollision.h"
@@ -225,7 +226,32 @@ namespace Proof
 
 		m_ViewPortSize = { ImGui::GetContentRegionAvail().x,ImGui::GetContentRegionAvail().y };
 		
-		UI::Image(m_WorldRenderer->GetFinalPassImage(), ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+		Count<Image> currentImage;
+		switch (m_EditorImage)
+		{
+			case Proof::ViewportEditorImage::FinalImage:
+				currentImage = m_WorldRenderer->GetFinalPassImage();
+				break;
+			case Proof::ViewportEditorImage::Normal:
+				currentImage = m_WorldRenderer->m_GeometryPass->GetOutput(1);
+				break;
+			case Proof::ViewportEditorImage::MetalnessRoughness:
+				currentImage = m_WorldRenderer->m_GeometryPass->GetOutput(2);
+				break;
+			case Proof::ViewportEditorImage::Velocity:
+				currentImage = m_WorldRenderer->m_GeometryPass->GetOutput(3);
+				break;
+			case Proof::ViewportEditorImage::LightingOnly:
+				currentImage = m_WorldRenderer->m_GeometryPass->GetOutput(0);
+				break;
+			case Proof::ViewportEditorImage::Depth:
+				currentImage = m_WorldRenderer->m_PreDepthPass->GetOutput(0);
+				break;
+			default:
+				break;
+		}
+		PF_CORE_ASSERT(currentImage);
+		UI::Image(currentImage, ImVec2{ m_ViewPortSize.x,m_ViewPortSize.y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 
 		DrawGizmos();
 		if (m_ViewPortEditorData.HandleOnImGuiDrop)
@@ -250,7 +276,7 @@ namespace Proof
 				{
 					UI::BeginPropertyGrid();
 					
-
+					UI::EnumCombo("ViewImage", m_EditorImage);
 					UI::AttributeBool("LightGrid", m_WorldRenderer->DebugOptions.LightDebugOptions.ShowLightGrid,
 						"Shows How much point and spot light is affecting a certain area");
 
