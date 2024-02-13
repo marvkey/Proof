@@ -17,11 +17,11 @@ void main()
     u_IntersectCommand.args.x = (rayCount + 63) / 64;
     u_IntersectCommand.args.y = 1;
     u_IntersectCommand.args.z = 1;
-
     // Prepare denoise args.
     uint tileCount = s_RayCounter.DenoiseTileCount; // 8x8 tile count.
     
-    u_IntersectCommand.args.x = tileCount;
-    u_IntersectCommand.args.y = 1;
-    u_IntersectCommand.args.z = 1;
+    u_DenoiseCommand.args.x = tileCount;
+    u_DenoiseCommand.args.y = 1;
+    u_DenoiseCommand.args.z = 1;
+
 }

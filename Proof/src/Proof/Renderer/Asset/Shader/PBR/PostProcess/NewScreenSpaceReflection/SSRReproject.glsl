@@ -14,13 +14,39 @@ layout (set = 0, binding = 2)  uniform texture2D u_PrevSSSRRadianceMap;
 layout (set = 0, binding = 3)  uniform texture2D u_PrevNormalMap;
 layout (set = 0, binding = 4)  uniform texture2D u_SSSRVarianceHistory;
 layout (set = 0, binding = 5) uniform texture2D u_SSSRExtractRoughness;
-layout (set = 0, binding = 6) uniform sampler u_LinearClampBorder1111Sampler;
-layout (set = 0, binding = 7) uniform sampler u_LinearClampBorder0000Sampler;
 layout (set = 0, binding = 8) uniform texture2D u_PrevSampleCount; // ssr prevframe sample count. for reproject and temporal pass.
-layout (set = 0, binding = 9, rgba16f) uniform image2D u_SSSRReprojectedRadiance; // ssr reproject output radiance.
-layout (set = 0, binding = 10, rgba16f) uniform image2D u_SSSRAverageRadiance; // ssr reproject output radiance.
-layout (set = 0, binding = 1, r16f) uniform image2D u_SSRVariance;
-layout (set = 0, binding = 12, r16f) uniform image2D u_SSRSampleCount;
+layout (set = 0, binding = 9, rgba16f) uniform image2D o_SSSRReprojectedRadiance; // ssr reproject output radiance.
+layout (set = 0, binding = 10, r11f_g11f_b10f) uniform image2D o_SSSRAverageRadiance; 
+layout (set = 0, binding = 11, r16f) uniform image2D o_SSRVariance;
+layout (set = 0, binding = 12, r16f) uniform image2D o_SSRSampleCount;
+layout (set = 0, binding = 13) uniform texture2D u_SSSRPrevExtractRoughness;
+layout (set = 0, binding = 14) uniform texture2D u_VelocityMap; 
+
+
+// Vulkan linearize z.
+// NOTE: viewspace z range is [-zFar, -zNear], linear z is viewspace z mul -1 result on vulkan.
+// if no exist reverse z:
+//       linearZ = zNear * zFar / (zFar +  deviceZ * (zNear - zFar));
+//  when reverse z enable, then the function is:
+//       linearZ = zNear * zFar / (zNear + deviceZ * (zFar - zNear));
+float LinearizeDepth(float z, float n, float f)
+{
+    return n * f / (z * (f - n) + n);
+}
+
+float LinearizeDepth(float z)
+{
+    const float n = u_Camera.NearPlane;
+    const float f = u_Camera.FarPlane;
+    return LinearizeDepth(z, n, f);
+}
+
+float LinearizeDepthPrev(float z)
+{
+    const float n = u_Camera.NearPlane;
+    const float f = u_Camera.FarPlane;
+    return LinearizeDepth(z, n, f);
+}
 
 vec3 LoadRadiance(ivec2 coords)
 {
@@ -74,22 +100,22 @@ float SampleNumSamplesHistory(vec2 uv)
 
 void StoreRadianceReprojected(ivec2 coord, vec3 value) 
 { 
-    imageStore(u_SSSRReprojectedRadiance, coord, vec4(value, 1.0));
+    imageStore(o_SSSRReprojectedRadiance, coord, vec4(value, 1.0));
 }
 
 void StoreAverageRadiance(ivec2 coord, vec3 value) 
 { 
-    imageStore(u_SSSRAverageRadiance, coord, vec4(value, 1.0));
+    imageStore(o_SSSRAverageRadiance, coord, vec4(value, 1.0));
 }
 
 void StoreVariance(ivec2 coord, float value) 
 { 
-    imageStore(u_SSRVariance, coord, vec4(value, 0.0, 0.0, 0.0));
+    imageStore(o_SSRVariance, coord, vec4(value, 0.0, 0.0, 0.0));
 }
 
 void StoreNumSamples(ivec2 coord, float value) 
 { 
-    imageStore(u_SSRSampleCount, coord, vec4(value, 0.0, 0.0, 0.0));
+    imageStore(o_SSRSampleCount, coord, vec4(value, 0.0, 0.0, 0.0));
 }
 
 // 16x16 tile in 8x8 group.
@@ -164,24 +190,14 @@ float GetDisocclusionFactor(vec3 normal, vec3 historyNormal, float linearDepth, 
         exp(-abs(1.0 - max(0.0, dot(normal, historyNormal))) * kDisocclusionNormalWeight) *
         exp(-abs(historyLinearDepth - linearDepth) / linearDepth * kDisocclusionDepthWeight);
 }
-vec3 InvProjectPosition(vec3 coord, mat4 mat)
-{
-    coord.y = 1.0 - coord.y;
-    coord.xy = 2.0 * coord.xy - 1.0;
-    vec4 projected = mat * vec4(coord, 1.0);
-    projected.xyz /= projected.w;
-    return projected.xyz;
-}
+
 
 float GetLinearDepth(vec2 uv, float depth)
 {
     vec3 viewSpacePos = InvProjectPosition(vec3(uv, depth), u_Camera.InverseProjection);
     return abs(viewSpacePos.z);
 }
-vec3 ScreenSpaceToViewSpace(vec3 screenUVCoord)
-{
-    return InvProjectPosition(screenUVCoord,u_Camera.InverseProjection);
-}
+
 vec2 GetHitPositionReprojection(ivec2 dispatchThreadId, vec2 uv, float reflectedRayLength) 
 {
     float z = LoadDepth(dispatchThreadId);
@@ -204,7 +220,7 @@ vec2 GetHitPositionReprojection(ivec2 dispatchThreadId, vec2 uv, float reflected
     vec3 worldHitPosition = (u_Camera.InverseView * vec4(viewSpaceRay, 1.0)).xyz; 
     
     // Project to prev frame position.
-    vec3 prevHitPosition = projectPos(worldHitPosition, frameData.camViewProjPrev);
+    vec3 prevHitPosition =  ProjectPosition(worldHitPosition, u_Camera.PrevViewProjectionMatrix);
 
     return prevHitPosition.xy;
 }
@@ -263,12 +279,12 @@ void PickReprojection(
     Moments localNeighborhood = EstimateLocalNeighborhoodInGroup(groupThreadId);
     vec2 uv = vec2(dispatchThreadId.x + 0.5, dispatchThreadId.y + 0.5) / screenSize;
 
-    vec3 normal = texelFetch(inGbufferB, dispatchThreadId, 0).rgb;
+    vec3 normal = texelFetch(u_NormalMap, dispatchThreadId, 0).rgb;
 
     vec3 historyNormal;
     float historyLinearDepth;
     {
-        const vec2 motionVector = texelFetch(inGbufferV, dispatchThreadId, 0).rg; 
+        const vec2 motionVector = texelFetch(u_VelocityMap, dispatchThreadId, 0).rg; 
 
         // Then get surface prev-frame uv.
         const vec2 surfaceReprojectionUV = GetSurfaceReprojection(uv, motionVector);
@@ -277,20 +293,20 @@ void PickReprojection(
         const vec2 hitReprojectionUV = GetHitPositionReprojection(dispatchThreadId, uv, rayLength);
 
         // linear sample surface normal and hit normal. from prev-frame.
-        const vec3 surfaceNormal = sampleWorldSpaceNormalHistory(surfaceReprojectionUV);
-        const vec3 hitNormal = sampleWorldSpaceNormalHistory(hitReprojectionUV);
+        const vec3 surfaceNormal = SampleWorldSpaceNormalHistory(surfaceReprojectionUV);
+        const vec3 hitNormal = SampleWorldSpaceNormalHistory(hitReprojectionUV);
 
         // linear sample radiance from prev-frame.
-        const vec3 surfaceHistory = sampleRadianceHistory(surfaceReprojectionUV);
-        const vec3 hitHistory = sampleRadianceHistory(hitReprojectionUV);
+        const vec3 surfaceHistory = SampleRadianceHistory(surfaceReprojectionUV);
+        const vec3 hitHistory = SampleRadianceHistory(hitReprojectionUV);
 
         // Compute normal similarity.
         const float surfaceNormalSimilarity = dot(normalize(vec3(surfaceNormal)), normalize(vec3(normal)));
         const float hitNormalSimilarity = dot(normalize(vec3(hitNormal)), normalize(vec3(normal)));
         
         // linear sample roughness from prev-frame.
-        const float surfaceRoughness = float(texture(sampler2D(inPrevSSRExtractRoughness, linearClampBorder0000Sampler), surfaceReprojectionUV).r);
-        const float hitRoughness = float(texture(sampler2D(inPrevSSRExtractRoughness, linearClampBorder0000Sampler), hitReprojectionUV).r);
+        const float surfaceRoughness = float(texture(sampler2D(u_SSSRPrevExtractRoughness, u_LinearClampBorder0000Sampler), surfaceReprojectionUV).r);
+        const float hitRoughness = float(texture(sampler2D(u_SSSRPrevExtractRoughness, u_LinearClampBorder0000Sampler), hitReprojectionUV).r);
         
         // Choose reprojection uv based on similarity to the local neighborhood.
         if (hitNormalSimilarity > kReprojectionNormalSimilarityThreshold  // Candidate for mirror reflection parallax
@@ -301,7 +317,7 @@ void PickReprojection(
             historyNormal = hitNormal;
 
             float hitHistoryDepth = SampleDepthHistory(hitReprojectionUV);
-            float hitHistoryLinearDepth = LinearizeDepthPrev(surfaceReprojectionUV,hitHistoryDepth);
+            float hitHistoryLinearDepth = LinearizeDepthPrev(hitHistoryDepth);
 
             historyLinearDepth = hitHistoryLinearDepth;
             reprojectionUV = hitReprojectionUV;
@@ -316,7 +332,7 @@ void PickReprojection(
                 historyNormal = surfaceNormal;
 
                 float surfaceHistoryDepth = SampleDepthHistory(surfaceReprojectionUV);
-                float surfaceHistoryLinearDepth = GetLinearDepth(, frameData);
+                float surfaceHistoryLinearDepth = LinearizeDepthPrev(surfaceHistoryDepth);
 
                 historyLinearDepth = surfaceHistoryLinearDepth;
                 reprojectionUV = surfaceReprojectionUV;
@@ -331,7 +347,7 @@ void PickReprojection(
     }
 
     float depth = LoadDepth(dispatchThreadId);
-    float linearDepth = GetLinearDepth(uv, depth);
+    float linearDepth = LinearizeDepthPrev(depth);
 
     // Determine disocclusion factor based on history
     disocclusionFactor = GetDisocclusionFactor(normal, historyNormal, linearDepth, historyLinearDepth);
@@ -357,9 +373,9 @@ void PickReprojection(
                 vec3 historyNormal = SampleWorldSpaceNormalHistory(uv);
                 float historyDepth = SampleDepthHistory(uv);
 
-                float historyLinearDepth = linearizeDepthPrev(historyDepth, frameData);
+                float historyLinearDepth = LinearizeDepthPrev(historyDepth);
 
-                float weight = getDisocclusionFactor(normal, historyNormal, linearDepth, historyLinearDepth);
+                float weight = GetDisocclusionFactor(normal, historyNormal, linearDepth, historyLinearDepth);
                 if (weight > disocclusionFactor) 
                 {
                     disocclusionFactor = weight;
@@ -392,10 +408,10 @@ void PickReprojection(
         vec3 normal01 = LoadWorldSpaceNormalHistory(reprojectTexelCoords + ivec2(0, 1));
         vec3 normal11 = LoadWorldSpaceNormalHistory(reprojectTexelCoords + ivec2(1, 1));
 
-        float depth00 = GetLinearDepth(reprojectionUV,LoadDepthHistory(reprojectTexelCoords + ivec2(0, 0));
-        float depth10 = GetLinearDepth(reprojectionUV,LoadDepthHistory(reprojectTexelCoords + ivec2(1, 0));
-        float depth01 = GetLinearDepth(reprojectionUV,LoadDepthHistory(reprojectTexelCoords + ivec2(0, 1));
-        float depth11 = GetLinearDepth(reprojectionUV,LoadDepthHistory(reprojectTexelCoords + ivec2(1, 1));
+        float depth00 = LinearizeDepthPrev(LoadDepthHistory(reprojectTexelCoords + ivec2(0, 0)));
+        float depth10 = LinearizeDepthPrev(LoadDepthHistory(reprojectTexelCoords + ivec2(1, 0)));
+        float depth01 = LinearizeDepthPrev(LoadDepthHistory(reprojectTexelCoords + ivec2(0, 1)));
+        float depth11 = LinearizeDepthPrev(LoadDepthHistory(reprojectTexelCoords + ivec2(1, 1)));
 
         vec4 w = vec4(1.0);
 
@@ -454,7 +470,7 @@ void Reproject(ivec2 dispatchThreadId, ivec2 groupThreadId, uvec2 screenSize, fl
         vec2 reprojectionUV;
         vec3 reprojection;
 
-        pickReprojection(
+        PickReprojection(
             /* in  */ dispatchThreadId,
             /* in  */ groupThreadId,
             /* in  */ screenSize,
@@ -474,7 +490,7 @@ void Reproject(ivec2 dispatchThreadId, ivec2 groupThreadId, uvec2 screenSize, fl
             float sMaxSamples = max(8.0, float(maxSamples) * (1.0 - exp(-roughness * 100.0)));
             numSamples = min(sMaxSamples, numSamples + 1);
 
-            float newVariance  = computeTemporalVariance(radiance.xyz, reprojection.xyz);
+            float newVariance  = ComputeTemporalVariance(radiance.xyz, reprojection.xyz);
             if (disocclusionFactor < kDisocclusionThreshold) 
             {
                 StoreRadianceReprojected(dispatchThreadId, vec3(0.0));
@@ -557,6 +573,7 @@ void Reproject(ivec2 dispatchThreadId, ivec2 groupThreadId, uvec2 screenSize, fl
 layout (local_size_x = 8, local_size_y = 8) in;
 void main()
 {
+/*
     uint packedCoords = s_DenoiseTileList.Data[int(gl_WorkGroupID)];
 
     ivec2 dispatchThreadId = ivec2(packedCoords & 0xffffu, (packedCoords >> 16) & 0xffffu) + ivec2(gl_LocalInvocationID.xy);
@@ -567,4 +584,5 @@ void main()
 
     uvec2 screenSize = textureSize(u_DepthMap, 0);
     Reproject(ivec2(remappedDispatchThreadId), ivec2(remappedGroupThreadId), screenSize, kTemporalStableReprojectFactor, kTemporalPeriod);
+    */
 }

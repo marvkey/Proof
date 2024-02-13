@@ -48,7 +48,7 @@ namespace Proof{
 		uniformBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		uniformBufferInfo.pNext = nullptr;
 		uniformBufferInfo.size = m_Size;
-		uniformBufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+		uniformBufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT ;
 
 		allocator.AllocateBuffer(uniformBufferInfo, Utils::ProofVulkanMemmoryUsageToVMAMemoryUsage(m_MemoryUsage), m_UniformBuffer);
 	}
@@ -145,7 +145,7 @@ namespace Proof{
 			{
 				instance->RT_Build();
 				instance->RT_SetData(instance->m_LocalBuffer);
-				//instance->m_LocalBuffer.Release();
+				instance->m_LocalBuffer.Release();
 			});
 
 	}
@@ -156,6 +156,12 @@ namespace Proof{
 		Renderer::Submit([instance]
 		{
 			instance->RT_Build();
+			//TODO should we always fill with 0
+			//VulkanAllocator allocator("VulkanStorageBufferSetData");
+			//uint8_t* pData = allocator.MapMemory<uint8_t>(instance->m_StorageBuffer.Allocation);
+			//memset(pData, 0, static_cast<size_t>(instance->GetSize()));
+			//allocator.UnmapMemory(instance->m_StorageBuffer.Allocation);
+
 		});
 	}
 	void VulkanStorageBuffer::RT_Build()
@@ -166,7 +172,7 @@ namespace Proof{
 		storageBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		storageBufferInfo.pNext = nullptr;
 		storageBufferInfo.size = m_Size;
-		storageBufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+		storageBufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
 		allocator.AllocateBuffer(storageBufferInfo, Utils::ProofVulkanMemmoryUsageToVMAMemoryUsage(m_MemoryUsage), m_StorageBuffer);
 	}
@@ -208,6 +214,15 @@ namespace Proof{
 		Build();
 		SetData(data);
 	}
+	Buffer VulkanStorageBuffer::GetDataRaw()
+	{
+		Buffer buffer(m_Size);
+		void* vertexData;
+		vmaMapMemory(VulkanAllocator::GetVmaAllocator(), m_StorageBuffer.Allocation, &vertexData);
+		std::memcpy(buffer.Get(), vertexData, m_Size); // so we can use delte
+		vmaUnmapMemory(VulkanAllocator::GetVmaAllocator(), m_StorageBuffer.Allocation);
+		return buffer;
+	}
 	void VulkanStorageBuffer::SetData(Buffer data, uint64_t offset)
 	{
 		if (m_LocalBuffer.GetSize() != m_Size)
@@ -221,7 +236,7 @@ namespace Proof{
 		Renderer::Submit([instance, offset]() mutable
 		{
 			instance->RT_SetData(instance->m_LocalBuffer, offset);
-			//instance->m_LocalBuffer.Release();
+			instance->m_LocalBuffer.Release();
 		});
 
 	}

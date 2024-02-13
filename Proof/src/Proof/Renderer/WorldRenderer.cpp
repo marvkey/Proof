@@ -120,7 +120,10 @@ namespace Proof
 
 		}
 	}
-
+	template<typename T> inline T DivideRoundingUp(T a, T b)
+	{
+		return (a + b - (T)1) / b;
+	}
 	static inline uint32_t GetGroupCount(uint32_t threadCount, uint32_t localSize)
 	{
 		return (threadCount + localSize - 1) / localSize;
@@ -202,6 +205,7 @@ namespace Proof
 		
 		m_GlobalInputs = Count<GlobalBufferSet>::Create();
 
+		m_UBFrameBuffer = UniformBufferSet::Create(sizeof(UBFrameData));
 		m_UBScreenBuffer = UniformBufferSet::Create(sizeof(UBScreenData));
 		m_UBRenderDataBuffer = UniformBufferSet::Create(sizeof(UBRenderData));
 		m_UBSceneDataBuffer = UniformBufferSet::Create(sizeof(UBSceneData));
@@ -248,6 +252,7 @@ namespace Proof
 		{
 			m_GlobalInputs->SetData("CameraData", m_UBCameraBuffer);
 			m_GlobalInputs->SetData("ScreenData", m_UBScreenBuffer);
+			m_GlobalInputs->SetData("FrameData", m_UBFrameBuffer);
 
 			m_GlobalInputs->SetData("u_PointClampEdgeSampler", SamplerFactory::GetPointClampEdge());
 			m_GlobalInputs->SetData("u_PointClampBorder0000Sampler", SamplerFactory::GetPointClampBorder0000());
@@ -769,18 +774,21 @@ namespace Proof
 
 				// NEW SSR
 				{
-
+					
 					m_NewSSR.GlobalBuffer = Count<GlobalBufferSet>::Create();
 					auto ssrGlobalBuffer = m_NewSSR.GlobalBuffer;
 					ssrGlobalBuffer->SetData("SobolBuffer", Renderer::GetSPP1().SBSobolBuffer);
 					ssrGlobalBuffer->SetData("RankingTileBuffer", Renderer::GetSPP1().SBRankingTileBuffer);
 					ssrGlobalBuffer->SetData("ScramblingTileBuffer", Renderer::GetSPP1().SBScramblingTileBuffer);
+					ssrGlobalBuffer->SetData("ScramblingTileBuffer", Renderer::GetSPP1().SBScramblingTileBuffer);
+					ssrGlobalBuffer->SetData("u_SobolTextureBuffer", Renderer::GetSPP1().SobolTexture);
+					ssrGlobalBuffer->SetData("u_ScramblingTileTextureBuffer", Renderer::GetSPP1().ScramblingTexture);
 					//buffer
 					{
 						//https://github.com/qiutang98/flower/blob/main/source/engine/renderer/pass/sssr_pass.cpp
 						//line 330
 
-						const uint32_t maxRayCount = m_PreDepthPass->GetTargetFrameBuffer()->GetWidth() * m_PreDepthPass->GetTargetFrameBuffer()->GetHeight(); // Max case is one pixel one ray.
+						const uint32_t maxRayCount = m_UBScreenData.FullResolution.x * m_UBScreenData.FullResolution.y; // Max case is one pixel one ray.
 						const uint32_t maxDenoiseListCount = maxRayCount / (8 * 8) + 1; // Tile run in 8x8.
 
 						m_NewSSR.SBRayCounter = StorageBufferSet::Create(sizeof(NewSSR::RayCounterData));
@@ -788,19 +796,39 @@ namespace Proof
 						m_NewSSR.SBDenoiseList = StorageBufferSet::Create(maxDenoiseListCount * sizeof(uint32_t));
 						m_NewSSR.SBIntersectCommand = StorageBufferSet::Create(sizeof(NewSSR::GPUDispatchIndirectCommand));
 						m_NewSSR.SBDenoiseCommand = StorageBufferSet::Create(sizeof(NewSSR::GPUDispatchIndirectCommand));
+						m_NewSSR.SBGlobalAtomic = StorageBufferSet::Create(sizeof(uint32_t));
 
 						ssrGlobalBuffer->SetData("SSSRRayCounterSSBO", m_NewSSR.SBRayCounter);
 						ssrGlobalBuffer->SetData("SSSRRayListSSBO", m_NewSSR.SBRayList);
 						ssrGlobalBuffer->SetData("SSSRDenoiseTileListSSBO", m_NewSSR.SBDenoiseList);
 						ssrGlobalBuffer->SetData("SSSRIntersectCmdSSBO", m_NewSSR.SBIntersectCommand);
 						ssrGlobalBuffer->SetData("SSSRDenoiseCmdSSBO", m_NewSSR.SBDenoiseCommand);
+						ssrGlobalBuffer->SetData("SSSRSPDGlobalAtomic", m_NewSSR.SBGlobalAtomic);
 
 
 					}
 					//textures
 					{
+						//https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/main/sdk/src/components/sssr/ffx_sssr.cpp
+						//line 270
+
 						ssrGlobalBuffer->SetData("u_DepthMap", m_PreDepthPass->GetOutput(0));
 						ssrGlobalBuffer->SetData("u_NormalMap", m_GeometryPass->GetOutput(1));
+						//HierarchalDepthDownSampler
+						{
+							TextureConfiguration imageConfig;
+							imageConfig.DebugName = "SSSRHierarchalDepthDownSampler";
+							imageConfig.Format = ImageFormat::R32F;
+							imageConfig.Width = 100;
+							imageConfig.Height = 100;
+							imageConfig.GenerateMips = true;
+							imageConfig.Wrap = TextureWrap::ClampEdge;
+							imageConfig.Filter = TextureFilter::Nearest;
+							imageConfig.Storage = true;
+							m_NewSSR.HierarchalDepthDownSamplerTexture = Texture2D::Create(imageConfig);
+							ssrGlobalBuffer->SetData("u_HZBMap", m_NewSSR.HierarchalDepthDownSamplerTexture);
+
+						}
 						//radiance
 						{
 							ImageConfiguration imageConfig;
@@ -827,6 +855,79 @@ namespace Proof
 							//imageConfig.DebugName = "SSSRPreviousExtractRoughness";
 							m_NewSSR.PreviousExtractRoughness = Image2D::Create(imageConfig);
 						}
+
+						//blue noise
+						{
+
+							ImageConfiguration imageConfig;
+							imageConfig.DebugName = "SSSR BlueNoise";
+							imageConfig.Format = ImageFormat::RG;
+							imageConfig.Width = 128;
+							imageConfig.Height = 128;
+							imageConfig.Usage = ImageUsage::Storage;
+							m_NewSSR.BlueNoiseImage = Image2D::Create(imageConfig);
+							ssrGlobalBuffer->SetData("u_BlueNoiseTexture", m_NewSSR.BlueNoiseImage);
+
+						}
+
+						///sample count
+						{
+							ImageConfiguration imageConfig;
+							imageConfig.DebugName = "SSSR SampleCount";
+							imageConfig.Format = ImageFormat::R16F;
+							imageConfig.Width = 1;
+							imageConfig.Height = 1;
+							imageConfig.Usage = ImageUsage::Storage;
+							m_NewSSR.SampleCount = Image2D::Create(imageConfig);
+							m_NewSSR.PreviousSampleCount = Image2D::Create(imageConfig);
+						}
+						//reproject image
+						{
+							ImageConfiguration imageConfig;
+							imageConfig.DebugName = "SSSR Reproject";
+							imageConfig.Format = ImageFormat::RGBA16F;
+							imageConfig.Width = 1;
+							imageConfig.Height = 1;
+							imageConfig.Usage = ImageUsage::Storage;
+							m_NewSSR.ReprojectImage = Image2D::Create(imageConfig);
+							m_NewSSR.PreviousReprojectImage = Image2D::Create(imageConfig);
+						}
+						//average radiance
+						{
+							ImageConfiguration imageConfig;
+							imageConfig.DebugName = "SSSR AverageRadiance";
+							imageConfig.Format = ImageFormat::B10G11R11_UF_PACK32;
+							imageConfig.Width = 1;
+							imageConfig.Height = 1;
+							imageConfig.Usage = ImageUsage::Storage;
+							m_NewSSR.AverageRadiance = Image2D::Create(imageConfig);
+						}
+					}
+					////hzb
+					//{
+					//
+					//	TextureConfiguration config;
+					//	config.DebugName = "SSSRHZB";
+					//	config.Format = ImageFormat::R32F;
+					//	config.Width = 1;
+					//	config.Height = 1;
+					//	config.Wrap = TextureWrap::ClampEdge;
+					//	config.Filter = TextureFilter::Nearest;
+					//	config.GenerateMips = true;
+					//	config.Storage = true;
+					//
+					//	m_NewSSR.HZBTexture = Texture2D::Create(config);
+					//}
+					// 
+
+					//HierarchalDepthDownSampler
+					{
+						ComputePipelineConfig pipelineConfig;
+						pipelineConfig.DebugName = "SSSRHZB";
+						pipelineConfig.Shader = Renderer::GetShader("SSSRHZB");
+						m_NewSSR.HierarchalDepthDownSamplerPass = ComputePass::Create(ComputePassConfiguration{ "SSSRHZB",ComputePipeline::Create(pipelineConfig) });
+						m_NewSSR.HierarchalDepthDownSamplerPass->AddGlobalInput(m_GlobalInputs);
+						m_NewSSR.HierarchalDepthDownSamplerPass->AddGlobalInput(ssrGlobalBuffer);
 					}
 					//tile classification
 					{
@@ -846,6 +947,16 @@ namespace Proof
 						m_NewSSR.TileClassification = ComputePass::Create(ComputePassConfiguration{ "SSSRTileClassification",ComputePipeline::Create(pipelineConfig) });
 						m_NewSSR.TileClassification->AddGlobalInput(m_GlobalInputs);
 						m_NewSSR.TileClassification->AddGlobalInput(ssrGlobalBuffer);
+
+					}
+					// blue noise texture 
+					{
+						ComputePipelineConfig pipelineConfig;
+						pipelineConfig.DebugName = "SSSRBlueNoiseTextureGeneration";
+						pipelineConfig.Shader = Renderer::GetShader("SSSRBlueNoiseTextureGeneration");
+						m_NewSSR.BlueNoisePass = ComputePass::Create(ComputePassConfiguration{ "SSSRBlueNoiseTextureGeneration",ComputePipeline::Create(pipelineConfig) });
+						m_NewSSR.BlueNoisePass->AddGlobalInput(m_GlobalInputs);
+						m_NewSSR.BlueNoisePass->AddGlobalInput(ssrGlobalBuffer);
 					}
 					//intersect args 
 					{
@@ -855,6 +966,25 @@ namespace Proof
 						m_NewSSR.IntersectArgs = ComputePass::Create(ComputePassConfiguration{ "SSSRIntersectArgs",ComputePipeline::Create(pipelineConfig) });
 						m_NewSSR.IntersectArgs->AddGlobalInput(m_GlobalInputs);
 						m_NewSSR.IntersectArgs->AddGlobalInput(ssrGlobalBuffer);
+					}
+					//interserct
+					{
+
+						ComputePipelineConfig pipelineConfig;
+						pipelineConfig.DebugName = "SSSRIntersect";
+						pipelineConfig.Shader = Renderer::GetShader("SSSRIntersect");
+						m_NewSSR.Intersect = ComputePass::Create(ComputePassConfiguration{ "SSSRIntersect",ComputePipeline::Create(pipelineConfig) });
+						m_NewSSR.Intersect->AddGlobalInput(m_GlobalInputs);
+						m_NewSSR.Intersect->AddGlobalInput(ssrGlobalBuffer);
+					}
+					//reproject
+					{
+						ComputePipelineConfig pipelineConfig;
+						pipelineConfig.DebugName = "SSRReproject";
+						pipelineConfig.Shader = Renderer::GetShader("SSRReproject");
+						m_NewSSR.Reproject = ComputePass::Create(ComputePassConfiguration{ "SSRReproject",ComputePipeline::Create(pipelineConfig) });
+						m_NewSSR.Reproject->AddGlobalInput(m_GlobalInputs);
+						m_NewSSR.Reproject->AddGlobalInput(ssrGlobalBuffer);
 					}
 				}
 				//HZB
@@ -1119,6 +1249,24 @@ namespace Proof
 		m_ActiveWorld = world;
 
 	}
+	static inline uint32_t GetJitterPhaseCount(uint32_t renderWidth, uint32_t displayWidth)
+	{
+		const float basePhaseCount = 8.0f;
+		const uint32_t jitterPhaseCount = uint32_t(basePhaseCount * pow((float(displayWidth) / renderWidth), 2.0f));
+		return jitterPhaseCount;
+	}
+	// halton sequence compute.
+	static inline float Halton(uint64_t index, uint64_t base)
+	{
+		float f = 1; float r = 0;
+		while (index > 0)
+		{
+			f = f / static_cast<float>(base);
+			r = r + f * (index % base);
+			index = index / base;
+		}
+		return r;
+	}
 	void WorldRenderer::BeginScene(const WorldRendererCamera& camera, const glm::vec3& location)
 	{
 		PF_PROFILE_FUNC();
@@ -1220,14 +1368,14 @@ namespace Proof
 
 			//new ssr
 			{
-				const uint32_t maxRayCount = m_PreDepthPass->GetTargetFrameBuffer()->GetWidth() * m_PreDepthPass->GetTargetFrameBuffer()->GetHeight(); // Max case is one pixel one ray.
+				const uint32_t maxRayCount = viewportSize.x * viewportSize.y; // Max case is one pixel one ray.
 				const uint32_t maxDenoiseListCount = maxRayCount / (8 * 8) + 1; // Tile run in 8x8.
 
 
 				for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
 				{
 					m_NewSSR.SBRayList->Resize(i,maxRayCount * sizeof(uint32_t));
-					m_NewSSR.SBDenoiseList->Resize(i,maxDenoiseListCount * sizeof(uint32_t));
+					m_NewSSR.SBDenoiseList->Resize(i, maxDenoiseListCount * sizeof(uint32_t));
 				}
 				m_NewSSR.Variance->Resize(viewportSize.x, viewportSize.y);
 				m_NewSSR.PreviousVariance->Resize(viewportSize.x, viewportSize.y);
@@ -1238,6 +1386,35 @@ namespace Proof
 
 				m_NewSSR.ExtractRoughness->Resize(viewportSize.x, viewportSize.y);
 				m_NewSSR.PreviousExtractRoughness->Resize(viewportSize.x, viewportSize.y);
+
+				m_NewSSR.SampleCount->Resize(viewportSize.x, viewportSize.y);
+				m_NewSSR.PreviousSampleCount->Resize(viewportSize.x, viewportSize.y);
+
+				m_NewSSR.ReprojectImage->Resize(viewportSize.x, viewportSize.y);
+				m_NewSSR.PreviousReprojectImage->Resize(viewportSize.x, viewportSize.y);
+
+				m_NewSSR.AverageRadiance->Resize(DivideRoundingUp(viewportSize.x,8u), DivideRoundingUp(viewportSize.y, 8u));
+
+				m_NewSSR.HierarchalDepthDownSamplerTexture->Resize(viewportSize.x, viewportSize.y);
+
+				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.Variance);
+				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.PreviousVariance);
+
+				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.Radiance);
+				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.PreviousRadiance);
+					
+				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.ExtractRoughness);
+				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.PreviousExtractRoughness);
+
+				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.SampleCount);
+				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.PreviousSampleCount);
+
+				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.ReprojectImage);
+				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.PreviousReprojectImage);
+
+				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.AverageRadiance);
+
+				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.HierarchalDepthDownSamplerTexture->GetImage());
 			}
 
 			//HBAO
@@ -1311,9 +1488,36 @@ namespace Proof
 		}
 
 		// set buffers
-
+		//frameBuffer
+		{
+			m_UBFrameData.FrameCount = FrameTime::GetFrameCount();
+			m_UBFrameData.AppTimeSeconds = FrameTime::GetTime();
+			m_UBFrameBuffer->SetData(frameIndex, Buffer(&m_UBFrameData, sizeof(m_UBFrameData)));
+		}
 		// camera buffer
 		{
+			m_UBCameraData.PrevJitterData = m_UBCameraData.JitterData;
+			const bool bEnableCameraJitter = true;
+			if (bEnableCameraJitter)
+			{
+				m_UBCameraData.JitterPeriod = GetJitterPhaseCount(m_UBScreenData.FullResolution.x, m_UBScreenData.FullResolution.x);
+
+				// halton23 sequence
+				m_UBCameraData.JitterData.x = Halton((FrameTime::GetFrameCount() % m_UBCameraData.JitterPeriod) + 1, 2) - 0.5f;
+				m_UBCameraData.JitterData.y = Halton((FrameTime::GetFrameCount() % m_UBCameraData.JitterPeriod) + 1, 3) - 0.5f;
+
+				m_UBCameraData.bEnableJitter = true;
+
+			}
+			else
+			{
+				m_UBCameraData.JitterData.x = 0.0f;
+				m_UBCameraData.JitterData.y = 0.0f;
+
+				m_UBCameraData.JitterPeriod = 1;
+				m_UBCameraData.bEnableJitter = false;
+
+			}
 			m_UBCameraData.PrevViewProjection = m_UBCameraData.ViewProjection;
 
 			m_UBCameraData.Projection = camera.Camera.GetProjectionMatrix();
@@ -1343,6 +1547,7 @@ namespace Proof
 			m_UBCameraData.NDCToViewAdd = { projInfoPerspective[2], projInfoPerspective[3] };
 			m_UBCameraBuffer->SetData(frameIndex, Buffer(&m_UBCameraData, sizeof(UBCameraData)));
 		}
+
 	}
 	
 	void WorldRenderer::EndScene()
@@ -2797,10 +3002,49 @@ namespace Proof
 			.RoughnessThreshold = 0.2f,
 			.TemporalVarianceThreshold = 0.0f,
 		};
+		//set up
+		{
+			auto sbRayCounter = m_NewSSR.SBRayCounter->GetBuffer(Renderer::GetCurrentFrameInFlight());
+			Buffer buffer(sbRayCounter->GetSize());
+			buffer.Fill(0);
+			sbRayCounter->SetData(buffer);
+			buffer.Release();
+		}
+		//new ssr pass
+		{
+			std::vector<Count<ImageView>> imageViews(m_NewSSR.HierarchalDepthDownSamplerTexture->GetMipLevelCount());
+
+			for (int i = 0; i < m_NewSSR.HierarchalDepthDownSamplerTexture->GetMipLevelCount(); i++)
+				imageViews[i] = m_NewSSR.HierarchalDepthDownSamplerTexture->GetImageMip(i);
+
+			for (int i = imageViews.size(); i < 13; i++)
+			{
+				// want size == 13
+				imageViews.push_back(m_NewSSR.HierarchalDepthDownSamplerTexture->GetImageMip(0));
+			}
+
+			m_NewSSR.HierarchalDepthDownSamplerPass->SetInput("o_DepthHierarchy", imageViews);
+			Renderer::BeginComputePass(m_CommandBuffer, m_NewSSR.HierarchalDepthDownSamplerPass);
+			m_NewSSR.HierarchalDepthDownSamplerPass->PushData("u_PushData", &pushConst);
+			m_NewSSR.HierarchalDepthDownSamplerPass->Dispatch(DivideRoundingUp((uint32_t)m_UBScreenData.FullResolution.x, 8u), DivideRoundingUp((uint32_t)m_UBScreenData.FullResolution.y, 8u), 1);
+			Renderer::EndComputePass(m_NewSSR.HierarchalDepthDownSamplerPass);
+		}
+
+		//Blue noise
+		{
+
+			//https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/d7531ae47d8b36a5d4025663e731a47a38be882f/sdk/src/components/sssr/ffx_sssr.cpp#L36
+			//shedule dispatch
+			m_NewSSR.BlueNoisePass->SetInput("o_BlueNoiseTexture", m_NewSSR.BlueNoiseImage);
+			Renderer::BeginComputePass(m_CommandBuffer, m_NewSSR.BlueNoisePass);
+			m_NewSSR.BlueNoisePass->Dispatch(128 / 8u, 128 / 8u, 1);
+			Renderer::EndComputePass(m_NewSSR.BlueNoisePass);
+		}
+
+
 		//Tile Classification
 		{
 			m_NewSSR.TileClassification->SetInput("u_CubeMapPrefilter", m_Environment->GetPrefilterMap());
-			m_NewSSR.TileClassification->SetInput("u_HZB", m_SSR.HierarchicalDepthTexture);
 			m_NewSSR.TileClassification->SetInput("u_SSRVarianceHistory", m_NewSSR.PreviousVariance);
 			m_NewSSR.TileClassification->SetInput("o_SSRIntersection", m_NewSSR.Radiance);
 			m_NewSSR.TileClassification->SetInput("o_SSRExtractRoughness", m_NewSSR.ExtractRoughness);
@@ -2811,6 +3055,7 @@ namespace Proof
 			Renderer::EndComputePass(m_NewSSR.TileClassification);
 		}
 
+		
 		// Intersect Args
 		{
 			Renderer::BeginComputePass(m_CommandBuffer, m_NewSSR.IntersectArgs);
@@ -2818,12 +3063,61 @@ namespace Proof
 			m_NewSSR.IntersectArgs->Dispatch(1, 1, 1);
 			Renderer::EndComputePass(m_NewSSR.IntersectArgs);
 		}
+		//auto data = m_NewSSR.SBIntersectCommand->GetBuffer(Renderer::GetCurrentFrameInFlight())->GetDataRaw().As<NewSSR::GPUDispatchIndirectCommand>();
+		//PF_ENGINE_INFO("SBINTERSECT GPUDispatchIndirectCommand X: {} Y: {} Z:{}", data->x, data->y, data->z);
+		//intersect
+		{
+			auto intersect = m_NewSSR.Intersect;
 
+			intersect->SetInput("u_GeometryTexture", m_GeometryPass->GetOutput(0));
+			intersect->SetInput("o_SSRIntersectionImage", m_NewSSR.Radiance);
+			intersect->SetInput("u_SSSRExtractRoughnessImage", m_NewSSR.ExtractRoughness);
+			intersect->SetInput("u_CubeMapPrefilter", m_Environment->GetPrefilterMap());
+			intersect->SetInput("u_VelocityMap", m_GeometryPass->GetOutput(3));
+
+			Renderer::BeginComputePass(m_CommandBuffer, intersect);
+			intersect->PushData("u_PushData", &pushConst);
+			intersect->DispatchIndirect(m_NewSSR.SBIntersectCommand, 0);
+			Renderer::EndComputePass(intersect);
+		}
+		//auto data = m_NewSSR.SBDenoiseCommand->GetBuffer(Renderer::GetCurrentFrameInFlight())->GetDataRaw().As<NewSSR::GPUDispatchIndirectCommand>();
+		//PF_ENGINE_INFO("SBDENOISE GPUDispatchIndirectCommand X: {} Y: {} Z:{}", data->x, data->y, data->z);
+		//reproject
+		{
+
+			auto reproject = m_NewSSR.Reproject;
+
+
+			reproject->SetInput("u_SSSRIntersectionMap", m_NewSSR.Radiance);
+			reproject->SetInput("u_PreviewDepthMap", m_PreDepthPass->GetOutput(0));
+			reproject->SetInput("u_PrevSSSRRadianceMap", m_NewSSR.PreviousRadiance);
+			reproject->SetInput("u_PrevNormalMap", m_GeometryPass->GetOutput(1));
+			reproject->SetInput("u_SSSRVarianceHistory", m_NewSSR.PreviousVariance);
+			reproject->SetInput("u_SSSRExtractRoughness", m_NewSSR.ExtractRoughness);
+			reproject->SetInput("u_PrevSampleCount", m_NewSSR.PreviousSampleCount);
+
+			reproject->SetInput("o_SSSRReprojectedRadiance", m_NewSSR.Radiance);
+			reproject->SetInput("o_SSSRAverageRadiance", m_NewSSR.AverageRadiance);
+			reproject->SetInput("o_SSRVariance", m_NewSSR.Variance);
+			reproject->SetInput("o_SSRSampleCount", m_NewSSR.SampleCount);
+
+			reproject->SetInput("u_SSSRPrevExtractRoughness", m_NewSSR.PreviousExtractRoughness);
+			reproject->SetInput("u_VelocityMap", m_GeometryPass->GetOutput(3));
+
+			Renderer::BeginComputePass(m_CommandBuffer, reproject);
+			reproject->PushData("u_PushData", &pushConst);
+			reproject->DispatchIndirect(m_NewSSR.SBDenoiseCommand, 0);
+			Renderer::EndComputePass(reproject);
+		}
 		//endindg
 		{
 			Math::Swap(m_NewSSR.Variance, m_NewSSR.PreviousVariance);
 			Math::Swap(m_NewSSR.Radiance, m_NewSSR.PreviousRadiance);
 			Math::Swap(m_NewSSR.ExtractRoughness, m_NewSSR.PreviousExtractRoughness);
+			Math::Swap(m_NewSSR.SampleCount, m_NewSSR.PreviousSampleCount);
+			Math::Swap(m_NewSSR.ReprojectImage, m_NewSSR.PreviousReprojectImage);
+
+			
 		} 
 	}
 	void WorldRenderer::SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws)

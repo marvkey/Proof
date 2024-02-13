@@ -201,6 +201,7 @@ namespace Proof
 	private:
 		Count<class World> m_ActiveWorld;
 		//buffer data
+		UBFrameData m_UBFrameData;
 		UBRenderData m_UBRenderData;
 		UBSceneData m_UBSceneData;
 		UBScreenData m_UBScreenData;
@@ -210,6 +211,7 @@ namespace Proof
 		UBSSR m_UBSSR;
 
 		//buffer sts
+		Count<UniformBufferSet> m_UBFrameBuffer;
 		Count<UniformBufferSet> m_UBRenderDataBuffer;
 		Count<UniformBufferSet> m_UBSceneDataBuffer;
 		Count<UniformBufferSet> m_UBCameraBuffer;
@@ -341,14 +343,19 @@ namespace Proof
 
 		struct NewSSR
 		{
+			Count<ComputePass> HierarchalDepthDownSamplerPass;
 			Count<ComputePass> TileClassification;
+			Count<ComputePass> BlueNoisePass;
 			Count<ComputePass> IntersectArgs;
+			Count<ComputePass> Intersect;
+			Count<ComputePass> Reproject;
 
 			Count<StorageBufferSet> SBRayCounter;
 			Count<StorageBufferSet> SBRayList;
 			Count<StorageBufferSet> SBDenoiseList;
 			Count<StorageBufferSet> SBIntersectCommand;
 			Count<StorageBufferSet> SBDenoiseCommand;
+			Count<StorageBufferSet> SBGlobalAtomic;
 
 			Count<Image2D> Variance;
 			Count<Image2D> PreviousVariance;
@@ -358,6 +365,16 @@ namespace Proof
 
 			Count<Image2D> ExtractRoughness;
 			Count<Image2D> PreviousExtractRoughness;
+
+			Count<Image2D> SampleCount;
+			Count<Image2D> PreviousSampleCount;
+
+			Count<Image2D> ReprojectImage;
+			Count<Image2D> PreviousReprojectImage;
+
+			Count<Image2D> AverageRadiance;
+			Count<Image2D> BlueNoiseImage;
+			Count<Texture2D> HierarchalDepthDownSamplerTexture;
 			Count<class GlobalBufferSet> GlobalBuffer;
 			struct RayCounterData			
 			{

@@ -68,7 +68,11 @@ namespace Proof
                 symbol = "#Geometry Shader";
                 break;
             default:
+            {
+                PF_ENGINE_ERROR("Shader does not have a Type {}", path.string());
+                PF_CORE_ASSERT(false);
                 return "";
+            }
         }
         std::ifstream shaderFile;
         shaderFile.open(path);
@@ -93,6 +97,7 @@ namespace Proof
                 source += "\n";
             }
         }
+        
         shaderFile.close();
         return source;
     }
@@ -225,6 +230,30 @@ namespace Proof
         for (auto&& [stage, data] : m_SourceCode)
             Reflect(stage);
     }
+    struct IncludeData
+    {
+        std::filesystem::path IncludedFilePath{};
+        size_t IncludeDepth{};
+        bool IsRelative{ false };
+        bool IsGuarded{ false };
+        uint32_t HashValue{};
+
+        VkShaderStageFlagBits IncludedStage{};
+
+        inline bool operator==(const IncludeData& other) const noexcept
+        {
+            return this->IncludedFilePath == other.IncludedFilePath && this->HashValue == other.HashValue;
+        }
+    };
+
+    struct HeaderCache
+    {
+        std::string Source;
+        uint32_t SourceHash;
+        VkShaderStageFlagBits Stages;
+        bool IsGuarded;
+    };
+    
     class ShaderIncluder : public shaderc::CompileOptions::IncluderInterface
     {
         //https://github.com/beaumanvienna/vulkan/blob/617f70e1a311c6f498ec69507dcc9d4aadb86612/engine/platform/Vulkan/VKshader.cpp
@@ -234,7 +263,7 @@ namespace Proof
             msg += static_cast<char>(includeDepth);
 
             const std::string name = std::string(requestedSource);
-            const std::string contents = ReadFile(name);
+            const std::string contents = ReadFileFromName(name);
 
             auto container = pnew std::array<std::string, 2>;
             (*container)[0] = name;
@@ -256,32 +285,44 @@ namespace Proof
             pdelete static_cast<std::array<std::string, 2>*>(data->user_data);
             pdelete data;
         }
-        std::string ReadFile(const std::string& filepath)
+
+        static inline const std::vector<std::string> ShaderDirectoryPaths = 
         {
-            
-            std::string truePath = ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/" + filepath;
+            ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/",
+            ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Extras/",
+            ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Extras/Fidelity/",
+        };
+        std::string ReadFileFromName(const std::string& name)
+        {
             std::string sourceCode;
-            std::ifstream in(truePath, std::ios::in | std::ios::binary);
-            if (in)
+
+            for (uint32_t i = 0; i < ShaderDirectoryPaths.size(); i++)
             {
-                in.seekg(0, std::ios::end);
-                size_t size = in.tellg();
-                if (size > 0)
+                std::string truePath = ShaderDirectoryPaths[i] + name;
+                std::ifstream in(truePath, std::ios::in | std::ios::binary);
+
+                if (in)
                 {
-                    sourceCode.resize(size);
-                    in.seekg(0, std::ios::beg);
-                    in.read(&sourceCode[0], size);
-                }
-                else
-                {
-                    PF_ENGINE_WARN("ShaderIncluder::ReadFile: Could not read shader file '{0}'", truePath);
+                    in.seekg(0, std::ios::end);
+                    size_t size = in.tellg();
+                    if (size > 0)
+                    {
+                        sourceCode.resize(size);
+                        in.seekg(0, std::ios::beg);
+                        in.read(&sourceCode[0], size);
+                        in.close();
+                        return sourceCode;
+                    }
+                    else
+                    {
+                        PF_ENGINE_WARN("ShaderIncluder::ReadFile: Could not read shader file '{0}'", truePath);
+                    }
                 }
             }
-            else
-            {
-                PF_ENGINE_WARN("ShaderIncluder::ReadFile Could not open shader file '{0}'", truePath);
-            }
-            return sourceCode;
+          
+            PF_ENGINE_ERROR("ShaderIncluder::ReadFile: Could Not read {}", name);
+            PF_CORE_ASSERT(false);
+            return "";
         }
     };
     bool VulkanShader::Compile(const std::unordered_map<ShaderStage, std::string>& sourceCode)
@@ -471,6 +512,16 @@ namespace Proof
             PF_ENGINE_TRACE("    Set = {}", descriptorSet);
             PF_ENGINE_TRACE("    Binding = {}", binding);
             PF_ENGINE_TRACE("    Members = {}", memberCount);
+
+            if (m_ShaderDescriptorSet[descriptorSet].UniformBuffers.contains(binding))
+            {
+                if (m_ShaderDescriptorSet[descriptorSet].UniformBuffers.at(binding).Name != resource.name)
+                {
+                    PF_CORE_ASSERT(false, fmt::format("Uniform buffer Already has binding:{} at set: {} Named {} which is conflicting with the a new resource of: {}",
+                        binding, descriptorSet, m_ShaderDescriptorSet[descriptorSet].UniformBuffers[binding].Name, resource.name).c_str());
+                }
+            }
+         
             auto& uniformBuffer = m_ShaderDescriptorSet[descriptorSet].UniformBuffers[binding];
             // make sure we only bidn to stages 
             uniformBuffer.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
@@ -494,6 +545,14 @@ namespace Proof
             PF_ENGINE_TRACE("    Binding = {}", binding);
             PF_ENGINE_TRACE("    Members = {}", memberCount);
 
+            if (m_ShaderDescriptorSet[descriptorSet].StorageBuffers.contains(binding))
+            {
+                if (m_ShaderDescriptorSet[descriptorSet].StorageBuffers.at(binding).Name != resource.name)
+                {
+                    PF_CORE_ASSERT(false, fmt::format("Storage Buffer Already has binding:{} at set: {} Named {} which is conflicting with the a new resource of: {}",
+                        binding, descriptorSet, m_ShaderDescriptorSet[descriptorSet].StorageBuffers[binding].Name, resource.name).c_str());
+                }
+            }
             auto& storageBuffer = m_ShaderDescriptorSet[descriptorSet].StorageBuffers[binding];
             storageBuffer.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
             storageBuffer = { resource.name,DescriptorResourceType::StorageBuffer, (int)storageBuffer.Stage,1 };
@@ -534,6 +593,15 @@ namespace Proof
             const auto& type = compiler.get_type(resource.type_id);
             uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
             uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+            if (m_ShaderDescriptorSet[descriptorSet].ImageSamplers.contains(binding))
+            {
+                if (m_ShaderDescriptorSet[descriptorSet].ImageSamplers.at(binding).Name != resource.name)
+                {
+                    PF_CORE_ASSERT(false, fmt::format("Image Samplers Already has binding:{} at set: {} Named {} which is conflicting with the a new resource of: {}",
+                        binding, descriptorSet, m_ShaderDescriptorSet[descriptorSet].ImageSamplers[binding].Name, resource.name).c_str());
+                }
+            }
+
             auto& sampledImage = m_ShaderDescriptorSet[descriptorSet].ImageSamplers[binding];
             sampledImage.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
 
@@ -573,6 +641,15 @@ namespace Proof
             const auto& type = compiler.get_type(resource.type_id);
             uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
             uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+
+            if (m_ShaderDescriptorSet[descriptorSet].StorageImages.contains(binding))
+            {
+                if (m_ShaderDescriptorSet[descriptorSet].StorageImages.at(binding).Name != resource.name)
+                {
+                    PF_CORE_ASSERT(false, fmt::format("Storage Images Already has binding:{} at set: {} Named {} which is conflicting with the a new resource of: {}",
+                        binding, descriptorSet, m_ShaderDescriptorSet[descriptorSet].StorageImages[binding].Name, resource.name).c_str());
+                }
+            }
             auto& sampledImage = m_ShaderDescriptorSet[descriptorSet].StorageImages[binding];
             sampledImage.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
 
@@ -612,6 +689,15 @@ namespace Proof
 
             uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
             uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+            if (m_ShaderDescriptorSet[descriptorSet].SeperateSamplers.contains(binding))
+            {
+                if (m_ShaderDescriptorSet[descriptorSet].SeperateSamplers.at(binding).Name != resource.name)
+                {
+                    PF_CORE_ASSERT(false, fmt::format("Seperate Samplers Already has binding:{} at set: {} Named {} which is conflicting with the a new resource of: {}",
+                        binding, descriptorSet, m_ShaderDescriptorSet[descriptorSet].SeperateSamplers[binding].Name, resource.name).c_str());
+                }
+            }
+
             auto& seperateSampler = m_ShaderDescriptorSet[descriptorSet].SeperateSamplers[binding];
             seperateSampler.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
 
@@ -653,6 +739,16 @@ namespace Proof
 
             uint32_t binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
             uint32_t descriptorSet = compiler.get_decoration(resource.id, spv::DecorationDescriptorSet);
+
+            if (m_ShaderDescriptorSet[descriptorSet].SeperateTextures.contains(binding))
+            {
+                if (m_ShaderDescriptorSet[descriptorSet].SeperateTextures.at(binding).Name != resource.name)
+                {
+                    PF_CORE_ASSERT(false, fmt::format("Seperate Textures Already has binding:{} at set: {} Named {} which is conflicting with the a new resource of: {}",
+                        binding, descriptorSet, m_ShaderDescriptorSet[descriptorSet].SeperateTextures[binding].Name, resource.name).c_str());
+                }
+            }
+
             auto& seperateTextures = m_ShaderDescriptorSet[descriptorSet].SeperateTextures[binding];
             seperateTextures.Stage |= (int)Utils::ProofShaderToVulkanShader(stage);
 

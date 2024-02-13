@@ -10,14 +10,13 @@
 
 #include <PBR/PostProcess/NewScreenSpaceReflection/SSSRCommon.glslh>
 layout (set = 0, binding = 0, r8) uniform image2D o_SSRExtractRoughness; // ssr roughness extract.
-layout (binding = 1) uniform sampler2D u_HZB;
 layout (binding = 2) uniform sampler2D u_SSRVarianceHistory; // SSR variance help to filter.
 layout (binding = 3) uniform sampler2D u_MetalnessRoughness;
 layout (set = 0, binding = 4, rgba16f) uniform image2D o_SSRIntersection;
 
 float LoadDepth(ivec2 coord, int mip)
 {
-    return texelFetch(u_HZB, coord, mip).r; // use cloest depth.
+    return texelFetch(u_HZBMap, coord, mip).r; // use cloest depth.
 }
 
 bool IsBaseRay(uvec2 dispatchThreadId, uint samplesPerQuad) 
@@ -39,10 +38,10 @@ bool IsReflectiveSurface(uvec2 pixel_coordinate, float roughness)
     //line(480)
     #if INVERTED_DEPTH
         const float far_plane = 0.0f;
-        return texelFetch(u_HZB, ivec2(pixel_coordinate), 0).r > far_plane;
+        return texelFetch(u_HZBMap, ivec2(pixel_coordinate), 0).r > far_plane;
     #else //  FFX_SSSR_OPTION_INVERTED_DEPTH
         const float far_plane = 1.0f;
-        return texelFetch(u_HZB, ivec2(pixel_coordinate), 0).r < far_plane;
+        return texelFetch(u_HZBMap, ivec2(pixel_coordinate), 0).r < far_plane;
     #endif //  FFX_SSSR_OPTION_INVERTED_DEPTH
 }
 // For 8-bit unorm texture, float error range = 1.0 / 255.0 = 0.004
@@ -55,34 +54,7 @@ bool isShadingModelValid(float v)
 {
     return v > (kShadingModelUnvalid + kShadingModelRangeCheck);
 }
-bool AWaveReadAtLaneIndexB1(bool v, uint x )
-{
-    return subgroupShuffle(v, x);
-}
 
-uint AWaveLaneIndex()
-{
-    return gl_SubgroupInvocationID;
-}
-
-uint AWavePrefixCountBits(bool v)
-{
-    return subgroupBallotExclusiveBitCount(subgroupBallot(v));
-}
-void IncrementRayCounter(uint value, out uint original_value)
-{
-    original_value = atomicAdd(s_RayCounter.RayCount, value);
-}
-
-uint AWaveReadLaneFirstU1(uint v)
-{
-    return subgroupBroadcastFirst(v);
-}
-
-uint AWaveActiveCountBits(bool v)
-{
-    return subgroupBallotBitCount(subgroupBallot(v));
-}
 void ClassifyTiles(uvec2 dispatchThreadId, uvec2 groupThreadId, float roughness)
 {
     sharedTileCount = 0;

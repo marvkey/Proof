@@ -516,7 +516,8 @@ namespace Proof
                         {
                             imageUniquePos++;
                             std::vector<VkDescriptorImageInfo> info;
-                            //info.resize(resource.Input.size());
+
+                            info.reserve(resource.Input.size());
                             for (auto& image : resource.Input)
                             {
                                 info.push_back(image.As<VulkanImageView>()->GetDescriptorInfoVulkan());

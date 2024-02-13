@@ -144,6 +144,71 @@ namespace Proof
 		RGBA64F,
 		#pragma endregion 
 		#pragma endregion 
+
+		B10G11R11_UF_PACK32,
+		E5B9G9R9_UF_PACK32,
+		D16,
+		X8_D24_PACK32,
+		D32_F,
+		S8_UI,
+		D16_S8_UI,
+		D24_S8_UI,
+		D32_FS8_UI,
+		BC1_RGB_BLOCK,
+		BC1_RGB_SRGB_BLOCK,
+		BC1_RGBA_BLOCK,
+		BC1_RGBA_SRGB_BLOCK,
+		BC2_BLOCK,
+		BC2_SRGB_BLOCK,
+		BC3_BLOCK,
+		BC3_SRGB_BLOCK,
+		BC4_BLOCK,
+		BC4_SNORM_BLOCK,
+		BC5_BLOCK,
+		BC5_SNORM_BLOCK,
+		BC6H_UF_BLOCK,
+		BC6H_F_BLOCK,
+		BC7__BLOCK,
+		BC7_SRGB_BLOCK,
+
+		ETC2_R8G8B8_BLOCK,
+		ETC2_R8G8B8_SRGB_BLOCK,
+		ETC2_R8G8B8A1_BLOCK,
+		ETC2_R8G8B8A1_SRGB_BLOCK,
+		ETC2_R8G8B8A8_BLOCK,
+		ETC2_R8G8B8A8_SRGB_BLOCK,
+		EAC_R11_BLOCK,
+		EAC_R11_SNORM_BLOCK,
+		EAC_R11G11_BLOCK,
+		EAC_R11G11_SNORM_BLOCK,
+		ASTC_4x4_BLOCK,
+		ASTC_4x4_SRGB_BLOCK,
+		ASTC_5x4_BLOCK,
+		ASTC_5x4_SRGB_BLOCK,
+		ASTC_5x5_BLOCK,
+		ASTC_5x5_SRGB_BLOCK,
+		ASTC_6x5_BLOCK,
+		ASTC_6x5_SRGB_BLOCK,
+		ASTC_6x6_BLOCK,
+		ASTC_6x6_SRGB_BLOCK,
+		ASTC_8x5_BLOCK,
+		ASTC_8x5_SRGB_BLOCK,
+		ASTC_8x6_BLOCK,
+		ASTC_8x6_SRGB_BLOCK,
+		ASTC_8x8_BLOCK,
+		ASTC_8x8_SRGB_BLOCK,
+		ASTC_10x5_BLOCK,
+		ASTC_10x5_SRGB_BLOCK,
+		ASTC_10x6_BLOCK,
+		ASTC_10x6_SRGB_BLOCK,
+		ASTC_10x8_BLOCK,
+		ASTC_10x8_SRGB_BLOCK,
+		ASTC_10x10_BLOCK,
+		ASTC_10x10_SRGB_BLOCK,
+		ASTC_12x10_BLOCK,
+		ASTC_12x10_SRGB_BLOCK,
+		ASTC_12x12_BLOCK,
+		ASTC_12x12_SRGB_BLOCK,
 	};
 
 	enum class ImageUsage 
@@ -493,6 +558,106 @@ namespace Proof
 				case Proof::ImageFormat::RGBA64F:
 					return 32;
 					break;
+
+				case Proof::ImageFormat::B10G11R11_UF_PACK32:
+					return 4;
+				case Proof::ImageFormat::E5B9G9R9_UF_PACK32:
+					return 4;
+				case Proof::ImageFormat::D16:
+					return 2;
+				case Proof::ImageFormat::X8_D24_PACK32:
+					return 4;
+				case Proof::ImageFormat::D32_F:
+					return 4;
+				case Proof::ImageFormat::S8_UI:
+					return 1;
+				case Proof::ImageFormat::D16_S8_UI:
+					return 2;
+				case Proof::ImageFormat::D24_S8_UI:
+					return 4;
+				case Proof::ImageFormat::D32_FS8_UI:
+					return 8;
+				case Proof::ImageFormat::BC1_RGB_BLOCK:
+				case Proof::ImageFormat::BC1_RGB_SRGB_BLOCK:
+					return 8;
+				case Proof::ImageFormat::BC1_RGBA_BLOCK:
+				case Proof::ImageFormat::BC1_RGBA_SRGB_BLOCK:
+					return 8;
+				case Proof::ImageFormat::BC2_BLOCK:
+				case Proof::ImageFormat::BC2_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::BC3_BLOCK:
+				case Proof::ImageFormat::BC3_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::BC4_BLOCK:
+				case Proof::ImageFormat::BC4_SNORM_BLOCK:
+					return 8;
+				case Proof::ImageFormat::BC5_BLOCK:
+				case Proof::ImageFormat::BC5_SNORM_BLOCK:
+					return 16;
+				case Proof::ImageFormat::BC6H_UF_BLOCK:
+				case Proof::ImageFormat::BC6H_F_BLOCK:
+					return 16;
+				case Proof::ImageFormat::BC7__BLOCK:
+				case Proof::ImageFormat::BC7_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::ETC2_R8G8B8_BLOCK:
+				case Proof::ImageFormat::ETC2_R8G8B8_SRGB_BLOCK:
+					return 8;
+				case Proof::ImageFormat::ETC2_R8G8B8A1_BLOCK:
+				case Proof::ImageFormat::ETC2_R8G8B8A1_SRGB_BLOCK:
+					return 8;
+				case Proof::ImageFormat::ETC2_R8G8B8A8_BLOCK:
+				case Proof::ImageFormat::ETC2_R8G8B8A8_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::EAC_R11_BLOCK:
+				case Proof::ImageFormat::EAC_R11_SNORM_BLOCK:
+					return 8;
+				case Proof::ImageFormat::EAC_R11G11_BLOCK:
+				case Proof::ImageFormat::EAC_R11G11_SNORM_BLOCK:
+					return 16;
+				case Proof::ImageFormat::ASTC_4x4_BLOCK:
+				case Proof::ImageFormat::ASTC_4x4_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::ASTC_5x4_BLOCK:
+				case Proof::ImageFormat::ASTC_5x4_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::ASTC_5x5_BLOCK:
+				case Proof::ImageFormat::ASTC_5x5_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::ASTC_6x5_BLOCK:
+				case Proof::ImageFormat::ASTC_6x5_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::ASTC_6x6_BLOCK:
+				case Proof::ImageFormat::ASTC_6x6_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::ASTC_8x5_BLOCK:
+				case Proof::ImageFormat::ASTC_8x5_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::ASTC_8x6_BLOCK:
+				case Proof::ImageFormat::ASTC_8x6_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::ASTC_8x8_BLOCK:
+				case Proof::ImageFormat::ASTC_8x8_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::ASTC_10x5_BLOCK:
+				case Proof::ImageFormat::ASTC_10x5_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::ASTC_10x6_BLOCK:
+				case Proof::ImageFormat::ASTC_10x6_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::ASTC_10x8_BLOCK:
+				case Proof::ImageFormat::ASTC_10x8_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::ASTC_10x10_BLOCK:
+				case Proof::ImageFormat::ASTC_10x10_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::ASTC_12x10_BLOCK:
+				case Proof::ImageFormat::ASTC_12x10_SRGB_BLOCK:
+					return 16;
+				case Proof::ImageFormat::ASTC_12x12_BLOCK:
+				case Proof::ImageFormat::ASTC_12x12_SRGB_BLOCK:
+					return 16;
 				default:
 					break;
 			}

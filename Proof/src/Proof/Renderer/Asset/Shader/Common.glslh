@@ -7,7 +7,7 @@ const float Epsilon = 0.00001;
 layout(set = 3, binding = 0) uniform FrameData
 {
 	uint FrameCount;
-	float AppTime;
+	float AppTimeSeconds;
 }u_FrameData;
 layout(set = 3, binding = 1) uniform CameraData
 {
@@ -165,6 +165,32 @@ mat3 CreateTBN(vec3 N)
 
     mat3 TBN = mat3(U, cross(N, U), N);
     return transpose(TBN);
+}
+vec3 ProjectPosition(vec3 origin, mat4 mat) 
+{
+    vec4 projected = mat * vec4(origin, 1.0);
+    projected.xyz /= projected.w;
+    projected.xy = 0.5 * projected.xy + 0.5;
+    projected.y = 1.0 - projected.y;
+    return projected.xyz;
+}
+
+vec3 InvProjectPosition(vec3 coord, mat4 mat) 
+{
+    coord.y = (1 - coord.y);
+    coord.xy = 2 * coord.xy - 1;
+    vec4 projected = mat * vec4(coord, 1);
+    projected.xyz /= projected.w;
+    return projected.xyz;
+}
+vec3 ScreenSpaceToViewSpace(vec3 screen_space_position) 
+{
+    return InvProjectPosition(screen_space_position, u_Camera.InverseProjection);
+}
+
+vec3 ScreenSpaceToWorldSpace(vec3 screen_space_position) 
+{
+    return InvProjectPosition(screen_space_position, u_Camera.InverseView);
 }
 
 #endif // COMMON_GLSL_H

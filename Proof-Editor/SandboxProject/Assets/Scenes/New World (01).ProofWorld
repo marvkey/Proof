@@ -35,19 +35,6 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 18348114341737718825
-    - Entity: 6282969778614184244
-      TagComponent:
-        Tag: PBRGun
-        tags: []
-      TransformComponent:
-        Location: [0.308068305, 1.10899997, 0.0680041611]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 18348114341737718825
     - Entity: 17936688062110553851
       TagComponent:
         Tag: Directional Light
@@ -62,3 +49,16 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 1
+    - Entity: 6282969778614184244
+      TagComponent:
+        Tag: PBRGun
+        tags: []
+      TransformComponent:
+        Location: [0.308068305, 1.10899997, 0.0680041611]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 18348114341737718825

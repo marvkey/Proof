@@ -29,6 +29,8 @@ namespace Proof {
 		Count<class StorageBuffer>  SBSobolBuffer;
 		Count<class StorageBuffer>  SBRankingTileBuffer;
 		Count<class StorageBuffer>  SBScramblingTileBuffer;
+		Count<class Texture2D>  SobolTexture;
+		Count<class Texture2D>  ScramblingTexture;
 	};
 	class Renderer 
 	{

@@ -46,12 +46,20 @@ namespace Proof
 		void RT_EndComputePass();
 
 		void RT_Dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ);
+
+		virtual void DispatchIndirect(Count<class StorageBuffer> storageBuffer, uint64_t offset);
+		virtual void DispatchIndirect(Count<class UniformBuffer> buffer, uint64_t offset);
+		virtual void DispatchIndirect(Count<class UniformBufferSet> buffer, uint64_t offset);
+		virtual void DispatchIndirect(Count<class StorageBufferSet> buffer, uint64_t offset);
 	private:
 		void Build();
 		void RT_BeginComputePassBase(Count<class RenderCommandBuffer> command);
 		void BeginComputePassBase(Count<class RenderCommandBuffer> command);
 
-		
+		void RT_BindDescriptors();
+
+		void RT_DispatchIndirect(VkBuffer buffer, uint64_t offset);
+	private:
 		ComputePassConfiguration m_Config;
 		bool m_RenderPassEnabled = false;
 		bool m_MaterialRenderPass = false;

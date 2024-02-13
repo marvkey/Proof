@@ -30,6 +30,10 @@ namespace Proof
 		void virtual AddGlobalInput(Count<class GlobalBufferSet> globalInputs) = 0;
 
 		virtual void Dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) = 0;
+		virtual void DispatchIndirect(Count<class StorageBuffer> storageBuffer, uint64_t offset) = 0;
+		virtual void DispatchIndirect(Count<class UniformBuffer> buffer, uint64_t offset) = 0;
+		virtual void DispatchIndirect(Count<class UniformBufferSet> buffer, uint64_t offset) = 0;
+		virtual void DispatchIndirect(Count<class StorageBufferSet> buffer, uint64_t offset) = 0;
 		virtual void Dispatch(glm::uvec3 group) = 0;
 		virtual const ComputePassConfiguration& GetConfig()const = 0;
 		virtual Count<class ComputePipeline> GetComputePipeline()const = 0;

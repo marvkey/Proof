@@ -182,7 +182,11 @@ namespace Proof
 					if (m_WorldRenderer->m_ResourcesCreatedGPU)
 					{
 						static uint32_t Hzbmip = 0;
-						WorldRendererPanelImageMip("HZB Depth", Hzbmip, m_WorldRenderer->m_SSR.HierarchicalDepthTexture->GetImage());
+						WorldRendererPanelImageMip("HZB Depth", Hzbmip, m_WorldRenderer->m_NewSSR.HierarchalDepthDownSamplerTexture);
+
+						//WorldRendererPanelTexture("ScramblingTexture", Renderer::GetSPP1().ScramblingTexture);
+						//WorldRendererPanelTexture("SobolTexture", Renderer::GetSPP1().SobolTexture);
+						WorldRendererPanelImage("Blue NoiseImage", m_WorldRenderer->m_NewSSR.BlueNoiseImage);
 
 						WorldRendererPanelImage("Variance",  m_WorldRenderer->m_NewSSR.Variance);
 						WorldRendererPanelImage("Previous Variance", m_WorldRenderer->m_NewSSR.PreviousVariance);

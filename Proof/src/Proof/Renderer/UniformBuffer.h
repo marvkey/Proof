@@ -15,6 +15,7 @@ namespace Proof
 		virtual void Resize(uint64_t size) = 0;
 		virtual void Resize(Buffer data) = 0;
 		virtual uint64_t GetSize() = 0;
+		virtual Buffer GetDataRaw() = 0;
 
 		RENDER_VIEW_RESOURCE_CLASS_TYPE(StorageBuffer);
 

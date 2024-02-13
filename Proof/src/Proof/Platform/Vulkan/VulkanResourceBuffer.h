@@ -56,7 +56,8 @@ namespace Proof{
         std::map<uint32_t, Count<UniformBuffer>> m_Buffers;
     };
 
-    class VulkanStorageBuffer : public StorageBuffer {
+    class VulkanStorageBuffer : public StorageBuffer 
+    {
     public:
         virtual ~VulkanStorageBuffer();
         VulkanStorageBuffer(uint64_t size);
@@ -76,7 +77,8 @@ namespace Proof{
         void Resize(Buffer data);
         virtual uint64_t GetSize() { return m_Size; }
         virtual ResourceDescriptorInfo GetResourceDescriptorInfo()const { return (ResourceDescriptorInfo)&GetDescriptorInfoVulkan(); }
-    
+        Buffer GetDataRaw();
+
     private:
         VulkanMemmoryUsage m_MemoryUsage;
         uint64_t m_Size = 0;

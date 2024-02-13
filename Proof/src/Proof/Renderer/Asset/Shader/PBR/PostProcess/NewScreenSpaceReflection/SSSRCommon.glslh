@@ -2,6 +2,7 @@
 #ifndef SSSR_COMMON_GLSL
 #define SSSR_COMMON_GLSL
 #extension GL_EXT_samplerless_texture_functions : enable
+#extension GL_KHR_shader_subgroup_shuffle : enable
 
 #include <Common.glslh>
 
@@ -49,7 +50,7 @@ const float kRadianceWeightVarianceK = 0.1;
 const float kPrefilterVarianceBias = 0.1;
 const float kPrefilterVarianceWeight = 4.4;
 
-
+layout (set  = 1, binding = 6) uniform sampler2D u_HZBMap;
 layout (set  = 1, binding =7)  uniform sampler2D u_DepthMap;
 layout (set  = 1, binding =8)  uniform sampler2D u_NormalMap;
 layout (set  = 1, binding =9)  uniform textureCube  u_CubeMapPrefilter;
@@ -79,7 +80,10 @@ layout (set = 1, binding = 17) buffer SSSRDenoiseCmdSSBO // have to maeke storag
     DispatchIndirectCommand args; 
 } u_DenoiseCommand;
 
-
+layout (set = 1, binding = 18) buffer SSSRSPDGlobalAtomic // have to maeke storage because we need to modify
+{ 
+    uint Data; 
+} s_SpdGlobalAtomic;
 
 uint AddRayCount(uint value) 
 {
@@ -91,6 +95,15 @@ uint AddDenoiseTileCount()
     return atomicAdd(s_RayCounter.DenoiseTileCount, 1);
 }
 
+void SpdResetAtomicCounter(uint slice) 
+{
+    s_SpdGlobalAtomic.Data = 0;
+}
+
+void SPDIncreaseAtomicCounter(inout uint spdCounter) 
+{
+    spdCounter = atomicAdd(s_SpdGlobalAtomic.Data, 1);
+}
 
 bool IsMirrorReflection(float roughness) 
 {
@@ -214,20 +227,33 @@ vec3 LoadWorldSpaceNormal(ivec2 coords)
     const float normalUnpackAdd =-1;
     return normalize(normalUnpackMul * texelFetch(u_NormalMap, coords, 0).xyz + normalUnpackAdd);
 }
-
-vec3 InvProjectPosition(vec3 coord, mat4 mat) 
+bool AWaveReadAtLaneIndexB1(bool v, uint x )
 {
-    coord.y = (1 - coord.y);
-    coord.xy = 2 * coord.xy - 1;
-    vec4 projected = mat * vec4(coord, 1);
-    projected.xyz /= projected.w;
-    return projected.xyz;
-}
-vec3 ScreenSpaceToViewSpace(vec3 screen_space_position) {
-    return InvProjectPosition(screen_space_position, u_Camera.InverseProjection);
+    return subgroupShuffle(v, x);
 }
 
-vec3 ScreenSpaceToWorldSpace(vec3 screen_space_position) {
-    return InvProjectPosition(screen_space_position, u_Camera.InverseView);
+uint AWaveLaneIndex()
+{
+    return gl_SubgroupInvocationID;
 }
+
+uint AWavePrefixCountBits(bool v)
+{
+    return subgroupBallotExclusiveBitCount(subgroupBallot(v));
+}
+void IncrementRayCounter(uint value, out uint original_value)
+{
+    original_value = atomicAdd(s_RayCounter.RayCount, value);
+}
+
+uint AWaveReadLaneFirstU1(uint v)
+{
+    return subgroupBroadcastFirst(v);
+}
+
+uint AWaveActiveCountBits(bool v)
+{
+    return subgroupBallotBitCount(subgroupBallot(v));
+}
+
 #endif
