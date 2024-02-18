@@ -165,6 +165,9 @@ namespace Proof {
 		ShaderLibrary->LoadShader("SSSRIntersectArgs", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRIntersectArgs.glsl");
 		ShaderLibrary->LoadShader("SSSRIntersect", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRIntersect.glsl");
 		ShaderLibrary->LoadShader("SSRReproject", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSRReproject.glsl");
+		ShaderLibrary->LoadShader("SSSRPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRPrefilter.glsl");
+		ShaderLibrary->LoadShader("SSSRTemporal", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRTemporal.glsl");
+		ShaderLibrary->LoadShader("SSSRApply", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRApply.glsl");
 
 
 		//2D 

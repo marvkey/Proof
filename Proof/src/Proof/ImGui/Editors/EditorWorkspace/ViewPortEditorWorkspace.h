@@ -25,7 +25,10 @@ namespace Proof
 		MetalnessRoughness,
 		Velocity,
 		LightingOnly,
-		Depth
+		Depth,
+		PrevDepth,
+		PrevNormal,
+
 	};
 	class ViewPortEditorWorkspace : public EditorWorkspace
 	{

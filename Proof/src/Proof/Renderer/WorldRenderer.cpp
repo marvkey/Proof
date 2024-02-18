@@ -317,6 +317,14 @@ namespace Proof
 			renderPassConfig.TargetFrameBuffer = FrameBuffer::Create(preDepthFramebufferSpec);
 			
 			m_PreDepthPass = RenderPass::Create(renderPassConfig);
+
+			ImageConfiguration imageConfig;
+			imageConfig.DebugName = "PrevDepthImage";
+			imageConfig.Height = 1;
+			imageConfig.Width = 1;
+			imageConfig.Format = ImageFormat::DEPTH32F;
+			imageConfig.Usage = ImageUsage::Attachment;
+			m_PrevDepthImage = Image2D::Create(imageConfig);
 			m_PreDepthPass->AddGlobalInput(m_GlobalInputs);
 
 			//m_PreDepthPass->SetInput("CameraData", m_UBCameraBuffer);
@@ -473,6 +481,15 @@ namespace Proof
 
 			m_GeometryPass->SetInput("VisiblePointLightIndicesBuffer", m_SBVisiblePointLightIndicesBuffer);
 			m_GeometryPass->SetInput("VisibleSpotLightIndicesBuffer", m_SBVisibleSpotLightIndicesBuffer);
+
+
+			ImageConfiguration imageConfig;
+			imageConfig.DebugName = "PrevNormalMap";
+			imageConfig.Height = 1;
+			imageConfig.Width = 1;
+			imageConfig.Format = ImageFormat::RGBA16F;
+			imageConfig.Usage = ImageUsage::Attachment;
+			m_PrevNormalImage = Image2D::Create(imageConfig);
 		}
 
 		// skybox
@@ -832,27 +849,27 @@ namespace Proof
 						//radiance
 						{
 							ImageConfiguration imageConfig;
-							imageConfig.DebugName = "SSSRRadiance";
+							imageConfig.DebugName = "SSSRRadiance0";
 							imageConfig.Width = 1;
 							imageConfig.Height = 1;
 							imageConfig.Format = ImageFormat::RGBA16F;
 							imageConfig.Usage = ImageUsage::Storage;
 
 							m_NewSSR.Radiance = Image2D::Create(imageConfig);
-							//imageConfig.DebugName = "SSSRPreviousRadiance";
+							imageConfig.DebugName = "SSSRRadiance1";
 							m_NewSSR.PreviousRadiance = Image2D::Create(imageConfig);
 						}
 						//extract roughness
 						{
 							ImageConfiguration imageConfig;
-							imageConfig.DebugName = "SSSRExtractRoughness";
+							imageConfig.DebugName = "SSSRExtractRoughness0";
 							imageConfig.Width = 1;
 							imageConfig.Height = 1;
 							imageConfig.Format = ImageFormat::R;
 							imageConfig.Usage = ImageUsage::Storage;
 
 							m_NewSSR.ExtractRoughness = Image2D::Create(imageConfig);
-							//imageConfig.DebugName = "SSSRPreviousExtractRoughness";
+							imageConfig.DebugName = "SSSRExtractRoughness1";
 							m_NewSSR.PreviousExtractRoughness = Image2D::Create(imageConfig);
 						}
 
@@ -873,23 +890,25 @@ namespace Proof
 						///sample count
 						{
 							ImageConfiguration imageConfig;
-							imageConfig.DebugName = "SSSR SampleCount";
+							imageConfig.DebugName = "SSSRSampleCount0";
 							imageConfig.Format = ImageFormat::R16F;
 							imageConfig.Width = 1;
 							imageConfig.Height = 1;
 							imageConfig.Usage = ImageUsage::Storage;
 							m_NewSSR.SampleCount = Image2D::Create(imageConfig);
+							imageConfig.DebugName = "SSSRSampleCount1";
 							m_NewSSR.PreviousSampleCount = Image2D::Create(imageConfig);
 						}
 						//reproject image
 						{
 							ImageConfiguration imageConfig;
-							imageConfig.DebugName = "SSSR Reproject";
+							imageConfig.DebugName = "SSSRReproject0";
 							imageConfig.Format = ImageFormat::RGBA16F;
 							imageConfig.Width = 1;
 							imageConfig.Height = 1;
 							imageConfig.Usage = ImageUsage::Storage;
 							m_NewSSR.ReprojectImage = Image2D::Create(imageConfig);
+							imageConfig.DebugName = "SSSRReproject1";
 							m_NewSSR.PreviousReprojectImage = Image2D::Create(imageConfig);
 						}
 						//average radiance
@@ -932,14 +951,14 @@ namespace Proof
 					//tile classification
 					{
 						ImageConfiguration imageConfig;
-						imageConfig.DebugName = "SSSRVariance";
+						imageConfig.DebugName = "SSSRVariance0";
 						imageConfig.Width = 1;
 						imageConfig.Height = 1;
 						imageConfig.Format = ImageFormat::R16F;
 						imageConfig.Usage = ImageUsage::Storage;
 
 						m_NewSSR.Variance = Image2D::Create(imageConfig);
-						//imageConfig.DebugName = "SSSRPreviousVariance";
+						imageConfig.DebugName = "SSSRVariance1";
 						m_NewSSR.PreviousVariance = Image2D::Create(imageConfig);
 						ComputePipelineConfig pipelineConfig;
 						pipelineConfig.DebugName = "SSSRTileClassification";
@@ -985,6 +1004,35 @@ namespace Proof
 						m_NewSSR.Reproject = ComputePass::Create(ComputePassConfiguration{ "SSRReproject",ComputePipeline::Create(pipelineConfig) });
 						m_NewSSR.Reproject->AddGlobalInput(m_GlobalInputs);
 						m_NewSSR.Reproject->AddGlobalInput(ssrGlobalBuffer);
+					}
+					//prefilter
+					{
+						ComputePipelineConfig pipelineConfig;
+						pipelineConfig.DebugName = "SSSRPrefilter";
+						pipelineConfig.Shader = Renderer::GetShader("SSSRPrefilter");
+						m_NewSSR.Prefilter = ComputePass::Create(ComputePassConfiguration{ "SSSRPrefilter",ComputePipeline::Create(pipelineConfig) });
+						m_NewSSR.Prefilter->AddGlobalInput(m_GlobalInputs);
+						m_NewSSR.Prefilter->AddGlobalInput(ssrGlobalBuffer);
+					}
+
+					//temporal
+					{
+						ComputePipelineConfig pipelineConfig;
+						pipelineConfig.DebugName = "SSSRTemporal";
+						pipelineConfig.Shader = Renderer::GetShader("SSSRTemporal");
+						m_NewSSR.Temporal = ComputePass::Create(ComputePassConfiguration{ "SSSRTemporal",ComputePipeline::Create(pipelineConfig) });
+						m_NewSSR.Temporal->AddGlobalInput(m_GlobalInputs);
+						m_NewSSR.Temporal->AddGlobalInput(ssrGlobalBuffer);
+					}
+
+					//apply
+					{
+						ComputePipelineConfig pipelineConfig;
+						pipelineConfig.DebugName = "SSSRApply";
+						pipelineConfig.Shader = Renderer::GetShader("SSSRApply");
+						m_NewSSR.ApplyPass = ComputePass::Create(ComputePassConfiguration{ "SSSRApply",ComputePipeline::Create(pipelineConfig) });
+						m_NewSSR.ApplyPass->AddGlobalInput(m_GlobalInputs);
+						m_NewSSR.ApplyPass->AddGlobalInput(ssrGlobalBuffer);
 					}
 				}
 				//HZB
@@ -1439,6 +1487,8 @@ namespace Proof
 			}
 			// predepth
 			m_PreDepthPass->GetTargetFrameBuffer()->Resize(viewportSize);
+			m_PrevDepthImage->Resize(viewportSize.x, viewportSize.y);
+			m_PrevNormalImage->Resize(viewportSize.x, viewportSize.y);
 
 			//geometrypass
 			m_GeometryPass->GetTargetFrameBuffer()->Resize(viewportSize);
@@ -1752,6 +1802,7 @@ namespace Proof
 			}
 			m_SubmeshTransformBuffers[frameIndex].Buffer->SetData(m_SubmeshTransformBuffers[frameIndex].Data, offset * sizeof(TransformVertexData));
 		}
+		Renderer::CopyImage(m_CommandBuffer, m_GeometryPass->GetOutput(1).As<Image2D>(), m_PrevNormalImage);
 
 		//very important because its not cleared and images are recreating for the limunance
 		// it affects the HBAO so much
@@ -2072,7 +2123,7 @@ namespace Proof
 
 		Timer preDepthTimer;
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
-
+		Renderer::CopyImage(m_CommandBuffer, m_PreDepthPass->GetOutput(0).As<Image2D>(), m_PrevDepthImage);
 		Renderer::BeginRenderPass(m_CommandBuffer, m_PreDepthPass, true);
 
 		for (auto& [meshKey, dc] : m_MeshDrawList)
@@ -2089,6 +2140,7 @@ namespace Proof
 		}
 		Renderer::EndRenderPass(m_PreDepthPass);
 
+		
 		m_Stats.Timers.PreDepthPass = preDepthTimer.ElapsedMillis();
 
 	}
@@ -2153,8 +2205,9 @@ namespace Proof
 
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
-	
-
+	//set
+		{
+		}
 
 		{
 			PF_PROFILE_FUNC("GeometryPass::SkyBoxPass");
@@ -3002,6 +3055,8 @@ namespace Proof
 			.RoughnessThreshold = 0.2f,
 			.TemporalVarianceThreshold = 0.0f,
 		};
+
+		
 		//set up
 		{
 			auto sbRayCounter = m_NewSSR.SBRayCounter->GetBuffer(Renderer::GetCurrentFrameInFlight());
@@ -3009,6 +3064,13 @@ namespace Proof
 			buffer.Fill(0);
 			sbRayCounter->SetData(buffer);
 			buffer.Release();
+
+			Renderer::ClearImage(m_CommandBuffer, m_NewSSR.Radiance);
+			Renderer::ClearImage(m_CommandBuffer, m_NewSSR.Variance);
+			Renderer::ClearImage(m_CommandBuffer, m_NewSSR.ExtractRoughness);
+			Renderer::ClearImage(m_CommandBuffer, m_NewSSR.SampleCount);
+			Renderer::ClearImage(m_CommandBuffer, m_NewSSR.ReprojectImage);
+			Renderer::ClearImage(m_CommandBuffer, m_NewSSR.AverageRadiance);
 		}
 		//new ssr pass
 		{
@@ -3069,7 +3131,7 @@ namespace Proof
 		{
 			auto intersect = m_NewSSR.Intersect;
 
-			intersect->SetInput("u_GeometryTexture", m_GeometryPass->GetOutput(0));
+			intersect->SetInput("u_GeometryTexture", m_CompositePass->GetOutput(0));
 			intersect->SetInput("o_SSRIntersectionImage", m_NewSSR.Radiance);
 			intersect->SetInput("u_SSSRExtractRoughnessImage", m_NewSSR.ExtractRoughness);
 			intersect->SetInput("u_CubeMapPrefilter", m_Environment->GetPrefilterMap());
@@ -3084,19 +3146,19 @@ namespace Proof
 		//PF_ENGINE_INFO("SBDENOISE GPUDispatchIndirectCommand X: {} Y: {} Z:{}", data->x, data->y, data->z);
 		//reproject
 		{
-
+			/*
 			auto reproject = m_NewSSR.Reproject;
 
 
 			reproject->SetInput("u_SSSRIntersectionMap", m_NewSSR.Radiance);
-			reproject->SetInput("u_PreviewDepthMap", m_PreDepthPass->GetOutput(0));
+			reproject->SetInput("u_PreviewDepthMap", m_PrevDepthImage);
 			reproject->SetInput("u_PrevSSSRRadianceMap", m_NewSSR.PreviousRadiance);
-			reproject->SetInput("u_PrevNormalMap", m_GeometryPass->GetOutput(1));
+			reproject->SetInput("u_PrevNormalMap", m_PrevNormalImage);
 			reproject->SetInput("u_SSSRVarianceHistory", m_NewSSR.PreviousVariance);
 			reproject->SetInput("u_SSSRExtractRoughness", m_NewSSR.ExtractRoughness);
 			reproject->SetInput("u_PrevSampleCount", m_NewSSR.PreviousSampleCount);
 
-			reproject->SetInput("o_SSSRReprojectedRadiance", m_NewSSR.Radiance);
+			reproject->SetInput("o_SSSRReprojectedRadiance", m_NewSSR.ReprojectImage);
 			reproject->SetInput("o_SSSRAverageRadiance", m_NewSSR.AverageRadiance);
 			reproject->SetInput("o_SSRVariance", m_NewSSR.Variance);
 			reproject->SetInput("o_SSRSampleCount", m_NewSSR.SampleCount);
@@ -3108,7 +3170,63 @@ namespace Proof
 			reproject->PushData("u_PushData", &pushConst);
 			reproject->DispatchIndirect(m_NewSSR.SBDenoiseCommand, 0);
 			Renderer::EndComputePass(reproject);
+			*/
 		}
+		/*
+		//prefilter
+		{
+			auto prefilter = m_NewSSR.Prefilter;
+
+			prefilter->SetInput("u_SSSRAverageRadiance", m_NewSSR.AverageRadiance);
+			prefilter->SetInput("u_SSSRIntersection", m_NewSSR.Radiance);
+			prefilter->SetInput("u_SSSRVariance", m_NewSSR.Variance);
+			prefilter->SetInput("u_SSSRExtractRoughness", m_NewSSR.ExtractRoughness);
+
+			prefilter->SetInput("o_SSSRTemporalFilterRadiance", m_NewSSR.Radiance);
+			prefilter->SetInput("o_SSSRTemporalFilterVariance", m_NewSSR.Variance);
+
+			Renderer::BeginComputePass(m_CommandBuffer, prefilter);
+			prefilter->PushData("u_PushData", &pushConst);
+			prefilter->DispatchIndirect(m_NewSSR.SBDenoiseCommand, 0);
+			Renderer::EndComputePass(prefilter);
+		}
+		
+		//Temporal
+		{
+			auto temporal = m_NewSSR.Temporal;
+
+			temporal->SetInput("u_SSSRAverageRadiance", m_NewSSR.AverageRadiance);
+			temporal->SetInput("U_SSSRPrefilterRadiance", m_NewSSR.PreviousRadiance);
+			temporal->SetInput("u_SSSRReprojectedRadiance", m_NewSSR.ReprojectImage);
+			temporal->SetInput("u_SSSRPrefilterVariance", m_NewSSR.PreviousVariance);
+			temporal->SetInput("u_PrevSampleCount", m_NewSSR.PreviousSampleCount);
+			temporal->SetInput("u_SSSRExtractRoughness", m_NewSSR.ExtractRoughness);
+
+
+			temporal->SetInput("o_SSSRTemporalFilterRadiance", m_NewSSR.Radiance);
+			temporal->SetInput("o_SSSRTemporalFilterVariance", m_NewSSR.Variance);
+
+			Renderer::BeginComputePass(m_CommandBuffer, temporal);
+			temporal->PushData("u_PushData", &pushConst);
+			temporal->DispatchIndirect(m_NewSSR.SBDenoiseCommand, 0);
+			Renderer::EndComputePass(temporal);
+		
+		}
+
+		{
+			auto apply = m_NewSSR.ApplyPass;
+
+			apply->SetInput("u_BRDFLUT", Renderer::GetBRDFLut());
+			apply->SetInput("o_OutputGeometryImage", m_GeometryPass->GetOutput(0));
+			apply->SetInput("u_MetalnessRoughnessMap", m_GeometryPass->GetOutput(2));
+			apply->SetInput("u_WorldTexture", m_GeometryPass->GetOutput(0));
+			apply->SetInput("u_SSSRIntersectionMap", m_NewSSR.Radiance);
+			Renderer::BeginComputePass(m_CommandBuffer, apply);
+			apply->PushData("u_PushData", &pushConst);
+			apply->Dispatch(GetGroupCount(m_UBScreenData.FullResolution.x, 8), GetGroupCount(m_UBScreenData.FullResolution.y, 8), 1);
+			Renderer::EndComputePass(apply);
+		}
+		*/
 		//endindg
 		{
 			Math::Swap(m_NewSSR.Variance, m_NewSSR.PreviousVariance);

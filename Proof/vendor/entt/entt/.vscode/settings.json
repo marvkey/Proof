@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "functional": "cpp",
+        "list": "cpp",
+        "memory": "cpp",
+        "vector": "cpp",
+        "xhash": "cpp",
+        "xmemory": "cpp",
+        "xtree": "cpp"
+    }
+}

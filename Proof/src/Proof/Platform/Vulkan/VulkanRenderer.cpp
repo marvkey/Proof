@@ -127,6 +127,7 @@ namespace Proof
 
 				VkDevice device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
 
+				VkImageAspectFlagBits aspectMask = Utils::IsDepthFormat( dst->GetSpecification().Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 				VkImage srcImage = src->GetinfoRef().ImageAlloc.Image;
 				VkImage dstImage = dst->GetinfoRef().ImageAlloc.Image;
 				glm::uvec2 srcSize = { src->GetSize().X,src->GetSize().Y };
@@ -136,7 +137,7 @@ namespace Proof
 				region.srcOffset = { 0, 0, 0 };
 				region.dstOffset = { 0, 0, 0 };
 				region.extent = { srcSize.x, srcSize.y, 1 };
-				region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				region.srcSubresource.aspectMask = aspectMask;
 				region.srcSubresource.baseArrayLayer = 0;
 				region.srcSubresource.mipLevel = 0;
 				region.srcSubresource.layerCount = 1;
@@ -154,7 +155,7 @@ namespace Proof
 					imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 					imageMemoryBarrier.image = srcImage;
 
-					imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					imageMemoryBarrier.subresourceRange.aspectMask = aspectMask;
 					imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
 					imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
 					imageMemoryBarrier.subresourceRange.layerCount = 1;
@@ -175,7 +176,7 @@ namespace Proof
 					imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 					imageMemoryBarrier.image = dstImage;
 
-					imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					imageMemoryBarrier.subresourceRange.aspectMask = aspectMask;
 					imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
 					imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
 					imageMemoryBarrier.subresourceRange.layerCount = 1;
@@ -200,7 +201,7 @@ namespace Proof
 					imageMemoryBarrier.newLayout = srcImageLayout;
 					imageMemoryBarrier.image = srcImage;
 
-					imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					imageMemoryBarrier.subresourceRange.aspectMask = aspectMask;
 					imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
 					imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
 					imageMemoryBarrier.subresourceRange.layerCount = 1;
@@ -221,7 +222,7 @@ namespace Proof
 					imageMemoryBarrier.newLayout = dstImageLayout;
 					imageMemoryBarrier.image = dstImage;
 
-					imageMemoryBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+					imageMemoryBarrier.subresourceRange.aspectMask = aspectMask;
 					imageMemoryBarrier.subresourceRange.baseArrayLayer = 0;
 					imageMemoryBarrier.subresourceRange.baseMipLevel = 0;
 					imageMemoryBarrier.subresourceRange.layerCount = 1;

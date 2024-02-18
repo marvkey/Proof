@@ -192,19 +192,15 @@ float GetDisocclusionFactor(vec3 normal, vec3 historyNormal, float linearDepth, 
 }
 
 
-float GetLinearDepth(vec2 uv, float depth)
-{
-    vec3 viewSpacePos = InvProjectPosition(vec3(uv, depth), u_Camera.InverseProjection);
-    return abs(viewSpacePos.z);
-}
+
 
 vec2 GetHitPositionReprojection(ivec2 dispatchThreadId, vec2 uv, float reflectedRayLength) 
 {
     float z = LoadDepth(dispatchThreadId);
 
     // Viewspace ray position.
-    //vec3 viewSpaceRay = getViewPos(uv, z, frameData);
-    vec3 viewSpaceRay = ScreenSpaceToViewSpace(vec3(uv,z));
+    vec3 viewSpaceRay = GetViewPos(uv, z);
+    //vec3 viewSpaceRay = ScreenSpaceToViewSpace(vec3(uv,z));
     // We start out with reconstructing the ray length in view space.
     // This includes the portion from the camera to the reflecting surface as well as the portion from the surface to the hit position.
     float surfaceDepth = length(viewSpaceRay);
@@ -347,7 +343,7 @@ void PickReprojection(
     }
 
     float depth = LoadDepth(dispatchThreadId);
-    float linearDepth = LinearizeDepthPrev(depth);
+    float linearDepth = LinearizeDepth(depth);
 
     // Determine disocclusion factor based on history
     disocclusionFactor = GetDisocclusionFactor(normal, historyNormal, linearDepth, historyLinearDepth);
@@ -443,7 +439,10 @@ void PickReprojection(
     }
     disocclusionFactor = disocclusionFactor < kDisocclusionThreshold ? 0.0 : disocclusionFactor;
 }
-
+vec3 UnpackWorldNormal(vec3 pack)
+{
+	return normalize(pack * 2.0 - vec3(1.0));
+}
 void Reproject(ivec2 dispatchThreadId, ivec2 groupThreadId, uvec2 screenSize, float temporalStabilityFactor, int maxSamples) 
 {
     InitializeGroupSharedMemory(dispatchThreadId, groupThreadId, ivec2(screenSize));
@@ -458,7 +457,7 @@ void Reproject(ivec2 dispatchThreadId, ivec2 groupThreadId, uvec2 screenSize, fl
     float numSamples = 0.0;
     float roughness  = float(texelFetch(u_SSSRExtractRoughness, dispatchThreadId, 0).r);
     
-    vec3 normal = texelFetch(u_NormalMap, dispatchThreadId, 0).rgb;
+    vec3 normal = UnpackWorldNormal(texelFetch(u_NormalMap, dispatchThreadId, 0).rgb);
 
     vec4 intersectResult = texelFetch(u_SSSRIntersectionMap, dispatchThreadId, 0);
     vec3 radiance = vec3(intersectResult.xyz);
@@ -573,7 +572,6 @@ void Reproject(ivec2 dispatchThreadId, ivec2 groupThreadId, uvec2 screenSize, fl
 layout (local_size_x = 8, local_size_y = 8) in;
 void main()
 {
-/*
     uint packedCoords = s_DenoiseTileList.Data[int(gl_WorkGroupID)];
 
     ivec2 dispatchThreadId = ivec2(packedCoords & 0xffffu, (packedCoords >> 16) & 0xffffu) + ivec2(gl_LocalInvocationID.xy);
@@ -584,5 +582,5 @@ void main()
 
     uvec2 screenSize = textureSize(u_DepthMap, 0);
     Reproject(ivec2(remappedDispatchThreadId), ivec2(remappedGroupThreadId), screenSize, kTemporalStableReprojectFactor, kTemporalPeriod);
-    */
+    
 }

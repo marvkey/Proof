@@ -128,7 +128,8 @@ void ClassifyTiles(uvec2 dispatchThreadId, uvec2 groupThreadId, float roughness)
         vec3 worldSpaceNormal = LoadWorldSpaceNormal(ivec2(dispatchThreadId.xy));
         float z = LoadDepth(ivec2(dispatchThreadId.xy), 0);
         vec3 screen_uv_space_ray_origin = vec3(uv, z);
-        vec3 view_space_ray = ScreenSpaceToViewSpace(screen_uv_space_ray_origin);
+        //vec3 view_space_ray = ScreenSpaceToViewSpace(screen_uv_space_ray_origin);
+        vec3 view_space_ray = GetViewPos(screen_uv_space_ray_origin.xy,screen_uv_space_ray_origin.z);
         vec3 view_space_ray_direction = normalize(view_space_ray);
         vec3 view_space_surface_normal = vec4(u_Camera.View *  vec4(worldSpaceNormal, 0)).xyz;
         vec3 view_space_reflected_direction = reflect(view_space_ray_direction, view_space_surface_normal);
@@ -148,7 +149,7 @@ void ClassifyTiles(uvec2 dispatchThreadId, uvec2 groupThreadId, float roughness)
         uint tileOffset = AddDenoiseTileCount();
         AddDenoiserTile(tileOffset, dispatchThreadId);
     }
-/*
+    /*
 // Shared tile count clear.
     sharedTileCount = 0;
 
@@ -157,7 +158,8 @@ void ClassifyTiles(uvec2 dispatchThreadId, uvec2 groupThreadId, float roughness)
 
     const bool bAllInScreen = (dispatchThreadId.x < workSize.x) && (dispatchThreadId.y < workSize.y);
     //const bool bCanReflective = isShadingModelValid(texelFetch(inGbufferA, ivec2(dispatchThreadId), 0).a); // in the api copied a is if the shaidn gmodel if valid
-    const bool bCanReflective = IsReflectiveSurface(dispatchThreadId,roughness);
+   /// const bool bCanReflective = IsReflectiveSurface(dispatchThreadId,roughness);
+    const bool bCanReflective =  (texelFetch(u_DepthMap, ivec2(dispatchThreadId), 0).r != 0) && IsGlossyReflection(roughness);
 
     const bool bMirrorPlane = IsMirrorReflection(roughness);
     const bool bBaseRay = IsBaseRay(dispatchThreadId, samplesPerQuad);
@@ -264,8 +266,9 @@ void main()
     ivec2 workPos = ivec2(dispatchId);
 
     float perceptualRoughness = texelFetch(u_MetalnessRoughness, workPos, 0).g;
-    ClassifyTiles(dispatchId, groupThreadId, perceptualRoughness);
+    float roughness = perceptualRoughness * perceptualRoughness;
+    ClassifyTiles(dispatchId, groupThreadId, roughness);
 
     // Also store roughness.
-    imageStore(o_SSRExtractRoughness, workPos, vec4(perceptualRoughness, 0.0f, 0.0f, 0.0f));
+    imageStore(o_SSRExtractRoughness, workPos, vec4(roughness, 0.0f, 0.0f, 0.0f));
 }

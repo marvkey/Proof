@@ -6,6 +6,7 @@
 #include "Proof/Renderer/Shader.h"
 #include "Proof/Renderer/RenderPass.h"
 #include "Proof/Core/FrameTime.h"
+#include "Proof/ImGui/UIWidgets.h"
 namespace Proof
 {
 
@@ -63,15 +64,35 @@ namespace Proof
 
 					});
 				}
-				Renderer::GetShaderLibrary()->ForEachShader([&](Count<Shader> shader) 
-					{
+				//Renderer::GetShaderLibrary()->ForEachShader([&](Count<Shader> shader) 
+				//	{
+				//
+				//		UI::PushID();
+				//		if (UI::AttributeButton(shader->GetName(), "Reload"))
+				//			shader->Reload();
+				//		UI::PopID();
+				//
+				//	});
 
-						UI::PushID();
-						if (UI::AttributeButton(shader->GetName(), "Reload"))
-							shader->Reload();
-						UI::PopID();
+				static std::string searchedString;
+				UI::Widgets::SearchWidget(searchedString);
+				ImGui::Indent();
+				auto& shaders = Renderer::GetShaderLibrary()->GetShaderMap();
+				for (auto& [name, shader] : shaders)
+				{
+					if (!UI::IsMatchingSearch(name, searchedString))
+						continue;
 
-					});
+					ImGui::Columns(2);
+					ImGui::Text(name.c_str());
+					ImGui::NextColumn();
+					std::string buttonName = fmt::format("Reload##{0}", name);
+					if (ImGui::Button(buttonName.c_str()))
+						shader->Reload();
+					ImGui::Columns(1);
+				}
+				ImGui::Unindent();
+
 				UI::EndTreeNode();
 			}
 
@@ -196,6 +217,15 @@ namespace Proof
 
 						WorldRendererPanelImage("ExtractRoughness", m_WorldRenderer->m_NewSSR.ExtractRoughness);
 						WorldRendererPanelImage("Previous ExtractRoughness", m_WorldRenderer->m_NewSSR.PreviousExtractRoughness);
+
+						WorldRendererPanelImage("SampleCount", m_WorldRenderer->m_NewSSR.SampleCount);
+						WorldRendererPanelImage("Previous SampleCount", m_WorldRenderer->m_NewSSR.PreviousSampleCount);
+
+						WorldRendererPanelImage("Reproject", m_WorldRenderer->m_NewSSR.ReprojectImage);
+						WorldRendererPanelImage("Previous ReprojectImage", m_WorldRenderer->m_NewSSR.PreviousReprojectImage);
+
+						WorldRendererPanelImage("Average Radiance", m_WorldRenderer->m_NewSSR.AverageRadiance);
+
 					}
 					UI::EndTreeNode();
 				}

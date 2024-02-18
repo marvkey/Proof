@@ -247,6 +247,12 @@ namespace Proof
 			case Proof::ViewportEditorImage::Depth:
 				currentImage = m_WorldRenderer->m_PreDepthPass->GetOutput(0);
 				break;
+			case Proof::ViewportEditorImage::PrevDepth:
+				currentImage = m_WorldRenderer->m_PrevDepthImage;
+				break;
+			case Proof::ViewportEditorImage::PrevNormal:
+				currentImage = m_WorldRenderer->m_PrevNormalImage;
+				break;
 			default:
 				break;
 		}

@@ -142,12 +142,47 @@ void AddDenoiserTile(uint index, uvec2 tileCoord)
 {
     s_DenoiseTileList.Data[index] = ((tileCoord.y & 0xffffu) << 16) | ((tileCoord.x & 0xffffu) << 0);
 }
+vec3 ProjectPosition(vec3 origin, mat4 mat) 
+{
+   
+    vec4 projectPos = mat * vec4(origin, 1.0);
+    projectPos.xyz /= projectPos.w;
+
+    projectPos.xy = 0.5 * projectPos.xy + 0.5;
+    projectPos.y  = 1.0 - projectPos.y;
+
+    return projectPos.xyz;
+}
 // Construct position like view space or world space.
 vec3 ConstructPos(vec2 uv, float depthZ, in const mat4 invertMatrix)
 {
     vec4 posClip  = vec4(uv.x * 2.0f - 1.0f, 1.0f - uv.y * 2.0f, depthZ, 1.0f);
     vec4 posWorldRebuild = invertMatrix * posClip;
     return posWorldRebuild.xyz / posWorldRebuild.w;
+}
+vec3 InvProjectPosition(vec3 coord, mat4 mat) 
+{
+    coord.y = (1 - coord.y);
+    coord.xy = 2 * coord.xy - 1;
+    vec4 projected = mat * vec4(coord, 1);
+    projected.xyz /= projected.w;
+    return projected.xyz;
+}
+//vec3 ScreenSpaceToViewSpace(vec3 screen_space_position) 
+//{
+//    return ConstructPos(screen_space_position.xy,screen_space_position.z, u_Camera.InverseProjection);
+//}
+//
+//vec3 ScreenSpaceToWorldSpace(vec3 screen_space_position) 
+//{
+//    return ConstructPos(screen_space_position.xy,screen_space_position.z, u_Camera.InverseViewProjectionMatrix);
+//}
+
+// Construct position like view space or world space.
+// Construct view space position from device z and it's sample uv.
+vec3 GetViewPos(vec2 uv, float depthZ)
+{
+    return ConstructPos(uv, depthZ, u_Camera.InverseProjection);
 }
 // Construct world position from device z and it's sample uv.
 vec3 GetWorldPos(vec2 uv, float depthZ)

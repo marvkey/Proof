@@ -55,6 +55,7 @@ namespace Proof
                 shader.second->Reload();
             }
         }
+        const std::unordered_map<std::string, Count<Shader>>& GetShaderMap()const { return ShaderMap; }
 
     private:
         std::unordered_map<std::string, Count<Shader>> ShaderMap;

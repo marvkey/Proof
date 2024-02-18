@@ -6,7 +6,7 @@ World:
         Tag: Sphere
         tags: []
       TransformComponent:
-        Location: [0, 4.5, 2.98023224e-08]
+        Location: [0.129669234, 4.5, 2.98023224e-08]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -67,7 +67,7 @@ World:
         tags: []
       TransformComponent:
         Location: [0, 2.25845432, 0.367415309]
-        Rotation: [1.59174025, 1.38579142, 0.101229101]
+        Rotation: [2.1991148, 1.01752698, 0.511381447]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
@@ -77,10 +77,10 @@ World:
         SkyBoxLod: 0
         MapRotation: 0
         Intensity: 0.200000003
-        EnvironmentState: EnvironmentTexture
+        EnvironmentState: HosekWilkie
         TextureDataImage: 4048020241950879645
         HosekWilkieTurbidity: 4
-        HosekWilkieGroundReflectance: 0.100000001
+        HosekWilkieGroundReflectance: 0.0769999996
         PreethamTurbidity: 4
     - Entity: 17419211597430694452
       TagComponent:
@@ -161,7 +161,7 @@ World:
       MeshComponent:
         MeshAssetPointerID: 18348114341737718825
       MeshColliderComponent:
-        ColliderID: 8682265739073847327
+        ColliderID: 17235932335993546285
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0
@@ -181,10 +181,14 @@ World:
         tags: []
       TransformComponent:
         Location: [0.699999988, 2.46479583, -1]
-        Rotation: [-0.562434077, -0.151792958, -0.0447002985]
-        Scale: [0.999997556, 0.999998927, 0.999998987]
+        Rotation: [-0.0347524844, -0.197529182, -0.162225157]
+        Scale: [0.999997616, 0.999998569, 0.99999845]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
+        MaterialTable:
+          - Material: ""
+            AssetID: 14983098330679523653
+            Index: 0

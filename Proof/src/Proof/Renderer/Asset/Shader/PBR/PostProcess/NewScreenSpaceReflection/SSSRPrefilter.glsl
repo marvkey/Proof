@@ -1,27 +1,63 @@
 //https://github.com/qiutang98/flower/blob/0414798840c1c4aef4e742f521696378695e7897/source/shader/sssr/sssr_prefilter.glsl
 //https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/d7531ae47d8b36a5d4025663e731a47a38be882f/sdk/include/FidelityFX/gpu/denoiser/ffx_denoiser_reflections_prefilter.h#L120
-#compute shader
+#Compute Shader
+
+#version 450
 
 #extension GL_GOOGLE_include_directive : enable
 #extension GL_KHR_shader_subgroup_basic : enable
 #extension GL_KHR_shader_subgroup_ballot : enable
 #include <PBR/PostProcess/NewScreenSpaceReflection/SSSRCommon.glslh>
 
+layout (binding = 0) uniform texture2D u_SSSRAverageRadiance;
+layout (binding = 1) uniform texture2D u_SSSRIntersection;
+layout (binding = 2) uniform texture2D u_SSSRVariance;
+
+layout (binding = 3) uniform texture2D u_SSSRExtractRoughness;
+
+layout (binding = 4 , rgba16f) uniform image2D o_SSSRTemporalFilterRadiance;
+layout (binding = 5 , r16f) uniform image2D o_SSSRTemporalFilterVariance;
+
+// Vulkan linearize z.
+// NOTE: viewspace z range is [-zFar, -zNear], linear z is viewspace z mul -1 result on vulkan.
+// if no exist reverse z:
+//       linearZ = zNear * zFar / (zFar +  deviceZ * (zNear - zFar));
+//  when reverse z enable, then the function is:
+//       linearZ = zNear * zFar / (zNear + deviceZ * (zFar - zNear));
+float LinearizeDepth(float z, float n, float f)
+{
+    return n * f / (z * (f - n) + n);
+}
+
+float LinearizeDepth(float z)
+{
+    const float n = u_Camera.NearPlane;
+    const float f = u_Camera.FarPlane;
+    return LinearizeDepth(z, n, f);
+}
+
+float LinearizeDepthPrev(float z)
+{
+    const float n = u_Camera.NearPlane;
+    const float f = u_Camera.FarPlane;
+    return LinearizeDepth(z, n, f);
+}
+
 
 vec3 SampleAverageRadiance(vec2 uv) 
 {
-    return texture(sampler2D(inSSRAverageRadiance, linearClampBorder0000Sampler), uv).rgb;
+    return texture(sampler2D(u_SSSRAverageRadiance, u_LinearClampBorder0000Sampler), uv).rgb;
 }
 
 float LoadRoughness(ivec2 coord) 
 {
-    return texelFetch(inSSRExtractRoughness, coord, 0).r;
+    return texelFetch(u_SSSRExtractRoughness, coord, 0).r;
 }
 
 void StorePrefilteredReflections(ivec2 coord, vec3 radiance, float variance) 
 {
-    imageStore(SSRPrefilterRadiance, coord, vec4(radiance, 0.0));
-    imageStore(SSRPrefilterVariance, coord, vec4(variance, 0.0, 0.0, 0.0));
+    imageStore(o_SSSRTemporalFilterRadiance, coord, vec4(radiance, 0.0));
+    imageStore(o_SSSRTemporalFilterVariance, coord, vec4(variance, 0.0, 0.0, 0.0));
 }
 
 shared vec4 sharedData0[16][16];
@@ -43,12 +79,12 @@ void LoadNeighborhood(
     out float depth,
     ivec2 screenSize) 
 {
-    radiance = texelFetch(inSSRIntersection, coord, 0).xyz;
-    variance = texelFetch(inSSRVariance, coord, 0).x;
-    normal = texelFetch(inGbufferB, coord, 0).xyz;
+    radiance = texelFetch(u_SSSRIntersection, coord, 0).xyz;
+    variance = texelFetch(u_SSSRVariance, coord, 0).x;
+    normal = texelFetch(u_NormalMap, coord, 0).xyz;
 
-    float deviceZ = texelFetch(inDepth, coord, 0).r;
-    depth = linearizeDepth(deviceZ, frameData);
+    float deviceZ = texelFetch(u_DepthMap, coord, 0).r;
+    depth = LinearizeDepth(deviceZ);
 }
 
 void StoreInGroupSharedMemory(ivec2 idx, vec3 radiance, float variance, vec3 normal, float depth) 
@@ -91,13 +127,13 @@ void InitializeGroupSharedMemory(ivec2 dispatchThreadId, ivec2 groupThreadId, iv
     // First store all loads in registers
     for (int i = 0; i < 4; ++i) 
     {
-        loadNeighborhood(dispatchThreadId + offset[i], radiance[i], variance[i], normal[i], depth[i], screenSize);
+        LoadNeighborhood(dispatchThreadId + offset[i], radiance[i], variance[i], normal[i], depth[i], screenSize);
     }
 
     // Then move all registers to groupshared memory
     for (int j = 0; j < 4; ++j) 
     {
-        storeInGroupSharedMemory(groupThreadId + offset[j], radiance[j], variance[j], normal[j], depth[j]);
+        StoreInGroupSharedMemory(groupThreadId + offset[j], radiance[j], variance[j], normal[j], depth[j]);
     }
 }
 
@@ -115,12 +151,17 @@ float GetRadianceWeight(vec3 centerRadiance, vec3 neighborRadiance, float varian
 {
     return max(exp(-(kRadianceWeightBias + variance * kRadianceWeightVarianceK) * length(centerRadiance - neighborRadiance.xyz)), 1.0e-2);
 }
-
+// Rounds value to the nearest multiple of 8
+uvec2 RoundUp8(uvec2 value) 
+{
+    uvec2 roundDown = value & ~0x7;
+    return (roundDown == value) ? value : value + 8;
+}
 void Resolve(ivec2 groupThreadId, vec3 avgRadiance, NeighborhoodSample center, out vec3 resolvedRadiance, out float resolvedVariance)
 {
     // Initial weight is important to remove fireflies.
     // That removes quite a bit of energy but makes everything much more stable.
-    float accumulatedWeight = getRadianceWeight(avgRadiance, center.radiance, center.variance);
+    float accumulatedWeight = GetRadianceWeight(avgRadiance, center.radiance, center.variance);
 
     vec3 accumulatedRadiance = center.radiance * accumulatedWeight;
     float  accumulatedVariance = center.variance * accumulatedWeight * accumulatedWeight;
@@ -148,12 +189,12 @@ void Resolve(ivec2 groupThreadId, vec3 avgRadiance, NeighborhoodSample center, o
     for (int i = 0; i < kSampleCount; ++i) 
     {
         ivec2 newIdx = groupThreadId + kSampleOffsets[i];
-        NeighborhoodSample neighbor = loadFromGroupSharedMemory(newIdx);
+        NeighborhoodSample neighbor = LoadFromGroupSharedMemory(newIdx);
 
         float weight = 1.0;
-        weight *= getEdgeStoppingNormalWeight(vec3(center.normal), vec3(neighbor.normal));
-        weight *= getEdgeStoppingDepthWeight(center.depth, neighbor.depth);
-        weight *= getRadianceWeight(avgRadiance, neighbor.radiance.xyz, center.variance);
+        weight *= GetEdgeStoppingNormalWeight(vec3(center.normal), vec3(neighbor.normal));
+        weight *= GetEdgeStoppingDepthWeight(center.depth, neighbor.depth);
+        weight *= GetRadianceWeight(avgRadiance, neighbor.radiance.xyz, center.variance);
         weight *= varianceWeight;
 
         // Accumulate all contributions.
@@ -170,43 +211,43 @@ void Resolve(ivec2 groupThreadId, vec3 avgRadiance, NeighborhoodSample center, o
 
 void Prefilter(ivec2 dispatchThreadId, ivec2 groupThreadId, uvec2 screenSize) 
 {
-    float centerRoughness = loadRoughness(dispatchThreadId).r;
-    initializeGroupSharedMemory(dispatchThreadId, groupThreadId, ivec2(screenSize));
+    float centerRoughness = LoadRoughness(dispatchThreadId).r;
+    InitializeGroupSharedMemory(dispatchThreadId, groupThreadId, ivec2(screenSize));
 
     groupMemoryBarrier();
     barrier();
 
     groupThreadId += 4; // Center threads in groupshared memory
 
-    NeighborhoodSample center = loadFromGroupSharedMemory(groupThreadId);
+    NeighborhoodSample center = LoadFromGroupSharedMemory(groupThreadId);
 
     vec3 resolvedRadiance = center.radiance;
     float resolvedVariance = center.variance;
 
     // Check if we have to denoise or if a simple copy is enough
-    bool bNeedDenoiser = center.variance > 0.0 && isGlossyReflection(centerRoughness) && !isMirrorReflection(centerRoughness);
+    bool bNeedDenoiser = center.variance > 0.0 && IsGlossyReflection(centerRoughness) && !IsMirrorReflection(centerRoughness);
     if (bNeedDenoiser) 
     {
-        vec2 uv8 = (vec2(dispatchThreadId.xy) + 0.5) / roundUp8(screenSize);
+        vec2 uv8 = (vec2(dispatchThreadId.xy) + 0.5) / RoundUp8(screenSize);
 
-        vec3 avgRadiance = sampleAverageRadiance(uv8);
-        resolve(groupThreadId, avgRadiance, center, resolvedRadiance, resolvedVariance);
+        vec3 avgRadiance = SampleAverageRadiance(uv8);
+        Resolve(groupThreadId, avgRadiance, center, resolvedRadiance, resolvedVariance);
     }
 
-    storePrefilteredReflections(dispatchThreadId, resolvedRadiance, resolvedVariance);
+    StorePrefilteredReflections(dispatchThreadId, resolvedRadiance, resolvedVariance);
 }
 
 layout (local_size_x = 8, local_size_y = 8) in;
 void main()
 {
-    uint packedCoords = ssboDenoiseTileList.data[int(gl_WorkGroupID)];
+    uint packedCoords = s_DenoiseTileList.Data[int(gl_WorkGroupID)];
 
     ivec2 dispatchThreadId = ivec2(packedCoords & 0xffffu, (packedCoords >> 16) & 0xffffu) + ivec2(gl_LocalInvocationID.xy);
     ivec2 dispatchGroupId = dispatchThreadId / 8;
 
-    uvec2 remappedGroupThreadId = remap8x8(gl_LocalInvocationIndex);
+    uvec2 remappedGroupThreadId = Remap8x8(gl_LocalInvocationIndex);
     uvec2 remappedDispatchThreadId = dispatchGroupId * 8 + remappedGroupThreadId;
 
-    uvec2 screenSize = textureSize(inDepth, 0);
+    uvec2 screenSize = textureSize(u_DepthMap, 0);
     Prefilter(ivec2(remappedDispatchThreadId), ivec2(remappedGroupThreadId), screenSize);
 }

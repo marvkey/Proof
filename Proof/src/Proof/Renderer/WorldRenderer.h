@@ -271,7 +271,8 @@ namespace Proof
 
 		// pre pass
 		Count<RenderPass> m_PreDepthPass;
-
+		Count<class Image2D> m_PrevDepthImage;
+		Count<class Image2D> m_PrevNormalImage;
 		// debug
 		Count<RenderPass> m_GeometryWireFramePass;
 		Count<RenderPass> m_GeometryWireFrameOnTopPass;
@@ -349,6 +350,9 @@ namespace Proof
 			Count<ComputePass> IntersectArgs;
 			Count<ComputePass> Intersect;
 			Count<ComputePass> Reproject;
+			Count<ComputePass> Prefilter;
+			Count<ComputePass> Temporal;
+			Count<ComputePass> ApplyPass;
 
 			Count<StorageBufferSet> SBRayCounter;
 			Count<StorageBufferSet> SBRayList;

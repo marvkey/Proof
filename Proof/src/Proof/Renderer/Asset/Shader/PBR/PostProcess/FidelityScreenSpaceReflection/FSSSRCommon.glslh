@@ -1,0 +1,128 @@
+//https://github.com/qiutang98/flower/blob/main/source/shader/sssr/sssr_common.glsl
+#ifndef FSSSR_COMMON_GLSL
+#define FSSSR_COMMON_GLSL
+#extension GL_EXT_samplerless_texture_functions : enable
+#extension GL_KHR_shader_subgroup_shuffle : enable
+
+#include <Common.glslh>
+
+layout (set  = 1, binding = 6) uniform sampler2D u_HZBMap;
+layout (set  = 1, binding =7)  uniform sampler2D u_DepthMap;
+layout (set  = 1, binding =8)  uniform sampler2D u_NormalMap;
+layout (set  = 1, binding =9)  uniform textureCube  u_CubeMapPrefilter;
+
+layout(push_constant) uniform Info
+{   
+    uint SamplesPerQuad;
+    uint TemporalVarianceGuidedTracingEnabled;
+    uint MostDetailedMip;
+    float RoughnessThreshold; // Max roughness stop to reflection sample.
+    float TemporalVarianceThreshold;
+} u_PushData;
+
+const float kTemporalStableReprojectFactor = .8f; // big value is ghosting, small value is noise.
+const int kTemporalPeriod = 32; // 32 is good for keep energy fill.
+const float kTemporalStableFactor = kTemporalStableReprojectFactor;
+const float kDepthBufferThickness = 0.015f;
+const uint kMaxTraversalIterations = 64; // 128;
+const uint kMinTraversalOccupancy = 4;
+
+// FIX param.
+const float kAverageRadianceLuminanceWeight = 0.3f;
+const float kDisocclusionNormalWeight = 1.4f;
+const float kDisocclusionDepthWeight = 1.0f;
+const float kReprojectionNormalSimilarityThreshold = 0.9999;
+const float kReprojectSurfaceDiscardVarianceWeight = 1.5;
+const float kDisocclusionThreshold = 0.1;
+const float kPrefilterNormalSigma = 512.0;
+const float kPrefilterDepthSigma = 4.0;
+const float kRadianceWeightBias = 0.6;
+const float kRadianceWeightVarianceK = 0.1;
+const float kPrefilterVarianceBias = 0.1;
+const float kPrefilterVarianceWeight = 4.4;
+// Unpacks a packed value into ray coordinates and flags
+void UnpackRayCoords(uint packed, out uvec2 ray_coord, out bool copy_horizontal, out bool copy_vertical, out bool copy_diagonal) 
+{
+    ray_coord.x = (packed >> 0u) & 32767u;    // 0b111111111111111;
+    ray_coord.y = (packed >> 15u) & 16383u;   // 0b11111111111111;
+    copy_horizontal = bool((packed >> 29u) & 1u);
+    copy_vertical = bool((packed >> 30u) & 1u);
+    copy_diagonal = bool((packed >> 31u) & 1u);
+}
+
+// Transforms origin to uv space
+// Mat must be able to transform origin from its current space into clip space.
+vec3 ProjectPosition(vec3 origin, mat4 mat) {
+    vec4 projected = mat * vec4(origin, 1.0);
+    projected.xyz /= projected.w;
+    projected.xy = 0.5 * projected.xy + 0.5;
+    projected.y = (1.0 - projected.y);
+    return projected.xyz;
+}
+
+// Mat must be able to transform origin from texture space to a linear space.
+vec3 InvProjectPosition(vec3 coord, mat4 mat) {
+    coord.y = (1.0 - coord.y);
+    coord.xy = 2.0 * coord.xy - 1.0;
+    vec4 projected = mat * vec4(coord, 1.0);
+    projected.xyz /= projected.w;
+    return projected.xyz;
+}
+
+// Origin and direction must be in the same space and mat must be able to transform from that space into clip space.
+vec3 ProjectDirection(vec3 origin, vec3 direction, vec3 screen_space_origin, mat4 mat) {
+    vec3 offsetted = ProjectPosition(origin + direction, mat);
+    return offsetted - screen_space_origin;
+}
+
+//=== FFX_DNSR_Reflections_ override functions ===
+
+bool IsGlossyReflection(float roughness) 
+{
+    return roughness < u_PushData.RoughnessThreshold;
+}
+
+bool IsMirrorReflection(float roughness) {
+    return roughness < 0.0001;
+}
+
+vec3 ScreenSpaceToViewSpace(vec3 screen_space_position) 
+{
+    return ConstructPos(screen_space_position.xy,screen_space_position.z, u_Camera.InverseProjection);
+}
+
+vec3 ScreenSpaceToWorldSpace(vec3 screen_space_position) 
+{
+    return ConstructPos(screen_space_position.xy,screen_space_position.z, u_Camera.InverseViewProjectionMatrix);
+}
+
+bool AWaveReadAtLaneIndexB1(bool v, uint x )
+{
+    return subgroupShuffle(v, x);
+}
+
+uint AWaveLaneIndex()
+{
+    return gl_SubgroupInvocationID;
+}
+
+uint AWavePrefixCountBits(bool v)
+{
+    return subgroupBallotExclusiveBitCount(subgroupBallot(v));
+}
+void IncrementRayCounter(uint value, out uint original_value)
+{
+    original_value = atomicAdd(s_RayCounter.RayCount, value);
+}
+
+uint AWaveReadLaneFirstU1(uint v)
+{
+    return subgroupBroadcastFirst(v);
+}
+
+uint AWaveActiveCountBits(bool v)
+{
+    return subgroupBallotBitCount(subgroupBallot(v));
+}
+
+#endif

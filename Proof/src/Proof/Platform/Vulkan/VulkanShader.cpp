@@ -388,27 +388,84 @@ namespace Proof
     {
         if (m_ConstructorSamePaths)
         {
-            std::unordered_map<ShaderStage, std::string> shaderCode;
-            magic_enum::enum_for_each<ShaderStage>([&](ShaderStage stage) {
-                std::string source = ProcessStage(stage, m_Paths[stage]);
-                if (source.empty() == false)
-                    shaderCode.insert({ stage,source });
-            });
-            Utils::CreateCacheDirectoryIfNeeded();
-            if (Compile(shaderCode))
+            if (!m_InitialCompile)
             {
-                // if shader is succesful then we can copy the source doe
-                m_SourceCode = shaderCode;
-                CreateShader();
-                PF_ENGINE_INFO("Succesfully Compiled {} Shader", m_Name);
+                /*
+                Count< VulkanShader> instance = this;
+                Renderer::Submit([instance]() mutable
+                    {
 
-                for (auto& [index,callback] : m_ShaderReloads)
-                    callback();
+                        std::unordered_map<ShaderStage, std::string> shaderCode;
+                        magic_enum::enum_for_each<ShaderStage>([instance, &shaderCode](ShaderStage stage) mutable
+                            {
+                            std::string source = instance->ProcessStage(stage, instance->m_Paths[stage]);
+                            if (source.empty() == false)
+                                shaderCode.insert({ stage,source });
+                            });
+                        Utils::CreateCacheDirectoryIfNeeded();
+                        if (instance->Compile(shaderCode))
+                        {
+                            // if shader is succesful then we can copy the source doe
+                            instance->m_SourceCode = shaderCode;
+                            instance->CreateShader();
+                            PF_EC_INFO("Succesfully Compiled {} Shader", instance->m_Name);
+
+                            for (auto& [index, callback] : instance->m_ShaderReloads)
+                                callback();
+                        }
+                        else
+                        {
+                            PF_EC_ERROR("Failed Compiled {} Shader", instance->m_Name);
+                        }
+                    });
+                    */
+                std::unordered_map<ShaderStage, std::string> shaderCode;
+                magic_enum::enum_for_each<ShaderStage>([&](ShaderStage stage) {
+                    std::string source = ProcessStage(stage, m_Paths[stage]);
+                    if (source.empty() == false)
+                        shaderCode.insert({ stage,source });
+                    });
+                Utils::CreateCacheDirectoryIfNeeded();
+                if (Compile(shaderCode))
+                {
+                    // if shader is succesful then we can copy the source doe
+                    m_SourceCode = shaderCode;
+                    CreateShader();
+                    PF_EC_INFO("Succesfully Compiled {} Shader", m_Name);
+
+                    for (auto& [index, callback] : m_ShaderReloads)
+                        callback();
+                }
+                else
+                {
+                    PF_EC_ERROR("Failed Compiled {} Shader", m_Name);
+                }
             }
             else
             {
-                PF_ENGINE_ERROR("Failed Compiled {} Shader", m_Name);
+                std::unordered_map<ShaderStage, std::string> shaderCode;
+                magic_enum::enum_for_each<ShaderStage>([&](ShaderStage stage) {
+                    std::string source = ProcessStage(stage, m_Paths[stage]);
+                    if (source.empty() == false)
+                        shaderCode.insert({ stage,source });
+                    });
+                Utils::CreateCacheDirectoryIfNeeded();
+                if (Compile(shaderCode))
+                {
+                    // if shader is succesful then we can copy the source doe
+                    m_SourceCode = shaderCode;
+                    CreateShader();
+                    PF_ENGINE_INFO("Succesfully Compiled {} Shader", m_Name);
+
+                    for (auto& [index, callback] : m_ShaderReloads)
+                        callback();
+                }
+                else
+                {
+                    PF_ENGINE_ERROR("Failed Compiled {} Shader", m_Name);
+                }
             }
+           
 
             return;
         }
