@@ -96,7 +96,9 @@ namespace Proof
 		glm::vec2 JitterData;
 		glm::vec2 PrevJitterData;
 
+		glm::vec3 ViewDirection;
 		uint32_t JitterPeriod;        // jitter period for jitter data.
+
 		int bEnableJitter;       // Is main camera enable jitter in this frame.
 
 	};

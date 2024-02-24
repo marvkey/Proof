@@ -2,8 +2,16 @@
 #include "Proof/Core/Core.h"
 #include "Proof/Renderer/Texture.h"
 #include "FrameBuffer.h"
-namespace Proof{
+namespace Proof
+{
 
+
+	//https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/d7531ae47d8b36a5d4025663e731a47a38be882f/framework/cauldron/framework/inc/render/pipelinedesc.h#L38
+	//https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/d7531ae47d8b36a5d4025663e731a47a38be882f/framework/cauldron/framework/inc/render/renderdefines.h#L333
+	struct BlendMetaData
+	{
+
+	};
 
 	
 	enum class DrawType 

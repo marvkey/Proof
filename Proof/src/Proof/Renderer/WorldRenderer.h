@@ -352,7 +352,7 @@ namespace Proof
 			Count<ComputePass> Reproject;
 			Count<ComputePass> Prefilter;
 			Count<ComputePass> Temporal;
-			Count<ComputePass> ApplyPass;
+			Count<RenderPass> ApplyPass;
 
 			Count<StorageBufferSet> SBRayCounter;
 			Count<StorageBufferSet> SBRayList;
@@ -393,6 +393,12 @@ namespace Proof
 				uint32_t pad;
 			};
 		} m_NewSSR;
+
+		struct HizSSR
+		{
+			Count<ComputePass> SSSRPass;
+			Count<Image2D> OutputImage;
+		}m_HizSSR;
 		//bloom
 		Count<ComputePass> m_BloomComputePass;
 		Count<Texture2D> m_BloomDirtTexture;
@@ -429,6 +435,7 @@ namespace Proof
 
 		void SSRPass();
 		void NewSSRPass();
+		void HizSSRPass();
 		void DrawScene();
 		void ClearPass(Count<RenderPass> renderPass, bool explicitClear);
 		// tehse are static so basically when wer are writng code we avoid errors of 

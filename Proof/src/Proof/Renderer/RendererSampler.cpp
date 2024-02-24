@@ -26,6 +26,9 @@ namespace Proof
         Count<RenderSampler> LinearClampBorder1111MipPoint;
         Count<RenderSampler> LinearRepeatMipPoint;
         Count<RenderSampler> LinearRepeat;
+
+        Count<RenderSampler> Linear;
+        Count<RenderSampler> Point;
     };
     SamplerStorage* s_SamplerStorage = nullptr;
     void SamplerFactory::Init()
@@ -37,7 +40,7 @@ namespace Proof
             config.DebugName = "PointClampEdge";
             config.Filter = SamplerFilter::Nearest;
             config.MipMapMode = SamplerMipMapMode::NEAREST;
-            config.AddressMode = SamplerWrap::ClampEdge;
+            config.AddressMode = SamplerAddressMode::Clamp;
             s_SamplerStorage->PointClampEdge = RenderSampler::Create(config);
         }
         //point clamp border0000
@@ -46,7 +49,7 @@ namespace Proof
             config.DebugName = "PointClampBorder0000";
             config.Filter = SamplerFilter::Nearest;
             config.MipMapMode = SamplerMipMapMode::NEAREST;
-            config.AddressMode = SamplerWrap::ClampBorder;
+            config.AddressMode = SamplerAddressMode::MirrorOnce;
             config.BorderColor = SamplerBorderColor::TransperantBlack;
             s_SamplerStorage->PointClampBorder0000 = RenderSampler::Create(config);
         }
@@ -57,7 +60,7 @@ namespace Proof
             config.DebugName = "PointClampBorder1111";
             config.Filter = SamplerFilter::Nearest;
             config.MipMapMode = SamplerMipMapMode::NEAREST;
-            config.AddressMode = SamplerWrap::ClampBorder;
+            config.AddressMode = SamplerAddressMode::MirrorOnce;
             config.BorderColor = SamplerBorderColor::OpaqueWhite;
             s_SamplerStorage->PointClampBorder1111 = RenderSampler::Create(config);
         }
@@ -68,7 +71,7 @@ namespace Proof
             config.DebugName = "PointRepeat";
             config.Filter = SamplerFilter::Nearest;
             config.MipMapMode = SamplerMipMapMode::NEAREST;
-            config.AddressMode = SamplerWrap::Repeat;
+            config.AddressMode = SamplerAddressMode::Wrap;
             s_SamplerStorage->PointRepeat = RenderSampler::Create(config);
         }
 
@@ -78,7 +81,7 @@ namespace Proof
             config.DebugName = "LinearClampEdge";
             config.Filter = SamplerFilter::Linear;
             config.MipMapMode = SamplerMipMapMode::LINEAR;
-            config.AddressMode = SamplerWrap::ClampEdge;
+            config.AddressMode = SamplerAddressMode::Clamp;
             s_SamplerStorage->LinearClampEdge = RenderSampler::Create(config);
         }
 
@@ -88,7 +91,7 @@ namespace Proof
             config.DebugName = "LinearClampEdgeMipPoint";
             config.Filter = SamplerFilter::Linear;
             config.MipMapMode = SamplerMipMapMode::NEAREST;
-            config.AddressMode = SamplerWrap::ClampEdge;
+            config.AddressMode = SamplerAddressMode::Clamp;
             s_SamplerStorage->LinearClampEdgeMipPoint = RenderSampler::Create(config);
         }
 
@@ -98,7 +101,7 @@ namespace Proof
             config.DebugName = "LinearClampBorder0000MipPoint";
             config.Filter = SamplerFilter::Linear;
             config.MipMapMode = SamplerMipMapMode::NEAREST;
-            config.AddressMode = SamplerWrap::ClampBorder;
+            config.AddressMode = SamplerAddressMode::MirrorOnce;
             config.BorderColor = SamplerBorderColor::TransperantBlack;
             s_SamplerStorage->LinearClampBorder0000MipPoint = RenderSampler::Create(config);
         }
@@ -109,7 +112,7 @@ namespace Proof
             config.DebugName = "LinearClampBorder1111MipPoint";
             config.Filter = SamplerFilter::Linear;
             config.MipMapMode = SamplerMipMapMode::NEAREST;
-            config.AddressMode = SamplerWrap::ClampBorder;
+            config.AddressMode = SamplerAddressMode::MirrorOnce;
             config.BorderColor = SamplerBorderColor::OpaqueWhite;
             s_SamplerStorage->LinearClampBorder1111MipPoint = RenderSampler::Create(config);
         }
@@ -120,7 +123,7 @@ namespace Proof
             config.DebugName = "LinearRepeatMipPoint";
             config.Filter = SamplerFilter::Linear;
             config.MipMapMode = SamplerMipMapMode::NEAREST;
-            config.AddressMode = SamplerWrap::Repeat;
+            config.AddressMode = SamplerAddressMode::Wrap;
             s_SamplerStorage->LinearRepeatMipPoint = RenderSampler::Create(config);
         }
 
@@ -130,8 +133,36 @@ namespace Proof
             config.DebugName = "LinearRepeat";
             config.Filter = SamplerFilter::Linear;
             config.MipMapMode = SamplerMipMapMode::LINEAR;
-            config.AddressMode = SamplerWrap::Repeat;
+            config.AddressMode = SamplerAddressMode::Wrap;
             s_SamplerStorage->LinearRepeat = RenderSampler::Create(config);
+        }
+
+        //point sampler
+        {
+
+            SamplerResourceConfig config;
+            config.DebugName = "Point";
+            config.AddressMode.AddressW = SamplerAddressMode::Wrap;
+            config.AddressMode.AddressU = SamplerAddressMode::Clamp;
+            config.AddressMode.AddressV = SamplerAddressMode::Clamp;
+            config.CompareOp = SamplerCompare::Never;
+            config.MipMapMode = SamplerMipMapMode::NEAREST;
+            config.Filter = SamplerFilter::Nearest;
+            s_SamplerStorage->Point = RenderSampler::Create(config);
+        }
+
+        //linear sampler
+        {
+
+            SamplerResourceConfig config;
+            config.DebugName = "Linear";
+            config.MipMapMode = SamplerMipMapMode::LINEAR;
+            config.Filter = SamplerFilter::Linear;
+            config.AddressMode.AddressW = SamplerAddressMode::Wrap;
+            config.AddressMode.AddressU = SamplerAddressMode::Clamp;
+            config.AddressMode.AddressV = SamplerAddressMode::Clamp;
+            config.CompareOp = SamplerCompare::Never;
+            s_SamplerStorage->Linear = RenderSampler::Create(config);
         }
     }
     void SamplerFactory::ShutDown()
@@ -139,7 +170,14 @@ namespace Proof
         delete s_SamplerStorage;
         s_SamplerStorage = nullptr;
     }
-
+    Count<RenderSampler> SamplerFactory::GetLinear()
+    {
+        return s_SamplerStorage->Linear;
+    }
+    Count<RenderSampler> SamplerFactory::GetPoint()
+    {
+        return s_SamplerStorage->Point;
+    }
     Count<RenderSampler> SamplerFactory::GetPointClampEdge()
     {
         return s_SamplerStorage->PointClampEdge;

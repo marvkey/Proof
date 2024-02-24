@@ -76,11 +76,11 @@ World:
         TintColor: [1, 1, 1]
         SkyBoxLod: 0
         MapRotation: 0
-        Intensity: 0.200000003
-        EnvironmentState: HosekWilkie
-        TextureDataImage: 4048020241950879645
+        Intensity: 1.25
+        EnvironmentState: EnvironmentTexture
+        TextureDataImage: 12458148504177203633
         HosekWilkieTurbidity: 4
-        HosekWilkieGroundReflectance: 0.0769999996
+        HosekWilkieGroundReflectance: 0.100000001
         PreethamTurbidity: 4
     - Entity: 17419211597430694452
       TagComponent:
@@ -94,8 +94,25 @@ World:
         ParentHandle: 0
         Children: []
       DirectionalLightComponent:
-        Color: [0.75555557, 0.635226369, 0.635226369]
-        Intensity: 1.77999997
+        Color: [0.569986284, 0.675194681, 0.785185218]
+        Intensity: 2
+    - Entity: 9048213534458476492
+      TagComponent:
+        Tag: Sphere
+        tags: []
+      TransformComponent:
+        Location: [-1.94874477, 0.779248595, 3.36026859]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 51
+        MaterialTable:
+          - Material: ""
+            AssetID: 14983098330679523653
+            Index: 0
     - Entity: 13351935947672091411
       TagComponent:
         Tag: Plane
@@ -136,7 +153,7 @@ World:
         tags: []
       TransformComponent:
         Location: [-7.27199984, 3.13599992, -0.255285859]
-        Rotation: [3.14159274, -0, 1.61093891]
+        Rotation: [-3.14159226, 1.42108547e-14, 1.61093891]
         Scale: [4.89999962, 1, 2.79999995]
       HierarchyComponent:
         ParentHandle: 0
@@ -161,7 +178,7 @@ World:
       MeshComponent:
         MeshAssetPointerID: 18348114341737718825
       MeshColliderComponent:
-        ColliderID: 17235932335993546285
+        ColliderID: 715482515838580791
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0
@@ -192,3 +209,58 @@ World:
           - Material: ""
             AssetID: 14983098330679523653
             Index: 0
+    - Entity: 2353274854406094246
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [0.400000006, 0.844128549, 2.76167417]
+        Rotation: [-0.0347525552, -0.19752942, -0.162225068]
+        Scale: [0.999997616, 0.999997973, 0.99999851]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        MaterialTable:
+          - Material: ""
+            AssetID: 14983098330679523653
+            Index: 0
+    - Entity: 7186851988830310600
+      TagComponent:
+        Tag: Roof
+        tags: []
+      TransformComponent:
+        Location: [0, 11.0179996, 0]
+        Rotation: [0, -0, 0]
+        Scale: [27.4663448, 1.52999997, 6.50199986]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        MaterialTable:
+          - Material: ""
+            AssetID: 8487265460049034576
+            Index: 0
+    - Entity: 18223229880821765259
+      TagComponent:
+        Tag: Point Light
+        tags: []
+      TransformComponent:
+        Location: [-1.20000005, 0.471299946, 3.36078978]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      PointLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 50.6899986
+        MinRadius: 0
+        Radius: 1.41999996
+        Falloff: 1
+        CastsShadows: false
+        SoftShadows: false
+        ShadowStrength: 0.5
+        ShadowSoftness: 0.5

@@ -160,15 +160,23 @@ namespace Proof {
 		
 		
 		ShaderLibrary->LoadShader("SSSRHZB", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRHZB.glsl");
-		ShaderLibrary->LoadShader("SSSRTileClassification", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRTileClassification.glsl");
+		//ShaderLibrary->LoadShader("SSSRTileClassification", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRTileClassification.glsl");
+		ShaderLibrary->LoadShader("SSSRTileClassification", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRTileClassification.glsl");
 		ShaderLibrary->LoadShader("SSSRBlueNoiseTextureGeneration", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRBlueNoiseTextureGeneration.glsl");
-		ShaderLibrary->LoadShader("SSSRIntersectArgs", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRIntersectArgs.glsl");
-		ShaderLibrary->LoadShader("SSSRIntersect", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRIntersect.glsl");
-		ShaderLibrary->LoadShader("SSRReproject", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSRReproject.glsl");
-		ShaderLibrary->LoadShader("SSSRPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRPrefilter.glsl");
-		ShaderLibrary->LoadShader("SSSRTemporal", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRTemporal.glsl");
-		ShaderLibrary->LoadShader("SSSRApply", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRApply.glsl");
+		//ShaderLibrary->LoadShader("SSSRIntersectArgs", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRIntersectArgs.glsl");
+		ShaderLibrary->LoadShader("SSSRIntersectArgs", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRIntersectArgs.glsl");
+		//ShaderLibrary->LoadShader("SSSRIntersect", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRIntersect.glsl");
+		ShaderLibrary->LoadShader("SSSRIntersect", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRIntersect.glsl");
+		//ShaderLibrary->LoadShader("SSRReproject", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSRReproject.glsl");
+		ShaderLibrary->LoadShader("SSRReproject", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRReproject.glsl");
+		//ShaderLibrary->LoadShader("SSSRPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRPrefilter.glsl");
+		ShaderLibrary->LoadShader("SSSRPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRPrefilter.glsl");
+		//ShaderLibrary->LoadShader("SSSRTemporal", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRTemporal.glsl");
+		ShaderLibrary->LoadShader("SSSRTemporal", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRTemporal.glsl");
+		//ShaderLibrary->LoadShader("SSSRApply", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRApply.glsl");
+		ShaderLibrary->LoadShader("SSSRApply", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRApply.glsl");
 
+		ShaderLibrary->LoadShader("HizSSR", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/HIZScreenSpaceRefelction/HIZSSR.glsl");
 
 		//2D 
 		ShaderLibrary->LoadShader("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Base2D.glsl");
@@ -181,6 +189,32 @@ namespace Proof {
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
 		SamplerFactory::Init();
 		s_BaseTextures = pnew BaseTextures();
+
+		{
+			TemporalBlueNoise& blueNoise = s_Data->BlueNoiseSpp1Data;
+			//https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/d7531ae47d8b36a5d4025663e731a47a38be882f/sdk/src/components/sssr/ffx_sssr.cpp#L36
+			{
+				TextureConfiguration textureConfig;
+				textureConfig.DebugName = "SSSR SobolBuffer";
+				textureConfig.Format = ImageFormat::R32UI;
+				textureConfig.Width = 256;
+				textureConfig.Height = 256;
+				textureConfig.Storage = true;
+
+				blueNoise.SobolTexture = Texture2D::Create(textureConfig, Buffer(blueNoise_1_Spp::sobol_256spp_256d, sizeof(blueNoise_1_Spp::sobol_256spp_256d)));
+			}
+
+			{
+				TextureConfiguration textureConfig;
+				textureConfig.DebugName = "SSSR ScramblingTileBuffer";
+				textureConfig.Format = ImageFormat::R32UI;
+				textureConfig.Width = 128 * 4;
+				textureConfig.Height = 128 * 2;
+				textureConfig.Storage = true;
+
+				blueNoise.ScramblingTexture = Texture2D::Create(textureConfig, Buffer(blueNoise_1_Spp::scramblingTile, sizeof(blueNoise_1_Spp::scramblingTile)));
+			}
+		}
 		Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
 		Renderer::SubmitCommandBuffer(s_Data->RenderCommandBuffer);
 		// Compile shaders
@@ -262,30 +296,6 @@ namespace Proof {
 				blueNoise.SBRankingTileBuffer = StorageBuffer::Create(Buffer(blueNoise_1_Spp::rankingTile, sizeof(blueNoise_1_Spp::rankingTile)));
 				blueNoise.SBScramblingTileBuffer = StorageBuffer::Create(Buffer(blueNoise_1_Spp::scramblingTile, sizeof(blueNoise_1_Spp::scramblingTile)));
 
-				//https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/d7531ae47d8b36a5d4025663e731a47a38be882f/sdk/src/components/sssr/ffx_sssr.cpp#L36
-				{
-					TextureConfiguration textureConfig;
-					textureConfig.DebugName = "SSSR SobolBuffer";
-					textureConfig.Format = ImageFormat::R32UI;
-					textureConfig.Width = 256;
-					textureConfig.Height = 256;
-					textureConfig.Storage = true;
-
-					blueNoise.SobolTexture = Texture2D::Create(textureConfig, Buffer(blueNoise_1_Spp::sobol_256spp_256d, sizeof(blueNoise_1_Spp::sobol_256spp_256d)));
-				}
-
-				{
-					TextureConfiguration textureConfig;
-					textureConfig.DebugName = "SSSR ScramblingTileBuffer";
-					textureConfig.Format = ImageFormat::R32UI;
-					textureConfig.Width = 128 * 4;
-					textureConfig.Height = 128 * 2;
-					textureConfig.Storage = true;
-
-					blueNoise.ScramblingTexture = Texture2D::Create(textureConfig, Buffer(blueNoise_1_Spp::scramblingTile, sizeof(blueNoise_1_Spp::scramblingTile)));
-				}
-
-				
 			}
 		}
 		

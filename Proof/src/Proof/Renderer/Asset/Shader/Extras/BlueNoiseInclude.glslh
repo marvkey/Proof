@@ -16,7 +16,7 @@ const uint kBlueNoiseDim = 128;
     layout(set = 1, binding = BLUE_NOISE_BUFFER_BEGIN_BINDING + 3) uniform utexture2D u_SobolTextureBuffer;
     layout(set = 1, binding = BLUE_NOISE_BUFFER_BEGIN_BINDING + 4) uniform utexture2D u_ScramblingTileTextureBuffer;
     layout(set = 1, binding = BLUE_NOISE_BUFFER_BEGIN_BINDING + 5) uniform texture2D u_BlueNoiseTexture;
-
+    /*
     float SampleRandomNumber(uint pixel_i, uint pixel_j, uint sampleIndex, uint sampleDimension)
     {
         // wrap arguments
@@ -40,6 +40,7 @@ const uint kBlueNoiseDim = 128;
         return v;
          
     }
+    */
    /*   
 
     vec2 SampleRandomVector2D(uvec2 pixel, uint frameIndex) 
@@ -56,9 +57,8 @@ const uint kBlueNoiseDim = 128;
 
     uint GetScramblingTile(uvec3 coordinate) 
     {
-        return texelFetch(u_ScramblingTileTextureBuffer, ivec2(coordinate.xy), int(coordinate.z)).r;
+        return uint(texelFetch(u_ScramblingTileTextureBuffer, ivec2(coordinate.xy), int(coordinate.z)).r);
     }
-    /*
     // Blue Noise Sampler by Eric Heitz. Returns a value in the range [0, 1].
     float SampleRandomNumber(uint pixel_i, uint pixel_j, uint sample_index, uint sample_dimension) 
     {
@@ -82,7 +82,6 @@ const uint kBlueNoiseDim = 128;
         // Convert to FfxFloat32 and return
         return (value + 0.5f) / 256.0f;
     }
-    */
     vec2 SampleRandomBlueNoiseVector2D(uvec2 pixel)
     {
         return texelFetch(u_BlueNoiseTexture, ivec2(pixel.xy % 128), 0).xy;

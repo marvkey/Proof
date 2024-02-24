@@ -24,27 +24,8 @@ FFX_GROUPSHARED FfxFloat32 spdIntermediate[16][16];
 FfxUInt32 SpdGetAtomicCounter() {
 	return spdCounter;
 }
+#define FFX_SSSR_OPTION_INVERTED_DEPTH 1
 
-#if FFX_HALF
-
-FfxFloat16x4 SpdReduce4H(FfxFloat16x4 v0, FfxFloat16x4 v1, FfxFloat16x4 v2, FfxFloat16x4 v3) {
-#if FFX_SSSR_OPTION_INVERTED_DEPTH
-    return max(max(v0, v1), max(v2, v3));
-#else
-    return min(min(v0, v1), min(v2, v3));
-#endif
-}
-
-FfxFloat16x4 SpdLoadIntermediateH(FfxUInt32 x, FfxUInt32 y) {
-	FfxFloat16 f = FfxFloat16(spdIntermediate[x][y]);
-	return FfxFloat16x4(f.x, f.x, f.x, f.x);
-}
-
-void SpdStoreIntermediateH(FfxUInt32 x, FfxUInt32 y, FfxFloat16x4 value) {
-	spdIntermediate[x][y] = value.x;
-}
-
-#endif	// FFX_HALF
 
 void SpdStoreIntermediate(FfxUInt32 x, FfxUInt32 y, FfxFloat32x4 value) {
 	spdIntermediate[x][y] = value.x;

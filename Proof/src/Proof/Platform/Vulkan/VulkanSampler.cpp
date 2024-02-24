@@ -23,24 +23,24 @@ namespace Proof
 			return (VkFilter)0;
 		}
 
-		inline VkSamplerAddressMode VulkanSamplerWrap(SamplerWrap wrap)
+		inline VkSamplerAddressMode VulkanSamplerWrap(SamplerAddressMode wrap)
 		{
 			switch (wrap)
 			{
-			case Proof::SamplerWrap::Repeat:
+			case Proof::SamplerAddressMode::Wrap:
 				return VK_SAMPLER_ADDRESS_MODE_REPEAT;
 				break;
-			case Proof::SamplerWrap::MirroredRepeat:
+			case Proof::SamplerAddressMode::Mirror:
 
 				return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 				break;
-			case Proof::SamplerWrap::ClampEdge:
+			case Proof::SamplerAddressMode::Clamp:
 				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 				break;
-			case Proof::SamplerWrap::MirrorClampEdge:
+			case Proof::SamplerAddressMode::Border:
 				return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
 				break;
-			case Proof::SamplerWrap::ClampBorder:
+			case Proof::SamplerAddressMode::MirrorOnce:
 				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
 				break;
 			}
@@ -123,7 +123,7 @@ namespace Proof
 				samplerCreateInfo.maxAnisotropy = 1.0f;
 				samplerCreateInfo.mipLodBias = 0.0f;
 				samplerCreateInfo.minLod = 0.0f;
-				samplerCreateInfo.maxLod = 100.0f;
+				samplerCreateInfo.maxLod = std::numeric_limits<float>::max();;
 
 				samplerCreateInfo.addressModeU = Utils::VulkanSamplerWrap(config.AddressMode.AddressU);
 				samplerCreateInfo.addressModeV = Utils::VulkanSamplerWrap(config.AddressMode.AddressV);

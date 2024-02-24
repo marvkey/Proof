@@ -241,8 +241,8 @@ namespace Proof
 			case Proof::ViewportEditorImage::Velocity:
 				currentImage = m_WorldRenderer->m_GeometryPass->GetOutput(3);
 				break;
-			case Proof::ViewportEditorImage::LightingOnly:
-				currentImage = m_WorldRenderer->m_GeometryPass->GetOutput(0);
+			case Proof::ViewportEditorImage::DirectLighting:
+				currentImage = m_WorldRenderer->m_GeometryPass->GetOutput(4);
 				break;
 			case Proof::ViewportEditorImage::Depth:
 				currentImage = m_WorldRenderer->m_PreDepthPass->GetOutput(0);
@@ -774,9 +774,10 @@ namespace Proof
 
 	void ViewPortEditorWorkspace::DrawGizmos()
 	{
-		if (!IsHovered() || !IsFocused())
+		//if (!IsHovered() || !IsFocused())
+		//	return;
+		if (!IsFocusedOrHovered())
 			return;
-
 		Entity selectedEntity;
 		if (m_ViewPortEditorData.IsWorld)
 		{

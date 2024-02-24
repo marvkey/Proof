@@ -24,7 +24,7 @@ namespace Proof
 		Normal,
 		MetalnessRoughness,
 		Velocity,
-		LightingOnly,
+		DirectLighting,
 		Depth,
 		PrevDepth,
 		PrevNormal,

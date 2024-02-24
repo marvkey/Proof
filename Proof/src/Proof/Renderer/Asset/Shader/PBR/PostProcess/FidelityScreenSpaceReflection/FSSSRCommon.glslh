@@ -5,11 +5,34 @@
 #extension GL_KHR_shader_subgroup_shuffle : enable
 
 #include <Common.glslh>
+#define BLUE_NOISE_BUFFER_BEGIN_BINDING 0
+#include <Extras/BlueNoiseInclude.glslh>
 
-layout (set  = 1, binding = 6) uniform sampler2D u_HZBMap;
-layout (set  = 1, binding =7)  uniform sampler2D u_DepthMap;
-layout (set  = 1, binding =8)  uniform sampler2D u_NormalMap;
-layout (set  = 1, binding =9)  uniform textureCube  u_CubeMapPrefilter;
+#define FFX_SSSR_OPTION_INVERTED_DEPTH 1
+layout (set = 1, binding = 6) uniform texture2D u_HZBMap;
+layout (set = 1, binding = 7)  uniform texture2D u_DepthMap;
+layout (set = 1, binding = 8)  uniform texture2D u_NormalMap;
+layout (set = 1, binding = 9) uniform texture2D u_MetalnessRoughness;
+layout (set = 1, binding = 10)  uniform textureCube u_CubeMapPrefilter;
+
+layout (set = 1, binding = 12) buffer SSSRRayListSSBO
+{ 
+    uint Data[]; 
+} s_Raylist; // SSR ray list, use for ray list info cache.
+layout (set = 1, binding = 13) buffer SSSRRayCounterSSBO // has to be a storage because atomic cannot modify uniform 
+{
+    uint Data[];
+} s_RayCounter;
+
+layout (set = 1, binding = 14) buffer SSSRDenoiseTileListSSBO 
+{
+    uint Data[];
+} s_DenoiseTileList;
+
+layout (set = 1, binding = 15) buffer SSSRIntersectCmdSSBO // have to maeke storage because we need to modify
+{ 
+    uint Data[];
+} s_IntersectCommand;
 
 layout(push_constant) uniform Info
 {   
@@ -19,14 +42,18 @@ layout(push_constant) uniform Info
     float RoughnessThreshold; // Max roughness stop to reflection sample.
     float TemporalVarianceThreshold;
 } u_PushData;
-
-const float kTemporalStableReprojectFactor = .8f; // big value is ghosting, small value is noise.
+//https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/d7531ae47d8b36a5d4025663e731a47a38be882f/samples/sssr/sssrrendermodule.h#L70
+// changable param
+const float kTemporalStableReprojectFactor = .7f; // big value is ghosting, small value is noise.
 const int kTemporalPeriod = 32; // 32 is good for keep energy fill.
 const float kTemporalStableFactor = kTemporalStableReprojectFactor;
 const float kDepthBufferThickness = 0.015f;
-const uint kMaxTraversalIterations = 64; // 128;
+const uint kMaxTraversalIterations = 128; 
 const uint kMinTraversalOccupancy = 4;
+const bool kIsRoughnessPerceptual = false;
 
+//https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/main/framework/cauldron/framework/inc/core/scene.h#L257
+const float kIblFactor = 0.55f;
 // FIX param.
 const float kAverageRadianceLuminanceWeight = 0.3f;
 const float kDisocclusionNormalWeight = 1.4f;
@@ -40,6 +67,12 @@ const float kRadianceWeightBias = 0.6;
 const float kRadianceWeightVarianceK = 0.1;
 const float kPrefilterVarianceBias = 0.1;
 const float kPrefilterVarianceWeight = 4.4;
+const int   kLocalNeighborhoodRadius = 4;
+
+//https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/d7531ae47d8b36a5d4025663e731a47a38be882f/samples/cacao/cacaorendermodule.cpp#L160
+    // nomrals unpack mull
+const float kNormalUnpackMul =2;
+    const float kNormalUnpackAdd =-1;
 // Unpacks a packed value into ray coordinates and flags
 void UnpackRayCoords(uint packed, out uvec2 ray_coord, out bool copy_horizontal, out bool copy_vertical, out bool copy_diagonal) 
 {
@@ -49,7 +82,15 @@ void UnpackRayCoords(uint packed, out uvec2 ray_coord, out bool copy_horizontal,
     copy_vertical = bool((packed >> 30u) & 1u);
     copy_diagonal = bool((packed >> 31u) & 1u);
 }
+float LoadDepth(ivec2 coord, int mip)
+{
+    return texelFetch(u_HZBMap, coord, mip).x; // use cloest depth.
+}
 
+float LoadDepth(ivec2 pixel_coordinate)
+{
+    return LoadDepth(pixel_coordinate, 0);
+}
 // Transforms origin to uv space
 // Mat must be able to transform origin from its current space into clip space.
 vec3 ProjectPosition(vec3 origin, mat4 mat) {
@@ -68,11 +109,45 @@ vec3 InvProjectPosition(vec3 coord, mat4 mat) {
     projected.xyz /= projected.w;
     return projected.xyz;
 }
-
+// Construct position like view space or world space.
+vec3 ConstructPos(vec3 uv, in const mat4 invertMatrix)
+{
+    vec4 posClip  = vec4(uv.x * 2.0f - 1.0f, 1.0f - uv.y * 2.0f, uv.z, 1.0f);
+    vec4 posWorldRebuild = invertMatrix * posClip;
+    return posWorldRebuild.xyz / posWorldRebuild.w;
+}
 // Origin and direction must be in the same space and mat must be able to transform from that space into clip space.
 vec3 ProjectDirection(vec3 origin, vec3 direction, vec3 screen_space_origin, mat4 mat) {
     vec3 offsetted = ProjectPosition(origin + direction, mat);
     return offsetted - screen_space_origin;
+}
+vec3 ScreenSpaceToViewSpace(vec3 screen_space_position) 
+{
+    return InvProjectPosition(screen_space_position, u_Camera.InverseProjection);
+    //return ConstructPos(screen_space_position, u_Camera.InverseProjection);
+}
+
+vec3 ScreenSpaceToWorldSpace(vec3 screen_space_position) 
+{
+    return InvProjectPosition(screen_space_position, u_Camera.InverseViewProjectionMatrix);
+    //return ConstructPos(screen_space_position, u_Camera.InverseViewProjectionMatrix);
+}
+
+float GetLinearDepth(vec2 uv, float depth) 
+{
+    const vec3 view_space_pos = InvProjectPosition(vec3(uv, depth), u_Camera.InverseProjection);
+    return abs(view_space_pos.z);
+}
+
+vec3 WorldSpaceToScreenSpacePrevious(vec3 world_space_pos) 
+{
+    return ProjectPosition(world_space_pos, u_Camera.ViewProjectionMatrix);
+}
+
+vec3 ViewSpaceToWorldSpace(vec4 view_space_coord) 
+{
+    vec3 val = vec4(u_Camera.InverseView * view_space_coord).xyz;
+    return val;
 }
 
 //=== FFX_DNSR_Reflections_ override functions ===
@@ -84,16 +159,6 @@ bool IsGlossyReflection(float roughness)
 
 bool IsMirrorReflection(float roughness) {
     return roughness < 0.0001;
-}
-
-vec3 ScreenSpaceToViewSpace(vec3 screen_space_position) 
-{
-    return ConstructPos(screen_space_position.xy,screen_space_position.z, u_Camera.InverseProjection);
-}
-
-vec3 ScreenSpaceToWorldSpace(vec3 screen_space_position) 
-{
-    return ConstructPos(screen_space_position.xy,screen_space_position.z, u_Camera.InverseViewProjectionMatrix);
 }
 
 bool AWaveReadAtLaneIndexB1(bool v, uint x )
@@ -110,10 +175,6 @@ uint AWavePrefixCountBits(bool v)
 {
     return subgroupBallotExclusiveBitCount(subgroupBallot(v));
 }
-void IncrementRayCounter(uint value, out uint original_value)
-{
-    original_value = atomicAdd(s_RayCounter.RayCount, value);
-}
 
 uint AWaveReadLaneFirstU1(uint v)
 {
@@ -125,4 +186,221 @@ uint AWaveActiveCountBits(bool v)
     return subgroupBallotBitCount(subgroupBallot(v));
 }
 
-#endif
+bool AWaveIsFirstLane()
+{
+    return subgroupElect();
+}
+uint PackRayCoords(uvec2 ray_coord, bool copy_horizontal, bool copy_vertical, bool copy_diagonal) 
+{
+    uint ray_x_15bit = ray_coord.x & 32767u;    // 0b111111111111111
+    uint ray_y_14bit = ray_coord.y & 16383u;    // 0b11111111111111;
+    uint copy_horizontal_1bit = copy_horizontal ? 1u : 0u;
+    uint copy_vertical_1bit = copy_vertical ? 1u : 0u;
+    uint copy_diagonal_1bit = copy_diagonal ? 1u : 0u;
+
+    uint packed = (copy_diagonal_1bit << 31u) | (copy_vertical_1bit << 30u) | (copy_horizontal_1bit << 29u) | (ray_y_14bit << 15u) | (ray_x_15bit << 0u);
+    return packed;
+}
+
+
+void StoreRay(uint index, uvec2 ray_coord, bool copy_horizontal, bool copy_vertical, bool copy_diagonal) {
+    uint packedRayCoords = PackRayCoords(ray_coord, copy_horizontal, copy_vertical, copy_diagonal); // Store out pixel to trace
+    s_Raylist.Data[index] = packedRayCoords;
+}
+
+void IncrementRayCounter(uint value, out uint originalValue) 
+{
+    originalValue = atomicAdd(s_RayCounter.Data[0], value);
+}
+vec3 SampleEnvironmentMap(vec3 direction, float roughness)
+{
+    ivec2 cubeSize = textureSize(u_CubeMapPrefilter, 0);
+    int maxMipLevel = int(log2(float(cubeSize.x > 0 ? cubeSize.y : 1)));
+    float lod = clamp(roughness * float(maxMipLevel), 0.0, float(maxMipLevel));
+    return textureLod(samplerCube(u_CubeMapPrefilter, u_LinearClampEdgeSampler), direction, lod).xyz * kIblFactor;
+    return textureLod(samplerCube(u_CubeMapPrefilter, u_LinearClampEdgeSampler), direction, lod).xyz * kIblFactor;
+}
+
+void StoreDenoiserTile(int index, uvec2 tileCoord) 
+{
+    s_DenoiseTileList.Data[index] = ((tileCoord.y & 0xffffu) << 16) | ((tileCoord.x & 0xffffu) << 0); // Store out pixel to trace
+}
+void IncrementDenoiserTileCounter(out uint originalValue) 
+{
+    originalValue = atomicAdd(s_RayCounter.Data[2], 1);
+}
+
+
+uvec2 GetWorkSize()
+{
+    return uvec2(u_ScreenData.FullResolution);
+    //return textureSize(u_DepthMap, 0);
+}
+
+vec3 LoadWorldSpaceNormal(ivec2 coords)
+{
+    //https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/d7531ae47d8b36a5d4025663e731a47a38be882f/samples/cacao/cacaorendermodule.cpp#L160
+    // nomrals unpack mull
+    const float normalUnpackMul =2;
+    const float normalUnpackAdd =-1;
+    return normalize(normalUnpackMul * texelFetch(u_NormalMap, coords, 0).xyz + normalUnpackAdd);
+   // return normalize(normalUnpackMul * texelFetch(u_NormalMap, coords, 0).xyz + normalUnpackAdd);
+}
+
+float LoadRoughnessFromMaterialParametersInput(uvec3 coordinate) 
+{
+    float rawRoughness = texelFetch(u_MetalnessRoughness, ivec2(coordinate.xy), int(coordinate.z)).g;
+    if (kIsRoughnessPerceptual) 
+    {
+        rawRoughness *= rawRoughness;
+    }
+    return rawRoughness;
+}
+
+float LoadRoughnessFromMaterialParametersInput(vec2 coordinate) 
+{
+    float rawRoughness = texelFetch(u_MetalnessRoughness, ivec2(coordinate.xy), 0).g;
+    if (kIsRoughnessPerceptual) 
+    {
+        rawRoughness *= rawRoughness;
+    }
+    return rawRoughness;
+}
+vec4 LoadRoughnesMaterialTexture(ivec2 coordinate) 
+{
+    return texelFetch(u_MetalnessRoughness, ivec2(coordinate.xy), 0);
+}
+bool IsReflectiveSurface(uvec2 pixel_coordinate, float roughness)
+{
+#if FFX_SSSR_OPTION_INVERTED_DEPTH
+    const float far_plane = 0.0f;
+    return texelFetch(u_HZBMap, ivec2(pixel_coordinate), 0).r > far_plane;
+#else //  FFX_SSSR_OPTION_INVERTED_DEPTH
+    const float far_plane = 1.0f;
+    return texelFetch(u_HZBMap, ivec2(pixel_coordinate), 0).r < far_plane;
+#endif //  FFX_SSSR_OPTION_INVERTED_DEPTH
+}
+
+void WriteIntersectIndirectArgs(uint index, uint data) 
+{
+    s_IntersectCommand.Data[index] = data;
+}
+
+void WriteRayCounter(uint index, uint data) 
+{
+    s_RayCounter.Data[index] = data;
+}
+
+uint GetRayCounter(uint index) 
+{
+    return s_RayCounter.Data[index];
+}
+
+bool IsRayIndexValid(uint ray_index)
+{
+    return ray_index < s_RayCounter.Data[1];
+}
+uint GetRaylist(uint ray_index)
+{
+    return s_Raylist.Data[ray_index];
+}
+
+// DENOISERS
+//https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/d7531ae47d8b36a5d4025663e731a47a38be882f/sdk/include/FidelityFX/gpu/denoiser/ffx_denoiser_reflections_common.h
+float ffxFract(float x)
+{
+    return x - floor(x);
+}
+
+
+float FFX_DNSR_Reflections_Luminance(vec3 color) { 
+    return max(dot(color, vec3(0.299f, 0.587f, 0.114f)), 0.001);
+}
+
+float FFX_DNSR_Reflections_ComputeTemporalVariance(vec3 history_radiance, vec3 radiance) {
+    float history_luminance = FFX_DNSR_Reflections_Luminance(history_radiance);
+    float luminance = FFX_DNSR_Reflections_Luminance(radiance);
+    float diff = abs(history_luminance - luminance) / max(max(history_luminance, luminance), 0.5f);
+    return diff * diff;
+}
+
+uint FFX_DNSR_Reflections_PackFloat16(vec2 v) {
+    return packHalf2x16(v);
+}
+
+vec2 FFX_DNSR_Reflections_UnpackFloat16(uint a) {
+    return unpackHalf2x16(a);
+}
+
+vec2 FFX_DNSR_Reflections_PackFloat16_4(vec4 v) { 
+    return vec2(FFX_DNSR_Reflections_PackFloat16(v.xy), FFX_DNSR_Reflections_PackFloat16(v.zw));
+}
+
+vec4 FFX_DNSR_Reflections_UnpackFloat16_4(uvec2 a) { 
+    return vec4(FFX_DNSR_Reflections_UnpackFloat16(a.x), FFX_DNSR_Reflections_UnpackFloat16(a.y));
+}
+
+// Rounds value to the nearest multiple of 8
+uvec2 FFX_DNSR_Reflections_RoundUp8(uvec2 value) 
+{
+    uvec2 round_down = value & ~uvec2(7);    // 0b111;
+    return (round_down == value) ? value : value + uvec2(8);
+}
+
+uint GetDenoiserTile(uint group_id)
+{
+    return s_DenoiseTileList.Data[group_id];
+}
+
+vec3 FFX_DNSR_Reflections_ClipAABB(vec3 aabb_min, vec3 aabb_max, vec3 prev_sample) 
+{
+    // Main idea behind clipping - it prevents clustering when neighbor color space
+    // is distant from history sample
+
+    // Here we find intersection between color vector and aabb color box
+
+    // Note: only clips towards aabb center
+    vec3 aabb_center = 0.5 * (aabb_max + aabb_min);
+    vec3 extent_clip = 0.5 * (aabb_max - aabb_min) + 0.001;
+
+    // Find color vector
+    vec3 color_vector = prev_sample - aabb_center;
+    // Transform into clip space
+    vec3 color_vector_clip = color_vector / extent_clip;
+    // Find max absolute component
+    color_vector_clip       = abs(color_vector_clip);
+    float max_abs_unit = max(max(color_vector_clip.x, color_vector_clip.y), color_vector_clip.z);
+
+    if (max_abs_unit > 1.0) {
+        return aabb_center + color_vector / max_abs_unit; // clip towards color vector
+    } else {
+        return prev_sample; // point is inside aabb
+    }
+}
+
+
+//https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/d7531ae47d8b36a5d4025663e731a47a38be882f/sdk/include/FidelityFX/gpu/denoiser/ffx_denoiser_reflections_config.h
+#define FFX_DNSR_REFLECTIONS_GAUSSIAN_K 3.0
+#define FFX_DNSR_REFLECTIONS_RADIANCE_WEIGHT_BIAS 0.6
+#define FFX_DNSR_REFLECTIONS_RADIANCE_WEIGHT_VARIANCE_K 0.1
+#define FFX_DNSR_REFLECTIONS_AVG_RADIANCE_LUMINANCE_WEIGHT 0.3
+#define FFX_DNSR_REFLECTIONS_PREFILTER_VARIANCE_WEIGHT 4.4
+#define FFX_DNSR_REFLECTIONS_REPROJECT_SURFACE_DISCARD_VARIANCE_WEIGHT 1.5
+#define FFX_DNSR_REFLECTIONS_PREFILTER_VARIANCE_BIAS 0.1
+#define FFX_DNSR_REFLECTIONS_PREFILTER_NORMAL_SIGMA 512.0
+#define FFX_DNSR_REFLECTIONS_PREFILTER_DEPTH_SIGMA 4.0
+#define FFX_DNSR_REFLECTIONS_DISOCCLUSION_NORMAL_WEIGHT 1.4
+#define FFX_DNSR_REFLECTIONS_DISOCCLUSION_DEPTH_WEIGHT 1.0
+#define FFX_DNSR_REFLECTIONS_DISOCCLUSION_THRESHOLD 0.9
+#define FFX_DNSR_REFLECTIONS_REPROJECTION_NORMAL_SIMILARITY_THRESHOLD 0.9999
+#define FFX_DNSR_REFLECTIONS_SAMPLES_FOR_ROUGHNESS(r) (1.0 - exp(-r * 100.0))
+
+#define FFX_DNSR_REFLECTIONS_LOCAL_NEIGHBORHOOD_RADIUS 4
+#define FFX_GROUP_MEMORY_BARRIER() groupMemoryBarrier(); barrier()
+
+float LocalNeighborhoodKernelWeight(float i) {
+    const float radius = float(FFX_DNSR_REFLECTIONS_LOCAL_NEIGHBORHOOD_RADIUS + 1.0f);
+    return float(exp(-FFX_DNSR_REFLECTIONS_GAUSSIAN_K * (i * i) / (radius * radius)));
+}
+
+#endif //FSSSR_COMMON_GLSL

@@ -82,7 +82,7 @@ layout (set = 1, binding = 17) buffer SSSRDenoiseCmdSSBO // have to maeke storag
 
 layout (set = 1, binding = 18) buffer SSSRSPDGlobalAtomic // have to maeke storage because we need to modify
 { 
-    uint Data; 
+    uint Data[]; 
 } s_SpdGlobalAtomic;
 
 uint AddRayCount(uint value) 
@@ -97,12 +97,12 @@ uint AddDenoiseTileCount()
 
 void SpdResetAtomicCounter(uint slice) 
 {
-    s_SpdGlobalAtomic.Data = 0;
+    s_SpdGlobalAtomic.Data[0] = 0;
 }
 
 void SPDIncreaseAtomicCounter(inout uint spdCounter) 
 {
-    spdCounter = atomicAdd(s_SpdGlobalAtomic.Data, 1);
+    spdCounter = atomicAdd(s_SpdGlobalAtomic.Data[0], 1);
 }
 
 bool IsMirrorReflection(float roughness) 

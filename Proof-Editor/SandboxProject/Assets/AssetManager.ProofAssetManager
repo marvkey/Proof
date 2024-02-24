@@ -620,6 +620,9 @@ Assets:
   - Asset: 15397027063259560940
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8750083169368950601.Texture.ProofAsset
+  - Asset: 8487265460049034576
+    Type: Material
+    Path: Materials\Green.Material.ProofAsset
   - Asset: 4218339528933379208
     Type: Texture
     Path: MeshResources\glTF\Textures\11490520546946913238.Texture.ProofAsset

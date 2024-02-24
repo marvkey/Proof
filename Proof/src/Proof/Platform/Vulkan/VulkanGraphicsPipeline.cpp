@@ -303,7 +303,12 @@ namespace Proof
 					blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_ZERO;	
 					blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_SRC_COLOR;
 					break;
-
+				case BlendMode::Additive://https://github.com/GPUOpen-LibrariesAndSDKs/FidelityFX-SDK/blob/main/samples/sssr/sssrrendermodule.cpp
+					blendAttachmentStates[i].srcColorBlendFactor = VK_BLEND_FACTOR_ONE;
+					blendAttachmentStates[i].dstColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+					blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+					blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+					break;
 				default:
 					PF_CORE_ASSERT(false);
 			}

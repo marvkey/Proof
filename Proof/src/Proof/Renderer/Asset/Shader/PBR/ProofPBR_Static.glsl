@@ -106,6 +106,7 @@ layout(location = 0) out vec4 out_FragColor;
 layout(location = 1) out vec4 out_ViewNormalsLuminance;
 layout(location = 2) out vec4 out_MetalnessRoughness; //RGBA //R= metallnes, G = Roughness
 layout(location = 3) out vec2 out_Velocity; //R16G16 float, velocity
+layout(location = 4) out vec4 out_DirectLighting; //RGBA float Point Light,Directional Light,Spotlight,Area Light
 // pbr map
 layout(set = 0, binding = 5) uniform sampler2D u_AlbedoMap;
 layout(set = 0, binding = 6) uniform sampler2D u_NormalMap;
@@ -416,7 +417,8 @@ void main()
 		float value = float(pointLightCount + spotLightCount);
 		finalColor.rgb = (finalColor.rgb * 0.2) + GetGradient(value);
     }
-
+    //sky light is indirect lighitn
+    out_DirectLighting = vec4(finalColor,1.0);
     out_FragColor = vec4(finalColor + iblEfeect ,1.0);
 
     out_ViewNormalsLuminance.a = clamp(shadowScale + dot(out_FragColor.rgb, vec3(0.2125f, 0.7154f, 0.0721f)), 0.0f, 1.0f);

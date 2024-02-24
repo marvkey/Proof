@@ -195,19 +195,33 @@ namespace Proof
 				}
 				UI::EndTreeNode();
 			}
+			if (UI::AttributeTreeNode("HizSSR",false))
+			{
+				WorldRendererPanelImage("FinalImage", m_WorldRenderer->m_HizSSR.OutputImage);
+				static uint32_t Oldhzbmip = 0;
+				WorldRendererPanelImageMip("HZB Depth ", Oldhzbmip, m_WorldRenderer->m_SSR.HierarchicalDepthTexture);
 
-			if (UI::AttributeTreeNode("NewSSR"))
+				UI::EndTreeNode();
+			}
+			if (UI::AttributeTreeNode("NewSSR",true))
 			{
 				if (UI::AttributeTreeNode("Debug Views", false))
 				{
 					if (m_WorldRenderer->m_ResourcesCreatedGPU)
 					{
+						WorldRendererPanelImage("FinalImage", m_WorldRenderer->m_NewSSR.ApplyPass->GetOutput(0).As<Image2D>());
+
 						static uint32_t Hzbmip = 0;
 						WorldRendererPanelImageMip("HZB Depth", Hzbmip, m_WorldRenderer->m_NewSSR.HierarchalDepthDownSamplerTexture);
+						static uint32_t Oldhzbmip = 0;
+						WorldRendererPanelImageMip("HZB Depth OldSSR", Oldhzbmip, m_WorldRenderer->m_SSR.HierarchicalDepthTexture);;
 
+						ImGui::Separator();
 						//WorldRendererPanelTexture("ScramblingTexture", Renderer::GetSPP1().ScramblingTexture);
 						//WorldRendererPanelTexture("SobolTexture", Renderer::GetSPP1().SobolTexture);
 						WorldRendererPanelImage("Blue NoiseImage", m_WorldRenderer->m_NewSSR.BlueNoiseImage);
+
+						ImGui::Separator();
 
 						WorldRendererPanelImage("Variance",  m_WorldRenderer->m_NewSSR.Variance);
 						WorldRendererPanelImage("Previous Variance", m_WorldRenderer->m_NewSSR.PreviousVariance);

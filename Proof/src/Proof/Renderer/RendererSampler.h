@@ -2,13 +2,13 @@
 #include "RendererResouce.h"
 namespace Proof
 {
-	enum class SamplerWrap
+	enum class SamplerAddressMode
 	{
-		Repeat,
-		MirroredRepeat,
-		ClampEdge,
-		MirrorClampEdge,
-		ClampBorder,
+		Wrap,
+		Mirror,
+		Clamp,
+		Border,
+		MirrorOnce,
 	};
 
 	enum class SamplerFilter
@@ -33,26 +33,26 @@ namespace Proof
 		LINEAR = 1,
 	};
 
-	struct SamplerAddressMode
+	struct SamplerAddressModeMetaData
 	{
-		SamplerAddressMode()
+		SamplerAddressModeMetaData()
 		{
 
 		}
-		SamplerAddressMode(SamplerWrap wrap) :
+		SamplerAddressModeMetaData(SamplerAddressMode wrap) :
 			AddressU(wrap),AddressV(wrap), AddressW(wrap)
 		{
 
 		}
-		SamplerAddressMode(SamplerWrap wrapU, SamplerWrap wrapV, SamplerWrap wrapW) :
+		SamplerAddressModeMetaData(SamplerAddressMode wrapU, SamplerAddressMode wrapV, SamplerAddressMode wrapW) :
 			AddressU(wrapU), AddressV(wrapV), AddressW(wrapW)
 
 		{
 
 		}
-		SamplerWrap AddressU = SamplerWrap::Repeat;
-		SamplerWrap AddressV = SamplerWrap::Repeat;
-		SamplerWrap AddressW = SamplerWrap::Repeat;
+		SamplerAddressMode AddressU = SamplerAddressMode::Wrap;
+		SamplerAddressMode AddressV = SamplerAddressMode::Wrap;
+		SamplerAddressMode AddressW = SamplerAddressMode::Wrap;
 
 	};
 
@@ -70,7 +70,7 @@ namespace Proof
 	struct SamplerResourceConfig
 	{
 		std::string DebugName;
-		SamplerAddressMode AddressMode = SamplerWrap::Repeat;
+		SamplerAddressModeMetaData AddressMode = SamplerAddressMode::Wrap;
 		SamplerFilter Filter = SamplerFilter::Linear;
 		SamplerBorderColor BorderColor = SamplerBorderColor::TransperantBlack;
 		SamplerMipMapMode MipMapMode = SamplerMipMapMode::NEAREST;
@@ -101,6 +101,9 @@ namespace Proof
 		static Count<RenderSampler> GetLinearClampBorder1111MipPoint();
 		static Count<RenderSampler> GetLinearRepeatMipPoint();
 		static Count<RenderSampler> GetLinearRepeat();
+
+		static Count<RenderSampler> GetLinear();
+		static Count<RenderSampler> GetPoint();
 	private:
 		static void Init();
 		static void ShutDown();
