@@ -4,12 +4,35 @@
 #include "Proof/Scene/Component.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/World.h" 
-
+#include "Proof/Scripting/ScriptWorld.h"
+#include "Proof/Scripting/ScriptEngine.h"
 #include "PhysicsActor.h"
 namespace Proof
 {
 	void PhysicsSimulationCallback::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 	{
+		static auto callTriggerMethod = [](const char* methodName, Entity mainEntity, Entity b)
+		{
+			if (!mainEntity.HasComponent<ScriptComponent>())
+				return;
+
+			const auto& sc = mainEntity.GetComponent<ScriptComponent>();
+
+			Count<ScriptWorld> scriptWorld = mainEntity.GetCurrentWorld()->GetScriptWorld();
+			if (!scriptWorld)
+				return;
+
+			if (!scriptWorld->IsEntityScriptInstantiated(mainEntity))
+				return;
+
+			for (const auto& scriptMetaData : sc.GetScriptMetadates())
+			{
+				if (ScriptEngine::IsModuleValid(scriptMetaData.ClassName))
+				{
+					ScriptEngine::CallMethod(scriptMetaData.Instance, methodName, b.GetUUID());
+				}
+			}
+		};
 		for (uint32_t actorIndex = 0; actorIndex < count; actorIndex++)
 		{
 			if (pairs[actorIndex].flags & (physx::PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | physx::PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
@@ -22,12 +45,19 @@ namespace Proof
 			if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
 			{
 				TriggersActors[triggerEntity.GetUUID()][overlapTriggerEnttity.GetUUID()] = { triggerActor,overlappTrigger,false };
+
+				callTriggerMethod("OnTriggerEnterInternal", triggerEntity, overlapTriggerEnttity);
+				callTriggerMethod("OnTriggerEnterInternal", overlapTriggerEnttity, triggerEntity);
 			}
 			if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 			{
 				TriggersActors.at(triggerEntity.GetUUID()).erase(overlapTriggerEnttity.GetUUID());
 				if (TriggersActors.at(triggerEntity.GetUUID()).size() == 0)
 					TriggersActors.erase(triggerEntity.GetUUID());
+
+
+				callTriggerMethod("OnTriggerLeaveInternal", triggerEntity, overlapTriggerEnttity);
+				callTriggerMethod("OnTriggerLeaveInternal", overlapTriggerEnttity, triggerEntity);
 			}
 		}
 	}
@@ -46,24 +76,47 @@ namespace Proof
 			return;
 
 
-		Entity entity0 = actor0->GetEntity();
-		Entity entity1 = actor1->GetEntity();
+		static auto callCollisionMethod = [](const char* methodName, Entity mainEntity, Entity b)
+		{
+			if (!mainEntity.HasComponent<ScriptComponent>())
+				return;
+
+			const auto& sc = mainEntity.GetComponent<ScriptComponent>();
+
+			Count<ScriptWorld> scriptWorld = mainEntity.GetCurrentWorld()->GetScriptWorld();
+			if (!scriptWorld)
+				return;
+
+			if (!scriptWorld->IsEntityScriptInstantiated(mainEntity))
+				return;
+
+			for (const ScriptComponentsClassesData& scriptMetaData : sc.GetScriptMetadates())
+			{
+				if (ScriptEngine::IsModuleValid(scriptMetaData.ClassName))
+				{
+					ScriptEngine::CallMethod(scriptMetaData.Instance, methodName, b.GetUUID().Get());
+				}
+			}
+		};
+
+		Entity entityA= actor0->GetEntity();
+		Entity entityB = actor1->GetEntity();
 
 		if (pairs->events & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
 		{
-			//actor0->OnCollisonEnter(actor1);
-			//actor1->OnCollisonEnter(actor0);
+			callCollisionMethod("OnCollisionEnterInternal", entityA, entityB);
+			callCollisionMethod("OnCollisionEnterInternal", entityB, entityA);
 		}
 		if (pairs->events & physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 		{
-			//actor0->OnCollisonLeave(actor1);
-			//actor1->OnCollisonLeave(actor0);
+			callCollisionMethod("OnCollisionLeaveInternal", entityA, entityB);
+			callCollisionMethod("OnCollisionLeaveInternal", entityB, entityA);
 		}
 		//if sleeping this is no longer called
 		if (pairs->events & physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS)
 		{
-			//actor0->OnCollisonStay(actor1);
-			//actor1->OnCollisonStay(actor0);
+			callCollisionMethod("OnCollisionStayInternal", entityA, entityB);
+			callCollisionMethod("OnCollisionStayInternal", entityB, entityA);
 		}
 
 		//TODO Look at unity on collider hit https://docs.unity3d.com/ScriptReference/ControllerColliderHit.html

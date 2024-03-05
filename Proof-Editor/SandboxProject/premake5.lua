@@ -26,7 +26,7 @@ workspace "SandboxProject"
 	}
 
 group "Proof"
-	project "ProofScriptCore"
+project "ProofScriptCore"
 	location "%{ProofRoootDirectory}/ProofScriptCore"
 	kind "SharedLib"
 	language "C#"
@@ -37,7 +37,7 @@ group "Proof"
 
 	files
 	{
-		"%{ProofRoootDirectory}/ProofScriptCore/src/**.cs",
+		"%{ProofRoootDirectory}/ProofScriptCore/Src/**.cs",
 		--"%{ProofRoootDirectory}/ProofScriptCore/Properties/**.cs",
 	}
 
@@ -52,7 +52,7 @@ group "Proof"
 	filter "configurations:Dist"
 		optimize "Full"
 		symbols "Off"
-	
+
 group ""
 
 project "SandboxProject"

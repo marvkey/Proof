@@ -131,7 +131,8 @@ namespace Proof {
 		void FillCircle(const glm::vec3& p0, float radius, const glm::vec4& color, float thickness = 0.05f);
 
 		void DrawQuadBillboard(const glm::vec3& position, const glm::vec3& rotation = glm::vec3(0,0,0),const glm::vec2& size = glm::vec2(1), const glm::vec4& color = glm::vec4(1));
-		void DrawQuadBillboard(const Count<class Texture2D>& texture, glm::vec3 position,const glm::vec3& rotation = glm::vec3(0, 0, 0), const glm::vec2& size = glm::vec2(1), const glm::vec4& tintColor = glm::vec4(1), float tilingFactor = 1.0f);
+		void DrawQuadBillboard(const Count<class Texture2D>& texture, glm::vec3 position, const glm::vec3& rotation = glm::vec3(0, 0, 0), const glm::vec2& size = glm::vec2(1), const glm::vec4& tintColor = glm::vec4(1), float tilingFactor = 1.0f);
+		void DrawCameraFrustrum(const glm::mat4& viewProjection, const glm::vec4& color);
 
 		// chagne to u32stirng in the future
 		void DrawString(const std::string& text, Count<class Font> font,const TextParams& textparams, const glm::mat4& transform);

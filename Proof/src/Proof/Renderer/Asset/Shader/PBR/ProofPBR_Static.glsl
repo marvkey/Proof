@@ -238,6 +238,7 @@ void main()
     {
         //https://github.com/Angelo1211/HybridRenderingEngine/blob/master/assets/shaders/PBRClusteredShader.frag
         DirectionalLight currentLight= u_DirectionalLightData.Lights[i];
+        /*
         vec3 Li = -normalize(currentLight.Direction);
         vec3 Lradiance = currentLight.Color * currentLight.Intensity;
         vec3 Lh = normalize(Li + m_Params.View);
@@ -257,7 +258,7 @@ void main()
 		vec3 specularBRDF = (F * D * G) / max(0.00001, 4.0 * cosLi * m_Params.NdotV);
 		specularBRDF = clamp(specularBRDF, vec3(0.0f), vec3(10.0f));
 		directLighting += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
-        /*
+        */
         vec3 lightDirection = -normalize(currentLight.Direction);
         vec3 halfway = normalize(m_Params.View  + lightDirection);
         float nDotL = max(dot(m_Params.Normal, lightDirection), 0.0);
@@ -276,7 +277,6 @@ void main()
 
         vec3 lightEffect = (kD * m_Params.AlbedoColor / PI + specular )  * radiance * nDotL;
         directLighting +=lightEffect;
-        */
     }
     
     vec3 iblEfeect = vec3(0);

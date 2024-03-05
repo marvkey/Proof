@@ -119,7 +119,34 @@ namespace Proof{
 			Data = nullptr;
 			Size = 0;
 		}
+
+		byte& operator[](int index)
+		{
+			return ((byte*)Data)[index];
+		}
+
+		byte operator[](int index) const
+		{
+			return ((byte*)Data)[index];
+		}
 		uint8_t* Data = nullptr;
 		uint64_t Size = 0;
 	};
+
+	struct ScopeBuffer : public Buffer
+	{
+		~ScopeBuffer()
+		{
+			Release();
+		}
+
+		static ScopeBuffer Copy(const void* data, uint64_t size)
+		{
+			ScopeBuffer buffer;
+			buffer.Allocate(size);
+			memcpy(buffer.Data, data, size);
+			return buffer;
+		}
+	};
+
 }

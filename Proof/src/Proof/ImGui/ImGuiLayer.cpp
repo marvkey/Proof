@@ -3,6 +3,8 @@
 #include "imgui.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Platform/Vulkan/VulkanImguiLayer.h"
+
+#include <imgui_internal.h>
 namespace Proof
 {
 	ImGuiLayer::ImGuiLayer() :
@@ -18,7 +20,7 @@ namespace Proof
 	{
 		for (auto& [key, messageBoxData] : m_MessageBoxes)
 		{
-			if (messageBoxData.ShouldOpen && !ImGui::IsPopupOpen(nullptr, ImGuiPopupFlags_AnyPopupId))
+			if (messageBoxData.ShouldOpen)
 			{
 				ImGui::OpenPopup(messageBoxData.Title.c_str());
 				messageBoxData.ShouldOpen = false;
@@ -32,12 +34,19 @@ namespace Proof
 			ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 			ImGui::SetNextWindowSize(ImVec2{ (float)messageBoxData.Width, (float)messageBoxData.Height });
 
-			if (ImGui::BeginPopupModal(messageBoxData.Title.c_str(), &messageBoxData.IsOpen, ImGuiWindowFlags_AlwaysAutoResize))
+			if (bool state = ImGui::BeginPopupModal(messageBoxData.Title.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				if (messageBoxData.Flags & UI::UIMessageBoxBit::UserFunc )
 				{
 					PF_CORE_ASSERT(messageBoxData.UserRenderFunction, "No render function provided for message box!");
+					const ImGuiContext& g = *ImGui::GetCurrentContext(); 
+					int popup_idx = g.BeginPopupStack.Size;
 					messageBoxData.UserRenderFunction();
+					if (popup_idx > g.OpenPopupStack.Size) // pop was closed stack is smaller
+					{
+						messageBoxData.ShouldOpen = false;
+						messageBoxData.IsOpen = false;
+					}
 				}
 				else
 				{
@@ -46,7 +55,11 @@ namespace Proof
 					if (messageBoxData.Flags & UI::UIMessageBoxBit::OkButton )
 					{
 						if (ImGui::Button("Ok"))
+						{
+							messageBoxData.ShouldOpen = false;
+							messageBoxData.IsOpen = false;
 							ImGui::CloseCurrentPopup();
+						}
 
 						if (messageBoxData.Flags & UI::UIMessageBoxBit::CancelButton)
 							ImGui::SameLine();
@@ -54,10 +67,11 @@ namespace Proof
 
 					if (messageBoxData.Flags & UI::UIMessageBoxBit::CancelButton && ImGui::Button("Cancel"))
 					{
+						messageBoxData.ShouldOpen = false;
+						messageBoxData.IsOpen = false;
 						ImGui::CloseCurrentPopup();
 					}
 				}
-
 				ImGui::EndPopup();
 			}
 		}

@@ -1379,8 +1379,8 @@ namespace Proof
 			return;
 
 		m_InContext = true;
-		static bool isFlip = false;
-		if (!isFlip)
+		
+		if (FrameTime::GetFrameCount() % 2 == 0)
 		{
 			m_CurTransformMap = &m_MeshTransformMap[0];
 			m_PrevTransformMap = &m_MeshTransformMap[1];
@@ -1390,7 +1390,6 @@ namespace Proof
 			m_CurTransformMap = &m_MeshTransformMap[1];
 			m_PrevTransformMap = &m_MeshTransformMap[0];
 		}
-		isFlip = !isFlip;
 		m_CurTransformMap->clear();
 
 		//reset stats
@@ -3224,7 +3223,6 @@ namespace Proof
 			reproject->DispatchIndirect(m_NewSSR.SBIntersectCommand, 12);
 			Renderer::EndComputePass(reproject);
 		}
-		/*
 
 		//prefilter
 		{
@@ -3276,6 +3274,7 @@ namespace Proof
 			Renderer::SubmitFullScreenQuad(m_CommandBuffer, apply);
 			Renderer::EndRenderPass(apply);
 		}
+		/*
 		*/
 		/*
 

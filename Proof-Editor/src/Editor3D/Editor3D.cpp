@@ -119,7 +119,7 @@ namespace Proof
 		{
 			Count<World> WorldToSaveAs;
 			bool SaveAssetManager = true;
-			std::string CreateWorldFile = "Scene/";
+			std::string CreateWorldFile = "Scenes/";
 		}CreateNewWorldPopupData;
 	};
 	enum class PopupState
@@ -489,8 +489,11 @@ namespace Proof
 		s_EditorData->PanelManager->OnEvent(e);
 		s_EditorData->EditorWorkspaceManager->OnEvent(e);
 
-		dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
-		dispatcher.Dispatch<MouseButtonClickedEvent>(PF_BIND_FN(Editore3D::OnMouseButtonClicked));
+		if (!ImGui::GetIO().WantTextInput)
+		{
+			dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
+		}
+		
 	}
 	void Editore3D::OnAttach() 
 	{
@@ -594,6 +597,7 @@ namespace Proof
 		}
 		AssetEditorPanel::OnUpdate(DeltaTime);
 		s_EditorData->EditorWorkspaceManager->OnUpdate(DeltaTime);
+		/*
 		switch (m_ActiveWorld->GetState())
 		{
 			case Proof::WorldState::Play:
@@ -632,6 +636,7 @@ namespace Proof
 			default:
 				break;
 		}
+		*/
 	}
 	void Editore3D::OnImGuiDraw() 
 	{
@@ -843,6 +848,20 @@ namespace Proof
 					break;
 				}
 
+			case KeyBoardKey::Z:
+			{
+				if (control)
+				{
+					auto activeProject = Project::GetActive();
+					if (FileSystem::Exists(activeProject->GetScriptProjectSolutionPath()))
+					{
+						ScriptBuilder::BuildCSProject(activeProject);
+						ScriptEngine::ReloadppAssembly();
+						return true;
+					}
+				}
+				break;
+			}
 		}
 		return false;
 	}
@@ -1010,7 +1029,6 @@ namespace Proof
 			{
 				UI::AttributeBool("pause logging", Log::m_PauseLog);
 				UI::AttributeBool("Clear On Play", s_EditorData->ClearLogOnPlay);
-				ImGui::SameLine();
 				if (ImGui::Button("Clear log"))
 				{
 					Log::Logs.clear();
@@ -1591,7 +1609,11 @@ namespace Proof
 				{
 					ScriptEngine::ReloadppAssembly();
 				}
-
+				if (ImGui::MenuItem("Build and Reload C# Assembly","ctrl+z", nullptr, FileSystem::Exists(activeProject->GetScriptProjectSolutionPath())))
+				{
+					ScriptBuilder::BuildCSProject(activeProject);
+					ScriptEngine::ReloadppAssembly();
+				}
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("View"))
@@ -1650,6 +1672,7 @@ namespace Proof
 			if (!m_ActiveWorld->GetEntities().empty())
 			{
 				SaveSceneDialouge = true;
+				s_EditorData->CreateNewWorldPopupData.WorldToSaveAs = m_ActiveWorld;
 				return false;
 			}
 			return true;
@@ -1929,7 +1952,17 @@ namespace Proof
 						AssetManager::NewAsset(asset, savedPath);
 					}
 					SaveSceneDialouge = false;
-					PF_INFO("World {} saved as");
+					PF_INFO("World {} saved as", savedPath.string());
+					ImGui::CloseCurrentPopup();
+				}
+
+				ImGui::SameLine();
+
+				if (ImGui::Button("Cancel"))
+				{
+					s_EditorData->CreateNewWorldPopupData = {};
+					SaveSceneDialouge = false;
+					ImGui::CloseCurrentPopup();
 				}
 			});
 
@@ -2021,10 +2054,13 @@ namespace Proof
 	void Editore3D::SetActiveWorld(Count<World> world)
 	{
 	}
-	void Editore3D::PlayWorld() {
+	static Timer s_PlayTimer;
+	void Editore3D::PlayWorld() 
+	{
 		SelectionManager::DeselectAll();
 		m_ActiveWorld = World::Copy(m_EditorWorld);
 		s_DetachPlayer = false;
+		PF_EC_INFO("World Play {}", m_ActiveWorld->GetName());
 
 		m_ActiveWorld->m_CurrentState = WorldState::Play;
 		if (s_EditorData->ClearLogOnPlay)
@@ -2032,24 +2068,33 @@ namespace Proof
 		m_ActiveWorld->StartRuntime();
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
+		s_PlayTimer.Reset();
 	}
-	void Editore3D::SimulateWorld() {
-
+	void Editore3D::SimulateWorld() 
+	{
+		s_PlayTimer.Reset();
 		s_DetachPlayer = false;
 		m_ActiveWorld->m_CurrentState = WorldState::Simulate;
+		PF_EC_INFO("World Simulate {}", m_ActiveWorld->GetName());
 	}
 	void Editore3D::SetWorldEdit() 
 	{
 		SelectionManager::DeselectAll();
 
+		const std::string oldState = EnumReflection::EnumString(m_ActiveWorld->GetState());
 		//s_EditorData->GuizmoType = 0;
 		m_ActiveWorld->EndRuntime();
 		m_ActiveWorld = m_EditorWorld;
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
 		s_DetachPlayer = false;
+
+		PF_EC_INFO("World Edit {} {} ElapsedTime: {}", m_ActiveWorld->GetName(), oldState,Utils::String::DurationToString(s_PlayTimer.ElapsedMillis()));
+
 	}
-	void Editore3D::PauseWorld() {
+	void Editore3D::PauseWorld() 
+	{
+		PF_EC_INFO("World {} Pause", m_ActiveWorld->GetName());
 		m_ActiveWorld->m_CurrentState = WorldState::Pause;
 	}
 }

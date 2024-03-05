@@ -6,12 +6,12 @@ namespace Proof {
 	{
 	}
 
-	void SceneCamera::SetPerspective(float degfov, uint32_t witdth, uint32_t height, float nearPlane, float farPlane, const glm::vec3& position, const glm::vec3& rotation)
+	void SceneCamera::SetPerspective(float degfov, uint32_t witdth, uint32_t height, float nearPlane, float farPlane, const glm::vec3& position, const glm::vec3& rotationRadians)
 	{
 		glm::vec3 cameraDirection;
-		cameraDirection.x = cos(glm::radians(rotation.z)) * cos(glm::radians(rotation.y));
-		cameraDirection.y = sin(glm::radians(rotation.y));
-		cameraDirection.z = sin(glm::radians(rotation.z)) * cos(glm::radians(rotation.y));
+		cameraDirection.x = cos(rotationRadians.z) * cos(rotationRadians.y);
+		cameraDirection.y = sin(rotationRadians.y);
+		cameraDirection.z = sin(rotationRadians.z) * cos(rotationRadians.y);
 		SetPerspectiveProjectionMatrix(degfov, witdth, height, nearPlane, farPlane, position, cameraDirection);
 	}
 	

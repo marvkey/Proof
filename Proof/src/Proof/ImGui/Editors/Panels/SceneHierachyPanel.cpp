@@ -40,6 +40,7 @@
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scripting/ScriptWorld.h"
 #include "Proof/ImGui/UiUtilities.h"
+#include "Proof/ImGui/UIWidgets.h"
 
 namespace Proof
 {
@@ -154,6 +155,8 @@ namespace Proof
 		{\
 			newEntity = m_ActiveWorld->CreateEntity(#Type);\
 			newEntity.AddComponent<MeshComponent>().SetMesh(AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Type)->GetID());\
+			newEntity.AddComponent<MeshColliderComponent>().ColliderID = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Type)->GetID();\
+			newEntity.AddComponent<RigidBodyComponent>();\
 		}
 	template<class T>
 	static void AddComponentGui(Entity entity, const std::string& name) {
@@ -295,9 +298,31 @@ namespace Proof
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Mesh")) {
-			DEFAULT_MESH_SET(Cube);
-			DEFAULT_MESH_SET(Sphere);
+		if (ImGui::BeginMenu("Mesh")) 
+		{
+			if (ImGui::MenuItem("Cube"))
+			{
+				newEntity = m_ActiveWorld->CreateEntity("Cube"); 
+				newEntity.AddComponent<MeshComponent>().SetMesh(AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Cube)->GetID());
+				newEntity.AddComponent<BoxColliderComponent>();
+				newEntity.AddComponent<RigidBodyComponent>();
+			}
+
+			if (ImGui::MenuItem("Sphere"))
+			{
+				newEntity = m_ActiveWorld->CreateEntity("Sphere");
+				newEntity.AddComponent<MeshComponent>().SetMesh(AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Sphere)->GetID());
+				newEntity.AddComponent<SphereColliderComponent>();
+				newEntity.AddComponent<RigidBodyComponent>();
+			}
+
+			if (ImGui::MenuItem("Capsule"))
+			{
+				newEntity = m_ActiveWorld->CreateEntity("Capsule");
+				newEntity.AddComponent<MeshComponent>().SetMesh(AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Capsule)->GetID());
+				newEntity.AddComponent<CapsuleColliderComponent>();
+				newEntity.AddComponent<RigidBodyComponent>();
+			}
 			DEFAULT_MESH_SET(Capsule);
 			DEFAULT_MESH_SET(Cylinder);
 			DEFAULT_MESH_SET(Cone);
@@ -1195,37 +1220,26 @@ namespace Proof
 			#if 1
 
 			auto scriptWorld = m_ActiveWorld->GetScriptWorld();
-			if (ImGui::Button("Add Script"))
+			if (UI::AttributeButton("","Add Script"))
 			{
 				ImGui::OpenPopup("Open Scripts");
 			}
-			if (ImGui::BeginPopup("Open Scripts"))
+			std::string scriptName;
+			if (UI::Widgets::SearchScriptsPopup("Open Scripts", scriptName))
 			{
-				for (const auto& [scriptName, script] : ScriptEngine::GetEntityScripts())
+				if (scriptWorld->IsEntityScriptInstantiated(entity))
 				{
-					if (ImGui::MenuItem(scriptName.c_str()))
-					{
-						if (scriptWorld->IsEntityScriptInstantiated(entity))
-						{
-							scriptWorld->ScriptEntityPushScript(entity, scriptName);
-						}
-						else
-						{
-							scriptComp.ScriptMetadates.emplace_back(ScriptComponentsClassesData{ scriptName });
-							scriptWorld->InstantiateScriptEntity(entity);
-						}
-						
-						ImGui::CloseCurrentPopup();
-					}
+					scriptWorld->ScriptEntityPushScript(entity, scriptName);
 				}
-				ImGui::EndPopup();
+				else
+				{
+					scriptComp.ScriptMetadates.emplace_back(ScriptComponentsClassesData{ scriptName });
+					scriptWorld->InstantiateScriptEntity(entity);
+				}
 			}
 
 			if (!scriptWorld->IsEntityScriptInstantiated(entity))
 				return;
-
-
-
 
 			auto& classFields = *scriptWorld->GetEntityClassesContainer(entity);
 
@@ -1259,7 +1273,8 @@ namespace Proof
 
 					if (field->GetFieldInfo()->IsArray())
 					{
-
+						Count<ArrayFieldStorage> storage = field.As<ArrayFieldStorage>();
+						UI::DrawFieldValue(m_ActiveWorld, fieldName, storage);
 
 					}
 					else if (field->GetFieldInfo()->IsEnum())
@@ -1698,9 +1713,8 @@ namespace Proof
 
 		DrawComponents<TextComponent>("Text Component", entity, [](TextComponent& textComponent) {
 			//ImGui::InputTextMultiline("Text", (char*)textComponent.Text.c_str(), textComponent.Text.capacity() + 1);
+			UI::AttributeInputTextMultiline("", textComponent.Text,0);
 			UI::BeginPropertyGrid();
-
-			UI::AttributeInputTextMultiline("ither", textComponent.Text,0);
 			UI::AttributeColor("Colour", textComponent.Colour);
 
 			UI::AttributeDrag("Kernng", textComponent.Kerning, 0.025);

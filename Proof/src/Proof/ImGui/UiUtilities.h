@@ -110,7 +110,15 @@ namespace Proof::UI
 	private:
 		bool m_Set = false;
 	};
-
+	class ScopedColour
+	{
+	public:
+		ScopedColour(const ScopedColour&) = delete;
+		ScopedColour& operator=(const ScopedColour&) = delete;
+		template<typename T>
+		ScopedColour(ImGuiCol colourId, T colour) { ImGui::PushStyleColor(colourId, ImColor(colour).Value); }
+		~ScopedColour() { ImGui::PopStyleColor(); }
+	};
 	class ScopedColourStack
 	{
 	public:

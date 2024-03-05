@@ -8,6 +8,6 @@ namespace Proof
 	{
 	public:
 		SceneCamera();
-		void SetPerspective(float degfov, uint32_t witdth, uint32_t height, float nearPlane, float farPlane, const glm::vec3& position, const glm::vec3& rotation);
+		void SetPerspective(float degfov, uint32_t witdth, uint32_t height, float nearPlane, float farPlane, const glm::vec3& position, const glm::vec3& rotationRadians);
 	};
 }

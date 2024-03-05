@@ -2,8 +2,26 @@
 #include "Proof/Core/Core.h"
 #include "PhysicsSimulationCallback.h"
 #include <Physx/PxPhysicsAPI.h>
+#include "PhysicsTypes.h"
+// NOTE: Allocates roughly 800 bytes once, and then reuses
+#define OVERLAP_MAX_COLLIDERS 50
+namespace Proof 
+{
+	struct RaycastHit
+	{
+		uint64_t HitEntity = 0;
+		glm::vec3 Position = glm::vec3(0.0f);
+		glm::vec3 Normal = glm::vec3(0.0f);
+		float Distance = 0.0f;
+		Count<class ColliderShape> HitCollider = nullptr;
+	};
 
-namespace Proof {
+	struct OverlapHit
+	{
+		Count<class PhysicsActorBase> Actor;
+		Count<class ColliderShape> Shape;
+	};
+
 	class PhysicsWorld : public RefCounted
 	{
 	public:
@@ -36,12 +54,24 @@ namespace Proof {
 
 		physx::PxControllerManager* GetPhysXControllerManager() const { return m_PhysXControllerManager; }
 		const physx::PxSimulationStatistics& GetSimulationStats() const { return m_SimulationStats; }
+
+		bool OverlapSphere(const glm::vec3& origin, float radius, std::array<OverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t& count);
+		bool OverlapBox(const glm::vec3& origin, const glm::vec3& halfSize, std::array<OverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t& count);
+
+		void AddRadialImpulse(const glm::vec3& origin, float radius, float strength, enum class EFalloffMode falloff = EFalloffMode::Constant, bool velocityChange = false);
+
+		bool Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit);
+		bool SphereCast(const glm::vec3& origin, const glm::vec3& direction, float radius, float maxDistance, RaycastHit* outHit);
+		//bool RaycastExcludeEntities(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit, const std::unordered_set<UUID>& excludedEntities);
 	private:
 
 		bool Advance(float deltaTime);
 		void SubStepStrategy(float deltaTime);
 
 		void CreateRegions();
+
+		bool OverlapGeometry(const glm::vec3& origin, const physx::PxGeometry& geometry, std::array<OverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t& count);
+	
 	private:
 		physx::PxSimulationStatistics m_SimulationStats;
 
@@ -62,5 +92,8 @@ namespace Proof {
 		Count<class World> m_World;
 		physx::PxBounds3* m_RegionBounds = nullptr;
 		physx::PxControllerManager* m_PhysXControllerManager;
+
+		std::array<physx::PxOverlapHit, OVERLAP_MAX_COLLIDERS> m_OverlapBuffer;
+
 	};
 }

@@ -15,6 +15,8 @@
 #include <Glad/glad.h>
 
 #include "Proof/Renderer/Renderer.h"
+
+#include "Proof/Core/Application.h"
 namespace Proof {
 
     static uint8_t s_GLFWWindowCount = 0;
@@ -456,6 +458,7 @@ namespace Proof {
         }
         return InputEvent::None; // incase
     }
+    
     void WindowsWindow::ContollerButtonCallback(Controller& controller) {
         GLFWgamepadstate state;
 
@@ -779,6 +782,17 @@ namespace Proof {
 
     void WindowsWindow::BeginFrame()
     {
+        auto windowSize = glm::uvec2{ m_WindowConfiguration.Width,m_WindowConfiguration.Height };
+        if (m_SwapChain->GetSize() != windowSize)
+        {
+            if(windowSize.x != 0 and windowSize.y != 0)
+                m_SwapChain->Resize(windowSize);
+        }
+        if (m_ChangeVsync)
+        {
+            SetVsyncInternal();
+            m_ChangeVsync = false;
+        }
         m_SwapChain->BeginFrame();
     }
 
@@ -786,12 +800,18 @@ namespace Proof {
     {
         m_SwapChain->EndFrame();
     }
-
-    void WindowsWindow::SetVsync(bool vsync) {
-        m_WindowConfiguration.Vsync = vsync;
+    void WindowsWindow::SetVsyncInternal()
+    {
         glfwSwapInterval((int)m_WindowConfiguration.Vsync);
         if (m_SwapChain)
-            m_SwapChain->SetVsync(vsync);
+        {
+            m_SwapChain->SetVsync(m_WindowConfiguration.Vsync);
+        }
+    }
+    void WindowsWindow::SetVsync(bool vsync) 
+    {
+        m_ChangeVsync = true;
+        m_WindowConfiguration.Vsync = vsync;
     }
 
     Vector2 WindowsWindow::GetMousePosition() {

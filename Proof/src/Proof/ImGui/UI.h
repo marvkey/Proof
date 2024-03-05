@@ -17,6 +17,7 @@ namespace Proof
 	class World;
 	class Image;
 	class Texture2D;
+	class ArrayFieldStorage;
 }
 namespace Proof::UI 
 {
@@ -106,13 +107,28 @@ namespace Proof::UI
 	bool AttributeButton(const std::string& label, const std::string& buttonText, const ImVec2& size = ImVec2(0, 0));
 
 	bool AttributeInputTextMultiline(const std::string& label, std::string& value, ImGuiInputTextFlags flags);
+
+	bool AttributeInput(const std::string& label, float& value, float step = 0.0f, float stepFast = 0.0f, ImGuiInputTextFlags flags = 0, const char* format = "%.3f", const std::string& helpMessage = "");
+	bool AttributeInput(const std::string& label, double& value, double step = 0.0, double stepFast = 0.0, ImGuiInputTextFlags flags = 0, const char* format = "%.3f", const std::string& helpMessage = "");
+
+	bool AttributeInput(const std::string& label, int8_t& value, int8_t step = 1, int8_t stepFast = 1, ImGuiInputTextFlags flags = 0, const char* format = "%d", const std::string& helpMessage = "");
+	bool AttributeInput(const std::string& label, int16_t& value, int16_t step = 1, int16_t stepFast = 10, ImGuiInputTextFlags flags = 0,const char* format = "%d",const std::string& helpMessage = "");
+	bool AttributeInput(const std::string& label, int32_t& value, int32_t step = 1, int32_t stepFast = 100, ImGuiInputTextFlags flags = 0,const char* format = "%d",const std::string& helpMessage = "");
+	bool AttributeInput(const std::string& label, int64_t& value, int64_t step = 1, int64_t stepFast = 1000, ImGuiInputTextFlags flags = 0,const char* format = "%d",const std::string& helpMessage = "");
+
+	bool AttributeInput(const std::string& label, uint8_t& value, uint8_t step = 1, uint8_t stepFast = 1, ImGuiInputTextFlags flags = 0, const char* format = "%d", const std::string& helpMessage = "");
+	bool AttributeInput(const std::string& label, uint16_t& value, uint16_t step = 1, uint16_t stepFast = 10, ImGuiInputTextFlags flags = 0,const char* format = "%d", const std::string& helpMessage = "");
+	bool AttributeInput(const std::string& label, uint32_t& value, uint32_t step = 1, uint32_t stepFast = 100, ImGuiInputTextFlags flags = 0,const char* format = "%d", const std::string& helpMessage = "");
+	bool AttributeInput(const std::string& label, uint64_t& value, uint64_t step = 1, uint64_t stepFast = 1000, ImGuiInputTextFlags flags = 0,const char* format = "%d", const std::string& helpMessage = "");
+
 	void PushItemDisabled(bool disabled = true);
 	void PopItemDisabled();
 
 	void Tooltip(const std::string& tooltip, float treshHold = EG_HOVER_THRESHOLD);
 	void HelpMarker(const std::string& text);
 	bool DrawFieldValue(Count < World > worldContext, const std::string& fieldName, Count<FieldStorage>& storage);
-	bool DrawFieldValue(Count < World > worldContext, const std::string& fieldName,Count<EnumFieldStorage>& storage);
+	bool DrawFieldValue(Count < World > worldContext, const std::string& fieldName, Count<EnumFieldStorage>& storage);
+	bool DrawFieldValue(Count < World > worldContext, const std::string& fieldName,Count<ArrayFieldStorage>& storage);
 
 	void AttributeLabel(const std::string& label);
 	bool AttributeTreeNode(const std::string& label, bool openByDefault = true);

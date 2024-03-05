@@ -8,15 +8,9 @@ using System.Threading.Tasks;
 namespace Proof
 {
     [RegisterCoreClassStruct]
-    public class Prefab
+    public class Prefab : Asset
     {
-        protected Prefab() { ID = 0; }
-
-        internal Prefab(ulong id)
-        {
-            ID = id;
-        }
-        //Asset ID
-        public readonly ulong ID;
+        internal Prefab() { m_ID = AssetID.Invalid; }
+        internal Prefab(AssetID handle) { m_ID = handle; }
     }
 }

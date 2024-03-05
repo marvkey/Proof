@@ -10,12 +10,27 @@
 layout (set = 0, binding = 0, rgba16f) uniform image2D o_SSRIntersectionImage; // ssr intersect result.
 layout (set = 0, binding = 1) uniform texture2D u_SSSRExtractRoughnessImage; // current frame ssr roughness.
 layout (set = 0, binding = 2)  uniform texture2D u_DirectLightedWorld;
+float LoadExtractedRoughness(ivec3 coordinate)
+{
+    return texelFetch(u_SSSRExtractRoughnessImage, coordinate.xy, coordinate.z).x;
+}
+vec3 LoadInputColor(ivec3 coordinate)
+{
+    return texelFetch(u_DirectLightedWorld, coordinate.xy, coordinate.z).xyz;
+}
 
+void StoreRadiance(uvec2 coordinate, vec4 radiance)
+{
+    imageStore(o_SSRIntersectionImage, ivec2(coordinate), radiance);
+}
 float rsqrt(float x)
 {
     return float(1.0) / sqrt(x);
 }
-
+vec2 GetMipResolution(vec2 screen_dimensions, int mip_level) 
+{
+    return screen_dimensions * pow(0.5, mip_level);
+}
 #define M_PI                               3.14159265358979f
 #define FFX_SSSR_FLOAT_MAX                 3.402823466e+38
 #define FFX_SSSR_DEPTH_HIERARCHY_MAX_MIP   6
@@ -28,12 +43,10 @@ vec3 SampleGGXVNDF(vec3 Ve, float alpha_x, float alpha_y, float U1, float U2)
 {
     // Section 3.2: transforming the view direction to the hemisphere configuration
     vec3 Vh = normalize(vec3(alpha_x * Ve.x, alpha_y * Ve.y, Ve.z));
-
     // Section 4.1: orthonormal basis (with special case if cross product is zero)
     float lensq = Vh.x * Vh.x + Vh.y * Vh.y;
     vec3 T1 = lensq > 0 ? vec3(-Vh.y, Vh.x, 0) * rsqrt(lensq) : vec3(1, 0, 0);
     vec3 T2 = cross(Vh, T1);
-
     // Section 4.2: parameterization of the projected area
     float r = sqrt(U1);
     float phi = 2.0 * M_PI * U2;
@@ -41,23 +54,21 @@ vec3 SampleGGXVNDF(vec3 Ve, float alpha_x, float alpha_y, float U1, float U2)
     float t2 = r * sin(phi);
     float s = 0.5 * (1.0 + Vh.z);
     t2 = (1.0 - s) * sqrt(1.0 - t1 * t1) + s * t2;
-
     // Section 4.3: reprojection onto hemisphere
     vec3 Nh = t1 * T1 + t2 * T2 + sqrt(max(0.0, 1.0 - t1 * t1 - t2 * t2)) * Vh;
-
     // Section 3.4: transforming the normal back to the ellipsoid configuration
     vec3 Ne = normalize(vec3(alpha_x * Nh.x, alpha_y * Nh.y, max(0.0, Nh.z)));
     return Ne;
 }
 
-vec3 SampleGGXVNDFEllipsoid(vec3 ve, float alphaX, float alphaY, float u1, float u2) 
+vec3 Sample_GGX_VNDF_Ellipsoid(vec3 Ve, float alpha_x, float alpha_y, float U1, float U2) 
 {
-    return SampleGGXVNDF(ve, alphaX, alphaY, u1, u2);
+    return SampleGGXVNDF(Ve, alpha_x, alpha_y, U1, U2);
 }
 
-vec3 sampleGGXVNDFHemisphere(vec3 ve, float alpha, float u1, float u2) 
+vec3 Sample_GGX_VNDF_Hemisphere(vec3 Ve, float alpha, float U1, float U2) 
 {
-    return SampleGGXVNDFEllipsoid(ve, alpha, alpha, u1, u2);
+    return Sample_GGX_VNDF_Ellipsoid(Ve, alpha, alpha, U1, U2);
 }
 
 vec3 SampleReflectionVector(vec3 view_direction, vec3 normal, float roughness, ivec2 dispatch_thread_id) 
@@ -83,7 +94,7 @@ vec3 SampleReflectionVector(vec3 view_direction, vec3 normal, float roughness, i
 
     vec2 u = SampleRandomBlueNoiseVector2D(dispatch_thread_id);
 
-    vec3 sampled_normal_tbn = sampleGGXVNDFHemisphere(view_direction_tbn, roughness, u.x, u.y);
+    vec3 sampled_normal_tbn = Sample_GGX_VNDF_Hemisphere(view_direction_tbn, roughness, u.x, u.y);
     #ifdef PERFECT_REFLECTIONS
         sampled_normal_tbn = vec3(0, 0, 1); // Overwrite normal sample to produce perfect reflection.
     #endif
@@ -99,7 +110,8 @@ vec3 SampleReflectionVector(vec3 view_direction, vec3 normal, float roughness, i
     return vec3(dot(TBN_col0, reflected_direction_tbn), dot(TBN_col1, reflected_direction_tbn), dot(TBN_col2, reflected_direction_tbn));
 }
 
-void InitialAdvanceRay(vec3 origin, vec3 direction, vec3 inv_direction, vec2 current_mip_resolution, vec2 current_mip_resolution_inv, vec2 floor_offset, vec2 uv_offset, out vec3 position, out float current_t)
+
+void FFX_SSSR_InitialAdvanceRay(vec3 origin, vec3 direction, vec3 inv_direction, vec2 current_mip_resolution, vec2 current_mip_resolution_inv, vec2 floor_offset, vec2 uv_offset, out vec3 position, out float current_t) 
 {
     vec2 current_mip_position = current_mip_resolution * origin.xy;
 
@@ -113,268 +125,233 @@ void InitialAdvanceRay(vec3 origin, vec3 direction, vec3 inv_direction, vec2 cur
     position = origin + current_t * direction;
 }
 
-// NOTE: Hiz ray intersection is accurate, but need more step to get good result.
-//       Maybe we just need some fast intersect like linear search with only 16 tap.
-//       Eg, unreal engine 4's SSR use this tech, full screen SSR just cost 0.5ms in 2K.
-bool AdvanceRay(
-    vec3 origin, 
-    vec3 direction, 
-    vec3 invDirection, 
-    vec2 currentMipPosition, 
-    vec2 currentMipResolutionInv, 
-    vec2 floorOffset, 
-    vec2 uvOffset, 
-    float surfaceZ, 
-    inout vec3 position, 
-    inout float currentT) 
-{
-    vec2 xyPlane = floor(currentMipPosition) + floorOffset;
-    xyPlane = xyPlane * currentMipResolutionInv + uvOffset;
-    vec3 boundaryPlanes = vec3(xyPlane, surfaceZ);
+bool FFX_SSSR_AdvanceRay(vec3 origin, vec3 direction, vec3 inv_direction, vec2 current_mip_position, vec2 current_mip_resolution_inv, vec2 floor_offset, vec2 uv_offset, float surface_z, inout vec3 position, inout float current_t) {
+    // Create boundary planes
+    vec2 xy_plane = floor(current_mip_position) + floor_offset;
+    xy_plane = xy_plane * current_mip_resolution_inv + uv_offset;
+    vec3 boundary_planes = vec3(xy_plane, surface_z);
 
     // Intersect ray with the half box that is pointing away from the ray origin.
     // o + d * t = p' => t = (p' - o) / d
-    vec3 t = boundaryPlanes * invDirection - origin * invDirection;
+    vec3 t = boundary_planes * inv_direction - origin * inv_direction;
 
     // Prevent using z plane when shooting out of the depth buffer.
-    #if FFX_SSSR_OPTION_INVERTED_DEPTH
-        t.z = direction.z < 0 ? t.z : FFX_SSSR_FLOAT_MAX;
-    #else
-        t.z = direction.z > 0 ? t.z : FFX_SSSR_FLOAT_MAX;
-    #endif
+#if FFX_SSSR_OPTION_INVERTED_DEPTH
+    t.z = direction.z < 0 ? t.z : FFX_SSSR_FLOAT_MAX;
+#else
+    t.z = direction.z > 0 ? t.z : FFX_SSSR_FLOAT_MAX;
+#endif
 
     // Choose nearest intersection with a boundary.
-    float tMin = min(min(t.x, t.y), t.z);
+    float t_min = min(min(t.x, t.y), t.z);
 
-    #if FFX_SSSR_OPTION_INVERTED_DEPTH
+#if FFX_SSSR_OPTION_INVERTED_DEPTH
     // Larger z means closer to the camera.
-        bool bAboveSurface = surfaceZ < position.z;
-    #else
-        // Smaller z means closer to the camera.
-        bool bAboveSurface = surfaceZ > position.z;
-    #endif
+    bool above_surface = surface_z < position.z;
+#else
+    // Smaller z means closer to the camera.
+    bool above_surface = surface_z > position.z;
+#endif
 
     // Decide whether we are able to advance the ray until we hit the xy boundaries or if we had to clamp it at the surface.
     // We use the asuint comparison to avoid NaN / Inf logic, also we actually care about bitwise equality here to see if t_min is the t.z we fed into the min3 above.
-    bool bSkipTile = floatBitsToUint(tMin) != floatBitsToUint(t.z) && bAboveSurface;
+    bool skipped_tile = floatBitsToUint(t_min) != floatBitsToUint(t.z) && above_surface;
 
     // Make sure to only advance the ray if we're still above the surface.
-    currentT = bAboveSurface ? tMin : currentT;
+    current_t = above_surface ? t_min : current_t;
 
-    // Advance ray.
-    position = origin + currentT * direction;
+    // Advance ray
+    position = origin + current_t * direction;
 
-    return bSkipTile;
+    return skipped_tile;
 }
 
-vec2 GetMipResolution(vec2 screen_dimensions, int mip_level) 
+vec2 FFX_SSSR_GetMipResolution(vec2 screen_dimensions, int mip_level) 
 {
     return screen_dimensions * pow(0.5, mip_level);
 }
 
-vec3 HizMarching( vec3 origin, 
-    vec3 direction, 
-    bool bMirror, 
-    vec2 screenSize,
-    int mostDetailedMip,
-    uint minTraversalOccupancy,
-    uint maxTraversalIntersections,
-    out bool bValidHit) 
+// Requires origin and direction of the ray to be in screen space [0, 1] x [0, 1]
+vec3 FFX_SSSR_HierarchicalRaymarch(vec3 origin, vec3 direction, bool is_mirror, vec2 screen_size, int most_detailed_mip, uint min_traversal_occupancy, uint max_traversal_intersections, out bool valid_hit) 
 {
-    const vec3 invDirection = direction != vec3(0.0) ? vec3(1.0) / direction : vec3(FFX_SSSR_FLOAT_MAX, FFX_SSSR_FLOAT_MAX, FFX_SSSR_FLOAT_MAX);
+    const vec3 inv_direction = direction != vec3(0.0f, 0.0f, 0.0f) ? vec3(1.0f, 1.0f, 1.0f) / direction : vec3(FFX_SSSR_FLOAT_MAX, FFX_SSSR_FLOAT_MAX, FFX_SSSR_FLOAT_MAX);
 
     // Start on mip with highest detail.
-    int currentMip = mostDetailedMip;
+    int current_mip = most_detailed_mip;
 
-    // Hoisted variables for performance.
-    vec2 currentMipResolution = GetMipResolution(screenSize, currentMip);
-    vec2 currentMipResolutionInv = 1.0 / currentMipResolution;
+    // Could recompute these every iteration, but it's faster to hoist them out and update them.
+    vec2 current_mip_resolution = FFX_SSSR_GetMipResolution(screen_size, current_mip);
+    vec2 current_mip_resolution_inv = 1 / current_mip_resolution;
 
-    // Offset to intersect ray with center of next pixel.
-    vec2 uvOffset = 0.005 * exp2(float(mostDetailedMip)) / screenSize;
-    uvOffset.x *= direction.x < 0.0f ? -uvOffset.x : uvOffset.x;
-    uvOffset.y *= direction.y < 0.0f ? -uvOffset.y : uvOffset.y;
+    // Offset to the bounding boxes uv space to intersect the ray with the center of the next pixel.
+    // This means we ever so slightly over shoot into the next region.
+    vec2 uv_offset = 0.005 * exp2(most_detailed_mip) / screen_size;
+    uv_offset.x = direction.x < 0.0f ? -uv_offset.x : uv_offset.x;
+    uv_offset.y = direction.y < 0.0f ? -uv_offset.y : uv_offset.y;
 
-    // Offset depending on current mip resolution to move boundary to left/right upper/lower border based on ray direction.
-    vec2 floorOffset;
-    floorOffset.x = direction.x < 0.0f ? 0.0f : 1.0f;
-    floorOffset.y = direction.y < 0.0f ? 0.0f : 1.0f;
-    // Initially advance ray to avoid immediate self-intersections.
-    float currentT;
+    // Offset applied depending on current mip resolution to move the boundary to the left/right upper/lower border depending on ray direction.
+    vec2 floor_offset;
+    floor_offset.x = direction.x < 0.0f ? 0.0f : 1.0f;
+    floor_offset.y = direction.y < 0.0f ? 0.0f : 1.0f;
+
+    // Initially advance ray to avoid immediate self intersections.
+    float current_t;
     vec3 position;
+    FFX_SSSR_InitialAdvanceRay(origin, direction, inv_direction, current_mip_resolution, current_mip_resolution_inv, floor_offset, uv_offset, position, current_t);
 
-    InitialAdvanceRay(origin, direction, invDirection, currentMipResolution, currentMipResolutionInv, floorOffset, uvOffset, position, currentT);
-
-    bool exitDueToLowOccupancy = false;
+    bool exit_due_to_low_occupancy = false;
     int i = 0;
-    while (i < int(maxTraversalIntersections) && currentMip >= mostDetailedMip && !exitDueToLowOccupancy) {
-        vec2 currentMipPosition = currentMipResolution * position.xy;
-        float surfaceZ = LoadDepth(ivec2(currentMipPosition), currentMip);
-        exitDueToLowOccupancy = !bMirror && AWaveActiveCountBits(true) <= minTraversalOccupancy;
-        bool skippedTile = AdvanceRay(origin, direction, invDirection, currentMipPosition, currentMipResolutionInv, floorOffset, uvOffset, surfaceZ, position, currentT);
+    while (i < max_traversal_intersections && current_mip >= most_detailed_mip && !exit_due_to_low_occupancy) {
+        vec2 current_mip_position = current_mip_resolution * position.xy;
+        float surface_z = LoadDepth(ivec2(current_mip_position), current_mip);
+        exit_due_to_low_occupancy = !is_mirror && AWaveActiveCountBits(true) <= min_traversal_occupancy;
+        bool skipped_tile = FFX_SSSR_AdvanceRay(origin, direction, inv_direction, current_mip_position, current_mip_resolution_inv, floor_offset, uv_offset, surface_z, position, current_t);
         
         // Don't increase mip further than this because we did not generate it
-        bool nextMipIsOutOfRange = skippedTile && (currentMip >= FFX_SSSR_DEPTH_HIERARCHY_MAX_MIP);
-        if (!nextMipIsOutOfRange) 
+        bool nextMipIsOutOfRange = skipped_tile && (current_mip >= FFX_SSSR_DEPTH_HIERARCHY_MAX_MIP);
+        if (!nextMipIsOutOfRange)
         {
-            currentMip += skippedTile ? 1 : -1;
-            currentMipResolution *= skippedTile ? 0.5 : 2.0;
-            currentMipResolutionInv *= skippedTile ? 2.0 : 0.5;
+            current_mip += skipped_tile ? 1 : -1;
+            current_mip_resolution *= skipped_tile ? 0.5 : 2;
+            current_mip_resolution_inv *= skipped_tile ? 2 : 0.5;;
         }
 
         ++i;
     }
 
-    bValidHit = (i <= int(maxTraversalIntersections));
+    valid_hit = (i <= max_traversal_intersections);
+
     return position;
 }
 
-float ValidateHit(
-    vec3 hit, 
-    vec2 uv, 
-    vec3 worldSpaceRayDirection, 
-    vec2 screenSize, 
-    float depthBufferThickness) 
+float FFX_SSSR_ValidateHit(vec3 hit, vec2 uv, vec3 world_space_ray_direction, vec2 screen_size, float depth_buffer_thickness) 
 {
+    // Reject hits outside the view frustum
+    if ((hit.x < 0.0f) || (hit.y < 0.0f) || (hit.x > 1.0f) || (hit.y > 1.0f)) {
+        return 0.0f;
+    }
 
-        // Reject hits outside the view frustum
-    if ((hit.x < 0.0) || (hit.y < 0.0) || (hit.x > 1.0) || (hit.y > 1.0)) {
+    // Reject the hit if we didnt advance the ray significantly to avoid immediate self reflection
+     vec2 manhattan_dist= abs(hit.xy - uv);
+    if((manhattan_dist.x < (2.0f / screen_size.x)) && (manhattan_dist.y < (2.0f / screen_size.y)) ) {
         return 0.0;
     }
 
-    // Reject the hit if we didn't advance the ray significantly to avoid immediate self-reflection
-    vec2 manhattanDist = abs(hit.xy - uv);
-    if ((manhattanDist.x < (2.0 / screenSize.x)) && (manhattanDist.y < (2.0 / screenSize.y))) {
-        return 0.0;
-    }
     // Don't lookup radiance from the background.
-    ivec2 texelCoords = ivec2(screenSize * hit.xy);
-    float surfaceZ = LoadDepth(texelCoords / 2, 1);
-
-    #if FFX_SSSR_OPTION_INVERTED_DEPTH
-    if (surfaceZ == 0.0) {
+    ivec2 texel_coords = ivec2(screen_size * hit.xy);
+    float surface_z = LoadDepth(texel_coords / 2, 1);
+#if FFX_SSSR_OPTION_INVERTED_DEPTH
+    if (surface_z == 0.0) {
 #else
-    if (surfaceZ == 1.0) {
+    if (surface_z == 1.0) {
 #endif
-        //return 0;
+        return 0;
     }
 
-
-        // We check if we hit the surface from the back, these should be rejected.
-    vec3 hitNormal = LoadWorldSpaceNormal(texelCoords);
-    if (dot(hitNormal, worldSpaceRayDirection) > 0.0) {
-        return 0.0;
+    // We check if we hit the surface from the back, these should be rejected.
+    vec3 hit_normal = LoadWorldSpaceNormal(texel_coords);
+    if (dot(hit_normal, world_space_ray_direction) > 0) {
+        return 0;
     }
 
-    vec3 viewSpaceSurface = ScreenSpaceToViewSpace(vec3(hit.xy, surfaceZ));
-    vec3 viewSpaceHit = ScreenSpaceToViewSpace(hit);
-    float distancee = length(viewSpaceSurface - viewSpaceHit);
+    vec3 view_space_surface = ScreenSpaceToViewSpace(vec3(hit.xy, surface_z));
+    vec3 view_space_hit = ScreenSpaceToViewSpace(hit);
+    float distance = length(view_space_surface - view_space_hit);
 
     // Fade out hits near the screen borders
-    vec2 fov = 0.05 * vec2(screenSize.y / screenSize.x, 1.0);
-    vec2 border = smoothstep(vec2(0.0), fov, hit.xy) * (1.0 - smoothstep(vec2(1.0) - fov, vec2(1.0), hit.xy));
+    vec2 fov = 0.05 * vec2(screen_size.y / screen_size.x, 1);
+    vec2 border = smoothstep(vec2(0.0f, 0.0f), fov, hit.xy) * (1 - smoothstep(vec2(1.0f, 1.0f) - fov, vec2(1.0f, 1.0f), hit.xy));
     float vignette = border.x * border.y;
 
     // We accept all hits that are within a reasonable minimum distance below the surface.
     // Add constant in linear space to avoid growing of the reflections toward the reflected objects.
-    float confidence = 1.0 - smoothstep(0.0, depthBufferThickness, distancee);
+    float confidence = 1.0f - smoothstep(0.0f, depth_buffer_thickness, distance);
     confidence *= confidence;
 
-    return vignette * confidence ;
-}
-float LoadExtractedRoughness(ivec3 coordinate)
-{
-    return texelFetch(u_SSSRExtractRoughnessImage, coordinate.xy, coordinate.z).x;
-}
-vec3 LoadInputColor(ivec3 coordinate)
-{
-    return texelFetch(u_DirectLightedWorld, coordinate.xy, coordinate.z).xyz;
+    return vignette * confidence;
 }
 
-void StoreRadiance(uvec2 coordinate, vec4 radiance)
+void Intersect(uint group_index, uint group_id)
 {
-    imageStore(o_SSRIntersectionImage, ivec2(coordinate), radiance);
-}
-void Intersect(uint groupIndex, uint groupId) 
-{
-    uint rayIndex = groupId * 64u + groupIndex;
-    if (!IsRayIndexValid(rayIndex)) {
+    uint ray_index = group_id * 64 + group_index;
+    if(!IsRayIndexValid(ray_index))
+    {
         return;
     }
 
-    uint packedCoords = GetRaylist(rayIndex);
+    uint packed_coords = GetRaylist(ray_index);
 
     uvec2 coords;
-    bool copyHorizontal;
-    bool copyVertical;
-    bool copyDiagonal;
-    UnpackRayCoords(packedCoords, coords, copyHorizontal, copyVertical, copyDiagonal);
+    bool copy_horizontal;
+    bool copy_vertical;
+    bool copy_diagonal;
+    UnpackRayCoords(packed_coords, coords, copy_horizontal, copy_vertical, copy_diagonal);
 
-    const uvec2 screenSize = uvec2(u_ScreenData.FullResolution);
-    const vec2 screenSizeInv = 1.0 / vec2(screenSize);
+    const uvec2 screen_size = uvec2(u_ScreenData.FullResolution);
 
-    vec2 uv = (vec2(coords) + 0.5) * screenSizeInv;
+    vec2 uv = (coords + 0.5) * u_ScreenData.InverseFullResolution;
 
-    vec3 worldSpaceNormal = LoadWorldSpaceNormal(ivec2(coords));
+    vec3 world_space_normal = LoadWorldSpaceNormal(ivec2(coords));
     float roughness = LoadExtractedRoughness(ivec3(coords, 0));
-    bool isMirror = IsMirrorReflection(roughness);
+    bool is_mirror = IsMirrorReflection(roughness);
 
-    int mostDetailedMip = isMirror ? 0 : int(u_PushData.MostDetailedMip);
-    vec2 mipResolution = GetMipResolution(screenSize, mostDetailedMip);
-    float z = LoadDepth(ivec2(uv * mipResolution), mostDetailedMip);
+    int most_detailed_mip = is_mirror ? 0 : int(u_PushData.MostDetailedMip);
+    vec2 mip_resolution = GetMipResolution(screen_size, most_detailed_mip);
+    float z = LoadDepth(ivec2(uv * mip_resolution), most_detailed_mip);
 
-    vec3 screenUvSpaceRayOrigin = vec3(uv, z);
-    vec3 viewSpaceRay = ScreenSpaceToViewSpace(screenUvSpaceRayOrigin);
-    vec3 viewSpaceRayDirection = normalize(viewSpaceRay);
+    vec3 screen_uv_space_ray_origin = vec3(uv, z);
+    vec3 view_space_ray = ScreenSpaceToViewSpace(screen_uv_space_ray_origin);
+    vec3 view_space_ray_direction = normalize(view_space_ray);
 
-    vec3 viewSpaceSurfaceNormal = (u_Camera.View * vec4(worldSpaceNormal, 0.0)).xyz;
-    vec3 viewSpaceReflectedDirection = SampleReflectionVector(viewSpaceRayDirection, viewSpaceSurfaceNormal, roughness, ivec2(coords));
-    vec3 screenSpaceRayDirection = ProjectDirection(viewSpaceRay, viewSpaceReflectedDirection, screenUvSpaceRayOrigin, u_Camera.Projection);
-
+    vec3 view_space_surface_normal =  ( u_Camera.View * vec4(world_space_normal, 0)).xyz;
+    vec3 view_space_reflected_direction = SampleReflectionVector(view_space_ray_direction, view_space_surface_normal, roughness, ivec2(coords));
+    vec3 screen_space_ray_direction = ProjectDirection(view_space_ray, view_space_reflected_direction, screen_uv_space_ray_origin, u_Camera.Projection);
 
     //====SSSR====
-    bool validHit = false;
-    vec3 hit = HizMarching(screenUvSpaceRayOrigin, screenSpaceRayDirection, isMirror , screenSize, mostDetailedMip, kMinTraversalOccupancy, kMaxTraversalIterations, validHit);
+    bool valid_hit = false;
+    vec3 hit = FFX_SSSR_HierarchicalRaymarch(screen_uv_space_ray_origin, screen_space_ray_direction, is_mirror, screen_size, most_detailed_mip, kMinTraversalOccupancy, kMaxTraversalIterations, valid_hit);
 
-    vec3 worldSpaceOrigin = ScreenSpaceToWorldSpace(screenUvSpaceRayOrigin);
-    vec3 worldSpaceHit = ScreenSpaceToWorldSpace(hit);
-    vec3 worldSpaceRay = worldSpaceHit - worldSpaceOrigin;
-    //everyting above works
+    vec3 world_space_origin   = ScreenSpaceToWorldSpace(screen_uv_space_ray_origin);
+    vec3 world_space_hit      = ScreenSpaceToWorldSpace(hit);
+    vec3 world_space_ray      = world_space_hit - world_space_origin.xyz;
 
-    float confidence = validHit ? ValidateHit(hit, uv, worldSpaceRay, screenSize, kDepthBufferThickness) : 0.0;
-    float worldRayLength = max(0.0, length(worldSpaceRay));
-    vec3 reflectionRadiance = vec3(0.0);
-        reflectionRadiance = LoadInputColor(ivec3(screenSize * hit.xy, 0));
+    float confidence = valid_hit ? FFX_SSSR_ValidateHit(hit, uv, world_space_ray, screen_size, kDepthBufferThickness) : 0;
+    float world_ray_length = max(0, length(world_space_ray));
 
-    if (confidence > 0.0) 
+    confidence = 1.0;
+    vec3 reflection_radiance = vec3(0.0f, 0.0f, 0.0f);
+    if (confidence > 0.0f) 
     {
-        //reflectionRadiance = vec3(0,0,1);
-
         // Found an intersection with the depth buffer -> We can lookup the color from lit scene.
+        reflection_radiance = LoadInputColor(ivec3(screen_size * hit.xy, 0))* 2;
+        //reflection_radiance =vec3(0,1,0.0);
     }
+
     // Sample environment map.
-    vec3 worldSpaceReflectedDirection = (u_Camera.InverseView * vec4(viewSpaceReflectedDirection, 0.0)).xyz;
-    vec3 environmentLookup = SampleEnvironmentMap(worldSpaceReflectedDirection, 0.0);
-    //reflectionRadiance = mix(environmentLookup, reflectionRadiance, confidence);
+    vec3 world_space_reflected_direction = (u_Camera.InverseView * vec4(view_space_reflected_direction, 0)).xyz;
+    vec3 environment_lookup = SampleEnvironmentMap(world_space_reflected_direction, 0.0f);
+    reflection_radiance = mix(environment_lookup, reflection_radiance, confidence);
 
-    vec4 newSample = vec4(reflectionRadiance,1.0);
+    vec4 new_sample = vec4(reflection_radiance,world_ray_length);
 
-    StoreRadiance(coords, newSample);
+    StoreRadiance(coords, new_sample);
 
-    uvec2 copyTarget = coords ^ uvec2(1); // Flip last bit to find the mirrored coords along the x and y axis within a quad.
-    if (copyHorizontal) {
-        uvec2 copyCoords = uvec2(copyTarget.x, coords.y);
-        StoreRadiance(copyCoords, newSample);
+    uvec2 copy_target = coords ^ 1; // Flip last bit to find the mirrored coords along the x and y axis within a quad.
+    if (copy_horizontal) 
+    {
+        uvec2 copy_coords = uvec2(copy_target.x, coords.y);
+        StoreRadiance(copy_coords, new_sample);
     }
-    if (copyVertical) {
-        uvec2 copyCoords = uvec2(coords.x, copyTarget.y);
-        StoreRadiance(copyCoords, newSample);
+    if (copy_vertical) 
+    {
+        uvec2 copy_coords = uvec2(coords.x, copy_target.y);
+        StoreRadiance(copy_coords, new_sample);
     }
-    if (copyDiagonal) {
-        uvec2 copyCoords = copyTarget;
-        StoreRadiance(copyCoords, newSample);
+    if (copy_diagonal) 
+    {
+        uvec2 copy_coords = copy_target;
+        StoreRadiance(copy_coords, new_sample);
     }
-
 }
 
 layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;

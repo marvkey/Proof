@@ -157,8 +157,9 @@ namespace Proof::UI
 			UI::PopID();
 			return modified;
 		}
-
+		static bool EntitySearchPopup(const char* ID, Count<class World> scene, UUID& selected, bool* cleared = nullptr, const char* hint = "Search Entities", ImVec2 size = ImVec2{ 250.0f, 350.0f });
 		static bool AssetSearchPopup(const char* ID, AssetType assetType, AssetID& selected, UIMemoryAssetTypes types, bool allowClear = true, const char* hint = "Search Assets", ImVec2 size = ImVec2{ 250.0f, 350.0f });
 		static bool AssetSearchPopup(const char* ID, std::initializer_list<AssetType> assetTypes, AssetID& selected, UIMemoryAssetTypes types, bool allowClear = true, const char* hint = "Search Assets", ImVec2 size = ImVec2{ 250.0f, 350.0f });
+		static bool SearchScriptsPopup(const char* ID, std::string& selected,bool allowClear = true, const char* hint = "Search Scripts", ImVec2 size = ImVec2{ 250.0f, 350.0f });
 	};
 }

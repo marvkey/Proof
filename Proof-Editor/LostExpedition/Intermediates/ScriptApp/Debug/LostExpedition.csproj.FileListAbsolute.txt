@@ -1,0 +1,7 @@
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\LostExpedition\Binaries\ScriptApp\LostExpedition.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\LostExpedition\Binaries\ScriptApp\LostExpedition.pdb
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\LostExpedition\Intermediates\ScriptApp\Debug\LostExpedition.csproj.AssemblyReference.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\LostExpedition\Intermediates\ScriptApp\Debug\LostExpedition.csproj.CoreCompileInputs.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\LostExpedition\Intermediates\ScriptApp\Debug\LostExpedition.csproj.CopyComplete
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\LostExpedition\Intermediates\ScriptApp\Debug\LostExpedition.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\LostExpedition\Intermediates\ScriptApp\Debug\LostExpedition.pdb

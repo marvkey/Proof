@@ -74,7 +74,7 @@ namespace Proof
     {
         ScriptClassMetaData* classMetaData = GetEntityClass(entity, classFullName);
         if (!classMetaData)return nullptr;
-        if (!classMetaData->Fields.contains(classFullName))return nullptr;
+        if (!classMetaData->Fields.contains(fieldName))return nullptr;
         return classMetaData->Fields.at(fieldName);
     }
 
@@ -173,6 +173,7 @@ namespace Proof
 
             if (scriptField->IsArray())
             {
+                scriptEngineData.Fields[fieldName] = Count<ArrayFieldStorage>::Create(scriptField);
             }
             else if (scriptField->IsEnum())
             {
@@ -244,8 +245,12 @@ namespace Proof
             }
         }
         if (!scriptComponent.HasScript(classFullName))
-            scriptComponent.ScriptMetadates.emplace_back(classFullName);
-
+            scriptComponent.ScriptMetadates.emplace_back(ScriptComponentsClassesData{ classFullName,instanceHandle });
+        else
+        {
+            auto index = scriptComponent.GetScriptIndex(classFullName);
+            scriptComponent.ScriptMetadates[index].Instance = instanceHandle;
+        }
         ScriptEngine::CallMethod(instanceHandle, "OnCreate");
 
 	}
@@ -492,6 +497,8 @@ namespace Proof
 
     void ScriptWorld::BeginRuntime()
     {
+        PF_PROFILE_FUNC();
+
         ScriptEngine::BeginRuntime(m_World);
 
         for (auto& [enityID, classes] : m_EntityClassesStorage)
@@ -510,8 +517,29 @@ namespace Proof
         });
     }
 
+    void ScriptWorld::OnUpdate(FrameTime frame)
+    {
+        PF_PROFILE_FUNC();
+
+        auto view = m_World->GetAllEntitiesWith<ScriptComponent>();
+
+        for (auto& [enityID, classes] : m_RuntimeEntityClassStorage)
+        {
+            if (!RuntimeIsEntityScriptInstantiated(m_World->GetEntity(enityID)))continue;
+            for (auto& [className, classMetaData] : classes.Classes)
+            {
+                
+                if(classMetaData.ScriptHandle)
+                    ScriptEngine::CallMethod(classMetaData.ScriptHandle, "OnUpdate",frame.Get());
+
+            }
+        }
+                
+    }
+
     void ScriptWorld::EndRuntime()
     {
+        PF_PROFILE_FUNC();
 
         // we make a copy when we are going to run the scen
         m_World->ForEachEnitityWith<ScriptComponent>([&](Entity entity)

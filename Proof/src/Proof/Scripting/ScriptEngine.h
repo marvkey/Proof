@@ -65,7 +65,7 @@ namespace Proof
 			ManagedMethod* method = ScriptRegistry::GetSpecificManagedMethod(clazz, methodName, argsCount);
 			if (method == nullptr)
 			{
-				PF_ENGINE_ERROR("ScriptEngine", "Failed to find a C# method called {0} with {1} parameters", methodName, argsCount);
+				PF_ENGINE_ERROR("ScriptEngine Failed to find a C# method called {0} with {1} parameters", methodName, argsCount);
 				return;
 			}
 
@@ -101,14 +101,14 @@ namespace Proof
 		template<typename... TConstructorArgs>
 		static MonoObject* CreateManagedObject(const std::string& className, TConstructorArgs&&... args)
 		{
-			return CreateManagedObject_Internal(GetManagedClass(className), std::forward<TConstructorArgs>(args)...);
+			return CreateManagedObject_Internal(GetManagedClass(className), true,std::forward<TConstructorArgs>(args)...);
 		}
 		template<typename... TArgs>
 		static void CallMethod(ScriptGCHandle instance, const std::string& methodName, TArgs&&... args)
 		{
 			if (instance == nullptr)
 			{
-				PF_ENGINE_WARN("ScriptEngine", "Attempting to call method {0} on an invalid instance!", methodName);
+				PF_ENGINE_WARN("ScriptEngine Attempting to call method {0} on an invalid instance!", methodName);
 				return;
 			}
 

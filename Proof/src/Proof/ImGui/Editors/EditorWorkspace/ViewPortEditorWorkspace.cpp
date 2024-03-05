@@ -10,6 +10,8 @@
 #include "Proof/Math/Ray.h"
 #include "Proof/Math/BasicCollision.h"
 #include "Proof/Renderer/Renderer.h"
+#include "Proof/Core/Application.h"
+#include "Proof/Core/Window.h"
 
 #include "Proof/Scene/Mesh.h"
 
@@ -208,12 +210,65 @@ namespace Proof
 	}
 	void ViewPortEditorWorkspace::OnUpdate(FrameTime ts)
 	{
-		m_Camera.SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-		m_Camera.SetActive(IsFocused() || IsHovered());
-		m_Camera.OnUpdate(ts);
-		m_WorldRenderer->SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-		m_WorldContext->OnRenderEditor(m_WorldRenderer, ts, m_Camera);
-		OnRender2D();
+		
+		switch (m_WorldContext->GetState())
+		{
+		case Proof::WorldState::Play:
+		{
+			if (m_WorldContext->HasWorldCamera())
+			{
+				bool inputEvent = Application::Get()->GetWindow()->IsInputEventEnabled();
+				Application::Get()->GetWindow()->SetWindowInputEvent(true);
+
+				
+				m_Camera.SetActive(false);
+				m_WorldRenderer->SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+				m_WorldContext->OnRenderRuntime(m_WorldRenderer, ts);
+				m_WorldContext->OnUpdateRuntime(ts);
+				//OnRender2D();
+				Application::Get()->GetWindow()->SetWindowInputEvent(inputEvent);
+			}
+			else
+			{
+				m_Camera.SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+				m_Camera.SetActive(IsFocused() || IsHovered());
+				m_Camera.OnUpdate(ts);
+				m_WorldRenderer->SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+				m_WorldContext->OnRenderEditor(m_WorldRenderer, ts, m_Camera);
+				m_WorldContext->OnUpdateEditor(ts);
+
+				OnRender2D();
+			}
+			break;
+		}
+		case Proof::WorldState::Pause:
+		{
+			m_Camera.SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+			m_Camera.SetActive(IsFocused() || IsHovered());
+			m_Camera.OnUpdate(ts);
+			m_WorldContext->OnUpdateEditor(ts);
+			break;
+		}
+		case Proof::WorldState::Simulate:
+		{
+			break;
+		}
+		case Proof::WorldState::Edit:
+		{
+			m_Camera.SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+			m_Camera.SetActive(IsFocused() || IsHovered());
+			m_Camera.OnUpdate(ts);
+			m_WorldRenderer->SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+			m_WorldContext->OnRenderEditor(m_WorldRenderer, ts, m_Camera);
+			m_WorldContext->OnUpdateEditor(ts);
+
+			OnRender2D();
+
+			break;
+		}
+		default:
+			break;
+		}
 	}
 	void ViewPortEditorWorkspace::OnImGuiRender()
 	{
@@ -670,6 +725,26 @@ namespace Proof
 		renderer2D->BeginContext(m_Camera.GetProjectionMatrix(), m_Camera.GetViewMatrix(), GlmVecToProof(m_Camera.GetPosition()));
 		DrawIcons();
 		DrawBoundingBoxes();
+
+		if (m_ViewPortEditorData.IsWorld)
+		{
+			for (auto selectionID : SelectionManager::GetSelections(SelectionContext::Scene))
+			{
+				Entity entity = m_WorldContext->TryGetEntityWithUUID(selectionID);
+
+				if (!entity)
+					continue;
+				if (!entity.HasComponent<CameraComponent>())
+					continue;
+
+				CameraComponent& cameraComp = entity.GetComponent<CameraComponent>();
+				SceneCamera sceneCamera;
+				sceneCamera.SetPerspective(cameraComp.FovDeg, m_WorldRenderer->GetScreenData().FullResolution.x, m_WorldRenderer->GetScreenData().FullResolution.y,
+					cameraComp.NearPlane, cameraComp.FarPlane, m_WorldContext->GetWorldSpaceLocation(entity),
+					cameraComp.UseLocalRotation ? entity.GetComponent<TransformComponent>().GetRotationEuler() : m_WorldContext->GetWorldSpaceRotation(entity)); 
+				renderer2D->DrawCameraFrustrum(sceneCamera.GetProjectionMatrix() * sceneCamera.GetViewMatrix(), glm::vec4(0, 1, 0, 1));
+			}
+		}
 		renderer2D->EndContext();
 
 	}
@@ -679,6 +754,14 @@ namespace Proof
 		Count<Renderer2D> renderer2D = m_WorldRenderer->GetRenderer2D();
 		if (!m_ShowComponentsIcon)
 			return;
+		{
+			auto entities = m_WorldContext->GetAllEntitiesWith<CameraComponent>();
+			for (auto e : entities)
+			{
+				Entity entity = { e, m_WorldContext.Get() };
+				renderer2D->DrawQuadBillboard(EditorResources::CameraIcon, m_WorldContext->GetWorldSpaceLocation(entity));
+			}
+		}
 
 		{
 			auto entities = m_WorldContext->GetAllEntitiesWith<SkyLightComponent>();

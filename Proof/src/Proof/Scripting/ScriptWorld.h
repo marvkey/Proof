@@ -97,6 +97,7 @@ namespace Proof
 		Count <class World> GetWorld()const { return m_World; }
 
 		void BeginRuntime();
+		void OnUpdate(FrameTime frame);
 		void EndRuntime();
 	private:
 

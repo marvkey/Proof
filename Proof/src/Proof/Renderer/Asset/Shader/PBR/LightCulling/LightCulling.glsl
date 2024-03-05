@@ -156,6 +156,7 @@ void main()
 	uint passCount = (u_LightData.PointLightCount + threadCount - 1) / threadCount;
 	for (uint i = 0; i < passCount; i++)
     {
+	/*
 		// Get the lightIndex to test for this thread / pass. If the index is >= light count, then this thread can stop testing lights
 		uint lightIndex = i * threadCount + gl_LocalInvocationIndex;
 		if (lightIndex >= u_LightData.PointLightCount)
@@ -168,6 +169,33 @@ void main()
 		{
 			uint offset = atomicAdd(visiblePointLightCount, 1);
 			visiblePointLightIndices[offset] = int(lightIndex);
+		}
+		*/
+
+		// Get the lightIndex to test for this thread / pass. If the index is >= light count, then this thread can stop testing lights
+		uint lightIndex = i * threadCount + gl_LocalInvocationIndex;
+		if (lightIndex >= u_LightData.PointLightCount)
+		    break;
+
+		vec4 position = vec4(s_PointLights.Lights[lightIndex].Position, 1.0f);
+		float radius = s_PointLights.Lights[lightIndex].Radius;
+		radius += radius * 0.3f;
+
+		// Check if light radius is in frustum
+		float distance = 0.0;
+		for (uint j = 0; j < 6; j++)
+		{
+		    distance = dot(position, frustrumPlane.Planes[j]) + radius;
+		    if (distance <= 0.0) // No intersection
+				break;
+		}
+
+		// If greater than zero, then it is a visible light
+		if (distance > 0.0)
+		{
+		    // Add index to the shared array of visible indices
+		    uint offset = atomicAdd(visiblePointLightCount, 1);
+		    visiblePointLightIndices[offset] = int(lightIndex);
 		}
     }
 	passCount = (u_LightData.SpotLightCount + threadCount - 1) / threadCount;

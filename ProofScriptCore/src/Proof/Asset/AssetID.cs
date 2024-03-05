@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 namespace Proof
 {
     [RegisterCoreClassStruct]
-
     [StructLayout(LayoutKind.Sequential)]
     public struct AssetID
     {
@@ -26,6 +25,15 @@ namespace Proof
             return InternalCalls.AssetID_IsValid(ref assetId);
         }
 
+        public static explicit operator ulong(AssetID assetId)
+        {
+            return assetId.m_ID;
+        }
+
+        public ulong ToUInt64()
+        {
+            return m_ID;
+        }
         public override string ToString() => m_ID.ToString();
         public override int GetHashCode() => m_ID.GetHashCode();
     }

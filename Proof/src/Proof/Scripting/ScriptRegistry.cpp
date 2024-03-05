@@ -149,6 +149,9 @@ namespace Proof
 			case ScriptFieldType::Vector2: return PF_REGISTERED_CLASS("PF.Vector2")->Class;
 			case ScriptFieldType::Vector3: return PF_REGISTERED_CLASS("PF.Vector3")->Class;
 			case ScriptFieldType::Vector4: return PF_REGISTERED_CLASS("PF.Vector4")->Class;
+			case ScriptFieldType::Vector2Bool : return PF_REGISTERED_CLASS("PF.Vector2Bool")->Class;
+			case ScriptFieldType::Vector3Bool: return PF_REGISTERED_CLASS("PF.Vector3Bool")->Class;
+			case ScriptFieldType::Vector4Bool: return PF_REGISTERED_CLASS("PF.Vector4Bool")->Class;
 			case ScriptFieldType::AssetID: return PF_REGISTERED_CLASS("PF.AssetID")->Class;
 			case ScriptFieldType::Prefab: return PF_REGISTERED_CLASS("PF.Prefab")->Class;
 			case ScriptFieldType::Entity: return PF_REGISTERED_CLASS("PF.Entity")->Class;

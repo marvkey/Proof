@@ -1,25 +1,25 @@
 Assets:
-  - Asset: 2958098095559880186
-    Type: World
-    Path: Scenes\LightTest.ProofWorld
   - Asset: 5912072901972600252
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8114461559286000061.jpg
-  - Asset: 2892619565570009721
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial (08).Material.ProofAsset
-  - Asset: 10555317305830411497
-    Type: Texture
-    Path: MeshResources\glTF\Textures\8750083169368950601.Texture.ProofAsset
-  - Asset: 2403019099758263853
-    Type: ScriptFile
-    Path: Script\ScriptSpawner.cs
-  - Asset: 3722671467531586637
-    Type: TextureSourceFile
-    Path: TexturesMaps\white-brick-wall-bl\white-brick-wall_albedo.png
+  - Asset: 2958098095559880186
+    Type: World
+    Path: Scenes\LightTest.ProofWorld
   - Asset: 7892859412648183776
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\vase_ddn.tga
+  - Asset: 3722671467531586637
+    Type: TextureSourceFile
+    Path: TexturesMaps\white-brick-wall-bl\white-brick-wall_albedo.png
+  - Asset: 2403019099758263853
+    Type: ScriptFile
+    Path: Script\ScriptSpawner.cs
+  - Asset: 10555317305830411497
+    Type: Texture
+    Path: MeshResources\glTF\Textures\8750083169368950601.Texture.ProofAsset
+  - Asset: 2892619565570009721
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial (08).Material.ProofAsset
   - Asset: 1165648952014580025
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\755318871556304029.jpg
@@ -29,9 +29,6 @@ Assets:
   - Asset: 17631073705728033736
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\5061699253647017043.Texture.ProofAsset
-  - Asset: 2001942831744342266
-    Type: TextureSourceFile
-    Path: HdrMaps\MegaSun4k.hdr
   - Asset: 6934225201150094691
     Type: Texture
     Path: MeshResources\glTF\Textures\7056944414013900257.Texture.ProofAsset
@@ -41,18 +38,24 @@ Assets:
   - Asset: 9322883649519495229
     Type: Texture
     Path: HdrMaps\qwantani_puresky_4k.Texture.ProofAsset
-  - Asset: 9341014913653287029
-    Type: Material
-    Path: MeshResources\Cerberus_by_Andrew_Maximov\08 - Default.Material.ProofAsset
-  - Asset: 16726134267773242065
+  - Asset: 2001942831744342266
     Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\16299174074766089871.jpg
+    Path: HdrMaps\MegaSun4k.hdr
   - Asset: 8123847038649034919
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_curtain_diff.tga
   - Asset: 12458148504177203633
     Type: Texture
     Path: HdrMaps\Arches_E_PineTree_3k.Texture.ProofAsset
+  - Asset: 9341014913653287029
+    Type: Material
+    Path: MeshResources\Cerberus_by_Andrew_Maximov\08 - Default.Material.ProofAsset
+  - Asset: 16726134267773242065
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\16299174074766089871.jpg
+  - Asset: 367969175621271410
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13982482287905699490.Texture.ProofAsset
   - Asset: 5041168797412189461
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8747919177698443163.Texture.ProofAsset
@@ -62,42 +65,45 @@ Assets:
   - Asset: 8580427426026160747
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13982482287905699490.jpg
-  - Asset: 367969175621271410
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13982482287905699490.Texture.ProofAsset
-  - Asset: 4048020241950879645
-    Type: Texture
-    Path: HdrMaps\DayInTheClouds4k.Texture.ProofAsset
-  - Asset: 2607731723157388206
-    Type: Texture
-    Path: MeshResources\glTF\Textures\2299742237651021498.Texture.ProofAsset
-  - Asset: 10149125587121140796
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3827035219084910048.Texture.ProofAsset
   - Asset: 11601788566018788686
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\vase_round.tga
   - Asset: 16104715042887607263
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11968150294050148237.jpg
-  - Asset: 4460442484181809113
+  - Asset: 2607731723157388206
     Type: Texture
-    Path: HdrMaps\MegaSun4k.Texture.ProofAsset
-  - Asset: 9971561450947974296
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14118779221266351425.jpg
+    Path: MeshResources\glTF\Textures\2299742237651021498.Texture.ProofAsset
+  - Asset: 10149125587121140796
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3827035219084910048.Texture.ProofAsset
+  - Asset: 4048020241950879645
+    Type: Texture
+    Path: HdrMaps\DayInTheClouds4k.Texture.ProofAsset
   - Asset: 414545300829913036
     Type: Material
     Path: MeshResources\SponzaObj\arch.Material.ProofAsset
   - Asset: 16858073098250920158
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\15295713303328085182.jpg
+  - Asset: 9971561450947974296
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14118779221266351425.jpg
+  - Asset: 4460442484181809113
+    Type: Texture
+    Path: HdrMaps\MegaSun4k.Texture.ProofAsset
   - Asset: 6209785345244531942
     Type: TextureSourceFile
     Path: HdrMaps\qwantani_puresky_4k.hdr
   - Asset: 22939415785848343
     Type: TextureSourceFile
     Path: HdrMaps\syferfontein_18d_clear_puresky_4k.hdr
+  - Asset: 9928074018096423924
+    Type: TextureSourceFile
+    Path: TexturesMaps\heavily-rusted-metal-ue\heavily-rusted-metal_albedo.png
+  - Asset: 5621957470200202893
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14650633544276105767.Texture.ProofAsset
   - Asset: 14008550323868830914
     Type: TextureSourceFile
     Path: TexturesMaps\smooth-temple-blocks-bl\smooth-temple-blocks_preview.jpg
@@ -107,12 +113,12 @@ Assets:
   - Asset: 7852497480329188382
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11490520546946913238.jpg
-  - Asset: 9928074018096423924
+  - Asset: 13511578038632716699
+    Type: World
+    Path: Scenes\New World.ProofWorld
+  - Asset: 3762551570911030480
     Type: TextureSourceFile
-    Path: TexturesMaps\heavily-rusted-metal-ue\heavily-rusted-metal_albedo.png
-  - Asset: 5621957470200202893
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14650633544276105767.Texture.ProofAsset
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14170708867020035030.jpg
   - Asset: 37090139121727067
     Type: Material
     Path: MeshResources\SponzaObj\Material__298.Material.ProofAsset
@@ -122,51 +128,27 @@ Assets:
   - Asset: 16683417263941019590
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\10388182081421875623.Texture.ProofAsset
-  - Asset: 13511578038632716699
-    Type: World
-    Path: Scenes\New World.ProofWorld
-  - Asset: 3762551570911030480
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14170708867020035030.jpg
   - Asset: 7096967779031159665
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11968150294050148237.Texture.ProofAsset
   - Asset: 8383576194530493894
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\1219024358953944284.Texture.ProofAsset
-  - Asset: 14867506812541570569
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11872827283454512094.jpg
-  - Asset: 10561847320339691955
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13196865903111448057.Texture.ProofAsset
   - Asset: 3986457420476580221
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13824894030729245199.jpg
+  - Asset: 10561847320339691955
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13196865903111448057.Texture.ProofAsset
+  - Asset: 14867506812541570569
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11872827283454512094.jpg
   - Asset: 14115455250202332604
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\16299174074766089871.Texture.ProofAsset
   - Asset: 14458865356323968917
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11474523244911310074.jpg
-  - Asset: 4966515647719611056
-    Type: TextureSourceFile
-    Path: TexturesMaps\rustediron1-alt2-bl\rustediron2_roughness.png
-  - Asset: 11428700106094457159
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7815564343179553343.Texture.ProofAsset
-  - Asset: 16257803352274693779
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2051777328469649772.Texture.ProofAsset
-  - Asset: 10288141819834901673
-    Type: TextureSourceFile
-    Path: Models\SponzaObj\textures\sponza_fabric_green_diff.tga
-  - Asset: 4795316936186879491
-    Type: TextureSourceFile
-    Path: TexturesMaps\white-brick-wall-bl\white-brick-wall_preview.jpg
-  - Asset: 10539343645759455791
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14170708867020035030.Texture.ProofAsset
   - Asset: 5857992767573455126
     Type: Texture
     Path: MeshResources\glTF\Textures\3827035219084910048.Texture.ProofAsset
@@ -176,6 +158,24 @@ Assets:
   - Asset: 6140651827515927471
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14267839433702832875.Texture.ProofAsset
+  - Asset: 10288141819834901673
+    Type: TextureSourceFile
+    Path: Models\SponzaObj\textures\sponza_fabric_green_diff.tga
+  - Asset: 4795316936186879491
+    Type: TextureSourceFile
+    Path: TexturesMaps\white-brick-wall-bl\white-brick-wall_preview.jpg
+  - Asset: 10539343645759455791
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14170708867020035030.Texture.ProofAsset
+  - Asset: 4966515647719611056
+    Type: TextureSourceFile
+    Path: TexturesMaps\rustediron1-alt2-bl\rustediron2_roughness.png
+  - Asset: 11428700106094457159
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7815564343179553343.Texture.ProofAsset
+  - Asset: 16257803352274693779
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2051777328469649772.Texture.ProofAsset
   - Asset: 7192446084636584848
     Type: Texture
     Path: MeshResources\SponzaObj\Textures\sponza_fabric_diff.Texture.ProofAsset
@@ -197,237 +197,246 @@ Assets:
   - Asset: 17693646131168664489
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\10388182081421875623.jpg
-  - Asset: 16253474842811728024
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11474523244911310074.Texture.ProofAsset
   - Asset: 5166904223642987164
     Type: Texture
     Path: MeshResources\SponzaObj\Textures\spnza_bricks_a_diff.Texture.ProofAsset
-  - Asset: 6109661798686613877
+  - Asset: 16253474842811728024
     Type: Texture
-    Path: MeshResources\glTF\Textures\6772804448157695701.Texture.ProofAsset
-  - Asset: 2845083631668766973
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial (12).Material.ProofAsset
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11474523244911310074.Texture.ProofAsset
+  - Asset: 13091815555637216436
+    Type: PhysicsMaterial
+    Path: Scenes\Demos\Slippery.PhysicsMaterial.ProofAsset
   - Asset: 8575277772925524622
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\15722799267630235092.Texture.ProofAsset
+  - Asset: 2845083631668766973
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial (12).Material.ProofAsset
+  - Asset: 6109661798686613877
+    Type: Texture
+    Path: MeshResources\glTF\Textures\6772804448157695701.Texture.ProofAsset
   - Asset: 823164998827613969
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11490520546946913238.Texture.ProofAsset
-  - Asset: 2793959753105174537
-    Type: TextureSourceFile
-    Path: Models\SponzaObj\textures\sponza_arch_ddn.tga
   - Asset: 10447425213086114018
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11872827283454512094.Texture.ProofAsset
-  - Asset: 13762992995736010535
+  - Asset: 2793959753105174537
     Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3827035219084910048.jpg
+    Path: Models\SponzaObj\textures\sponza_arch_ddn.tga
   - Asset: 18061536522894938835
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\1219024358953944284.jpg
+  - Asset: 13762992995736010535
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3827035219084910048.jpg
   - Asset: 4452809211143330653
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\12501374198249454378.jpg
-  - Asset: 2759577586594016257
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\16275776544635328252.png
   - Asset: 1230775148964351507
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\chain_texture.tga
+  - Asset: 2759577586594016257
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\16275776544635328252.png
   - Asset: 1194083950941112018
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\12501374198249454378.Texture.ProofAsset
-  - Asset: 6910465678732635456
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\15295713303328085182.Texture.ProofAsset
   - Asset: 3471092537680981683
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13196865903111448057.jpg
-  - Asset: 3557209102693037712
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial (23).Material.ProofAsset
-  - Asset: 13689754605155801821
+  - Asset: 6910465678732635456
     Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13824894030729245199.Texture.ProofAsset
-  - Asset: 5319368560672668283
-    Type: TextureSourceFile
-    Path: TexturesMaps\heavily-rusted-metal-ue\heavily-rusted-metal_height.png
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\15295713303328085182.Texture.ProofAsset
   - Asset: 4234310035684379014
     Type: TextureSourceFile
     Path: TexturesMaps\Titanium-Scuffed-bl\Titanium-Scuffed_roughness.png
-  - Asset: 8437151876257247732
+  - Asset: 5319368560672668283
+    Type: TextureSourceFile
+    Path: TexturesMaps\heavily-rusted-metal-ue\heavily-rusted-metal_height.png
+  - Asset: 13689754605155801821
     Type: Texture
-    Path: MeshResources\glTF\Textures\6593109234861095314.Texture.ProofAsset
-  - Asset: 2935605012168251273
-    Type: Texture
-    Path: MeshResources\glTF\Textures\16299174074766089871.Texture.ProofAsset
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13824894030729245199.Texture.ProofAsset
+  - Asset: 3557209102693037712
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial (23).Material.ProofAsset
   - Asset: 11096868446299841297
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14118779221266351425.Texture.ProofAsset
+  - Asset: 2935605012168251273
+    Type: Texture
+    Path: MeshResources\glTF\Textures\16299174074766089871.Texture.ProofAsset
+  - Asset: 8437151876257247732
+    Type: Texture
+    Path: MeshResources\glTF\Textures\6593109234861095314.Texture.ProofAsset
+  - Asset: 174992091033950330
+    Type: ScriptFile
+    Path: Script\Demos\AltoAdventures\SceneController.cs
   - Asset: 3374569578299596384
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14267839433702832875.jpg
-  - Asset: 5914562122218714052
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14650633544276105767.jpg
   - Asset: 11123408795168550588
     Type: TextureSourceFile
     Path: TexturesMaps\smooth-temple-blocks-bl\smooth-temple-blocks_normal-ogl.png
-  - Asset: 14151302605508260790
+  - Asset: 5914562122218714052
     Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\15722799267630235092.jpg
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14650633544276105767.jpg
   - Asset: 9814594129494658001
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4975155472559461469.Texture.ProofAsset
+  - Asset: 14151302605508260790
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\15722799267630235092.jpg
   - Asset: 13047979753012535339
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\16275776544635328252.Texture.ProofAsset
-  - Asset: 2588823639536326242
-    Type: Texture
-    Path: MeshResources\glTF\Textures\14267839433702832875.Texture.ProofAsset
   - Asset: 4726010682691345928
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\16885566240357350108.jpg
+  - Asset: 2588823639536326242
+    Type: Texture
+    Path: MeshResources\glTF\Textures\14267839433702832875.Texture.ProofAsset
   - Asset: 1407199612586931586
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\16885566240357350108.Texture.ProofAsset
-  - Asset: 12273592198299883054
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial (14).Material.ProofAsset
   - Asset: 8944740075545851800
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\17556969131407844942.jpg
-  - Asset: 14213112366416935416
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\17556969131407844942.Texture.ProofAsset
+  - Asset: 12273592198299883054
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial (14).Material.ProofAsset
   - Asset: 12425356403174481757
     Type: Texture
     Path: MeshResources\SponzaObj\Textures\sponza_column_c_diff.Texture.ProofAsset
+  - Asset: 14213112366416935416
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\17556969131407844942.Texture.ProofAsset
   - Asset: 9718947252793965124
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\17876391417123941155.jpg
-  - Asset: 13818559305199672554
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\17876391417123941155.Texture.ProofAsset
   - Asset: 6329307345493090773
     Type: TextureSourceFile
     Path: TexturesMaps\smooth-temple-blocks-bl\smooth-temple-blocks_height.png
-  - Asset: 223673641344993874
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2051777328469649772.jpg
+  - Asset: 13818559305199672554
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\17876391417123941155.Texture.ProofAsset
   - Asset: 7249526592278562992
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\759203620573749278.Texture.ProofAsset
-  - Asset: 624095741792499952
+  - Asset: 223673641344993874
     Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2185409758123873465.jpg
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2051777328469649772.jpg
   - Asset: 386691414574337870
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6667038893015345571.jpg
+  - Asset: 624095741792499952
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2185409758123873465.jpg
   - Asset: 13622543370701699107
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2185409758123873465.Texture.ProofAsset
-  - Asset: 3049313983225215610
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial (04).Material.ProofAsset
   - Asset: 18238282378879307977
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2299742237651021498.jpg
-  - Asset: 15308191042739205312
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2299742237651021498.Texture.ProofAsset
+  - Asset: 3049313983225215610
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial (04).Material.ProofAsset
+  - Asset: 8277647489510604160
+    Type: Material
+    Path: ""
   - Asset: 3928859883735084305
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7645212358685992005.Texture.ProofAsset
-  - Asset: 5183635011300566460
-    Type: DynamicMesh
-    Path: Mesh\DynamicSponza.DynamicMesh.ProofAsset
-  - Asset: 1952111404058252245
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2374361008830720677.jpg
+  - Asset: 15308191042739205312
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2299742237651021498.Texture.ProofAsset
   - Asset: 5410982485839861609
     Type: Texture
     Path: MeshResources\SponzaObj\Textures\background.Texture.ProofAsset
-  - Asset: 12998050551516981454
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2374361008830720677.Texture.ProofAsset
+  - Asset: 1952111404058252245
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2374361008830720677.jpg
+  - Asset: 5183635011300566460
+    Type: DynamicMesh
+    Path: Mesh\DynamicSponza.DynamicMesh.ProofAsset
   - Asset: 15621592644097797435
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7441062115984513793.jpg
-  - Asset: 2691613578727280209
+  - Asset: 12998050551516981454
     Type: Texture
-    Path: MeshResources\glTF\Textures\10381718147657362067.Texture.ProofAsset
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2374361008830720677.Texture.ProofAsset
   - Asset: 13353594874833611684
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2411100444841994089.jpg
-  - Asset: 13319781120968198693
+  - Asset: 2691613578727280209
     Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2411100444841994089.Texture.ProofAsset
-  - Asset: 16184900949756189741
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7268504077753552595.jpg
+    Path: MeshResources\glTF\Textures\10381718147657362067.Texture.ProofAsset
   - Asset: 11153328229602569010
     Type: TextureSourceFile
     Path: TexturesMaps\brick-wall-bl\brick-wall_height.png
-  - Asset: 15725496820881260148
+  - Asset: 16184900949756189741
     Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2775690330959970771.jpg
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7268504077753552595.jpg
+  - Asset: 13319781120968198693
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2411100444841994089.Texture.ProofAsset
   - Asset: 947965082374696079
     Type: Material
     Path: MeshResources\SponzaObj\vase.Material.ProofAsset
+  - Asset: 15725496820881260148
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2775690330959970771.jpg
   - Asset: 6003537210636243159
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2775690330959970771.Texture.ProofAsset
   - Asset: 4890619559920803150
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2969916736137545357.jpg
-  - Asset: 10829469110059815449
-    Type: Texture
-    Path: MeshResources\glTF\Textures\6047387724914829168.Texture.ProofAsset
-  - Asset: 13492362353321493019
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2969916736137545357.Texture.ProofAsset
   - Asset: 12042071147860971989
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\vase_hanging_ddn.tga
-  - Asset: 1028768937145540223
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\332936164838540657.jpg
+  - Asset: 13492362353321493019
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2969916736137545357.Texture.ProofAsset
+  - Asset: 10829469110059815449
+    Type: Texture
+    Path: MeshResources\glTF\Textures\6047387724914829168.Texture.ProofAsset
   - Asset: 14240101260595388894
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\9288698199695299068.jpg
-  - Asset: 9217165227916872247
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\332936164838540657.Texture.ProofAsset
+  - Asset: 1028768937145540223
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\332936164838540657.jpg
   - Asset: 18022093917908328079
     Type: TextureSourceFile
     Path: TexturesMaps\brick-wall-bl\brick-wall_metallic.png
-  - Asset: 11088282033987927160
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3371964815757888145.jpg
+  - Asset: 9217165227916872247
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\332936164838540657.Texture.ProofAsset
   - Asset: 13835502660934978553
     Type: TextureSourceFile
     Path: TexturesMaps\red-brick2-ue\red-bricks2_albedo.png
-  - Asset: 461961066539569387
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3371964815757888145.Texture.ProofAsset
+  - Asset: 11088282033987927160
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3371964815757888145.jpg
   - Asset: 9198335892109955724
     Type: Mesh
     Path: Mesh\SponzaObj.Mesh.ProofAsset
+  - Asset: 461961066539569387
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3371964815757888145.Texture.ProofAsset
   - Asset: 143466570166328287
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3455394979645218238.jpg
-  - Asset: 15522520637072856793
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3628158980083700836.jpg
-  - Asset: 15348306471454356567
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4871783166746854860.jpg
   - Asset: 4577208316630032800
     Type: Texture
     Path: MeshResources\SponzaObj\Textures\lion.Texture.ProofAsset
+  - Asset: 15348306471454356567
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4871783166746854860.jpg
+  - Asset: 15522520637072856793
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3628158980083700836.jpg
   - Asset: 17672214609734919977
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\3628158980083700836.Texture.ProofAsset
@@ -437,42 +446,45 @@ Assets:
   - Asset: 17681300293274475846
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4477655471536070370.Texture.ProofAsset
-  - Asset: 3026889248793724264
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4601176305987539675.jpg
   - Asset: 16993180838317966702
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6593109234861095314.jpg
+  - Asset: 3026889248793724264
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4601176305987539675.jpg
   - Asset: 13148666635403575489
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4601176305987539675.Texture.ProofAsset
   - Asset: 6297816131143447978
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\466164707995436622.jpg
+  - Asset: 8737211849402831167
+    Type: ScriptFile
+    Path: Script\Demos\AltoAdventures\PlayerCamera.cs
   - Asset: 10773537339369885101
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\466164707995436622.Texture.ProofAsset
   - Asset: 9651208432415332991
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4675343432951571524.jpg
-  - Asset: 2045486676342792486
-    Type: Texture
-    Path: MeshResources\glTF\Textures\5792855332885324923.Texture.ProofAsset
   - Asset: 9901034439108354865
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4675343432951571524.Texture.ProofAsset
+  - Asset: 2045486676342792486
+    Type: Texture
+    Path: MeshResources\glTF\Textures\5792855332885324923.Texture.ProofAsset
   - Asset: 2911698976862992433
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4871783166746854860.Texture.ProofAsset
-  - Asset: 5406887221115820627
-    Type: Texture
-    Path: MeshResources\glTF\Textures\5061699253647017043.Texture.ProofAsset
-  - Asset: 18348114341737718825
-    Type: Mesh
-    Path: Mesh\PBRGun.Mesh.ProofAsset
   - Asset: 15485659521829941038
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4910669866631290573.jpg
+  - Asset: 18348114341737718825
+    Type: Mesh
+    Path: Mesh\PBRGun.Mesh.ProofAsset
+  - Asset: 5406887221115820627
+    Type: Texture
+    Path: MeshResources\glTF\Textures\5061699253647017043.Texture.ProofAsset
   - Asset: 14117001696044885674
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4910669866631290573.Texture.ProofAsset
@@ -485,12 +497,12 @@ Assets:
   - Asset: 18185679048645522199
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\5792855332885324923.jpg
-  - Asset: 17499455944570016051
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\5792855332885324923.Texture.ProofAsset
   - Asset: 10993537085001931807
     Type: TextureSourceFile
     Path: TexturesMaps\red-brick2-ue\red-bricks2_metallness.png
+  - Asset: 17499455944570016051
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\5792855332885324923.Texture.ProofAsset
   - Asset: 13994665151775855675
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\5823059166183034438.jpg
@@ -506,45 +518,45 @@ Assets:
   - Asset: 12232708343712671385
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6151467286084645207.jpg
-  - Asset: 16703148246458153655
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6151467286084645207.Texture.ProofAsset
   - Asset: 221173903626494034
     Type: Material
     Path: MeshResources\SponzaObj\leaf.Material.ProofAsset
-  - Asset: 1326879518977146027
+  - Asset: 16703148246458153655
     Type: Texture
-    Path: MeshResources\glTF\Textures\2185409758123873465.Texture.ProofAsset
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6151467286084645207.Texture.ProofAsset
   - Asset: 11158739721239860957
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6667038893015345571.Texture.ProofAsset
-  - Asset: 6305268411709032434
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6772804448157695701.jpg
+  - Asset: 1326879518977146027
+    Type: Texture
+    Path: MeshResources\glTF\Textures\2185409758123873465.Texture.ProofAsset
   - Asset: 8899875548143611039
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8783994986360286082.Texture.ProofAsset
-  - Asset: 17971904176572967692
-    Type: Texture
-    Path: MeshResources\glTF\Textures\2051777328469649772.Texture.ProofAsset
-  - Asset: 2446434945778929383
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial.Material.ProofAsset
+  - Asset: 6305268411709032434
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6772804448157695701.jpg
   - Asset: 5014215151378541218
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6772804448157695701.Texture.ProofAsset
+  - Asset: 2446434945778929383
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial.Material.ProofAsset
+  - Asset: 17971904176572967692
+    Type: Texture
+    Path: MeshResources\glTF\Textures\2051777328469649772.Texture.ProofAsset
   - Asset: 10475341968659612113
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7056944414013900257.jpg
-  - Asset: 6014275062172717352
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial (15).Material.ProofAsset
-  - Asset: 6505109868170990179
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7056944414013900257.Texture.ProofAsset
   - Asset: 1778683820784680447
     Type: World
     Path: Scenes\New World (01).ProofWorld
+  - Asset: 6505109868170990179
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7056944414013900257.Texture.ProofAsset
+  - Asset: 6014275062172717352
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial (15).Material.ProofAsset
   - Asset: 3839953299668751195
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\715093869573992647.jpg
@@ -560,51 +572,51 @@ Assets:
   - Asset: 11253906774989904367
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\755318871556304029.Texture.ProofAsset
-  - Asset: 6019114266501186437
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\759203620573749278.jpg
   - Asset: 17650973179623468544
     Type: Texture
     Path: MeshResources\SponzaObj\Textures\sponza_fabric_blue_diff.Texture.ProofAsset
+  - Asset: 6019114266501186437
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\759203620573749278.jpg
   - Asset: 16486385080097726734
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7645212358685992005.jpg
   - Asset: 4190440322240371996
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7815564343179553343.jpg
-  - Asset: 3540434143345508973
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial (17).Material.ProofAsset
-  - Asset: 9964343805749144197
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8006627369776289000.Texture.ProofAsset
   - Asset: 3913887454771182071
     Type: TextureSourceFile
     Path: TexturesMaps\white-brick-wall-bl\white-brick-wall_height.png
-  - Asset: 1351607656284687354
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8051790464816141987.jpg
+  - Asset: 9964343805749144197
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8006627369776289000.Texture.ProofAsset
+  - Asset: 3540434143345508973
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial (17).Material.ProofAsset
   - Asset: 1394485717622199994
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8114461559286000061.Texture.ProofAsset
-  - Asset: 13259829077838984661
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8051790464816141987.Texture.ProofAsset
-  - Asset: 3594077361412646349
+  - Asset: 1351607656284687354
     Type: TextureSourceFile
-    Path: TexturesMaps\Titanium-Scuffed-bl\Titanium-Scuffed_basecolor.png
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8051790464816141987.jpg
   - Asset: 15854657297183203394
     Type: Texture
     Path: MeshResources\SponzaObj\Textures\sponza_details_diff.Texture.ProofAsset
+  - Asset: 3594077361412646349
+    Type: TextureSourceFile
+    Path: TexturesMaps\Titanium-Scuffed-bl\Titanium-Scuffed_basecolor.png
+  - Asset: 13259829077838984661
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8051790464816141987.Texture.ProofAsset
   - Asset: 3731433688394573271
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8481240838833932244.jpg
-  - Asset: 11271753314030544377
-    Type: Texture
-    Path: MeshResources\glTF\Textures\16275776544635328252.Texture.ProofAsset
   - Asset: 14555249757676061744
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8481240838833932244.Texture.ProofAsset
+  - Asset: 11271753314030544377
+    Type: Texture
+    Path: MeshResources\glTF\Textures\16275776544635328252.Texture.ProofAsset
   - Asset: 10543059324507882372
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8503262930880235456.jpg
@@ -617,60 +629,60 @@ Assets:
   - Asset: 804194436457193439
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8750083169368950601.jpg
-  - Asset: 15397027063259560940
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8750083169368950601.Texture.ProofAsset
   - Asset: 8487265460049034576
     Type: Material
     Path: Materials\Green.Material.ProofAsset
-  - Asset: 4218339528933379208
+  - Asset: 15397027063259560940
     Type: Texture
-    Path: MeshResources\glTF\Textures\11490520546946913238.Texture.ProofAsset
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8750083169368950601.Texture.ProofAsset
   - Asset: 16715363466506692267
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8773302468495022225.jpg
+  - Asset: 4218339528933379208
+    Type: Texture
+    Path: MeshResources\glTF\Textures\11490520546946913238.Texture.ProofAsset
   - Asset: 6061733146715195297
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8773302468495022225.Texture.ProofAsset
-  - Asset: 3995212531473467825
-    Type: Texture
-    Path: MeshResources\glTF\Textures\6151467286084645207.Texture.ProofAsset
-  - Asset: 12097957913606977337
-    Type: Texture
-    Path: MeshResources\glTF\Textures\15295713303328085182.Texture.ProofAsset
   - Asset: 3956960207681909951
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8783994986360286082.jpg
+  - Asset: 12097957913606977337
+    Type: Texture
+    Path: MeshResources\glTF\Textures\15295713303328085182.Texture.ProofAsset
+  - Asset: 3995212531473467825
+    Type: Texture
+    Path: MeshResources\glTF\Textures\6151467286084645207.Texture.ProofAsset
   - Asset: 18412467427027370264
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\9288698199695299068.Texture.ProofAsset
-  - Asset: 13584734032647757425
-    Type: TextureSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\9916269861720640319.jpg
   - Asset: 10018646760083901372
     Type: TextureSourceFile
     Path: TexturesMaps\rustediron1-alt2-bl\rustediron2_basecolor.png
-  - Asset: 8506818730425682135
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\9916269861720640319.Texture.ProofAsset
+  - Asset: 13584734032647757425
+    Type: TextureSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\9916269861720640319.jpg
   - Asset: 17192627716359978324
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_details_diff.tga
-  - Asset: 13564261338370398344
-    Type: MeshSourceFile
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\Sponza.gltf
+  - Asset: 8506818730425682135
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\9916269861720640319.Texture.ProofAsset
   - Asset: 13515597543375921880
     Type: TextureSourceFile
     Path: TexturesMaps\heavily-rusted-metal-ue\heavily-rusted-metal_roughness.png
+  - Asset: 13564261338370398344
+    Type: MeshSourceFile
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\Sponza.gltf
   - Asset: 2245275539214841186
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\white.png
-  - Asset: 12987045975192916279
-    Type: Texture
-    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\white.Texture.ProofAsset
   - Asset: 1276827577984952528
     Type: TextureSourceFile
     Path: TexturesMaps\white-brick-wall-bl\white-brick-wall_normal-ogl.png
+  - Asset: 12987045975192916279
+    Type: Texture
+    Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\white.Texture.ProofAsset
   - Asset: 18141853162402936448
     Type: Mesh
     Path: Mesh\Sponza
@@ -692,18 +704,18 @@ Assets:
   - Asset: 11340105975814252189
     Type: Prefab
     Path: Prefab\New Prefab.Prefab.ProofAsset
-  - Asset: 17754158434779396922
-    Type: Prefab
-    Path: Prefab\New Prefab.Prefab.ProofAsset
   - Asset: 5497071155397398629
     Type: TextureSourceFile
     Path: TexturesMaps\white-brick-wall-bl\white-brick-wall_metallic.png
-  - Asset: 11385515555075671223
-    Type: Texture
-    Path: MeshResources\glTF\Textures\2374361008830720677.Texture.ProofAsset
+  - Asset: 17754158434779396922
+    Type: Prefab
+    Path: Prefab\New Prefab.Prefab.ProofAsset
   - Asset: 14983098330679523653
     Type: Material
     Path: Materials\Red.Material.ProofAsset
+  - Asset: 11385515555075671223
+    Type: Texture
+    Path: MeshResources\glTF\Textures\2374361008830720677.Texture.ProofAsset
   - Asset: 9906847331754832331
     Type: Material
     Path: Materials\Metallic.Material.ProofAsset
@@ -728,12 +740,12 @@ Assets:
   - Asset: 17140777671652420178
     Type: TextureSourceFile
     Path: Models\Cerberus_by_Andrew_Maximov\Textures\Cerberus_N.tga
-  - Asset: 8410836180659640610
-    Type: TextureSourceFile
-    Path: Models\Cerberus_by_Andrew_Maximov\Textures\Raw\Cerberus_AO.tga
   - Asset: 14563171019134583368
     Type: Material
     Path: MeshResources\SponzaObj\fabric_a.Material.ProofAsset
+  - Asset: 8410836180659640610
+    Type: TextureSourceFile
+    Path: Models\Cerberus_by_Andrew_Maximov\Textures\Raw\Cerberus_AO.tga
   - Asset: 5921384776833615366
     Type: TextureSourceFile
     Path: TexturesMaps\brick-wall-bl\brick-wall_albedo.png
@@ -743,12 +755,12 @@ Assets:
   - Asset: 13622034852740947642
     Type: TextureSourceFile
     Path: TexturesMaps\brick-wall-bl\brick-wall_normal-ogl.png
-  - Asset: 12857925597736787672
-    Type: TextureSourceFile
-    Path: TexturesMaps\brick-wall-bl\brick-wall_preview.jpg
   - Asset: 9511518879732155806
     Type: Texture
     Path: MeshResources\SponzaObj\Textures\sponza_flagpole_diff.Texture.ProofAsset
+  - Asset: 12857925597736787672
+    Type: TextureSourceFile
+    Path: TexturesMaps\brick-wall-bl\brick-wall_preview.jpg
   - Asset: 14743958858541000477
     Type: TextureSourceFile
     Path: TexturesMaps\brick-wall-bl\brick-wall_roughness.png
@@ -767,12 +779,12 @@ Assets:
   - Asset: 14460477121805554759
     Type: TextureSourceFile
     Path: TexturesMaps\red-brick2-ue\red-bricks2_ao.png
-  - Asset: 16785147169373453248
-    Type: Texture
-    Path: MeshResources\glTF\Textures\17876391417123941155.Texture.ProofAsset
   - Asset: 10860352099319054299
     Type: TextureSourceFile
     Path: TexturesMaps\red-brick2-ue\red-bricks2_height.png
+  - Asset: 16785147169373453248
+    Type: Texture
+    Path: MeshResources\glTF\Textures\17876391417123941155.Texture.ProofAsset
   - Asset: 7416950281022629759
     Type: TextureSourceFile
     Path: TexturesMaps\red-brick2-ue\red-bricks2_normal-dx.png
@@ -782,21 +794,21 @@ Assets:
   - Asset: 1446855481558706326
     Type: TextureSourceFile
     Path: TexturesMaps\rustediron1-alt2-bl\rustediron2_metallic.png
-  - Asset: 7109787525881470791
-    Type: Texture
-    Path: MeshResources\glTF\Textures\14118779221266351425.Texture.ProofAsset
-  - Asset: 7315839315437063914
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial (09).Material.ProofAsset
   - Asset: 9472538844411650397
     Type: TextureSourceFile
     Path: TexturesMaps\rustediron1-alt2-bl\rustediron2_normal.png
-  - Asset: 11647344408162647879
-    Type: TextureSourceFile
-    Path: TexturesMaps\smooth-temple-blocks-bl\smooth-temple-blocks_albedo.png
+  - Asset: 7315839315437063914
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial (09).Material.ProofAsset
+  - Asset: 7109787525881470791
+    Type: Texture
+    Path: MeshResources\glTF\Textures\14118779221266351425.Texture.ProofAsset
   - Asset: 5862615931687106142
     Type: Material
     Path: MeshResources\SponzaObj\fabric_f.Material.ProofAsset
+  - Asset: 11647344408162647879
+    Type: TextureSourceFile
+    Path: TexturesMaps\smooth-temple-blocks-bl\smooth-temple-blocks_albedo.png
   - Asset: 6904243976423466514
     Type: TextureSourceFile
     Path: TexturesMaps\smooth-temple-blocks-bl\smooth-temple-blocks_metallic.png
@@ -812,45 +824,45 @@ Assets:
   - Asset: 9710142708346530848
     Type: TextureSourceFile
     Path: TexturesMaps\white-brick-wall-bl\white-brick-wall_ao.png
-  - Asset: 6670173945889312654
-    Type: TextureSourceFile
-    Path: TexturesMaps\white-brick-wall-bl\white-brick-wall_roughness.png
   - Asset: 12205983463652489879
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_fabric_diff.tga
+  - Asset: 6670173945889312654
+    Type: TextureSourceFile
+    Path: TexturesMaps\white-brick-wall-bl\white-brick-wall_roughness.png
   - Asset: 14216463513304954599
     Type: MeshSourceFile
     Path: Models\Cerberus_by_Andrew_Maximov\Cerberus_LP.FBX
-  - Asset: 17677905473389086410
-    Type: Material
-    Path: Materials\PbrGun.Material.ProofAsset
   - Asset: 10007521713978354529
     Type: Material
     Path: MeshResources\SponzaObj\Material__25.Material.ProofAsset
+  - Asset: 17677905473389086410
+    Type: Material
+    Path: Materials\PbrGun.Material.ProofAsset
   - Asset: 10105085914954263454
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_floor_a_diff.tga
   - Asset: 3333724272224142278
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_curtain_ddn.tga
-  - Asset: 15110903257296734617
-    Type: MeshSourceFile
-    Path: Models\SponzaObj\sponza.obj
   - Asset: 11882961272579594094
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_column_b_ddn.tga
+  - Asset: 15110903257296734617
+    Type: MeshSourceFile
+    Path: Models\SponzaObj\sponza.obj
   - Asset: 7350187020882462921
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\background.tga
   - Asset: 4279932996743476044
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\background_ddn.tga
-  - Asset: 7515200077612713579
-    Type: TextureSourceFile
-    Path: Models\SponzaObj\textures\chain_texture_ddn.tga
   - Asset: 11675909169834208049
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_fabric_blue_diff.tga
+  - Asset: 7515200077612713579
+    Type: TextureSourceFile
+    Path: Models\SponzaObj\textures\chain_texture_ddn.tga
   - Asset: 12187640315287645252
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\lion.tga
@@ -875,54 +887,54 @@ Assets:
   - Asset: 6357995635101484561
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_column_a_ddn.tga
-  - Asset: 2544452180859250295
-    Type: Texture
-    Path: MeshResources\glTF\Textures\15722799267630235092.Texture.ProofAsset
   - Asset: 17768734409373210963
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_column_a_diff.tga
+  - Asset: 2544452180859250295
+    Type: Texture
+    Path: MeshResources\glTF\Textures\15722799267630235092.Texture.ProofAsset
   - Asset: 17798294371990991790
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_column_b_diff.tga
-  - Asset: 5314304669162933404
-    Type: TextureSourceFile
-    Path: Models\SponzaObj\textures\sponza_column_c_ddn.tga
   - Asset: 6851602968551319577
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_roof_ddn.tga
-  - Asset: 4571045018269161427
+  - Asset: 5314304669162933404
     Type: TextureSourceFile
-    Path: Models\SponzaObj\textures\sponza_column_c_diff.tga
+    Path: Models\SponzaObj\textures\sponza_column_c_ddn.tga
   - Asset: 5927251881934476951
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\vase_round_ddn.tga
-  - Asset: 2620091165981058035
+  - Asset: 4571045018269161427
     Type: TextureSourceFile
-    Path: Models\SponzaObj\textures\sponza_curtain_blue_diff.tga
+    Path: Models\SponzaObj\textures\sponza_column_c_diff.tga
   - Asset: 10555162245414058435
     Type: Material
     Path: MeshResources\SponzaObj\DefaultMaterial.Material.ProofAsset
+  - Asset: 2620091165981058035
+    Type: TextureSourceFile
+    Path: Models\SponzaObj\textures\sponza_curtain_blue_diff.tga
   - Asset: 12478145299765894482
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_curtain_green_diff.tga
-  - Asset: 1218226177785956233
-    Type: TextureSourceFile
-    Path: Models\SponzaObj\textures\sponza_details_ddn.tga
   - Asset: 16618869501579983688
     Type: Texture
     Path: MeshResources\SponzaObj\Textures\vase_round.Texture.ProofAsset
+  - Asset: 1218226177785956233
+    Type: TextureSourceFile
+    Path: Models\SponzaObj\textures\sponza_details_ddn.tga
   - Asset: 16856014238689204343
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_fabric_ddn.tga
   - Asset: 10274256864311577583
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_flagpole_ddn.tga
-  - Asset: 14712172877338080384
-    Type: TextureSourceFile
-    Path: Models\SponzaObj\textures\sponza_flagpole_diff.tga
   - Asset: 6792166691607651102
     Type: Texture
     Path: MeshResources\SponzaObj\Textures\sponza_ceiling_a_diff.Texture.ProofAsset
+  - Asset: 14712172877338080384
+    Type: TextureSourceFile
+    Path: Models\SponzaObj\textures\sponza_flagpole_diff.tga
   - Asset: 3360123057139302652
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_floor_a_ddn.tga
@@ -932,12 +944,12 @@ Assets:
   - Asset: 6423706729195655115
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_thorn_ddn.tga
-  - Asset: 13930939436844538324
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial (07).Material.ProofAsset
   - Asset: 5264885690015132735
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\sponza_thorn_diff.tga
+  - Asset: 13930939436844538324
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial (07).Material.ProofAsset
   - Asset: 2061385746950523723
     Type: TextureSourceFile
     Path: Models\SponzaObj\textures\vase_dif.tga
@@ -962,12 +974,12 @@ Assets:
   - Asset: 3073780553979691206
     Type: Texture
     Path: MeshResources\glTF\Textures\12501374198249454378.Texture.ProofAsset
-  - Asset: 10972014715677621310
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial (02).Material.ProofAsset
   - Asset: 7100384125273817748
     Type: Material
     Path: MeshResources\SponzaObj\column_b.Material.ProofAsset
+  - Asset: 10972014715677621310
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial (02).Material.ProofAsset
   - Asset: 2348872809477629643
     Type: Texture
     Path: MeshResources\glTF\Textures\7268504077753552595.Texture.ProofAsset
@@ -977,27 +989,27 @@ Assets:
   - Asset: 10941894812744194613
     Type: Material
     Path: MeshResources\glTF\Sponza UnnamedMaterial (03).Material.ProofAsset
-  - Asset: 2756104083667184311
-    Type: Texture
-    Path: MeshResources\glTF\Textures\755318871556304029.Texture.ProofAsset
   - Asset: 7355177678854301529
     Type: Texture
     Path: MeshResources\glTF\Textures\13982482287905699490.Texture.ProofAsset
-  - Asset: 9038298311123275075
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial (05).Material.ProofAsset
+  - Asset: 2756104083667184311
+    Type: Texture
+    Path: MeshResources\glTF\Textures\755318871556304029.Texture.ProofAsset
   - Asset: 7274665956684756307
     Type: Material
     Path: MeshResources\SponzaObj\fabric_g.Material.ProofAsset
+  - Asset: 9038298311123275075
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial (05).Material.ProofAsset
   - Asset: 8765733549321224808
     Type: Texture
     Path: MeshResources\glTF\Textures\14650633544276105767.Texture.ProofAsset
-  - Asset: 3902308210398543595
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial (06).Material.ProofAsset
   - Asset: 12353627174663317963
     Type: Texture
     Path: MeshResources\SponzaObj\Textures\sponza_curtain_diff.Texture.ProofAsset
+  - Asset: 3902308210398543595
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial (06).Material.ProofAsset
   - Asset: 14667006566224403871
     Type: Texture
     Path: MeshResources\glTF\Textures\10388182081421875623.Texture.ProofAsset
@@ -1043,21 +1055,21 @@ Assets:
   - Asset: 18319234582150772776
     Type: Material
     Path: MeshResources\glTF\Sponza UnnamedMaterial (18).Material.ProofAsset
-  - Asset: 15056063473773050353
-    Type: Texture
-    Path: MeshResources\glTF\Textures\11474523244911310074.Texture.ProofAsset
   - Asset: 10670077556591547989
     Type: Material
     Path: MeshResources\SponzaObj\ceiling.Material.ProofAsset
+  - Asset: 15056063473773050353
+    Type: Texture
+    Path: MeshResources\glTF\Textures\11474523244911310074.Texture.ProofAsset
   - Asset: 5246872262687863713
     Type: Texture
     Path: MeshResources\glTF\Textures\4601176305987539675.Texture.ProofAsset
-  - Asset: 4990802047151095183
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial (19).Material.ProofAsset
   - Asset: 6179128465980413562
     Type: Material
     Path: MeshResources\SponzaObj\column_a.Material.ProofAsset
+  - Asset: 4990802047151095183
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial (19).Material.ProofAsset
   - Asset: 15098373560061490084
     Type: Texture
     Path: MeshResources\glTF\Textures\9288698199695299068.Texture.ProofAsset
@@ -1079,24 +1091,27 @@ Assets:
   - Asset: 11905110931995672962
     Type: Texture
     Path: MeshResources\glTF\Textures\8481240838833932244.Texture.ProofAsset
-  - Asset: 12060759383395660908
-    Type: Texture
-    Path: MeshResources\glTF\Textures\759203620573749278.Texture.ProofAsset
   - Asset: 1252463621879868190
     Type: Material
     Path: MeshResources\SponzaObj\fabric_d.Material.ProofAsset
-  - Asset: 14551142372979133717
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial (24).Material.ProofAsset
+  - Asset: 12060759383395660908
+    Type: Texture
+    Path: MeshResources\glTF\Textures\759203620573749278.Texture.ProofAsset
   - Asset: 15050938010388068018
     Type: Material
     Path: MeshResources\SponzaObj\chain.Material.ProofAsset
-  - Asset: 12343550312712273299
-    Type: Texture
-    Path: MeshResources\glTF\Textures\2969916736137545357.Texture.ProofAsset
+  - Asset: 14551142372979133717
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial (24).Material.ProofAsset
+  - Asset: 6372025309156190288
+    Type: Material
+    Path: Scenes\Demos\PlayerColor.Material.ProofAsset
   - Asset: 13252143450707935609
     Type: Material
     Path: MeshResources\SponzaObj\column_c.Material.ProofAsset
+  - Asset: 12343550312712273299
+    Type: Texture
+    Path: MeshResources\glTF\Textures\2969916736137545357.Texture.ProofAsset
   - Asset: 13515107201408677400
     Type: Material
     Path: MeshResources\glTF\Sponza UnnamedMaterial (25).Material.ProofAsset
@@ -1109,12 +1124,12 @@ Assets:
   - Asset: 8953990813333612089
     Type: Material
     Path: MeshResources\SponzaObj\Material__57.Material.ProofAsset
-  - Asset: 5253098437399747699
-    Type: Texture
-    Path: MeshResources\SponzaObj\Textures\vase_plant.Texture.ProofAsset
   - Asset: 17567963664327202448
     Type: Material
     Path: MeshResources\SponzaObj\bricks.Material.ProofAsset
+  - Asset: 5253098437399747699
+    Type: Texture
+    Path: MeshResources\SponzaObj\Textures\vase_plant.Texture.ProofAsset
   - Asset: 7816348231418592526
     Type: Texture
     Path: MeshResources\SponzaObj\Textures\sponza_arch_diff.Texture.ProofAsset
@@ -1175,3 +1190,12 @@ Assets:
   - Asset: 4621222697709243526
     Type: Material
     Path: MeshResources\SponzaObj\vase_round.Material.ProofAsset
+  - Asset: 3416512967418026386
+    Type: Material
+    Path: Materials\New Material.Material.ProofAsset
+  - Asset: 7107588826582919816
+    Type: World
+    Path: Scenes\Demos\AltoAdventure.ProofWorld
+  - Asset: 5157159575650638843
+    Type: ScriptFile
+    Path: Script\Demos\AltoAdventures\PlayerControllerScript.cs

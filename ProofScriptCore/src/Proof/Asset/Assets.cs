@@ -8,14 +8,16 @@ using System.Threading.Tasks;
 namespace Proof
 {
     [RegisterCoreClassStruct]
-    [StructLayout(LayoutKind.Sequential)]
-    public struct Texture
+    public abstract class Asset
     {
-        private ulong AssetID;
-        //tempory
-        public Texture(ulong assetID)
-        {
-            AssetID = assetID;
-        }
+        internal AssetID m_ID;
+        public AssetID ID => m_ID;
+    }
+    [RegisterCoreClassStruct]
+    public class Texture2D : Asset
+    {
+
+        internal Texture2D() { m_ID = AssetID.Invalid; }
+        internal Texture2D(AssetID handle) { m_ID = handle; }
     }
 }

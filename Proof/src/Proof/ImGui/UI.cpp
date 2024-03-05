@@ -9,6 +9,9 @@
 #include <regex>
 #include "UiUtilities.h"
 #include "Proof/Utils/StringUtils.h"
+#include "UIWidgets.h"
+#include "UIHandlers.h"
+#include <misc/cpp/imgui_stdlib.h>
 //https://github.com/InCloudsBelly/X2_RenderingEngine/blob/e7c349b70bd95af3ab673556cdb56cb2cc40b48e/Engine/X2/ImGui/ImGuiUtilities.h#L285
 // have 
 /*
@@ -560,7 +563,77 @@ namespace Proof::UI
     }
     bool AttributeEntity(const std::string& label, Count<class World> worldContext, UUID& entityID)
     {
-        return false;
+        bool receivedValidEntity = false;
+
+        ShiftCursor(10.0f, 9.0f);
+        AttributeLabel(label.c_str());
+        ImGui::NextColumn();
+        ShiftCursorY(4.0f);
+        ImGui::PushItemWidth(-1);
+
+        ImVec2 originalButtonTextAlign = ImGui::GetStyle().ButtonTextAlign;
+        {
+            ImGui::GetStyle().ButtonTextAlign = { 0.0f, 0.5f };
+            float width = ImGui::GetContentRegionAvail().x;
+            float itemHeight = 28.0f;
+
+            std::string buttonText = "Null";
+
+            Entity entity = worldContext->TryGetEntityWithUUID(entityID);
+            if (entity)
+                buttonText = entity.GetComponent<TagComponent>().Tag;
+
+            if ((GImGui->CurrentItemFlags & ImGuiItemFlags_MixedValue) != 0)
+                buttonText = "---";
+
+            // PropertyEntityReference could be called multiple times in same "context"
+            // and so we need a unique id for the asset search popup each time.
+            // notes
+            // - don't use GenerateID(), that's inviting id clashes, which would be super confusing.
+            // - don't store return from GenerateLabelId in a const char* here. Because its pointing to an internal
+            //   buffer which may get overwritten by the time you want to use it later on.
+            std::string assetSearchPopupID = GenerateLabelID("ARSP");
+            {
+                UI::ScopedStyleColor buttonLabelColor(ImGuiCol_Text, ImGui::ColorConvertU32ToFloat4(Colours::Theme::Text));
+                ImGui::Button(GenerateLabelID(buttonText), { width, itemHeight });
+
+                const bool isHovered = ImGui::IsItemHovered();
+                if (isHovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    ImGui::OpenPopup(assetSearchPopupID.c_str());
+            }
+
+            ImGui::GetStyle().ButtonTextAlign = originalButtonTextAlign;
+
+            bool clear = false;
+            if (Widgets::EntitySearchPopup(assetSearchPopupID.c_str(), worldContext, entityID, &clear))
+            {
+                if (clear)
+                    entityID = 0;
+                receivedValidEntity = true;
+            }
+        }
+
+        if (!IsItemDisabled())
+        {
+            if (ImGui::BeginDragDropTarget())
+            {
+                auto data = ImGui::AcceptDragDropPayload("SceneEntity");
+                if (data)
+                {
+                    Entity entity = *(Entity*)data->Data;
+                    entityID = entity.GetUUID();
+                    receivedValidEntity = true;
+                }
+
+                ImGui::EndDragDropTarget();
+            }
+        }
+
+        ImGui::PopItemWidth();
+        ImGui::NextColumn();
+
+        HandleModified(receivedValidEntity);
+        return receivedValidEntity;
     }
     bool AttributeText(const std::string& text)
     {
@@ -920,15 +993,21 @@ namespace Proof::UI
 
 
         bool bModified = false;
-        std::string id = fmt::format("##{}", label);
+
+        UpdateIDBuffer(label);
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
         AttributeLabel(label.c_str());
-        ImGui::SameLine();
+        ImGui::NextColumn();
+        ImGui::PushItemWidth(-1);
 
+        //InputTextCallbackData cb_user_data(value);
+        //cb_user_data.ChainCallback = nullptr;
+        //cb_user_data.ChainCallbackUserData = nullptr;
+        //bModified = ImGui::InputTextMultiline(GenerateLabelID(label), (char*)value.c_str(), value.capacity() + 1, ImVec2(0, 0), flags, InputTextCallback, &cb_user_data);
+        bModified = ImGui::InputTextMultiline(GenerateLabelID(label), &value);
+        ImGui::PopItemWidth();
+        ImGui::NextColumn();
 
-        InputTextCallbackData cb_user_data(value);
-        cb_user_data.ChainCallback = nullptr;
-        cb_user_data.ChainCallbackUserData = nullptr;
-        bModified = ImGui::InputTextMultiline(label.c_str(), (char*)value.c_str(), value.capacity() + 1, ImVec2(0,0),flags, InputTextCallback, &cb_user_data);
         HandleModified(bModified);
 
         return bModified;
@@ -1148,7 +1227,7 @@ namespace Proof::UI
             case ScriptFieldType::Prefab:
                 {
                     AssetID handle = storage->GetValue<AssetID>();
-                    if ((fieldName.c_str(), handle))
+                    if (AttributeAssetReference(fieldName.c_str(), AssetType::Prefab,handle))
                     {
                         storage->SetValue(handle);
                         result = true;
@@ -1158,17 +1237,17 @@ namespace Proof::UI
             case ScriptFieldType::Entity:
                 {
                     UUID uuid = storage->GetValue<UUID>();
-                    //if (AttributeEntity(fieldName.c_str(), uuid, sceneContext))
-                    //{
-                    //    storage->SetValue(uuid);
-                    //    result = true;
-                    //}
+                    if (AttributeEntity(fieldName.c_str(),worldContext, uuid))
+                    {
+                        storage->SetValue(uuid);
+                        result = true;
+                    }
                     break;
                 }
             case ScriptFieldType::Mesh:
                 {
                     AssetID handle = storage->GetValue<AssetID>();
-                    if (AttributeAssetTextBar(fieldName.c_str(), handle,AssetType::Mesh))
+                    if (AttributeAssetReference(fieldName.c_str(), AssetType::Mesh,handle))
                     {
                         storage->SetValue(handle);
                         result = true;
@@ -1178,7 +1257,7 @@ namespace Proof::UI
             case ScriptFieldType::DynamicMesh:
                 {
                     AssetID handle = storage->GetValue<AssetID>();
-                    if (AttributeAssetTextBar(fieldName.c_str(), handle, AssetType::DynamicMesh))
+                    if (AttributeAssetReference(fieldName.c_str(), AssetType::DynamicMesh, handle ))
                     {
                         storage->SetValue(handle);
                         result = true;
@@ -1188,7 +1267,7 @@ namespace Proof::UI
             case ScriptFieldType::Material:
                 {
                     AssetID handle = storage->GetValue<AssetID>();
-                    if (AttributeAssetTextBar(fieldName.c_str(), handle, AssetType::Material))
+                    if (AttributeAssetReference(fieldName.c_str(), AssetType::Material,handle))
                     {
                         storage->SetValue(handle);
                         result = true;
@@ -1198,7 +1277,7 @@ namespace Proof::UI
             case ScriptFieldType::PhysicsMaterial:
                 {
                     AssetID handle = storage->GetValue<AssetID>();
-                    if (AttributeAssetTextBar(fieldName.c_str(), handle, AssetType::PhysicsMaterial))
+                    if (AttributeAssetReference(fieldName.c_str(), AssetType::PhysicsMaterial,handle))
                     {
                         storage->SetValue(handle);
                         result = true;
@@ -1208,7 +1287,7 @@ namespace Proof::UI
             case ScriptFieldType::Texture2D:
                 {
                     AssetID handle = storage->GetValue<AssetID>();
-                    if (AttributeAssetTextBar(fieldName.c_str(), handle, AssetType::Texture))
+                    if (AttributeAssetReference(fieldName.c_str(), AssetType::Texture,handle))
                     {
                         storage->SetValue(handle);
                         result = true;
@@ -1221,6 +1300,7 @@ namespace Proof::UI
         if (field->HasFlag(FieldFlag::ReadOnly))
             UI::PopItemDisabled();
 
+        UI::HandleModified(result);
         return result;
     }
 
@@ -1282,8 +1362,577 @@ namespace Proof::UI
         return result;
     }
 
-   
+    static bool AttributeAssetReferenceArray(const std::string& label, AssetID& outHandle, AssetType assetType, UIMemoryAssetTypes memeoryAssetType,Count<ArrayFieldStorage>& arrayStorage, uintptr_t index, intptr_t& elementToRemove, const PropertyAssetReferenceSettings& settings = {})
+    {
+        bool modified = false;
 
+        ImGuiStyle& style = ImGui::GetStyle();
+
+        ShiftCursor(10.0f, 9.0f);
+        UI::AttributeLabel(label);
+        ImGui::NextColumn();
+        ShiftCursorY(4.0f);
+        ImGui::PushItemWidth(-1);
+
+        const float buttonSize = ImGui::GetFrameHeight();
+        float itemWidth = ImMax(1.0f, ImGui::CalcItemWidth() - (buttonSize + style.ItemInnerSpacing.x));
+        ImGui::SetNextItemWidth(itemWidth);
+
+        ImVec2 originalButtonTextAlign = style.ButtonTextAlign;
+        {
+            ImGui::GetStyle().ButtonTextAlign = { 0.0f, 0.5f };
+            float itemHeight = 28.0f;
+
+            std::string buttonText = fmt::format("Null ({})",EnumReflection::EnumString<AssetType>(assetType));
+            bool valid = true;
+            if (AssetManager::HasAsset(outHandle))
+            {
+                buttonText = AssetManager::GetAssetInfo(outHandle).GetName();
+            }
+
+            // PropertyAssetReferenceTarget could be called multiple times in same "context"
+            // and so we need a unique id for the asset search popup each time.
+            // notes
+            // - don't use GenerateID(), that's inviting id clashes, which would be super confusing.
+            // - don't store return from GenerateLabelId in a const char* here. Because its pointing to an internal
+            //   buffer which may get overwritten by the time you want to use it later on.
+            std::string assetSearchPopupID = GenerateLabelID("ARTSP");
+            {
+                UI::ScopedColour buttonLabelColor(ImGuiCol_Text, valid ? settings.ButtonLabelColor : settings.ButtonLabelColorError);
+                ImGui::Button(GenerateLabelID(buttonText), { itemWidth, itemHeight });
+
+                const bool isHovered = ImGui::IsItemHovered();
+
+                if (isHovered)
+                {
+                    if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+                    {
+                        //AssetEditorPanelInterface::OpenEditor(AssetManager::GetAsset<Asset>(outHandle));
+                    }
+                    else if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                    {
+                        ImGui::OpenPopup(assetSearchPopupID.c_str());
+                    }
+                }
+            }
+
+            ImGui::GetStyle().ButtonTextAlign = originalButtonTextAlign;
+
+            if (Widgets::AssetSearchPopup(assetSearchPopupID.c_str(), assetType, outHandle, memeoryAssetType))
+            {
+                modified = true;
+            }
+        }
+
+        if (ImGui::BeginDragDropTarget())
+        {
+            auto payLoadData = ImGui::AcceptDragDropPayload("asset_payload");
+
+            if (payLoadData)
+            {
+                AssetID assetID = *(AssetID*)payLoadData->Data;
+
+                if (AssetManager::HasAsset(assetID))
+                {
+                    auto metaData = AssetManager::GetAssetInfo(assetID);
+                    if (metaData.Type == assetType)
+                    {
+                        outHandle = assetID;
+                        modified = true;
+                    }
+                }
+            }
+        }
+
+        if (modified)
+            arrayStorage->SetValue<uint64_t>(index, outHandle);
+
+        const ImVec2 backupFramePadding = style.FramePadding;
+        style.FramePadding.x = style.FramePadding.y;
+        ImGui::SameLine(0, style.ItemInnerSpacing.x);
+
+        if (ImGui::Button(GenerateLabelID("x"), ImVec2(buttonSize, buttonSize)))
+            elementToRemove = index;
+
+        style.FramePadding = backupFramePadding;
+
+        if (!IsItemDisabled())
+            DrawItemActivityOutline(2.0f, true, Colours::Theme::Accent);
+
+        ImGui::PopItemWidth();
+        ImGui::NextColumn();
+
+        return modified;
+    }
+
+    static bool AttributeEntityReferenceArray(const char* label, UUID& entityID, Count<World> context, Count<ArrayFieldStorage>& arrayStorage, uintptr_t index, intptr_t& elementToRemove)
+	{
+		bool receivedValidEntity = false;
+
+		ImGuiStyle& style = ImGui::GetStyle();
+
+		ShiftCursor(10.0f, 9.0f);
+		ImGui::Text(label);
+		ImGui::NextColumn();
+		ShiftCursorY(4.0f);
+		ImGui::PushItemWidth(-1);
+
+		const float buttonSize = ImGui::GetFrameHeight();
+		float itemWidth = ImMax(1.0f, ImGui::CalcItemWidth() - (buttonSize + style.ItemInnerSpacing.x));
+		ImGui::SetNextItemWidth(itemWidth);
+
+		ImVec2 originalButtonTextAlign = ImGui::GetStyle().ButtonTextAlign;
+		{
+			ImGui::GetStyle().ButtonTextAlign = { 0.0f, 0.5f };
+			float width = ImGui::GetContentRegionAvail().x;
+			float itemHeight = 28.0f;
+
+			std::string buttonText = "Null";
+
+			Entity entity = context->TryGetEntityWithUUID(entityID);
+			if (entity)
+				buttonText = entity.GetComponent<TagComponent>().Tag;
+
+			ImGui::Button(GenerateLabelID(buttonText), { width - buttonSize, itemHeight });
+		}
+		ImGui::GetStyle().ButtonTextAlign = originalButtonTextAlign;
+
+		if (ImGui::BeginDragDropTarget())
+		{
+			auto data = ImGui::AcceptDragDropPayload("SceneEntity");
+			if (data)
+			{
+				Entity entity = *(Entity*)data->Data;
+                entityID = entity.GetUUID();
+				receivedValidEntity = true;
+			}
+
+			ImGui::EndDragDropTarget();
+		}
+
+		if (receivedValidEntity)
+			arrayStorage->SetValue<uint64_t>((uint32_t)index, entityID);
+
+		const ImVec2 backupFramePadding = style.FramePadding;
+		style.FramePadding.x = style.FramePadding.y;
+		ImGui::SameLine(0, style.ItemInnerSpacing.x);
+
+		if (ImGui::Button(GenerateLabelID("x"), ImVec2(buttonSize, buttonSize)))
+			elementToRemove = index;
+
+		style.FramePadding = backupFramePadding;
+
+		ImGui::PopItemWidth();
+		ImGui::NextColumn();
+
+		return receivedValidEntity;
+	}
+
+
+    bool DrawFieldValue(Count < World > worldContext, const std::string& fieldName, Count<ArrayFieldStorage>& arrayStorage)
+    {
+        bool changed = false;
+        intptr_t elementToRemove = -1;
+        std::string arrayID = fmt::format("{0}FieldArray", fieldName);
+        ImGui::PushID(arrayID.c_str());
+
+        ImGui::Text(fieldName.c_str());
+        ShiftCursor(10.0f, 9.0f);
+
+        ImGui::NextColumn();
+        ImGui::NextColumn();
+
+
+        uintptr_t length = arrayStorage->GetLength();
+        uintptr_t tempLength = length;
+        ScriptFieldType nativeType = arrayStorage->GetFieldInfo()->Type;
+
+        if (UI::AttributeInput("Length", tempLength, 1, 1, ImGuiInputTextFlags_EnterReturnsTrue))
+        {
+            arrayStorage->Resize((uint32_t)tempLength);
+            length = tempLength;
+            changed = true;
+        }
+        ShiftCursorY(5.0f);
+
+
+        auto drawScalarElement = [&arrayStorage, &elementToRemove, &arrayID, &changed](std::string_view indexString, uintptr_t index, ImGuiDataType dataType, auto& data, int32_t components, const char* format)
+        {
+            ImGuiStyle& style = ImGui::GetStyle();
+
+            ShiftCursor(10.0f, 9.0f);
+            ImGui::Text(indexString.data());
+            ImGui::NextColumn();
+            ShiftCursorY(4.0f);
+            ImGui::PushItemWidth(-1);
+
+            const float buttonSize = ImGui::GetFrameHeight();
+            ImGui::SetNextItemWidth(ImMax(1.0f, ImGui::CalcItemWidth() - (buttonSize + style.ItemInnerSpacing.x)));
+
+            size_t dataSize = ImGui::DataTypeGetInfo(dataType)->Size;
+            if (components > 1)
+            {
+                if (ImGui::DragScalarN(GenerateID(), dataType, &data, components, 1.0f, (const void*)0, (const void*)0, format, 0))
+                {
+                    arrayStorage->SetValue<std::remove_reference_t<decltype(data)>>((uint32_t)index, data);
+                    changed = true;
+                }
+            }
+            else
+            {
+                if (ImGui::DragScalar(GenerateID(), dataType, &data, 1.0f, (const void*)0, (const void*)0, format, (ImGuiSliderFlags)0))
+                {
+                    arrayStorage->SetValue<std::remove_reference_t<decltype(data)>>((uint32_t)index, data);
+                    changed = true;
+                }
+            }
+
+            const ImVec2 backupFramePadding = style.FramePadding;
+            style.FramePadding.x = style.FramePadding.y;
+            ImGui::SameLine(0, style.ItemInnerSpacing.x);
+
+            if (ImGui::Button(GenerateLabelID("x"), ImVec2(buttonSize, buttonSize)))
+                elementToRemove = index;
+
+            style.FramePadding = backupFramePadding;
+
+            if (!IsItemDisabled())
+                DrawItemActivityOutline(2.0f, true, Colours::Theme::Accent);
+
+            ImGui::PopItemWidth();
+            ImGui::NextColumn();
+            Draw::Underline();
+        };
+
+        auto drawStringElement = [&arrayStorage, &elementToRemove, &changed](std::string_view indexString, uintptr_t index, const std::string& data)
+        {
+            ImGuiStyle& style = ImGui::GetStyle();
+
+            ShiftCursor(10.0f, 9.0f);
+            ImGui::Text(indexString.data());
+            ImGui::NextColumn();
+            ShiftCursorY(4.0f);
+            ImGui::PushItemWidth(-1);
+
+            const float buttonSize = ImGui::GetFrameHeight();
+            ImGui::SetNextItemWidth(ImMax(1.0f, ImGui::CalcItemWidth() - (buttonSize + style.ItemInnerSpacing.x)));
+
+            char buffer[256];
+            memset(buffer, 0, 256);
+            memcpy(buffer, data.c_str(), data.length());
+
+            if (ImGui::InputText(GenerateID(), buffer, 256))
+            {
+                changed = true;
+                arrayStorage->SetValue<std::string>((uint32_t)index, buffer);
+            }
+
+            const ImVec2 backupFramePadding = style.FramePadding;
+            style.FramePadding.x = style.FramePadding.y;
+            ImGui::SameLine(0, style.ItemInnerSpacing.x);
+
+            if (ImGui::Button(GenerateLabelID("x"), ImVec2(buttonSize, buttonSize)))
+                elementToRemove = index;
+
+            style.FramePadding = backupFramePadding;
+
+            if (!IsItemDisabled())
+                DrawItemActivityOutline(2.0f, true, Colours::Theme::Accent);
+
+            ImGui::PopItemWidth();
+            ImGui::NextColumn();
+            Draw::Underline();
+        };
+        auto drawEnumElement = [&arrayStorage, &elementToRemove,&changed](std::string_view indexString, uintptr_t index,auto& data)
+        {
+            ImGuiStyle& style = ImGui::GetStyle();
+
+           // ShiftCursor(10.0f, 9.0f);
+           // ImGui::Text(indexString.data());
+           // ImGui::NextColumn();
+            //ShiftCursorX(10.0f);
+            //ImGui::PushItemWidth(-1);
+
+            const float buttonSize = ImGui::GetFrameHeight();
+            ImGui::SetNextItemWidth(ImMax(1.0f, ImGui::CalcItemWidth() - (buttonSize + style.ItemInnerSpacing.x)));
+
+
+            {
+                const ScriptField* field = arrayStorage->GetFieldInfo();
+
+                ManageEnumClass* managedEnumClass = ScriptRegistry::GetManagedEnumClassByName(field->RegistryClassName);
+
+
+                std::vector<std::string> options;
+                options.reserve(managedEnumClass->EnumFields.size());
+                int selectionIndex = -1;
+
+                for (uint32_t i = 0; i < managedEnumClass->EnumFields.size(); i++)
+                {
+                    const auto& enumMetaData = managedEnumClass->EnumFields[i];
+                    options.emplace_back(enumMetaData.Name);
+                    if (data == *enumMetaData.GetValueBuffer().Data)
+                    {
+                        selectionIndex = i;
+                    }
+                }
+                if (selectionIndex == -1)
+                {
+                    if (!managedEnumClass->EnumFields.empty())
+                    {
+                        const auto& enumMetaData = managedEnumClass->EnumFields[0];
+                        data = *enumMetaData.GetValueBuffer().Data;
+                        arrayStorage->SetValue<std::remove_reference_t<decltype(data)>>((uint32_t)index, data);
+                        selectionIndex = 0;
+                        changed = true;
+                    }
+                }
+                //ImGui::SameLine()
+                auto [enumChanged, outIndex, outSelectionString] = UI::Combo(indexString.data(), options, managedEnumClass->EnumFields[selectionIndex].Name);
+
+                if (enumChanged)
+                {
+                    const auto& enumMetaData = managedEnumClass->EnumFields[outIndex];
+                    data = *enumMetaData.GetValueBuffer().Data;
+                    arrayStorage->SetValue<std::remove_reference_t<decltype(data)>>((uint32_t)index, data);
+                    changed = true;
+                }
+            }
+            const ImVec2 backupFramePadding = style.FramePadding;
+            style.FramePadding.x = style.FramePadding.y;
+            ImGui::SameLine(0, style.ItemInnerSpacing.x);
+
+            if (ImGui::Button(GenerateLabelID("x"), ImVec2(buttonSize, buttonSize)))
+                elementToRemove = index;
+
+            style.FramePadding = backupFramePadding;
+
+            if (!IsItemDisabled())
+                DrawItemActivityOutline(2.0f, true, Colours::Theme::Accent);
+
+           // ImGui::PopItemWidth();
+           // ImGui::NextColumn();
+            Draw::Underline();
+        };
+
+        for (uint32_t i = 0; i < (uint32_t)length; i++)
+        {
+            std::string idString = fmt::format("[{0}]{1}-{0}", i, arrayID);
+            std::string indexString = fmt::format("[{0}]", i);
+
+            ImGui::PushID(idString.c_str());
+
+            if (arrayStorage->GetStorageType() == ArrayFieldStorageStorage::Enum)
+            {
+                switch (nativeType)
+                {
+                    case ScriptFieldType::Int8:
+                    {
+                        int8_t value = arrayStorage->GetValue<int8_t>(i);
+                        drawEnumElement(indexString, i, value);
+                        break;
+                    }
+                    case ScriptFieldType::Int16:
+                    {
+                        int16_t value = arrayStorage->GetValue<int16_t>(i);
+                        drawEnumElement(indexString, i, value);
+                        break;
+                    }
+                    case ScriptFieldType::Int32:
+                    {
+                        int32_t value = arrayStorage->GetValue<int32_t>(i);
+                        drawEnumElement(indexString, i, value);
+                        break;
+                    }
+                    case ScriptFieldType::Int64:
+                    {
+                        int64_t value = arrayStorage->GetValue<int64_t>(i);
+                        drawEnumElement(indexString, i, value);
+                        break;
+                    }
+                    case ScriptFieldType::UInt8:
+                    {
+                        uint8_t value = arrayStorage->GetValue<uint8_t>(i);
+                        drawEnumElement(indexString, i, value);
+                        break;
+                    }
+                    case ScriptFieldType::UInt16:
+                    {
+                        uint16_t value = arrayStorage->GetValue<uint16_t>(i);
+                        drawEnumElement(indexString, i, value);
+                        break;
+                    }
+                    case ScriptFieldType::UInt32:
+                    {
+                        uint32_t value = arrayStorage->GetValue<uint32_t>(i);
+                        drawEnumElement(indexString, i, value);
+                        break;
+                    }
+                    case ScriptFieldType::UInt64:
+                    {
+                        uint64_t value = arrayStorage->GetValue<uint64_t>(i);
+                        drawEnumElement(indexString, i, value);
+                        break;
+                    }
+                }
+                ImGui::PopID();
+                continue;
+            }
+
+
+            switch (nativeType)
+            {
+                case ScriptFieldType::Bool:
+                {
+                    bool value = arrayStorage->GetValue<bool>(i);
+                    if (UI::AttributeBool(indexString.c_str(), value))
+                    {
+                        arrayStorage->SetValue(i, value);
+                        changed = true;
+                    }
+                    break;
+                }
+                case ScriptFieldType::Int8:
+                {
+                    int8_t value = arrayStorage->GetValue<int8_t>(i);
+                    drawScalarElement(indexString, i, ImGuiDataType_S8, value, 1, "%d");
+                    break;
+                }
+                case ScriptFieldType::Int16:
+                {
+                    int16_t value = arrayStorage->GetValue<int16_t>(i);
+                    drawScalarElement(indexString, i, ImGuiDataType_S16, value, 1, "%d");
+                    break;
+                }
+                case ScriptFieldType::Int32:
+                {
+                    int32_t value = arrayStorage->GetValue<int32_t>(i);
+                    drawScalarElement(indexString, i, ImGuiDataType_S32, value, 1, "%d");
+                    break;
+                }
+                case ScriptFieldType::Int64:
+                {
+                    int64_t value = arrayStorage->GetValue<int64_t>(i);
+                    drawScalarElement(indexString, i, ImGuiDataType_S64, value, 1, "%d");
+                    break;
+                }
+                case ScriptFieldType::UInt8:
+                {
+                    uint8_t value = arrayStorage->GetValue<uint8_t>(i);
+                    drawScalarElement(indexString, i, ImGuiDataType_U8, value, 1, "%d");
+                    break;
+                }
+                case ScriptFieldType::UInt16:
+                {
+                    uint16_t value = arrayStorage->GetValue<uint16_t>(i);
+                    drawScalarElement(indexString, i, ImGuiDataType_U16, value, 1, "%d");
+                    break;
+                }
+                case ScriptFieldType::UInt32:
+                {
+                    uint32_t value = arrayStorage->GetValue<uint32_t>(i);
+                    drawScalarElement(indexString, i, ImGuiDataType_U32, value, 1, "%d");
+                    break;
+                }
+                case ScriptFieldType::UInt64:
+                {
+                    uint64_t value = arrayStorage->GetValue<uint64_t>(i);
+                    drawScalarElement(indexString, i, ImGuiDataType_U64, value, 1, "%d");
+                    break;
+                }
+                case ScriptFieldType::Float:
+                {
+                    float value = arrayStorage->GetValue<float>(i);
+                    drawScalarElement(indexString, i, ImGuiDataType_Float, value, 1, "%.3f");
+                    break;
+                }
+                case ScriptFieldType::Double:
+                {
+                    double value = arrayStorage->GetValue<double>(i);
+                    drawScalarElement(indexString, i, ImGuiDataType_Double, value, 1, "%.6f");
+                    break;
+                }
+                case ScriptFieldType::String:
+                {
+                    std::string value = arrayStorage->GetValue<std::string>(i);
+                    drawStringElement(indexString, i, value);
+                    break;
+                }
+                case ScriptFieldType::Vector2:
+                {
+                    glm::vec2 value = arrayStorage->GetValue<glm::vec2>(i);
+                    drawScalarElement(indexString, i, ImGuiDataType_Float, value, 2, "%.3f");
+                    break;
+                }
+                case ScriptFieldType::Vector3:
+                {
+                    glm::vec3 value = arrayStorage->GetValue<glm::vec3>(i);
+                    drawScalarElement(indexString, i, ImGuiDataType_Float, value, 3, "%.3f");
+                    break;
+                }
+                case ScriptFieldType::Vector4:
+                {
+                    glm::vec4 value = arrayStorage->GetValue<glm::vec4>(i);
+                    drawScalarElement(indexString, i, ImGuiDataType_Float, value, 4, "%.3f");
+                    break;
+                }
+                case ScriptFieldType::Prefab:
+                {
+                    AssetID handle = arrayStorage->GetValue<AssetID>(i);
+                    AttributeAssetReferenceArray(indexString.c_str(), handle, AssetType::Prefab, UIMemoryAssetTypes::None, arrayStorage, i, elementToRemove);
+                    break;
+                }
+                case ScriptFieldType::Entity:
+                {
+                    UUID uuid = arrayStorage->GetValue<UUID>(i);
+                    AttributeEntityReferenceArray(indexString.c_str(), uuid, worldContext, arrayStorage, i, elementToRemove);
+                    break;
+                }
+                case ScriptFieldType::Mesh:
+                {
+                    AssetID handle = arrayStorage->GetValue<AssetID>(i);
+                    AttributeAssetReferenceArray(indexString.c_str(), handle, AssetType::Mesh, UIMemoryAssetTypes::None, arrayStorage, i, elementToRemove);
+                    break;
+                }
+                case ScriptFieldType::DynamicMesh:
+                {
+                    AssetID handle = arrayStorage->GetValue<AssetID>(i);
+                    AttributeAssetReferenceArray(indexString.c_str(), handle, AssetType::DynamicMesh, UIMemoryAssetTypes::None, arrayStorage, i, elementToRemove);
+                    break;
+                }
+                case ScriptFieldType::Material:
+                {
+                    AssetID handle = arrayStorage->GetValue<AssetID>(i);
+                    AttributeAssetReferenceArray(indexString.c_str(), handle, AssetType::Material, UIMemoryAssetTypes::None, arrayStorage, i, elementToRemove);
+                    break;
+                }
+                case ScriptFieldType::PhysicsMaterial:
+                {
+                    AssetID handle = arrayStorage->GetValue<AssetID>(i);
+                    AttributeAssetReferenceArray(indexString.c_str(), handle, AssetType::PhysicsMaterial, UIMemoryAssetTypes::None, arrayStorage, i, elementToRemove);
+                    break;
+                }
+                case ScriptFieldType::Texture2D:
+                {
+                    AssetID handle = arrayStorage->GetValue<AssetID>(i);
+                    AttributeAssetReferenceArray(indexString.c_str(), handle, AssetType::Texture, UIMemoryAssetTypes::None, arrayStorage, i, elementToRemove);
+                    break;
+                }
+            }
+
+            ImGui::PopID();
+        }
+
+        ImGui::PopID();
+
+        if (elementToRemove != -1)
+        {
+            arrayStorage->RemoveAt((uint32_t)elementToRemove);
+            changed = true;
+        }
+        HandleModified(changed);
+        return changed;
+    }
     bool AttributeTreeNode(const std::string& label, bool openByDefault)
     {
         ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed
@@ -1687,6 +2336,83 @@ namespace Proof::UI
         return ImageButton(nullptr, texture->GetImage(), size, uv0, uv1, frame_padding, bg_col, tint_col);
     }
 
+    template<class ValueType>
+    bool AttributeInputBase(const std::string& label, ValueType& value, ValueType step, ValueType stepFast, ImGuiSliderFlags flags, const char* format ,const std::string& helpMessage,ImGuiDataType_ dataType)
+    {
+        ShiftCursor(10.0f, 9.0f);
+        UI::AttributeLabel(label);
+        if (helpMessage.size())
+        {
+            ImGui::SameLine();
+            UI::HelpMarker(helpMessage);
+        }
+        ImGui::NextColumn();
+        ShiftCursorY(4.0f);
+        ImGui::PushItemWidth(-1);
+
+        bool modified = ImGui::InputScalar(GenerateID(), dataType, &value, &step, &stepFast, format, flags);
+
+        if (!IsItemDisabled())
+            DrawItemActivityOutline(2.0f, true, ImColor(Colours::Theme::Accent));
+
+        ImGui::PopItemWidth();
+        ImGui::NextColumn();
+        Draw::Underline();
+
+        HandleModified(modified);
+        
+        return modified;
+    }
     
+
+    bool AttributeInput(const std::string& label, float& value, float step, float stepFast, ImGuiInputTextFlags flags, const char* format, const std::string& helpMessage)
+    {
+        return AttributeInputBase(label, value, step, stepFast, flags, format, helpMessage, ImGuiDataType_Float);
+    }
+
+    bool AttributeInput(const std::string& label, double& value, double step, double stepFast, ImGuiInputTextFlags flags, const char* format, const std::string& helpMessage)
+    {
+        return AttributeInputBase(label, value, step, stepFast, flags, format, helpMessage, ImGuiDataType_Double);
+    }
+
+    bool AttributeInput(const std::string& label, int8_t& value, int8_t step, int8_t stepFast, ImGuiInputTextFlags flags, const char* format, const std::string& helpMessage)
+    {
+        return AttributeInputBase(label, value, step, stepFast, flags, format, helpMessage, ImGuiDataType_S8);
+    }
+
+    bool AttributeInput(const std::string& label, int16_t& value, int16_t step, int16_t stepFast, ImGuiInputTextFlags flags, const char* format, const std::string& helpMessage)
+    {
+        return AttributeInputBase(label, value, step, stepFast, flags, format, helpMessage, ImGuiDataType_S16);
+    }
+
+    bool AttributeInput(const std::string& label, int32_t& value, int32_t step, int32_t stepFast, ImGuiInputTextFlags flags, const char* format, const std::string& helpMessage)
+    {
+        return AttributeInputBase(label, value, step, stepFast, flags, format, helpMessage, ImGuiDataType_S32);
+    }
+
+    bool AttributeInput(const std::string& label, int64_t& value, int64_t step, int64_t stepFast, ImGuiInputTextFlags flags, const char* format, const std::string& helpMessage)
+    {
+        return AttributeInputBase(label, value, step, stepFast, flags, format, helpMessage, ImGuiDataType_S64);
+    }
+
+    bool AttributeInput(const std::string& label, uint8_t& value, uint8_t step, uint8_t stepFast, ImGuiInputTextFlags flags, const char* format, const std::string& helpMessage)
+    {
+        return AttributeInputBase(label, value, step, stepFast, flags, format, helpMessage, ImGuiDataType_U8);
+    }
+
+    bool AttributeInput(const std::string& label, uint16_t& value, uint16_t step, uint16_t stepFast, ImGuiInputTextFlags flags, const char* format, const std::string& helpMessage)
+    {
+        return AttributeInputBase(label, value, step, stepFast, flags, format, helpMessage, ImGuiDataType_U16);
+    }
+
+    bool AttributeInput(const std::string& label, uint32_t& value, uint32_t step, uint32_t stepFast, ImGuiInputTextFlags flags, const char* format, const std::string& helpMessage)
+    {
+        return AttributeInputBase(label, value, step, stepFast, flags, format, helpMessage, ImGuiDataType_U32);
+    }
+
+    bool AttributeInput(const std::string& label, uint64_t& value, uint64_t step, uint64_t stepFast, ImGuiInputTextFlags flags, const char* format, const std::string& helpMessage)
+    {
+        return AttributeInputBase(label, value, step, stepFast, flags, format, helpMessage, ImGuiDataType_U64);
+    }
 }
 

@@ -717,6 +717,8 @@ namespace Proof {
 				auto& script = scriptView.get<ScriptComponent>(entity);
 				//ScriptMeathod::OnUpdate(Entity{ entity,this }, DeltaTime);
 			}
+
+			m_ScriptWorld->OnUpdate(DeltaTime);
 		}
 		
 
@@ -827,18 +829,39 @@ namespace Proof {
 	}
 
 	Entity World::GetWorldCameraEntity() {
-		if (HasWorldCamera() == false)return Entity{};
-		const auto& cameraGroup = m_Registry.group<TransformComponent>(entt::get<CameraComponent>);
-		for (auto entity : cameraGroup)
+		auto view = m_Registry.view<CameraComponent>();
+		for (auto entity : view)
 		{
-			return Entity{ entity,this };
+			const auto& camera = view.get<CameraComponent>(entity);
+				return Entity{ entity, this };
 		}
+		return {};
 	}
 
 	void World::OnRenderEditor(Count<class WorldRenderer> renderer, FrameTime time, const EditorCamera& camera)
 	{
 		
 		OnRender(renderer, time, camera,camera.GetPosition(), camera.GetNearPlane(), camera.GetFarPlane(),camera.GetFOV());
+	}
+
+	void World::OnRenderRuntime(Count<class WorldRenderer> renderer, FrameTime time)
+	{
+		PF_CORE_ASSERT(renderer);
+
+		if (!HasWorldCamera())
+		{
+			PF_CORE_ASSERT(false, "No World Camera");
+			return;
+		}
+		auto worldCameraEntity = GetWorldCameraEntity();
+		PF_CORE_ASSERT(worldCameraEntity.HasComponent<CameraComponent>());
+		CameraComponent& cameraComp = worldCameraEntity.GetComponent<CameraComponent>();
+
+		SceneCamera sceneCamera;
+		sceneCamera.SetPerspective(cameraComp.FovDeg, renderer->GetScreenData().FullResolution.x, renderer->GetScreenData().FullResolution.y,
+			cameraComp.NearPlane, cameraComp.FarPlane, GetWorldSpaceLocation(worldCameraEntity),
+			cameraComp.UseLocalRotation ? worldCameraEntity.GetComponent<TransformComponent>().GetRotationEuler(): GetWorldSpaceRotation(worldCameraEntity));
+		OnRender(renderer, time, sceneCamera, GetWorldSpaceLocation(worldCameraEntity), cameraComp.NearPlane, cameraComp.FarPlane, cameraComp.FovDeg);
 	}
 
 	Entity World::CreateEntity(const std::string& EntName) {
@@ -1100,6 +1123,15 @@ namespace Proof {
 				part.ParticleHandlerTable = Count<ParticleHandlerTable>::Create(part.ParticleHandlerTable->Generate());
 			}
 		});
+
+		m_PhysicsWorld = Count<PhysicsWorld>::Create(this);
+		m_PhysicsWorld->StartWorld();
+		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
+		m_Registry.on_destroy<RigidBodyComponent>().connect < &World::OnRigidBodyComponentDelete>(this);
+
+		Count<World> instance = this;
+		AudioEngine::BeginContext(instance);
+
 		m_Registry.on_construct<ScriptComponent>().connect<&World::OnScriptAdded>(this);
 		m_Registry.on_destroy<ScriptComponent>().connect<&World::OnScriptDelete>(this);
 		{
@@ -1133,13 +1165,7 @@ namespace Proof {
 		//PhysicsWorldConfig config;
 		//config.PvdClient = true;
 		//config.Gravity = { 0,-9.8f,0 };// for multiplayer scene
-		m_PhysicsWorld = Count<PhysicsWorld>::Create (this);
-		m_PhysicsWorld->StartWorld();
-		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
-		m_Registry.on_destroy<RigidBodyComponent>().connect < &World::OnRigidBodyComponentDelete>(this);
-		
-		Count<World> instance = this;
-		AudioEngine::BeginContext(instance);
+
 	}
 	void World::EndRuntime() {
 

@@ -125,6 +125,7 @@ namespace Proof {
         Renderer::Shutdown();
         InputManager::Destroy();
 
+        m_EventCallbacks.clear();
         
     }
 
@@ -138,7 +139,8 @@ namespace Proof {
         m_ImguiFrameTime = time.ElapsedMillis();
     }
 
-    void Application::OnEvent(Event& e) {
+    void Application::OnEvent(Event& e) 
+    {
         PF_PROFILE_FUNC(); 
         EventDispatcher dispatcher(e);
         /// PUSH LAYERS BACKWARDS
@@ -154,6 +156,7 @@ namespace Proof {
              (*it)->OnEvent(e);
          }
          dispatcher.Dispatch<WindowCloseEvent>(PF_BIND_FN(Application::OnWindowCloseEvent));
+         dispatcher.Dispatch<WindowResizeEvent>(PF_BIND_FN(Application::OnWindowResizeEvent));
     
     }
 
@@ -181,6 +184,38 @@ namespace Proof {
         return true;
     }
 
+    bool Application::OnWindowResizeEvent(WindowResizeEvent& e)
+    {
+        /*
+        const uint32_t width = e.GetWhidt(), height = e.GetHeight();
+        if (width == 0 || height == 0)
+        {
+            return false;
+        }
+        PF_CORE_ASSERT(false);
+        auto& window = m_Window;
+        Renderer::Submit([&window, width, height]() mutable
+            {
+                window->GetSwapChain()->Resize({ width, height });
+            });
+        return false;
+        */
+        return false;
+    }
+
+    void Application::ProcessEvents()
+    {
+        std::scoped_lock<std::mutex> lock(m_EventQueueMutex);
+
+        // Process custom event queue
+        while (m_EventQueue.size() > 0)
+        {
+            auto& func = m_EventQueue.front();
+            func();
+            m_EventQueue.pop();
+        }
+    }
+
     void Application::Run() 
     {
         float PreviousTime = glfwGetTime();
@@ -200,7 +235,7 @@ namespace Proof {
 
             }
             static uint64_t frameCounter = 0;
-            //ProcessEvents(); // Poll events when both threads are idle
+            ProcessEvents(); // Poll events when both threads are idle
 
 
             m_RenderThread.NextFrame();

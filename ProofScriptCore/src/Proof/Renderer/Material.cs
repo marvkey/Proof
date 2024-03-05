@@ -8,17 +8,9 @@ using System.Threading.Tasks;
 namespace Proof
 {
     [RegisterCoreClassStruct]
-    public class Material
+    public class Material : Asset
     {
-        internal AssetID m_ID;
-        internal Material(AssetID id)
-        {
-            m_ID = id;
-        }
-
-        internal Material()
-        {
-            m_ID = AssetID.Invalid;
-        }
+        internal Material() { m_ID = AssetID.Invalid; }
+        internal Material(AssetID handle) { m_ID = handle; }
     }
 }

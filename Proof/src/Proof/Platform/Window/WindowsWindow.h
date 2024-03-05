@@ -45,6 +45,9 @@ namespace Proof {
         bool m_InputEventEnabled =true;
         float m_MousePreviousLocationX = 0;
         float m_MousePreviousLocationY = 0;
+
+        bool m_ChangeVsync = false;
         
+        void SetVsyncInternal();
     };
 }

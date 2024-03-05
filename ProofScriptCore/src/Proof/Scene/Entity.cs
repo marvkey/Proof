@@ -18,7 +18,46 @@ namespace Proof
 			ID = id;
 		}
 		public readonly ulong ID;
-		public void ApplyCameraRotate()
+
+        public event Action<Entity> CollisionEnterEvent;
+        public event Action<Entity> CollisionStayEvent;
+        public event Action<Entity> CollisionLeaveEvent;
+
+        public event Action<Entity> TriggerEnterEvent;
+        public event Action<Entity> TriggerStayEvent;
+        public event Action<Entity> TriggerLeaveEvent;
+
+        private TransformComponent m_TransformComponent;
+
+        public TransformComponent Transform
+        {
+            get
+            {
+                if (m_TransformComponent == null)
+                    m_TransformComponent = GetComponent<TransformComponent>();
+
+                return m_TransformComponent;
+            }
+        }
+
+        public Vector3 Location
+        {
+            get => Transform.Location;
+            set => Transform.Location = value;
+        }
+
+        public Vector3 Rotation
+        {
+            get => Transform.Rotation;
+            set => Transform.Rotation = value;
+        }
+
+        public Vector3 Scale
+        {
+            get => Transform.Scale;
+            set => Transform.Scale = value;
+        }
+        public void ApplyCameraRotate()
 		{
 			InternalCalls.ApplyCameraRotate(ID);
         }
@@ -69,7 +108,7 @@ namespace Proof
 
             InternalCalls.PlayerInputComponent_SetMotion(ID, this.GetType().FullName,MotionName, func.Method.Name);
 		}
-        public Entity GetOwner()
+        public Entity GetParent()
         {
 			InternalCalls.Entity_GetParent(ID, out ulong owenrId);
 			if (owenrId == 0)	
@@ -101,5 +140,14 @@ namespace Proof
                 InternalCalls.TagComponent_SetTag(ID, ref value);
             }
         }
-	}
+
+
+        private void OnCollisionEnterInternal(ulong id) => CollisionEnterEvent?.Invoke(new Entity(id));
+        private void OnCollisionStayInternal(ulong id) => CollisionStayEvent?.Invoke(new Entity(id));
+        private void OnCollisionLeaveInternal(ulong id) => CollisionLeaveEvent?.Invoke(new Entity(id));
+
+        private void OnTriggerEnterInternal(ulong id) => TriggerEnterEvent?.Invoke(new Entity(id));
+        private void OnTriggerStayInternal(ulong id) => TriggerStayEvent?.Invoke(new Entity(id));
+        private void OnTriggerLeaveInternal(ulong id) => TriggerLeaveEvent?.Invoke(new Entity(id));
+    }
 }

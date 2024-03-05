@@ -187,6 +187,8 @@ namespace Proof
 		{
 			return m_Stats;
 		}
+		UBScreenData GetScreenData()const { return m_UBScreenData; }
+
 	public:
 		// preProcess
 		WorldRendererDebugOptions DebugOptions;

@@ -7,6 +7,10 @@
 #include "PhysicsController.h"
 #include "PhysicsUtils.h"
 #include "PhysicsLayerManager.h"
+#include "PhysicsShapes.h"
+
+#include "Proof/Scripting/ScriptWorld.h"
+#include "Proof/Scripting/ScriptEngine.h"
 namespace Proof {
 	physx::PxFilterFlags shaderControl(
 		physx::PxFilterObjectAttributes attributes0,
@@ -247,6 +251,28 @@ namespace Proof {
 	{
 		SubStepStrategy(deltaTime);
 
+		static auto callTriggerMethod = [](const char* methodName, Entity mainEntity, Entity b)
+		{
+			if (!mainEntity.HasComponent<ScriptComponent>())
+				return;
+
+			const auto& sc = mainEntity.GetComponent<ScriptComponent>();
+
+			Count<ScriptWorld> scriptWorld = mainEntity.GetCurrentWorld()->GetScriptWorld();
+			if (!scriptWorld)
+				return;
+
+			if (!scriptWorld->IsEntityScriptInstantiated(mainEntity))
+				return;
+
+			for (const auto& scriptMetaData : sc.GetScriptMetadates())
+			{
+				if (ScriptEngine::IsModuleValid(scriptMetaData.ClassName))
+				{
+					ScriptEngine::CallMethod(scriptMetaData.Instance, methodName, b.GetUUID());
+				}
+			}
+		};
 		for (uint32_t i = 0; i < m_NumSubSteps; i++)
 		{
 			m_PhysXScene->simulate(m_SubStepSize);
@@ -255,6 +281,7 @@ namespace Proof {
 
 		if (m_NumSubSteps > 0)
 		{
+			PF_PROFILE_FUNC("Physics Trigger check");
 			//trigger objects still give persistent event if they are sleeping
 			for (auto& [triggerActorID, triggerActorData] : m_CollisionCallback.TriggersActors) 
 			{
@@ -265,6 +292,12 @@ namespace Proof {
 						triggerData.ReadyToCallPersist = true;
 						continue;
 					}
+
+					Entity trigerEntity = m_World->TryGetEntityWithUUID(triggerActorID);
+					Entity otherTriggerEntity = m_World->TryGetEntityWithUUID(otherTriggerID);
+
+					callTriggerMethod("OnTriggerStayInternal", trigerEntity, otherTriggerEntity);
+					callTriggerMethod("OnTriggerStayInternal", trigerEntity, otherTriggerEntity);
 					//PF_INFO("trigger Actor {} on overlap by {}", triggerData.TriggerActor->GetEntity().GetName(), triggerData.OverlapTrigger->GetEntity().GetName());
 				}
 			}
@@ -307,5 +340,103 @@ namespace Proof {
 			m_PhysXScene->addBroadPhaseRegion(region);
 		}
 
+	}
+	bool PhysicsWorld::Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit)
+	{
+		PF_PROFILE_FUNC();
+
+		physx::PxRaycastBuffer hitInfo;
+		bool result = m_PhysXScene->raycast(PhysXUtils::ToPhysXVector(origin), PhysXUtils::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo);
+
+		if (result)
+		{
+			physx::PxRaycastHit& closestHit = hitInfo.block;
+
+			Count<PhysicsActorBase> object = (PhysicsActorBase*)closestHit.actor->userData;
+			outHit->HitEntity = object->GetEntity().GetUUID();
+			outHit->Position = PhysXUtils::FromPhysXVector(closestHit.position);
+			outHit->Normal = PhysXUtils::FromPhysXVector(closestHit.normal);
+			outHit->Distance = closestHit.distance;
+			outHit->HitCollider = (ColliderShape*)(closestHit.shape->userData);
+			return result;
+		}
+
+		return result;
+	}
+	bool PhysicsWorld::SphereCast(const glm::vec3& origin, const glm::vec3& direction, float radius, float maxDistance, RaycastHit* outHit)
+	{
+		PF_PROFILE_FUNC();
+
+		physx::PxSweepBuffer sweepBuffer;
+		bool result = m_PhysXScene->sweep(physx::PxSphereGeometry(radius), physx::PxTransform(PhysXUtils::ToPhysXVector(origin)),
+			PhysXUtils::ToPhysXVector(direction), maxDistance, sweepBuffer);
+
+		if (result)
+		{
+			physx::PxSweepHit& closestHit = sweepBuffer.block;
+
+			Count<PhysicsActorBase> object = (PhysicsActorBase*)closestHit.actor->userData;
+			outHit->HitEntity = object->GetEntity().GetUUID();
+			outHit->Position = PhysXUtils::FromPhysXVector(closestHit.position);
+			outHit->Normal = PhysXUtils::FromPhysXVector(closestHit.normal);
+			outHit->Distance = closestHit.distance;
+			outHit->HitCollider = (ColliderShape*)(closestHit.shape->userData);
+			return result;
+		}
+
+		return result;
+	}
+	bool PhysicsWorld::OverlapBox(const glm::vec3& origin, const glm::vec3& halfSize, std::array<OverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t& count)
+	{
+		return OverlapGeometry(origin, physx::PxBoxGeometry(halfSize.x, halfSize.y, halfSize.z), buffer, count);
+	}
+
+	void PhysicsWorld::AddRadialImpulse(const glm::vec3& origin, float radius, float strength, EFalloffMode falloff, bool velocityChange)
+	{
+		PF_PROFILE_FUNC();
+		std::array<OverlapHit, OVERLAP_MAX_COLLIDERS> overlappedColliders;
+		memset(overlappedColliders.data(), 0, OVERLAP_MAX_COLLIDERS * sizeof(OverlapHit));
+
+		uint32_t count = 0;
+		if (!OverlapSphere(origin, radius, overlappedColliders, count))
+			return;
+
+		for (uint32_t i = 0; i < count; i++)
+		{
+			auto actorBase = overlappedColliders[i].Actor;
+			if (actorBase->GetType() == PhysicsControllerType::Actor)
+			{
+				auto actor = actorBase.As<PhysicsActor>();
+				if (actor->IsDynamic() && !actor->IsKinematic())
+					actor->AddRadialImpulse(origin, radius, strength, falloff, velocityChange);
+			}
+		}
+	}
+
+	bool PhysicsWorld::OverlapSphere(const glm::vec3& origin, float radius, std::array<OverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t& count)
+	{
+		return OverlapGeometry(origin, physx::PxSphereGeometry(radius), buffer, count);
+	}
+
+	bool PhysicsWorld::OverlapGeometry(const glm::vec3& origin, const physx::PxGeometry& geometry, std::array<OverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t& count)
+	{
+		PF_PROFILE_FUNC();
+
+		physx::PxOverlapBuffer buf(m_OverlapBuffer.data(), OVERLAP_MAX_COLLIDERS);
+		physx::PxTransform pose = PhysXUtils::ToPhysXTransform(glm::translate(glm::mat4(1.0f), origin));
+
+		bool result = m_PhysXScene->overlap(geometry, pose, buf);
+		if (result)
+		{
+			count = buf.nbTouches > OVERLAP_MAX_COLLIDERS ? OVERLAP_MAX_COLLIDERS : buf.nbTouches;
+
+			for (uint32_t i = 0; i < count; i++)
+			{
+				buffer[i].Actor = (PhysicsActorBase*)m_OverlapBuffer[i].actor->userData;
+				buffer[i].Shape = (ColliderShape*)m_OverlapBuffer[i].shape->userData;
+			}
+		}
+
+		return result;
 	}
 }

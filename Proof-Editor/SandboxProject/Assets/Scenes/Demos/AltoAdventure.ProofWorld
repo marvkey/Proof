@@ -1,0 +1,254 @@
+World:
+  ID: 7107588826582919816
+  Entities:
+    - Entity: 12192612615812504970
+      TagComponent:
+        Tag: Cone4
+        tags: []
+      TransformComponent:
+        Location: [0.0898538232, -14.1384888, -30.4673958]
+        Rotation: [-0.436332375, 0, 0]
+        Scale: [1, 0.99999994, 0.99999994]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 54
+    - Entity: 14488969478667641579
+      TagComponent:
+        Tag: SceneController
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: AltoDemo.SceneController
+            ScriptClassName: AltoDemo.SceneController
+            ScriptName: AltoDemo.SceneController
+            Fields:
+              - NameID: AltoDemo.SceneController.Ground
+                Type: Entity
+                Data: 16387893667173194073
+              - NameID: AltoDemo.SceneController.Spikes
+                Type: Entity
+                Length: 5
+                Data:
+                  - 18405729394699475211
+                  - 13614558237164741409
+                  - 2652499902574570684
+                  - 12192612615812504970
+                  - 6834549486774056282
+              - NameID: AltoDemo.SceneController.Player
+                Type: Entity
+                Data: 15271352550714979197
+      TextComponent:
+        Color: [1, 1, 1, 1]
+        Kerning: 0
+        LineSpacing: 1
+        Text: 0
+        UseLocalRotation: false
+    - Entity: 1588504503923654943
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.387463093, 0.331612557]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 2.76699996
+    - Entity: 15271352550714979197
+      TagComponent:
+        Tag: Player
+        tags: []
+      TransformComponent:
+        Location: [0.100000001, -1.51800001, -12.0860004]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 51
+        MaterialTable:
+          - Material: ""
+            AssetID: 6372025309156190288
+            Index: 0
+      PointLightComponent:
+        Color: [0.937254906, 0.568627477, 0.149019614]
+        Intensity: 7
+        MinRadius: 0
+        Radius: 8.5
+        Falloff: 0
+        CastsShadows: false
+        SoftShadows: false
+        ShadowStrength: 0.5
+        ShadowSoftness: 0.5
+      ScriptComponent:
+        Scripts:
+          - Script: AltoDemo.PlayerControllerScript
+            ScriptClassName: AltoDemo.PlayerControllerScript
+            ScriptName: AltoDemo.PlayerControllerScript
+            Fields:
+              - NameID: AltoDemo.PlayerControllerScript.JumpForce
+                Type: Float
+                Data: 20
+              - NameID: AltoDemo.PlayerControllerScript.MaxRayLength
+                Type: Float
+                Data: 10
+      SphereColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Radius: 0.5
+        PhysicsMaterialPointerID: 13091815555637216436
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 18405729394699475211
+      TagComponent:
+        Tag: Cone
+        tags: []
+      TransformComponent:
+        Location: [-7.4505806e-09, -7.86999989, -16.8799992]
+        Rotation: [-0.436332375, 0, 0]
+        Scale: [1, 0.99999994, 0.99999994]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 54
+    - Entity: 4913334159009506177
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [1.39626336, 0.17453292, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+    - Entity: 16387893667173194073
+      TagComponent:
+        Tag: Ground
+        tags: []
+      TransformComponent:
+        Location: [0, -4231.16992, -9060.75]
+        Rotation: [-0.436332315, 0, 0]
+        Scale: [1, 10, 20000]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 13091815555637216436
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 17299130131630753396
+      TagComponent:
+        Tag: Camera
+        tags: []
+      TransformComponent:
+        Location: [26.5, 6, -8.19999981]
+        Rotation: [0, 3.65122867, 0.104719758]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: AltoDemo.PlayerCamera
+            ScriptClassName: AltoDemo.PlayerCamera
+            ScriptName: AltoDemo.PlayerCamera
+            Fields:
+              - NameID: AltoDemo.PlayerCamera.testValue
+                Type: Float
+                Data: 32.7000008
+              - NameID: AltoDemo.PlayerCamera.vectro
+                Type: Vector4
+                Data: [0, 0, 0, 0]
+              - NameID: AltoDemo.PlayerCamera.Player
+                Type: Entity
+                Data: 15271352550714979197
+      CameraComponent:
+        NearPlane: 0.100000001
+        FarPlane: 2000
+        FOV: 45
+        UseLocalRotation: false
+    - Entity: 13614558237164741409
+      TagComponent:
+        Tag: Cone2
+        tags: []
+      TransformComponent:
+        Location: [0.174086004, -9.98593044, -21.5296288]
+        Rotation: [-0.436332375, 0, 0]
+        Scale: [1, 0.99999994, 0.99999994]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 54
+    - Entity: 2652499902574570684
+      TagComponent:
+        Tag: Cone3
+        tags: []
+      TransformComponent:
+        Location: [-0.106053948, -11.9992256, -25.7705631]
+        Rotation: [-0.436332375, 0, 0]
+        Scale: [1, 0.99999994, 0.99999994]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 54
+    - Entity: 6834549486774056282
+      TagComponent:
+        Tag: Cone5
+        tags: []
+      TransformComponent:
+        Location: [0.0898538232, -18.3379993, -39.3670006]
+        Rotation: [-0.436332375, 0, 0]
+        Scale: [1, 0.99999994, 0.99999994]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 54

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace Proof
 {
+    [RegisterCoreClassStruct]
     public static class World
     {
         public static void Play()
@@ -20,9 +21,17 @@ namespace Proof
         {
             return InternalCalls.World_OpenWorld(id);
         }
+
+        public static Entity FindEntityByID(ulong entityID)
+        {
+            if (!InternalCalls.World_IsEntityValid(entityID))
+                return null;
+
+            return new Entity(entityID);
+        }
         public static Entity Instanciate(Prefab prefab, Transform transform)
         {
-            ulong entityID = InternalCalls.World_Instanciate(prefab.ID, transform);
+            ulong entityID = InternalCalls.World_Instanciate(prefab.ID.ToUInt64(), transform);
 
             if (entityID == 0)
                 return null;
@@ -35,7 +44,7 @@ namespace Proof
             transform.Location = location;
             transform.Rotation = new Vector3(0.0f);
             transform.Scale = new Vector3(1.0f);
-            ulong entityID = InternalCalls.World_Instanciate(prefab.ID, transform);
+            ulong entityID = InternalCalls.World_Instanciate(prefab.ID.ToUInt64(), transform);
             if (entityID == 0)
                 return null;
 

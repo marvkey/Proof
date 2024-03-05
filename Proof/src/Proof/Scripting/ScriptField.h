@@ -30,10 +30,20 @@ namespace Proof
 		Bool, Char,String,
 		Int8, Int16, Int32, Int64,
 		UInt8, UInt16, UInt32, UInt64,
-		Vector2, Vector3, Vector4,
+		Vector2, Vector3, Vector4, Vector2Bool, Vector3Bool, Vector4Bool,
 		Entity,
+		//everything after entity should be an asset Type
 		Prefab,Texture2D, AssetID,Mesh,DynamicMesh,Material,PhysicsMaterial,//asset
+		
 	};
+	inline bool IsScriptFieldAssetType(ScriptFieldType type)
+	{
+		if ((int)type > (int)ScriptFieldType::Entity)
+			return true;
+		return false;
+	}
+
+	
 	struct ScriptFieldRangeAttribute
 	{
 		enum RangeSet
@@ -102,6 +112,9 @@ namespace Proof
 			case ScriptFieldType::Vector2: return sizeof(glm::vec2);
 			case ScriptFieldType::Vector3: return sizeof(glm::vec3);
 			case ScriptFieldType::Vector4: return sizeof(glm::vec4);
+			case ScriptFieldType::Vector2Bool: return sizeof(glm::bvec2);
+			case ScriptFieldType::Vector3Bool: return sizeof(glm::bvec3);
+			case ScriptFieldType::Vector4Bool: return sizeof(glm::bvec4);
 			case ScriptFieldType::AssetID:
 			case ScriptFieldType::Entity:
 			case ScriptFieldType::Prefab:
@@ -136,6 +149,9 @@ namespace Proof
 			case ScriptFieldType::Vector2:
 			case ScriptFieldType::Vector3:
 			case ScriptFieldType::Vector4:
+			case ScriptFieldType::Vector2Bool: 
+			case ScriptFieldType::Vector3Bool: 
+			case ScriptFieldType::Vector4Bool: 
 				return true;
 		}
 
@@ -423,5 +439,160 @@ namespace Proof
 		Buffer m_DataBuffer;
 		ScriptGCHandle m_RuntimeInstance = nullptr;
 		ScriptFieldType m_EnumType;
+	};
+
+	enum class ArrayFieldStorageStorage
+	{
+		None =0,
+		ScriptFieldType, //
+		Enum,
+	};
+	class ArrayFieldStorage : public FieldStorageBase
+	{
+	public:
+		ArrayFieldStorage(ScriptField* fieldInfo)
+			: FieldStorageBase(fieldInfo)
+		{
+			m_DataBuffer = Buffer::Copy(fieldInfo->DefaultValueBuffer);
+			m_Length = (uint32_t)(m_DataBuffer.Size / m_FieldInfo->Size);
+		}
+
+		template<typename T>
+		T GetValue(uint32_t index) const
+		{
+			if (m_RuntimeInstance != nullptr)
+			{
+				T value = T();
+				GetValueRuntime(index, &value);
+				return value;
+			}
+
+			if (!m_DataBuffer)
+				return T();
+
+			uint32_t offset = index * sizeof(T);
+			return m_DataBuffer.Read<T>(offset);
+		}
+
+		template<>
+		std::string GetValue(uint32_t index) const
+		{
+			if (m_RuntimeInstance != nullptr)
+			{
+				// TODO
+				return std::string();
+			}
+
+			if (!m_DataBuffer)
+				return std::string();
+
+			const Buffer* buffer = (const Buffer*)m_DataBuffer.Data;
+			buffer += index;
+			return std::string((char*)buffer->Data, buffer->Size);
+		}
+
+		template<typename T>
+		void SetValue(uint32_t index, const T& value)
+		{
+			PF_CORE_ASSERT(sizeof(T) == m_FieldInfo->Size);
+
+			if (m_RuntimeInstance != nullptr)
+			{
+				SetValueRuntime(index, &value);
+			}
+			else
+			{
+				uint32_t offset = index * sizeof(T);
+				m_DataBuffer.Write(&value, sizeof(T), offset);
+			}
+		}
+
+		template<>
+		void SetValue<std::string>(uint32_t index, const std::string& value)
+		{
+			if (m_RuntimeInstance != nullptr)
+			{
+				SetValueRuntime(index, &value);
+			}
+			else
+			{
+				Buffer& stringBuffer = (Buffer&)m_DataBuffer[index * sizeof(Buffer)];
+				if (stringBuffer.Size != value.size())
+				{
+					stringBuffer.Release();
+					stringBuffer.Allocate((value.length() * 2) * sizeof(char));
+				}
+				memcpy(stringBuffer.Data, value.c_str(), value.length() * sizeof(char));
+			}
+		}
+
+		virtual void SetRuntimeInstance(ScriptGCHandle instance) override
+		{
+			m_RuntimeInstance = instance;
+
+			if (m_RuntimeInstance)
+				SetRuntimeArray(m_DataBuffer);
+		}
+
+		virtual void CopyFrom(const Count<FieldStorageBase>& other)
+		{
+			Count<ArrayFieldStorage> fieldStorage = other.As<ArrayFieldStorage>();
+
+			if (m_RuntimeInstance != nullptr)
+			{
+				Buffer valueBuffer;
+				if (fieldStorage->GetRuntimeArray(valueBuffer))
+				{
+					SetRuntimeArray(valueBuffer);
+					valueBuffer.Release();
+				}
+			}
+			else
+			{
+				m_DataBuffer.Release();
+				m_DataBuffer = Buffer::Copy(fieldStorage->m_DataBuffer);
+			}
+		}
+
+		void Resize(uint32_t newLength);
+		void RemoveAt(uint32_t index);
+
+		uint32_t GetLength() const { return m_RuntimeInstance != nullptr ? GetLengthRuntime() : m_Length; }
+
+		virtual Buffer GetValueBuffer() const override
+		{
+			if (m_RuntimeInstance == nullptr)
+				return m_DataBuffer;
+
+			Buffer result;
+			GetRuntimeArray(result);
+			return result;
+		}
+
+		virtual void SetValueBuffer(const Buffer& buffer)
+		{
+			if (m_RuntimeInstance != nullptr)
+			{
+				SetRuntimeArray(buffer);
+				m_Length = (uint32_t)(buffer.Size / m_FieldInfo->Size);
+			}
+			else
+			{
+				m_DataBuffer = Buffer::Copy(buffer);
+				m_Length = (uint32_t)(m_DataBuffer.Size / m_FieldInfo->Size);
+			}
+		}
+		ArrayFieldStorageStorage GetStorageType();
+	private:
+		bool GetRuntimeArray(Buffer& outData) const;
+		void SetRuntimeArray(const Buffer& data);
+		void GetValueRuntime(uint32_t index, void* data) const;
+		void SetValueRuntime(uint32_t index, const void* data);
+		uint32_t GetLengthRuntime() const;
+
+	private:
+		Buffer m_DataBuffer;
+		uint32_t m_Length = 0;
+		ScriptGCHandle m_RuntimeInstance = nullptr;
 	};
 }

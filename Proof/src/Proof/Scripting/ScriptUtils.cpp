@@ -232,7 +232,12 @@ namespace Proof::ScriptUtils
 			if (fieldInfo->IsArray() || IsPrimitiveType(fieldInfo->Type))
 				fieldData = (void*)data;
 			else
-				fieldData = ValueToMonoObject(data, fieldInfo->Type);
+			{
+				MonoObject* objectMono = ValueToMonoObject(data, fieldInfo->Type);
+				PF_CORE_ASSERT(objectMono);
+
+				fieldData = (void*)objectMono;
+			}
 
 			mono_field_set_value(classInstance, classField, fieldData);
 		}

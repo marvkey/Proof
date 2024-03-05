@@ -1,0 +1,23 @@
+Project:
+  Name: LostExpedition
+  AssetDirectory: Assets
+  AssetManager: Assets/AssetManager.ProofAssetManager
+  StartWorld: 7107588826582919816
+  ScriptModuleDirectory: Binaries/ScriptApp
+  OnCloseStartWorldEditLastOpen: true
+  StartWorldEdit: 14363693630730396003
+  Input:
+    ActionMapping:
+      []
+    MotionMapping:
+      []
+  Physics:
+    Gravity: [0, -9.81000042, 0]
+    BroadPhaseType: AutomaticBoxPrune
+    FrictionModel: 0
+    SolverPositionIterations: 8
+    SolverVelocityIterations: 2
+    PhysicsLayers:
+      - Name: Default
+        CollidesWith:
+          - Name: Default

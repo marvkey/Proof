@@ -2,7 +2,7 @@
 #include "Proof/Core/Core.h"
 #include "PhysicsActorBase.h"
 #include "PhysicsUtils.h"
-
+#include "PhysicsShapes.h"
 namespace Proof
 {
 	class Entity;
@@ -13,11 +13,15 @@ namespace Proof
 		virtual ~PhysicsActor();
 		float GetInverseMass() const;
 		bool IsDynamic()const;
+
 		void AddForce(glm::vec3 force, ForceMode mode = ForceMode::Force, bool autoWake = true);
 		void AddTorque(glm::vec3 force, ForceMode mode = ForceMode::Force, bool autoWake = true);
+		void AddRadialImpulse(const glm::vec3& origin, float radius, float strength, EFalloffMode falloff = EFalloffMode::Constant, bool velocityChange = false);
+
 		void PutToSleep();
 		void WakeUp();
 		void SetRigidType(RigidBodyType type);
+		RigidBodyType GetRigidBodyType() { return m_Entity.GetComponent<RigidBodyComponent>().RigidBodyType; }
 		virtual bool SetSimulationData(uint32_t layerId)override;
 
 		virtual glm::vec3 GetLocation() const { return PhysXUtils::FromPhysXVector(m_RigidActor->getGlobalPose().p); }
@@ -96,7 +100,7 @@ namespace Proof
 			for (const auto& collider : m_Colliders)
 			{
 				if (collider->GetType() == TShapeType::GetStaticType())
-					return collider;
+					return collider.As<TShapeType>();
 			}
 
 			return nullptr;
@@ -105,6 +109,11 @@ namespace Proof
 		const std::vector<Count<class ColliderShape>>& GetCollisionShapes() const { return m_Colliders; }
 		
 		const physx::PxFilterData& GetFilterData() const { return m_FilterData; }
+
+		void AddForceAtLocation(const glm::vec3& force, const glm::vec3& location, ForceMode forceMode);
+
+		glm::mat4 GetCenterOfMass() const;
+		glm::mat4 GetLocalCenterOfMass() const;
 	private:
 		void AddRigidBody();
 		void Release();

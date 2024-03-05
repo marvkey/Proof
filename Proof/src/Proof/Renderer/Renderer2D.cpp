@@ -18,6 +18,8 @@
 #include "Proof/Scene/Mesh.h"
 #include "MSDFData.h"
 #include "Proof/Math/MathInclude.h"
+#include <glm/gtc/matrix_access.hpp>
+
 namespace Proof {
 
 	static CameraData s_CurrentCamera;
@@ -667,6 +669,41 @@ namespace Proof {
 
 		//m_Stats.QuadCount++;
 	}
+
+	void Renderer2D::DrawCameraFrustrum(const glm::mat4& viewProjection, const glm::vec4& color)
+	{
+
+		glm::mat4 inverseViewProjection = glm::inverse(viewProjection);
+
+		// Corners of the frustum in clip space
+		glm::vec4 cornersClipSpace[] = {
+			{ -1.0f, -1.0f, -1.0f, 1.0f },
+			{ 1.0f, -1.0f, -1.0f, 1.0f },
+			{ 1.0f,  1.0f, -1.0f, 1.0f },
+			{ -1.0f,  1.0f, -1.0f, 1.0f },
+			{ -1.0f, -1.0f,  1.0f, 1.0f },
+			{ 1.0f, -1.0f,  1.0f, 1.0f },
+			{ 1.0f,  1.0f,  1.0f, 1.0f },
+			{ -1.0f,  1.0f,  1.0f, 1.0f }
+		};
+
+		glm::vec4 cornersViewSpace[8];
+
+		// Convert corners from clip space to view space
+		for (int i = 0; i < 8; ++i) {
+			cornersViewSpace[i] = glm::vec4(inverseViewProjection * cornersClipSpace[i]);
+			cornersViewSpace[i] /= cornersViewSpace[i].w;
+		}
+		// Draw lines connecting the corners
+		for (int i = 0; i < 4; ++i) {
+			DrawLine(cornersViewSpace[i], cornersViewSpace[(i + 1) % 4], color);
+			DrawLine(cornersViewSpace[i + 4], cornersViewSpace[((i + 1) % 4) + 4], color);
+			DrawLine(cornersViewSpace[i], cornersViewSpace[i + 4], color);
+		}
+
+
+	}
+	
 
 	void Renderer2D::DrawString(const std::string& text, Count<class Font> font, const TextParams& textParam, const glm::mat4& transform)
 	{

@@ -629,6 +629,7 @@ namespace Proof
 
 			return -1;
 		}
+		const std::vector<ScriptComponentsClassesData>& GetScriptMetadates() const { return ScriptMetadates; }
 	private:
 		std::vector<ScriptComponentsClassesData> ScriptMetadates = {};
 	};

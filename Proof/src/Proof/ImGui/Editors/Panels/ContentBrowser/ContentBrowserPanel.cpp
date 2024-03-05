@@ -21,7 +21,7 @@
 #include "../ApplicationSettings.h"
 #include "Proof/ImGui/Editors/AssetEditors/AssetEditor.h"
 #include "Proof/Utils/StringUtils.h"
-
+#include "Proof/Project/Project.h"
 //https://github.com/Ant-Play/Ant/blob/2dab7c0362f017911df9090b1608ec4b81ad1f2c/AntPlay/src/Panels/ContentBrowserPanel.cpp
 namespace Proof
 {
@@ -1189,7 +1189,7 @@ namespace Proof
 		static constexpr size_t MaxClassNameLength = 64 + 1;
 		static constexpr size_t MaxClassNamespaceLength = 64 + 1;
 		static char s_ScriptNameBuffer[MaxClassNameLength]{ 0 };
-		static char s_ScriptNamespaceBuffer[MaxClassNamespaceLength]{ 0 };
+		static char s_ScriptNamespaceBuffer[MaxClassNamespaceLength] = { 0 };
 
 		UI::ScopedStyleVar framePadding(ImGuiStyleVar_FramePadding, ImVec2(10.0f, 6.0f));
 
@@ -1213,7 +1213,7 @@ namespace Proof
 
 				if (strlen(s_ScriptNameBuffer) > 0)
 				{
-					CreateAsset<ScriptFile>(std::string(s_ScriptNameBuffer) + ".cs", s_ScriptNamespaceBuffer, s_ScriptNameBuffer);
+					CreateAsset<ScriptFile>(std::string(s_ScriptNameBuffer), s_ScriptNamespaceBuffer, s_ScriptNameBuffer);
 					ImGui::CloseCurrentPopup();
 				}
 			}

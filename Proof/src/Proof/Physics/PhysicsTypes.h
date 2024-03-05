@@ -2,6 +2,8 @@
 #include <glm/glm.hpp>
 namespace Proof
 {
+	enum class EFalloffMode { Constant, Linear };
+
 	enum class ColliderType
 	{
 		Box, Sphere, Capsule, Plane, Heightfield, ConvexMesh, TriangleMesh
@@ -77,7 +79,7 @@ namespace Proof
 	enum class ForceMode
 	{
 		Force,
-		Impule,
+		Impulse,
 		VelocityChange,
 		Acceleration
 	};

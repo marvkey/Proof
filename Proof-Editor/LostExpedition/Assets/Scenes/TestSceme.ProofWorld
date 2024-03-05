@@ -1,0 +1,142 @@
+World:
+  ID: 14363693630730396003
+  Entities:
+    - Entity: 13278749846065043068
+      TagComponent:
+        Tag: Point Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      PointLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+        MinRadius: 0
+        Radius: 10
+        Falloff: 1
+        CastsShadows: false
+        SoftShadows: false
+        ShadowStrength: 0.5
+        ShadowSoftness: 0.5
+    - Entity: 2821532438848822639
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [1.39626336, 0.17453292, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+    - Entity: 1052531638360331730
+      TagComponent:
+        Tag: TestPlayer
+        tags: []
+      TransformComponent:
+        Location: [0, 1.5, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        MaterialTable:
+          - Material: ""
+            AssetID: 3676627569175275034
+            Index: 0
+      ScriptComponent:
+        Scripts:
+          - Script: LostExpedition.PlayerMovement
+            ScriptClassName: LostExpedition.PlayerMovement
+            ScriptName: LostExpedition.PlayerMovement
+            Fields:
+              []
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 9992972947132147716
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.0174532924, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 18423083987907514745
+      TagComponent:
+        Tag: Plane
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [12.6999998, 1, 15.6000004]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 1214489851032221533
+      TagComponent:
+        Tag: Camera
+        tags: []
+      TransformComponent:
+        Location: [0, 5.80000019, -27.3869991]
+        Rotation: [0, 0, 1.57079637]
+        Scale: [0.999990404, 2.09999442, 0.999999881]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      CameraComponent:
+        NearPlane: 0.100000001
+        FarPlane: 2000
+        FOV: 45
+        UseLocalRotation: false

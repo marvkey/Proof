@@ -13,6 +13,14 @@ namespace Proof
     {
         public float X,Y,Z;
         public static Vector3 Zero => new Vector3(0.0f);
+        public static Vector3 One = new Vector3(1, 1, 1);
+        public static Vector3 Forward = new Vector3(0, 0, -1);
+        public static Vector3 Back = new Vector3(0, 0, 1);
+        public static Vector3 Right = new Vector3(1, 0, 0);
+        public static Vector3 Left = new Vector3(-1, 0, 0);
+        public static Vector3 Up = new Vector3(0, 1, 0);
+        public static Vector3 Down = new Vector3(0, -1, 0);
+
         public Vector3(Vector3 other)
         {
             X = other.X;
@@ -31,21 +39,7 @@ namespace Proof
             Y = scalar;
             Z = scalar;
         }
-        public static Vector3 operator +(Vector3 a) => a;
-        public static Vector3 operator -(Vector3 a) => new Vector3(-a.X, -a.Y, -a.Z);
-        public static Vector3 operator -(Vector3 a, Vector3 b) {
-
-           return new Vector3(a.X - b.X, a.Y - b.Y, a.Z - b.Z);
-        }
-        public static Vector3 operator +(Vector3 a, Vector3 b)
-        {
-            return new Vector3(a.X + b.X, a.Y + b.Y, a.Z + b.Z);
-        }
-
-        public static Vector3 operator +(Vector3 a, float b)
-        {
-            return new Vector3(a.X + b, a.Y + b, a.Z + b);
-        }
+       
 
         public override string ToString()
         {
@@ -66,10 +60,20 @@ namespace Proof
             return (X * vec.X + Y * vec.Y + Z * vec.Z);
         }
 
-        public static Vector3 operator *(Vector3 a,float sclar)
-        {
-            return new Vector3(a.X *sclar, a.Y * sclar, a.Z * sclar);
-        }
+
+
+        public static Vector3 operator *(Vector3 left, float scalar) => new Vector3(left.X * scalar, left.Y * scalar, left.Z * scalar);
+        public static Vector3 operator *(float scalar, Vector3 right) => new Vector3(scalar * right.X, scalar * right.Y, scalar * right.Z);
+        public static Vector3 operator *(Vector3 left, Vector3 right) => new Vector3(left.X * right.X, left.Y * right.Y, left.Z * right.Z);
+        public static Vector3 operator /(Vector3 left, Vector3 right) => new Vector3(left.X / right.X, left.Y / right.Y, left.Z / right.Z);
+        public static Vector3 operator /(Vector3 left, float scalar) => new Vector3(left.X / scalar, left.Y / scalar, left.Z / scalar);
+        public static Vector3 operator /(float scalar, Vector3 right) => new Vector3(scalar / right.X, scalar / right.Y, scalar / right.Z);
+        public static Vector3 operator +(Vector3 left, Vector3 right) => new Vector3(left.X + right.X, left.Y + right.Y, left.Z + right.Z);
+        public static Vector3 operator +(Vector3 left, float right) => new Vector3(left.X + right, left.Y + right, left.Z + right);
+        public static Vector3 operator -(Vector3 left, Vector3 right) => new Vector3(left.X - right.X, left.Y - right.Y, left.Z - right.Z);
+        public static Vector3 operator -(Vector3 left, float right) => new Vector3(left.X - right, left.Y - right, left.Z - right);
+        public static Vector3 operator -(Vector3 vector) => new Vector3(-vector.X, -vector.Y, -vector.Z);
+
     }
     [RegisterCoreClassStruct]
     [StructLayout(LayoutKind.Sequential)]
@@ -180,6 +184,68 @@ namespace Proof
         public static Vector4 operator *(Vector4 a, float sclar)
         {
             return new Vector4(a.X * sclar, a.Y * sclar,a.Z* sclar,a.W* sclar);
+        }
+    }
+    [RegisterCoreClassStruct]
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Vector3Bool
+    {
+        public bool X, Y, Z;
+
+        public Vector3Bool(bool x, bool y, bool z)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+        }
+
+        // Conversion from Vector3 to BoolVector3
+        public Vector3Bool(Vector3 vector)
+        {
+            X = vector.X != 0;
+            Y = vector.Y != 0;
+            Z = vector.Z != 0;
+        }
+
+        public override string ToString()
+        {
+            return $"X = {X}, Y = {Y}, Z = {Z}";
+        }
+    }
+    [RegisterCoreClassStruct]
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Vector2Bool
+    {
+        public float X, Y;
+
+        public Vector2Bool(float x, float y)
+        {
+            X = x;
+            Y = y;
+        }
+
+        public override string ToString()
+        {
+            return $"X = {X}, Y = {Y}";
+        }
+    }
+    [RegisterCoreClassStruct]
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Vector4Bool
+    {
+        public bool X, Y, Z, W;
+
+        public Vector4Bool(bool x, bool y, bool z, bool w)
+        {
+            X = x;
+            Y = y;
+            Z = z;
+            W = w;
+        }
+
+        public override string ToString()
+        {
+            return $"X = {X}, Y = {Y}, Z = {Z}, W = {W}";
         }
     }
 }

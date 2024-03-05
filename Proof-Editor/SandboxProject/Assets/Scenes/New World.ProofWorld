@@ -66,9 +66,9 @@ World:
         Tag: Sky Light
         tags: []
       TransformComponent:
-        Location: [0, 2.25845432, 0.367415309]
-        Rotation: [2.1991148, 1.01752698, 0.511381447]
-        Scale: [1, 1, 1]
+        Location: [0, 2.25845432, 0.542033076]
+        Rotation: [2.19911575, 1.01752806, 0.511381745]
+        Scale: [0.999999702, 1.00000024, 1.00000012]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
@@ -135,7 +135,7 @@ World:
         Tag: Sphere
         tags: []
       TransformComponent:
-        Location: [-1.94874477, 1.00484455, -0.906231165]
+        Location: [-1.94874477, 0.647862136, -4.03086376]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -147,6 +147,16 @@ World:
           - Material: ""
             AssetID: 14983098330679523653
             Index: 0
+      PointLightComponent:
+        Color: [0.092592597, 0.153086603, 1]
+        Intensity: 2.71000004
+        MinRadius: 0
+        Radius: 3.47000003
+        Falloff: 0.479999989
+        CastsShadows: false
+        SoftShadows: false
+        ShadowStrength: 0.5
+        ShadowSoftness: 0.5
     - Entity: 18190513093595672128
       TagComponent:
         Tag: Plane
@@ -178,7 +188,7 @@ World:
       MeshComponent:
         MeshAssetPointerID: 18348114341737718825
       MeshColliderComponent:
-        ColliderID: 715482515838580791
+        ColliderID: 10691096096501333290
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0
@@ -226,6 +236,19 @@ World:
           - Material: ""
             AssetID: 14983098330679523653
             Index: 0
+    - Entity: 11188356658984209753
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
     - Entity: 7186851988830310600
       TagComponent:
         Tag: Roof
@@ -248,7 +271,7 @@ World:
         Tag: Point Light
         tags: []
       TransformComponent:
-        Location: [-1.20000005, 0.471299946, 3.36078978]
+        Location: [-2.29999995, 11.9619999, 6.36100006]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -258,9 +281,26 @@ World:
         Color: [1, 1, 1]
         Intensity: 50.6899986
         MinRadius: 0
-        Radius: 1.41999996
+        Radius: 2.18000007
         Falloff: 1
         CastsShadows: false
         SoftShadows: false
         ShadowStrength: 0.5
         ShadowSoftness: 0.5
+    - Entity: 11481267305078218806
+      TagComponent:
+        Tag: Cone
+        tags: []
+      TransformComponent:
+        Location: [-0.944741547, 1.58099997, 0.341163814]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 54
+        MaterialTable:
+          - Material: ""
+            AssetID: 3416512967418026386
+            Index: 0

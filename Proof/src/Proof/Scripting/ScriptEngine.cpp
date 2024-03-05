@@ -415,7 +415,8 @@ namespace Proof
         ScriptRegistry::ShutDown();
         LoadCoreAssembly();
         LoadAppAssembly();
-
+        ScriptFunc::RegisterFunctions();
+        ScriptFunc::RegisterAllComponents();
         for (auto& [scriptWorldID, entityList] : oldFieldValues)
         {
             auto weakScriptWorld = ScriptWorld::GetScriptWorlds().at(scriptWorldID);

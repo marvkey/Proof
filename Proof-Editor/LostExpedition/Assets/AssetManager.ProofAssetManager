@@ -1,0 +1,10 @@
+Assets:
+  - Asset: 14363693630730396003
+    Type: World
+    Path: Scenes\TestSceme.ProofWorld
+  - Asset: 3676627569175275034
+    Type: Material
+    Path: Materials\Red.Material.ProofAsset
+  - Asset: 12508729347451298576
+    Type: ScriptFile
+    Path: Scripts\PlayerMovement.cs

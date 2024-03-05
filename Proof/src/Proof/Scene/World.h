@@ -58,7 +58,8 @@ namespace Proof {
 		class Entity GetWorldCameraEntity();
 
 		virtual void OnRenderEditor(Count<class WorldRenderer> renderer, FrameTime time, const class EditorCamera& camera);
-		
+		virtual void OnRenderRuntime(Count<class WorldRenderer> renderer, FrameTime time);
+
 		// using scripts
 		virtual void StartRuntime();
 		// using scripts

@@ -57,6 +57,9 @@ namespace Proof
 	}
 	void MeshSourceSavedSettingSerializer::Load(const std::filesystem::path& path)
 	{
+		if (!FileSystem::Exists(Utils::GetAssetCustomDataFileSystemPath(path).string()))
+			return;
+
 		// Open the YAML file for reading
 		std::ifstream file(Utils::GetAssetCustomDataFileSystemPath(path).string());
 		if (!file.is_open()) {

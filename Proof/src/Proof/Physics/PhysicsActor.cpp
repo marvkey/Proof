@@ -20,7 +20,7 @@ namespace Proof {
 				case Proof::ForceMode::Force:
 					return physx::PxForceMode::eFORCE;
 					break;
-				case Proof::ForceMode::Impule:
+				case Proof::ForceMode::Impulse:
 					return physx::PxForceMode::eIMPULSE;
 					break;
 				case Proof::ForceMode::VelocityChange:
@@ -92,6 +92,31 @@ namespace Proof {
 		if (!IsDynamic())return;
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RigidActor;
 		rigidBody->addTorque({ force.x,force.y,force.z }, Utils::ToPhysxForce(mode), autoWake);
+	}
+
+	void PhysicsActor::AddRadialImpulse(const glm::vec3& origin, float radius, float strength, EFalloffMode falloff, bool velocityChange)
+	{
+		if (!IsDynamic() || IsKinematic())
+			return;
+
+		float mass = GetMass();
+		glm::mat4 centerOfMassTransform = GetCenterOfMass();
+		glm::vec3 centerOfMass = centerOfMassTransform[3];
+		glm::vec3 delta = centerOfMass - origin;
+
+		float magnitude = glm::length(delta);
+		if (magnitude > radius)
+			return;
+
+		delta = glm::normalize(delta);
+
+		float impulseMagnitude = strength;
+		if (falloff == EFalloffMode::Linear)
+			impulseMagnitude *= (1.0f - (magnitude / radius));
+
+		glm::vec3 impulse = delta * impulseMagnitude;
+		ForceMode mode = velocityChange ? ForceMode::VelocityChange : ForceMode::Impulse;
+		AddForce(impulse, mode);
 	}
 
 	void PhysicsActor::PutToSleep()
@@ -401,8 +426,8 @@ namespace Proof {
 		if (!IsDynamic())
 			return;
 		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rotation.X);
-		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rotation.Y);
-		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rotation.Z);
+		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, rotation.Y);
+		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, rotation.Z);
 
 		RigidBodyComponent& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
 
@@ -510,7 +535,33 @@ namespace Proof {
 
 		rigidBody.Mass = mass;
 	}
-	
+
+	glm::mat4 PhysicsActor::GetCenterOfMass() const
+	{
+		if (!IsDynamic())
+			return glm::mat4(1.0f);
+
+		const auto actor = m_RigidActor->is<physx::PxRigidDynamic>();
+		return PhysXUtils::FromPhysXTransform(actor->getGlobalPose().transform(actor->getCMassLocalPose()));
+	}
+
+	glm::mat4 PhysicsActor::GetLocalCenterOfMass() const { return !IsDynamic() ? glm::mat4(1.0f) : PhysXUtils::FromPhysXTransform(m_RigidActor->is<physx::PxRigidDynamic>()->getCMassLocalPose()); }
+
+	void PhysicsActor::AddForceAtLocation(const glm::vec3& force, const glm::vec3& location, ForceMode forceMode)
+	{
+		PF_PROFILE_FUNC();
+
+		if (!IsDynamic() || IsKinematic())
+		{
+			PF_ENGINE_WARN("Cannot add force to a non-dynamic or kinematic PhysicsActor.");
+			return;
+		}
+		physx::PxRigidDynamic* actor = m_RigidActor->is<physx::PxRigidDynamic>();
+		PF_CORE_ASSERT(actor);
+
+		physx::PxRigidBodyExt::addForceAtPos(*actor, PhysXUtils::ToPhysXVector(force), PhysXUtils::ToPhysXVector(location), Utils::ToPhysxForce(forceMode));
+	}
+
 	void PhysicsActor::AddRigidBody()
 	{
 		const TransformComponent transformComponent = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);

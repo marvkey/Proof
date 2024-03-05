@@ -135,7 +135,6 @@ vec3 CalculatePointLights(in vec3 F0, vec3 worldPos)
 
 		if(light.Intensity <= 0)
 			continue;
-
 		vec3 Li = normalize(light.Position - worldPos);
 		float lightDistance = length(light.Position - worldPos);
 
@@ -143,7 +142,9 @@ vec3 CalculatePointLights(in vec3 F0, vec3 worldPos)
 		if (lightDistance < light.MinRadius) 
 		{
 			// If the distance is less than the minimum radius, assume no light contribution
-			return vec3(0.0);
+			result += vec3(0.0);
+
+			continue;
 		}
 		vec3 Lh = normalize(Li + m_Params.View);
 	

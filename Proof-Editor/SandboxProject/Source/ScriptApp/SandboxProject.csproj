@@ -84,6 +84,15 @@
     <Reference Include="System.Data.Entity" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Assets\Script\Demos\AltoAdventures\PlayerCamera.cs">
+      <Link>Assets\Script\Demos\AltoAdventures\PlayerCamera.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Script\Demos\AltoAdventures\PlayerControllerScript.cs">
+      <Link>Assets\Script\Demos\AltoAdventures\PlayerControllerScript.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Script\Demos\AltoAdventures\SceneController.cs">
+      <Link>Assets\Script\Demos\AltoAdventures\SceneController.cs</Link>
+    </Compile>
     <Compile Include="..\..\Assets\Script\ScriptSpawner.cs">
       <Link>Assets\Script\ScriptSpawner.cs</Link>
     </Compile>

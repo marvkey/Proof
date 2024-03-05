@@ -87,6 +87,12 @@ namespace Proof
 	static void LoadScriptFieldStorage(YAML::iterator::value_type& scriptField, Count<FieldStorage> fieldStorage, ScriptFieldType savedScriptFieldType)
 	{
 		auto dataNode = scriptField["Data"];
+
+		if (IsScriptFieldAssetType(fieldStorage->GetFieldInfo()->Type))
+		{
+			fieldStorage->SetValue(dataNode.as<uint64_t>());
+			return;
+		}
 		switch (fieldStorage->GetFieldInfo()->Type)
 		{
 			case ScriptFieldType::Bool:
@@ -172,12 +178,126 @@ namespace Proof
 			case ScriptFieldType::PhysicsMaterial:
 			case ScriptFieldType::Texture2D:
 				{
-					fieldStorage->SetValue(dataNode.as<UUID>());
+					fieldStorage->SetValue(dataNode.as<uint64_t>());
+					break;
+				}
+			default:
+				{
+					PF_CORE_ASSERT(false);
 					break;
 				}
 		}
 	}
+	static void LoadScriptFieldArray(YAML::iterator::value_type& scriptField, Count<ArrayFieldStorage> arrayStorage, ScriptFieldType savedScriptFieldType)
+	{
+		if (!scriptField["Length"])
+			return;
+		if (!scriptField["Data"])
+			return;
 
+		auto dataNode = scriptField["Data"];
+		if (!dataNode.IsSequence())
+			return;
+
+		arrayStorage->Resize(dataNode.size());
+
+		for (uintptr_t i = 0; i < dataNode.size(); i++)
+		{
+			if (IsScriptFieldAssetType(arrayStorage->GetFieldInfo()->Type))
+			{
+				arrayStorage->SetValue(i, static_cast<uint64_t>(dataNode[i].as<int16_t>()));
+				continue;
+			}
+
+			switch (arrayStorage->GetFieldInfo()->Type)
+			{
+				case ScriptFieldType::Bool:
+				{
+					arrayStorage->SetValue(i, dataNode[i].as<bool>());
+					break;
+				}
+				case ScriptFieldType::Int8:
+				{
+					arrayStorage->SetValue(i, static_cast<int8_t>(dataNode[i].as<int16_t>()));
+					break;
+				}
+				case ScriptFieldType::Int16:
+				{
+					arrayStorage->SetValue(i, dataNode[i].as<int16_t>());
+					break;
+				}
+				case ScriptFieldType::Int32:
+				{
+					arrayStorage->SetValue(i, dataNode[i].as<int32_t>());
+					break;
+				}
+				case ScriptFieldType::Int64:
+				{
+					arrayStorage->SetValue(i, dataNode[i].as<int64_t>());
+					break;
+				}
+				case ScriptFieldType::UInt8:
+				{
+					arrayStorage->SetValue(i, dataNode[i].as<uint8_t>());
+					break;
+				}
+				case ScriptFieldType::UInt16:
+				{
+					arrayStorage->SetValue(i, dataNode[i].as<uint16_t>());
+					break;
+				}
+				case ScriptFieldType::UInt32:
+				{
+					arrayStorage->SetValue(i, dataNode[i].as<uint32_t>());
+					break;
+				}
+				case ScriptFieldType::UInt64:
+				{
+					arrayStorage->SetValue(i, dataNode[i].as<uint64_t>());
+					break;
+				}
+				case ScriptFieldType::Float:
+				{
+					arrayStorage->SetValue(i, dataNode[i].as<float>());
+					break;
+				}
+				case ScriptFieldType::Double:
+				{
+					arrayStorage->SetValue(i, dataNode[i].as<double>());
+					break;
+				}
+				case ScriptFieldType::String:
+				{
+					arrayStorage->SetValue(i, dataNode[i].as<std::string>());
+					break;
+				}
+				case ScriptFieldType::Vector2:
+				{
+					arrayStorage->SetValue(i, dataNode[i].as<glm::vec2>());
+					break;
+				}
+				case ScriptFieldType::Vector3:
+				{
+					arrayStorage->SetValue(i, dataNode[i].as<glm::vec3>());
+					break;
+				}
+				case ScriptFieldType::Vector4:
+				{
+					arrayStorage->SetValue(i, dataNode[i].as<glm::vec4>());
+					break;
+				}
+				case ScriptFieldType::Entity:
+				{
+					arrayStorage->SetValue(i, dataNode[i].as<uint64_t>());
+					break;
+				}
+				default:
+					PF_CORE_ASSERT(false);
+
+			}
+		}
+				
+	}
 	static void LoadScriptField(YAML::iterator::value_type& scriptField, Count<ScriptWorld>& scriptWorld, const std::string& classModule, Entity entity)
 	{
 		std::string fieldNameID = scriptField["NameID"].as<std::string>();
@@ -190,7 +310,7 @@ namespace Proof
 
 		if (fieldStorage->GetFieldInfo()->IsArray())
 		{
-
+			LoadScriptFieldArray(scriptField, fieldStorage.As<ArrayFieldStorage>(), scriptFieldType);
 		}
 		else if (fieldStorage->GetFieldInfo()->IsEnum())
 		{
@@ -247,15 +367,25 @@ namespace Proof
 					out << fieldStorage->GetValue<uint64_t>();
 					break;
 				}
-
+			default: 
+			{
+				PF_CORE_ASSERT(false);
 				out << "";
 				break;
+			}
 		}
 	}
 
 	static void SaveScriptFieldStorage(YAML::Emitter& out, Count<FieldStorage> fieldStorage)
 	{
+		
 		out << YAML::Key << "Data" << YAML::Value;
+
+		if (IsScriptFieldAssetType(fieldStorage->GetFieldInfo()->Type))
+		{
+			out << fieldStorage->GetValue<uint64_t>();
+			return;
+		}
 		switch (fieldStorage->GetFieldInfo()->Type)
 		{
 			case ScriptFieldType::Bool:
@@ -341,15 +471,134 @@ namespace Proof
 			case ScriptFieldType::PhysicsMaterial:
 			case ScriptFieldType::Texture2D:
 				{
-					out << fieldStorage->GetValue<UUID>();
+					out << fieldStorage->GetValue<uint64_t>();
 					break;
 				}
 			default:
+			{
+				PF_CORE_ASSERT(false);
 				out << "";
 				break;
+			}
 		}
 	}
+	static void SaveScriptFieldArray(YAML::Emitter& out, Count<ArrayFieldStorage> arrayStorage)
+	{
 
+		if (arrayStorage == nullptr)
+			return;
+
+		out << YAML::Key << "Length" << YAML::Value << arrayStorage->GetLength(); // Not strictly necessary but useful for readability
+		out << YAML::Key << "Data" << YAML::Value;
+
+		out << YAML::BeginSeq;
+
+
+		for (uintptr_t i = 0; i < arrayStorage->GetLength(); i++)
+		{
+			if (IsScriptFieldAssetType(arrayStorage->GetFieldInfo()->Type))
+			{
+				out << arrayStorage->GetValue<UUID>(i);
+				continue;
+			}
+			switch (arrayStorage->GetFieldInfo()->Type)
+			{
+				case ScriptFieldType::Bool:
+				{
+					out << arrayStorage->GetValue<bool>(i);
+					break;
+				}
+				case ScriptFieldType::Int8:
+				{
+					out << arrayStorage->GetValue<int8_t>(i);
+					break;
+				}
+				case ScriptFieldType::Int16:
+				{
+					out << arrayStorage->GetValue<int16_t>(i);
+					break;
+				}
+				case ScriptFieldType::Int32:
+				{
+					out << arrayStorage->GetValue<int32_t>(i);
+					break;
+				}
+				case ScriptFieldType::Int64:
+				{
+					out << arrayStorage->GetValue<int64_t>(i);
+					break;
+				}
+				case ScriptFieldType::UInt8:
+				{
+					out << arrayStorage->GetValue<uint8_t>(i);
+					break;
+				}
+				case ScriptFieldType::UInt16:
+				{
+					out << arrayStorage->GetValue<uint16_t>(i);
+					break;
+				}
+				case ScriptFieldType::UInt32:
+				{
+					out << arrayStorage->GetValue<uint32_t>(i);
+					break;
+				}
+				case ScriptFieldType::UInt64:
+				{
+					out << arrayStorage->GetValue<uint64_t>(i);
+					break;
+				}
+				case ScriptFieldType::Float:
+				{
+					out << arrayStorage->GetValue<float>(i);
+					break;
+				}
+				case ScriptFieldType::Double:
+				{
+					out << arrayStorage->GetValue<double>(i);
+					break;
+				}
+				case ScriptFieldType::String:
+				{
+					out << arrayStorage->GetValue<std::string>(i);
+					break;
+				}
+				case ScriptFieldType::Vector2:
+				{
+					out << arrayStorage->GetValue<glm::vec2>(i);
+					break;
+				}
+				case ScriptFieldType::Vector3:
+				{
+					out << arrayStorage->GetValue<glm::vec3>(i);
+					break;
+				}
+				case ScriptFieldType::Vector4:
+				{
+					out << arrayStorage->GetValue<glm::vec4>(i);
+					break;
+				}
+				case ScriptFieldType::Prefab:
+				case ScriptFieldType::Entity:
+				case ScriptFieldType::Mesh:
+				case ScriptFieldType::Material:
+				case ScriptFieldType::PhysicsMaterial:
+				case ScriptFieldType::Texture2D:
+				{
+					out << arrayStorage->GetValue<UUID>(i);
+					break;
+				}
+				default:	
+				{
+					PF_CORE_ASSERT(false);
+					out << "";
+					break;
+				}
+			}
+		}
+
+		out << YAML::EndSeq;
+	}
 	static void SaveScriptField(YAML::Emitter& out,Count<FieldStorageBase> fieldStorage)
 	{
 		if (fieldStorage == nullptr)
@@ -360,7 +609,7 @@ namespace Proof
 		out << YAML::Key << "Type" << YAML::Value << EnumReflection::EnumString( fieldStorage->GetFieldInfo()->Type);
 		if (fieldStorage->GetFieldInfo()->IsArray())
 		{
-			
+			SaveScriptFieldArray(out, fieldStorage.As<ArrayFieldStorage>());
 		}
 		else if(fieldStorage->GetFieldInfo()->IsEnum())
 		{

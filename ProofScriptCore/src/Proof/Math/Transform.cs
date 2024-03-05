@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Proof
 {
+    [RegisterCoreClassStruct]
     [StructLayout(LayoutKind.Sequential)]
     public struct Transform
     {
