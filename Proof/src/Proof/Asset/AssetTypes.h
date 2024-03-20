@@ -28,7 +28,9 @@ namespace Proof
 		Audio,
 		AudioSourceFile,
 		MeshCollider,
-		ScriptFile
+		ScriptFile,
+		InputAction,
+		InputMappingContext
 	};
 	enum class AssetState 
 	{
@@ -70,6 +72,8 @@ namespace Proof
 			{AssetType::Audio, ".Audio.ProofAsset" },
 			{AssetType::MeshCollider, ".MeshCollider.ProofAsset" },
 			{AssetType::ScriptFile, ".cs" },
+			{AssetType::InputAction,".InputAction.ProofAsset"},
+			{AssetType::InputMappingContext,".InputMappingContext.ProofAsset"},
 		};
 		std::string GetAssetExtensionString(AssetType type);
 		// checks the file extension

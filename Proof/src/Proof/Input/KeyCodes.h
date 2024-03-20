@@ -1,10 +1,9 @@
 #pragma once
 namespace Proof
 {
-	// we support more players
 	enum class Players
 	{
-		None = 0,
+		None = -1,
 		Player0,
 		Player1,
 		Player2,
@@ -128,6 +127,25 @@ namespace Proof
 		F24 = 313,
 		F25 = 314,
 
+		NumPad0 = 320,
+		NumPad1 = 321,
+		NumPad2 = 322,
+		NumPad3 = 323,
+		NumPad4 = 324,
+		NumPad5 = 325,
+		NumPad6 = 326,
+		NumPad7 = 327,
+		NumPad8 = 328,
+		NumPad9 = 329,
+
+		NumPadDecimal = 330,
+		NumPadDivide = 331,
+		NumPadMultiply = 332,
+		NumPadSubtract = 333,
+		NumPadAdd = 334,
+		NumPadEnter = 335,
+		NumPadEqual =	336,
+
 		LeftShift = 340,
 		LeftControl = 341,
 		LeftAlt = 342,
@@ -165,7 +183,7 @@ namespace Proof
 		X =1,
 		Y =2,
 		ScrollUp,
-		ScrolDown
+		ScrollDown
 	};
 	enum class JoystickKey {
 		None=-1,

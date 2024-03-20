@@ -108,7 +108,7 @@ namespace Proof {
             if (m_Y == 1)
                 return MouseAxis::ScrollUp;
             else if (m_Y == -1)
-                return MouseAxis::ScrolDown;
+                return MouseAxis::ScrollDown;
             return MouseAxis::None;
         }
         std::string ToString()const override {

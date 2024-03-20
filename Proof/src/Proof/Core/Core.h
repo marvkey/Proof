@@ -13,6 +13,35 @@ inline const std::string ProofCurrentDirectory = "../Proof/";
 #define GetVariableName(X)#X
 #define PF_ARRAYSIZE(_ARR)          ((int)(sizeof(_ARR) / sizeof(*(_ARR))))     // Size of a static C-style array. does not work on pointers
 
+#define DEFINE_ENUM_CLASS_FLAGS(Enum) \
+    inline Enum& operator|=(Enum& lhs, Enum rhs) { \
+        using underlying_type = std::underlying_type_t<Enum>; \
+        lhs = static_cast<Enum>(static_cast<underlying_type>(lhs) | static_cast<underlying_type>(rhs)); \
+        return lhs; \
+    } \
+    inline Enum& operator&=(Enum& lhs, Enum rhs) { \
+        using underlying_type = std::underlying_type_t<Enum>; \
+        lhs = static_cast<Enum>(static_cast<underlying_type>(lhs) & static_cast<underlying_type>(rhs)); \
+        return lhs; \
+    } \
+    inline Enum& operator^=(Enum& lhs, Enum rhs) { \
+        using underlying_type = std::underlying_type_t<Enum>; \
+        lhs = static_cast<Enum>(static_cast<underlying_type>(lhs) ^ static_cast<underlying_type>(rhs)); \
+        return lhs; \
+    } \
+    inline constexpr Enum operator|(Enum lhs, Enum rhs) { \
+        using underlying_type = std::underlying_type_t<Enum>; \
+        return static_cast<Enum>(static_cast<underlying_type>(lhs) | static_cast<underlying_type>(rhs)); \
+    } \
+    inline constexpr Enum operator&(Enum lhs, Enum rhs) { \
+        using underlying_type = std::underlying_type_t<Enum>; \
+        return static_cast<Enum>(static_cast<underlying_type>(lhs) & static_cast<underlying_type>(rhs)); \
+    } \
+    inline constexpr Enum operator^(Enum lhs, Enum rhs) { \
+        using underlying_type = std::underlying_type_t<Enum>; \
+        return static_cast<Enum>(static_cast<underlying_type>(lhs) ^ static_cast<underlying_type>(rhs)); \
+    }
+
 namespace Proof
 {
     

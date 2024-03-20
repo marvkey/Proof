@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
     <ProjectGuid>{49FAD7F9-B585-45BE-BE96-C8B22AA1A1BE}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -12,10 +12,9 @@
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Platforms>x64</Platforms>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <PlatformTarget>x64</PlatformTarget>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <Optimize>false</Optimize>
@@ -26,8 +25,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <PlatformTarget>x64</PlatformTarget>
     <DebugType>portable</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
@@ -38,8 +37,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|x64' ">
+    <PlatformTarget>x64</PlatformTarget>
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
@@ -50,39 +49,39 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
   </ItemGroup>
-  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
   </ItemGroup>
-  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|AnyCPU' ">
+  <ItemGroup Condition=" '$(Configuration)|$(Platform)' == 'Dist|x64' ">
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Src\Proof\Asset\AssetID.cs" />
-    <Compile Include="Src\Proof\Asset\Assets.cs" />
-    <Compile Include="Src\Proof\Asset\ParticleSystem.cs" />
-    <Compile Include="Src\Proof\Attributes\ClampValueAttribute.cs" />
-    <Compile Include="Src\Proof\Attributes\EditorAttributes .cs" />
-    <Compile Include="Src\Proof\Attributes\RegisterClassesAndStructAttributes.cs" />
-    <Compile Include="Src\Proof\Core\Application.cs" />
-    <Compile Include="Src\Proof\Core\Log.cs" />
-    <Compile Include="Src\Proof\Input\Input.cs" />
-    <Compile Include="Src\Proof\Input\KeyCodes.cs" />
-    <Compile Include="Src\Proof\InternalCalls.cs" />
-    <Compile Include="Src\Proof\Math\MathF.cs" />
-    <Compile Include="Src\Proof\Math\Random.cs" />
-    <Compile Include="Src\Proof\Math\Timer.cs" />
-    <Compile Include="Src\Proof\Math\Transform.cs" />
-    <Compile Include="Src\Proof\Math\Vector3.cs" />
-    <Compile Include="Src\Proof\Physics\Collider.cs" />
-    <Compile Include="Src\Proof\Physics\Physics.cs" />
-    <Compile Include="Src\Proof\Physics\PhysicsMaterial.cs" />
-    <Compile Include="Src\Proof\Renderer\Material.cs" />
-    <Compile Include="Src\Proof\Scene\Component.cs" />
-    <Compile Include="Src\Proof\Scene\Entity.cs" />
-    <Compile Include="Src\Proof\Scene\Mesh.cs" />
-    <Compile Include="Src\Proof\Scene\Prefab.cs" />
-    <Compile Include="Src\Proof\Scene\World.cs" />
-    <Compile Include="Src\Proof\UI\UIComponent.cs" />
+    <Compile Include="src\Proof\Asset\AssetID.cs" />
+    <Compile Include="src\Proof\Asset\Assets.cs" />
+    <Compile Include="src\Proof\Asset\ParticleSystem.cs" />
+    <Compile Include="src\Proof\Attributes\ClampValueAttribute.cs" />
+    <Compile Include="src\Proof\Attributes\EditorAttributes .cs" />
+    <Compile Include="src\Proof\Attributes\RegisterClassesAndStructAttributes.cs" />
+    <Compile Include="src\Proof\Core\Application.cs" />
+    <Compile Include="src\Proof\Core\Log.cs" />
+    <Compile Include="src\Proof\Input\Input.cs" />
+    <Compile Include="src\Proof\Input\KeyCodes.cs" />
+    <Compile Include="src\Proof\InternalCalls.cs" />
+    <Compile Include="src\Proof\Math\MathF.cs" />
+    <Compile Include="src\Proof\Math\Random.cs" />
+    <Compile Include="src\Proof\Math\Timer.cs" />
+    <Compile Include="src\Proof\Math\Transform.cs" />
+    <Compile Include="src\Proof\Math\Vector3.cs" />
+    <Compile Include="src\Proof\Physics\Collider.cs" />
+    <Compile Include="src\Proof\Physics\Physics.cs" />
+    <Compile Include="src\Proof\Physics\PhysicsMaterial.cs" />
+    <Compile Include="src\Proof\Renderer\Material.cs" />
+    <Compile Include="src\Proof\Scene\Component.cs" />
+    <Compile Include="src\Proof\Scene\Entity.cs" />
+    <Compile Include="src\Proof\Scene\Mesh.cs" />
+    <Compile Include="src\Proof\Scene\Prefab.cs" />
+    <Compile Include="src\Proof\Scene\World.cs" />
+    <Compile Include="src\Proof\UI\UIComponent.cs" />
   </ItemGroup>
   <ItemGroup>
   </ItemGroup>

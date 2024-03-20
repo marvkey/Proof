@@ -226,6 +226,7 @@ namespace Proof
 		bool IsBound() const { return !m_InvocationList.empty(); }
 		operator bool() const { return IsBound(); }
 
+		uint32_t GetNumberInvocation() { return m_InvocationList.size(); }
 		/** Multicast Delegate does not support return type handling. */
 		void Invoke(TArgs...args) const
 		{
@@ -246,6 +247,17 @@ namespace Proof
 				if (++i >= numberOfInvocations)
 					break;
 			}
+		}
+
+		TReturn InvokeByStep(uint32_t index, TArgs...args) const {
+			// Assert that the index is within the valid range of the invocation list
+			PF_CORE_ASSERT(index < m_InvocationList.size() && "Index out of range!");
+
+			auto it = m_InvocationList.begin();
+			std::advance(it, index); // Move iterator to the specified index
+
+			// Invoke the delegate at the specified index with the provided arguments
+			(*(it->Stub))(it->Object, std::forward<TArgs>(args)...);
 		}
 
 	private:
