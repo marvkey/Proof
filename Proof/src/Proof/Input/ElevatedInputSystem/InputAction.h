@@ -30,8 +30,9 @@ namespace Proof
 	class InputAction : public Asset
 	{
 	public:
+		ASSET_CLASS_TYPE(InputAction);
 		bool TriggerWhenPaused = false;
-		InputActionValueType ValueType;
+		InputActionValueType ValueType = InputActionValueType::Bool;
 		InputActionAccumulationBehavior AccumulationBehavior = InputActionAccumulationBehavior::TakeHighestAbsoluteValue;
 
 		//std::vector<InputTrigger> Triggers;

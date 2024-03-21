@@ -380,6 +380,9 @@ namespace Proof
 		static ElevatedInputKey GetKeyBoardKey(enum KeyBoardKey key);
 	private:
 		static void Init();
+		static void ShutDown();
+
+		friend class Application;
 	};
 
 	enum class ElevatedKeyEventType

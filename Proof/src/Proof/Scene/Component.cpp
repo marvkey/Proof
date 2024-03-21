@@ -21,6 +21,7 @@
 #include "Proof/Scene/Material.h"
 #include "Proof/Physics/PhysicsMaterial.h"
 #include "Proof/Renderer/Renderer.h"
+#include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
 namespace Proof
 {
 
@@ -177,6 +178,17 @@ namespace Proof
 		//Environment = Count<class Environment>::Create(irradiance, prefilter);
 
 		Image = asset;
+	}
+
+	PlayerInputComponent::PlayerInputComponent()
+	{
+		Player = Count<ElevatedPlayer>::Create();
+	}
+
+	PlayerInputComponent::PlayerInputComponent(Players playerInput, Count<class ElevatedPlayer> elevatedPlayer)
+		:
+		InputPlayer(playerInput), Player(elevatedPlayer)
+	{
 	}
 
 }

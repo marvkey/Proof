@@ -26,6 +26,9 @@
 #include "Proof/Physics/PhysicsMeshCache.h"
 #include "Proof/Physics/MeshCollider.h"
 #include "Proof/Physics/PhysicsShapes.h"
+#include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
+#include "Proof/Input/ElevatedInputSystem/InputAction.h"
+#include "Proof/Input/ElevatedInputSystem/InputContext.h"
 
 #include "Proof/Scripting/ScriptWorld.h"
 #include <glm/gtx/euler_angles.hpp>
@@ -721,6 +724,23 @@ namespace Proof {
 			m_ScriptWorld->OnUpdate(DeltaTime);
 		}
 		
+		{
+			PF_PROFILE_FUNC("World::OnUpdate PlayerInpit")
+			auto view = m_Registry.view<PlayerInputComponent>();
+
+			for (auto e : view)
+			{
+
+				Entity entity = { e,this };
+				auto& playerInputComponent = entity.GetComponent<PlayerInputComponent>();
+
+				auto player = playerInputComponent.Player;
+
+				if (player == nullptr)
+					continue;
+				player->OnUpdate(DeltaTime);
+			}
+		}
 
 		{
 			PF_PROFILE_FUNC("World::OnUpdate - Audio");
@@ -911,6 +931,36 @@ namespace Proof {
 		CopyComponentIfExistEntitySingle<Component...>(dst, src, isdstPrefab, isSrcPrefab);
 	}
 
+	bool World::OnElevatedKeyEvent(const ElevatedInputKeyParams& keyParams)
+	{
+		bool returnValue = false;
+		// add players to them
+		if (m_CurrentState == WorldState::Edit)
+			return false;
+
+		PF_PROFILE_FUNC();
+		{
+			auto view = m_Registry.view<PlayerInputComponent>();
+
+
+			for (auto e : view)
+			{
+
+				Entity entity = { e,this };
+				auto& playerInputComponent = entity.GetComponent<PlayerInputComponent>();
+
+				auto player = playerInputComponent.Player;
+
+				if (player == nullptr)
+					continue;
+
+				returnValue |= player->InputKey(keyParams);
+			}
+		}
+
+		return returnValue;
+	}
+
 	//src entity is used as childenitty in resurio
 	void World::PrefabCopyEntity(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity,bool includeChildren)
 	{
@@ -1087,28 +1137,33 @@ namespace Proof {
 		numPlayrs += Application::Get()->GetWindow()->GetControllers().size();
 		InputManager::StartRuntime(numPlayrs);
 
-		ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) {
-			PlayerInputComponent inputCopy = entity.GetComponent<PlayerInputComponent>();
-			if (inputCopy.InputPlayer == Players::None)
-				return;
-			TransformComponent transfomr = entity.GetComponent<TransformComponent>();
-			if (!AssetManager::HasAsset(inputCopy.Player))return;
-			if ((int)inputCopy.InputPlayer > numPlayrs)
+
+		auto inputAction = Count<InputAction>::Create();
+		
+		auto inputMappingContext = Count<InputMappingContext>::Create();
+
+		inputMappingContext->AddKey(inputAction, ElevatedInputKeys::H);
+		ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) 
 			{
-				UUID playerID = entity.GetUUID();
-				DeleteEntity(entity);
-				DeleteEntitiesfromQeue();
-				return;
-			}
-			UUID playerID = entity.GetUUID();
-			DeleteEntity(entity);
-			DeleteEntitiesfromQeue();
+				PlayerInputComponent& input = entity.GetComponent<PlayerInputComponent>();
 
-			Entity newEntity =CreateEntity(AssetManager::GetAssetInfo(inputCopy.Player).GetName(), inputCopy.Player, transfomr, playerID);
-			newEntity.AddComponent<PlayerInputComponent>(inputCopy);
+				auto player = input.Player;
+				if (player != nullptr)
+				{
+					player->AddInputMapping(inputMappingContext);
 
-			InputManagerMeathods::SetPlayer((uint32_t)inputCopy.InputPlayer);
-		});
+					player->Bind(inputAction, TriggerEvent::Triggered, [](const InputActionValue& actionvalue)
+						{
+							PF_INFO("Player Started Jump");
+						});
+
+					player->Bind(inputAction, TriggerEvent::Completed, [](const InputActionValue& actionvalue)
+						{
+							PF_INFO("Player Ended Jump");
+						});
+				}
+			});
+		
 		ForEachEnitityWith<PlayerHUDComponent>([&](Entity entity) {
 			PlayerHUDComponent& hud = entity.GetComponent<PlayerHUDComponent>();
 			if (hud.HudTable != nullptr)

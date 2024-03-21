@@ -652,10 +652,14 @@ namespace Proof
 		bool UseLocalRotation = false;
 	};
 	
-	struct PlayerInputComponent {
+	struct PlayerInputComponent 
+	{
 	public:
-		Players InputPlayer  = Players::None;
-		Count<class Prefab> Player;
+		PlayerInputComponent();
+		PlayerInputComponent(Players playerInput, Count<class ElevatedPlayer> elevatedPlayer);
+
+		Players InputPlayer = Players::None;
+		Count<class ElevatedPlayer> Player;
 	};
 
 	struct ParticleSystemComponent {

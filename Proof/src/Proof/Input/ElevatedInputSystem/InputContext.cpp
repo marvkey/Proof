@@ -1,6 +1,7 @@
 #include "Proofprch.h"
 #include "InputContext.h"
 #include "InputAction.h"
+#include "InputTriggers.h"
 #include "Proof/Utils/ContainerUtils.h"
 namespace Proof
 {
@@ -17,6 +18,9 @@ namespace Proof
 		}
 
 		ElevatedActionKeyMappingContainer keyMap(action);
+		keyMap.m_Triggers.push_back(Count<InputTriggerPressed>::Create());
+
+		keyMap.m_ActionValue = InputActionValue(action->ValueType, glm::vec3(0));
 		keyMap.m_KeyMappings.push_back(ElevatedActionKeyMapping(action, inputKey));
 		m_Mappings.emplace_back(keyMap);
 	}

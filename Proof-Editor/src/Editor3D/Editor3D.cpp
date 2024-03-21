@@ -49,6 +49,8 @@
 #include "Proof/ImGui/Editors/EditorWorkspace/EditorWorkspace.h"
 #include "Proof/ImGui/Editors/EditorWorkspace/ViewPortEditorWorkspace.h"
 
+#include "Proof/Input/ElevatedInputSystem/ElevatedInputDevices/ElevatedInputDeviceManager.h"
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -226,6 +228,14 @@ namespace Proof
 		return Ray{ rayPos, rayDir };
 	}
 #endif
+
+	struct PlayWorldData
+	{
+		Count< ElevatedInputDeviceManager> ElevatedInputManager = Count<ElevatedInputDeviceManager>::Create();
+
+	};
+
+	static Special< PlayWorldData> s_PlayWorldData = nullptr;
 	Editore3D::Editore3D() :
 		Layer("Editor3D Layer") 
 	{
@@ -481,9 +491,13 @@ namespace Proof
 	
 		AssetEditorPanel::OnEvent(e);
 
-		if (m_ActiveWorld->m_CurrentState == WorldState::Play)
-			InputManager::OnEvent(e);
+		//if (m_ActiveWorld->m_CurrentState == WorldState::Play)
+		//	InputManager::OnEvent(e);
 
+		if (s_PlayWorldData != nullptr)
+		{
+			s_PlayWorldData->ElevatedInputManager->OnEvent(e);
+		}
 		m_EditorCamera.OnEvent(e);
 
 		s_EditorData->PanelManager->OnEvent(e);
@@ -493,7 +507,6 @@ namespace Proof
 		{
 			dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
 		}
-		
 	}
 	void Editore3D::OnAttach() 
 	{
@@ -2054,12 +2067,24 @@ namespace Proof
 	void Editore3D::SetActiveWorld(Count<World> world)
 	{
 	}
+
+	Count<World> tenareaxWorld;
+	static bool EventDeleta(const ElevatedInputKeyParams& key)
+	{
+		return tenareaxWorld->OnElevatedKeyEvent(key);
+	}
 	static Timer s_PlayTimer;
 	void Editore3D::PlayWorld() 
 	{
 		SelectionManager::DeselectAll();
 		m_ActiveWorld = World::Copy(m_EditorWorld);
 		s_DetachPlayer = false;
+
+		{
+			s_PlayWorldData = CreateSpecial<PlayWorldData>();
+			
+
+		}
 		PF_EC_INFO("World Play {}", m_ActiveWorld->GetName());
 
 		m_ActiveWorld->m_CurrentState = WorldState::Play;
@@ -2069,6 +2094,15 @@ namespace Proof
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
 		s_PlayTimer.Reset();
+
+		{
+			tenareaxWorld = m_ActiveWorld;
+
+			for (auto& inputDevice : s_PlayWorldData->ElevatedInputManager->GetInputDevices())
+			{
+				inputDevice->BindToEventDelegate<&EventDeleta>();
+			}
+		}
 	}
 	void Editore3D::SimulateWorld() 
 	{
@@ -2085,6 +2119,7 @@ namespace Proof
 		//s_EditorData->GuizmoType = 0;
 		m_ActiveWorld->EndRuntime();
 		m_ActiveWorld = m_EditorWorld;
+		s_PlayWorldData = nullptr;
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
 		s_DetachPlayer = false;

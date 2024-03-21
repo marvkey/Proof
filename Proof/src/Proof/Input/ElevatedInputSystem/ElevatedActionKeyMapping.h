@@ -24,7 +24,7 @@ namespace Proof
 
 
 	public:
-		TriggerState EvaluateTriggers(Count<class ElevatedPlayerInput> player, const std::vector<Count<InputTrigger>>& triggers, const InputActionValue& ModifiedValue, float deltaTime);
+		TriggerState EvaluateTriggers(Count<class ElevatedPlayer> player, const std::vector<Count<InputTrigger>>& triggers, const InputActionValue& ModifiedValue, float deltaTime);
 
 		// TODO: Hacky. This is the state we should return if we have evaluated no valid triggers. Set during action evaluation based on final ModifiedValue.
 		void SetStateForNoTriggers(TriggerState State) { m_NoTriggerState = State; }
@@ -131,6 +131,6 @@ namespace Proof
 		std::vector< ElevatedActionKeyMapping> m_KeyMappings;
 		InputStateTracker m_InputStateTracker;
 		friend class InputMappingContext;
-		friend class ElevatedPlayerInput;
+		friend class ElevatedPlayer;
 	};
 }

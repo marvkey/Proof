@@ -36,6 +36,27 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 1
+    - Entity: 9992972947132147716
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.0174532924, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
     - Entity: 1052531638360331730
       TagComponent:
         Tag: TestPlayer
@@ -75,27 +96,8 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 9992972947132147716
-      TagComponent:
-        Tag: Sky Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0.0349065848, 0.0174532924, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      SkyLightComponent:
-        TintColor: [1, 1, 1]
-        SkyBoxLod: 0
-        MapRotation: 0
-        Intensity: 1
-        EnvironmentState: PreethamSky
-        TextureDataImage: 0
-        HosekWilkieTurbidity: 4
-        HosekWilkieGroundReflectance: 0.100000001
-        PreethamTurbidity: 4
+      PlayerInputComponent:
+        InputPlayer: None
     - Entity: 18423083987907514745
       TagComponent:
         Tag: Plane

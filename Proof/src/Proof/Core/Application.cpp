@@ -28,6 +28,8 @@
 #include "Profile.h"
 #include "Proof/Audio/AudioEngine.h"
 #include "Proof/Renderer/GraphicsContext.h"
+
+#include "Proof/Input/ElevatedInputSystem/InputTypes.h"
 #ifdef CreateDirectory
 #undef CreateDirectory
 #undef DeleteFile
@@ -68,6 +70,7 @@ namespace Proof {
             m_ApplicationConfiguration.ProjectPath = "SandboxProject/SandboxProject.ProofProject";
 
         InputManager::Init();
+        ElevatedInputKeys::Init();
         m_Project = Project::Load(m_ApplicationConfiguration.ProjectPath);
 
         //temporary
@@ -123,6 +126,7 @@ namespace Proof {
 
         AssetManager::ShutDown();
         Renderer::Shutdown();
+        ElevatedInputKeys::ShutDown();
         InputManager::Destroy();
 
         m_EventCallbacks.clear();

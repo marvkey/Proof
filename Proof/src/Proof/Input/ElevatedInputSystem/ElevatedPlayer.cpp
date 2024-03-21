@@ -1,5 +1,5 @@
 #include "Proofprch.h"
-#include "PlayerInput.h"
+#include "ElevatedPlayer.h"
 #include "InputContext.h"
 #include "InputAction.h"
 #include "InputActionValue.h"
@@ -10,19 +10,24 @@
 namespace Proof
 {
 	
-	void ElevatedPlayerInput::OnUpdate(FrameTime deltaTime)
+	void ElevatedPlayer::OnUpdate(FrameTime deltaTime)
 	{
+		PF_PROFILE_FUNC();
 		m_ActionsWithEvents.clear();
-		EvaluateKeyMapState(deltaTime);
+		//EvaluateKeyMapState(deltaTime);
+		m_EventCount = 0;
 	}
 
-	void ElevatedPlayerInput::EvaluateKeyMapState(float deltaTime)
+	void ElevatedPlayer::EvaluateKeyMapState(float deltaTime)
 	{
+		PF_PROFILE_FUNC();
+		
 		for (auto& [key, keyState] : m_KeyStates)
 		{
 			keyState.bDownPrevious = keyState.bDown;
 			keyState.bConsumed = false;
 		}
+		
 
 		for (auto& [key, keyState] : m_KeyStates)
 		{
@@ -37,12 +42,12 @@ namespace Proof
 
 			if ((keyState.SampleCountAccumulator > 0) || key.ShouldUpdateAxisWithoutSamples())
 			{
-				if (keyState.PairSampledAxes)
+				if (keyState.PairSampledAxes != ElevatedPairedAxesBit::None)
 				{
 					// Paired keys sample only the axes that have changed, leaving unaltered axes in their previous state
 					for (int axis = 0; axis < 3; ++axis)
 					{
-						if (keyState.PairSampledAxes & (1 << axis))
+						if ((uint32_t)keyState.PairSampledAxes & (1 << axis))
 						{
 							keyState.RawValue[axis] = keyState.RawValueAccumulator[axis];
 						}
@@ -79,39 +84,22 @@ namespace Proof
 			else
 				keyState.Value.x = ProccessAxisInput(key, keyState.Value.x);
 			*/
-			int const pressDelta = keyState.EventCounts[ElevatedKeyEventType::Clicked].size() - keyState.EventCounts[ElevatedKeyEventType::Released].size();
-			if (pressDelta < 0)
-			{
-				// If this is negative, we definitely released
-				keyState.bDown = false;
-			}
-			else if (pressDelta > 0)
-			{
-				// If this is positive, we definitely pressed
-				keyState.bDown = true;
-			}
-			else
-			{
-				// If this is 0, we maintain state
-				keyState.bDown = keyState.bDownPrevious;
-			}
+			
 			// reset the accumulators
 			keyState.RawValueAccumulator = glm::vec3(0.f, 0.f, 0.f);
 			keyState.SampleCountAccumulator = 0;
-			keyState.PairSampledAxes = 0;
+			keyState.PairSampledAxes = ElevatedPairedAxesBit::None;
 		}
-		m_EventCount = 0;
-
 		
 	}
 
-	void ElevatedPlayerInput::ProccessAxisInput(ElevatedInputKey key, float rawValue)
+	void ElevatedPlayer::ProccessAxisInput(ElevatedInputKey key, float rawValue)
 	{
 		float newVal = rawValue;
 
 	}
 	//https://github.com/EpicGames/UnrealEngine/blob/072300df18a94f18077ca20a14224b5d99fee872/Engine/Source/Runtime/Engine/Private/UserInterface/PlayerInput.cpp
-	bool ElevatedPlayerInput::InputKey(const ElevatedInputKeyParams& params)
+	bool ElevatedPlayer::InputKey(const ElevatedInputKeyParams& params)
 	{
 		const bool isController = params.IsGamepad();
 
@@ -155,6 +143,16 @@ namespace Proof
 
 				keyState.CurrentAxis = params.Axis;
 
+				//procces input needs these and is const so it has to use .at
+				keyState.EventAccumulator[ElevatedKeyEventType::Clicked];
+				keyState.EventAccumulator[ElevatedKeyEventType::Repeat];
+				keyState.EventAccumulator[ElevatedKeyEventType::Double];
+				keyState.EventAccumulator[ElevatedKeyEventType::Released];
+
+				keyState.EventCounts[ElevatedKeyEventType::Clicked];
+				keyState.EventCounts[ElevatedKeyEventType::Repeat];
+				keyState.EventCounts[ElevatedKeyEventType::Double];
+				keyState.EventCounts[ElevatedKeyEventType::Released];
 			}
 
 			// Mirror the key press to any associated paired axis
@@ -165,24 +163,34 @@ namespace Proof
 				auto pairedAxis = params.Key.GetPairedAxis();
 				ElevatedInputKeyState& pairedKeyState = m_KeyStates[*pairedKey];
 
+				//procces input needs these and is const so it has to use .at
+				pairedKeyState.EventAccumulator[ElevatedKeyEventType::Clicked];
+				pairedKeyState.EventAccumulator[ElevatedKeyEventType::Repeat];
+				pairedKeyState.EventAccumulator[ElevatedKeyEventType::Double];
+				pairedKeyState.EventAccumulator[ElevatedKeyEventType::Released];
+
+				pairedKeyState.EventCounts[ElevatedKeyEventType::Clicked];
+				pairedKeyState.EventCounts[ElevatedKeyEventType::Repeat];
+				pairedKeyState.EventCounts[ElevatedKeyEventType::Double];
+				pairedKeyState.EventCounts[ElevatedKeyEventType::Released];
 				// The FindOrAdd can invalidate KeyState, so we must look it back up
-				ElevatedInputKeyState& KeyState = m_KeyStates.at(params.Key);
+				ElevatedInputKeyState& KeyState = m_KeyStates[params.Key];
 
 				// Update accumulator for the appropriate axis
 				if (pairedAxis == ElevatedAxisPairing::X)
 				{
 					pairedKeyState.RawValueAccumulator.x = KeyState.RawValueAccumulator.x;
-					pairedKeyState.PairSampledAxes |= (uint8_t)ElevatedPairedAxesBit::X;
+					pairedKeyState.PairSampledAxes |= ElevatedPairedAxesBit::X;
 				}
 				else if (pairedAxis == ElevatedAxisPairing::Y)
 				{
 					pairedKeyState.RawValueAccumulator.y = KeyState.RawValueAccumulator.x;
-					pairedKeyState.PairSampledAxes |= (uint8_t)ElevatedPairedAxesBit::Y;
+					pairedKeyState.PairSampledAxes |= ElevatedPairedAxesBit::Y;
 				}
 				else if (pairedAxis == ElevatedAxisPairing::Z)
 				{
 					pairedKeyState.RawValueAccumulator.z = KeyState.RawValueAccumulator.x;
-					pairedKeyState.PairSampledAxes |= (uint8_t)ElevatedPairedAxesBit::Z;
+					pairedKeyState.PairSampledAxes |= ElevatedPairedAxesBit::Z;
 				}
 				else
 				{
@@ -235,13 +243,24 @@ namespace Proof
 				break;
 			}
 			keyState.SampleCountAccumulator++;
-		}
 
+			//procces input needs these and is const so it has to use .at
+			keyState.EventAccumulator[ElevatedKeyEventType::Clicked];
+			keyState.EventAccumulator[ElevatedKeyEventType::Repeat];
+			keyState.EventAccumulator[ElevatedKeyEventType::Double];
+			keyState.EventAccumulator[ElevatedKeyEventType::Released];
+
+			keyState.EventCounts[ElevatedKeyEventType::Clicked];
+			keyState.EventCounts[ElevatedKeyEventType::Repeat];
+			keyState.EventCounts[ElevatedKeyEventType::Double];
+			keyState.EventCounts[ElevatedKeyEventType::Released];
+		}
+		EvaluateKeyMapState(FrameTime::GetWorldDeltaTime());
 		return ProccessInput(params.Key, m_KeyStates[params.Key]);
 	}
 
 	
-	bool ElevatedPlayerInput::ProccessInput(ElevatedInputKey key, const ElevatedInputKeyState& keyState)
+	bool ElevatedPlayer::ProccessInput(ElevatedInputKey key, const ElevatedInputKeyState& keyState)
 	{
 		static std::vector<ElevatedActionKeyMappingContainer*> validKeyMappings;
 		const float deltaTime = FrameTime::GetWorldDeltaTime();
@@ -268,8 +287,14 @@ namespace Proof
 			bool bKeyIsReleased = !bKeyIsDown && wasDownLastTick;
 			bool bKeyIsHeld = bKeyIsDown && wasDownLastTick;
 
-			PlayerInputKeyEvent KeyEvent = bKeyIsHeld ? PlayerInputKeyEvent::Held : ((bKeyIsDown || bKeyIsReleased) ? PlayerInputKeyEvent::Actuated : PlayerInputKeyEvent::None);
+			PlayerInputKeyEvent KeyEvent; 
 			
+			if (bKeyIsHeld)
+				KeyEvent = PlayerInputKeyEvent::Held;
+			else if (bKeyIsDown || bKeyIsReleased)
+				KeyEvent = PlayerInputKeyEvent::Actuated;
+			else
+				KeyEvent = PlayerInputKeyEvent::None;
 			if (bKeyIsDown && keyState.EventCounts.at(ElevatedKeyEventType::Clicked).size() && keyState.EventCounts.at(ElevatedKeyEventType::Released).size() && rawKeyValue == glm::vec3(0))
 			{
 				rawKeyValue = keyState.CurrentAxis;
@@ -322,10 +347,13 @@ namespace Proof
 				triggerState = TriggerState::None;
 			}
 
+			PF_EC_WARN("Last Trigger State {}", EnumReflection::EnumString(actionData.m_LastTriggerState))
 			// Use the new trigger state to determine a trigger event based on changes from the previous trigger state.
 			actionData.m_TriggerEventInternal = GetTriggerStateChangeEvent(actionData.m_LastTriggerState, triggerState);
 			actionData.m_TriggerEvent = ConvertInternalTriggerEvent(actionData.m_TriggerEventInternal);
 			actionData.m_LastTriggerState = triggerState;
+			PF_EC_INFO("Last Trigger State {}", EnumReflection::EnumString(actionData.m_LastTriggerState))
+
 			// Evaluate time per action after establishing the internal trigger state across all mappings
 			actionData.m_ElapsedProcessedTime += triggerState != TriggerState::None ? deltaTime : 0.f;
 			actionData.m_ElapsedTriggeredTime += (actionData.m_TriggerEvent == TriggerEvent::Triggered) ? deltaTime : 0.f;
@@ -335,12 +363,19 @@ namespace Proof
 				actionData.m_LastTriggeredWorldTime = FrameTime::GetTime();
 			}
 
+			PF_EC_TRACE("Trigger Event {}", EnumReflection::EnumString(actionData.m_TriggerEvent));
 			if (actionData.m_TriggerEvent != TriggerEvent::None)
 			{
 				for (auto& inputDelegate : m_InputDelegates)
 				{
-					if (inputDelegate.InputAction == actionData.m_InputAction && inputDelegate.TriggerEvent == actionData.m_TriggerEvent && inputDelegate.Function.IsBound())
-						inputDelegate.Function.Invoke(actionData.m_ActionValue);
+					if (inputDelegate.InputAction == actionData.m_InputAction)
+					{
+						if (inputDelegate.TriggerEvent == actionData.m_TriggerEvent)
+						{
+							if(inputDelegate.Function.IsBound())
+								inputDelegate.Function.Invoke(actionData.m_ActionValue);
+						}
+					}
 				}
 			}
 
@@ -370,7 +405,7 @@ namespace Proof
 		return outValue;
 	}
 
-	void ElevatedPlayerInput::ProcessActionMappingKeyEvent(PlayerInputKeyEvent keyEvent ,InputActionValue rawKeyValue, Count<InputMappingContext> actionMapping, ElevatedActionKeyMappingContainer& actionData, const ElevatedActionKeyMapping& keyMapping)
+	void ElevatedPlayer::ProcessActionMappingKeyEvent(PlayerInputKeyEvent keyEvent ,InputActionValue rawKeyValue, Count<InputMappingContext> actionMapping, ElevatedActionKeyMappingContainer& actionData, const ElevatedActionKeyMapping& keyMapping)
 	{
 		if (keyEvent == PlayerInputKeyEvent::None)
 			return;
@@ -398,7 +433,6 @@ namespace Proof
 		bool triggersApplied = (keyMapping.Triggers.size() )> 0;
 
 		const InputActionAccumulationBehavior accumulationBehavior = inputAction->AccumulationBehavior;
-
 		if (modifiedValue.GetMagnitudeSq())
 		{
 			const int NumComponents = glm::max(1, int(ValueType));
@@ -429,6 +463,7 @@ namespace Proof
 				}
 			}
 			actionData.m_ActionValue = InputActionValue(ValueType, merged);
+
 		}
 
 		// Retain the most interesting/triggered tracker.
@@ -436,7 +471,7 @@ namespace Proof
 		actionData.m_InputStateTracker.SetMappingTriggerApplied(triggersApplied);
 	}
 
-	InputActionValue ElevatedPlayerInput::ApplyModifiers(const std::vector<Count<InputModifier>>& modifiers, InputActionValue rawValue, float deltaTime)
+	InputActionValue ElevatedPlayer::ApplyModifiers(const std::vector<Count<InputModifier>>& modifiers, InputActionValue rawValue, float deltaTime)
 	{
 		PF_PROFILE_FUNC();
 
@@ -452,7 +487,7 @@ namespace Proof
 		return modifiedValue;
 	}
 
-	void ElevatedPlayerInput::AddInputMapping(Count<InputMappingContext> mapping)
+	void ElevatedPlayer::AddInputMapping(Count<InputMappingContext> mapping)
 	{
 		m_InputMappingContext.emplace_back(InputMappingContextInstance{ mapping,true });
 	}

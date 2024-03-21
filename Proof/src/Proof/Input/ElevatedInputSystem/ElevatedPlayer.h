@@ -16,6 +16,7 @@ namespace Proof
 		Y = 0b010,
 		Z = 0b100
 	};
+	DEFINE_ENUM_CLASS_FLAGS(ElevatedPairedAxesBit);
 
 	struct ElevatedInputKeyState
 	{
@@ -38,7 +39,7 @@ namespace Proof
 		bool bConsumed : 1;
 
 		/** Flag paired axes that have been sampled this tick. X = LSB, Z = MSB */
-		uint8_t PairSampledAxes = (uint8_t)ElevatedPairedAxesBit::None;
+		ElevatedPairedAxesBit PairSampledAxes = ElevatedPairedAxesBit::None;
 
 		/** How many samples contributed to RawValueAccumulator. Used for smoothing operations, e.g. mouse */
 		uint32_t SampleCountAccumulator;
@@ -60,7 +61,7 @@ namespace Proof
 			, bDown(false)
 			, bDownPrevious(false)
 			, bConsumed(false)
-			, PairSampledAxes(0)
+			, PairSampledAxes(ElevatedPairedAxesBit::None)
 			, SampleCountAccumulator(0)
 			, RawValueAccumulator(0.f, 0.f, 0.f)
 		{
@@ -83,7 +84,7 @@ namespace Proof
 		Delegate<void(const InputActionValue&)> Function; 
 	};
 	//https://github.com/EpicGames/UnrealEngine/blob/072300df18a94f18077ca20a14224b5d99fee872/Engine/Source/Runtime/Engine/Classes/GameFramework/PlayerInput.h
-	class ElevatedPlayerInput : public RefCounted
+	class ElevatedPlayer : public RefCounted
 	{
 	public:
 		bool IsAltPressed() const;
@@ -96,17 +97,33 @@ namespace Proof
 		bool InputKey(const ElevatedInputKeyParams& params);
 
 		void OnUpdate(struct FrameTime deltaTime);
-
-		// free funcion 
-		void Bind(Count<InputAction> inputAction,TriggerEvent triggerEvent, void (*function)(const InputActionValue&))
+		// free function 
+// Bind the function pointer using a template specialization
+		template <void(*TFunction)(const ElevatedInputKeyParams&)>
+		void Bind(Count<InputAction> inputAction, TriggerEvent triggerEvent)
 		{
 			if (inputAction == nullptr)
 				return;
+
 			ElevatedPlayerInputDelegate& delegate = m_InputDelegates.emplace_back();
 			delegate.InputAction = inputAction;
 			delegate.TriggerEvent = triggerEvent;
-			//delegate.Function.Bind(function);
+			delegate.Function.Bind<TFunction>();
 		}
+
+		// Lambda binding
+		template <class TLambda>
+		void Bind(Count<InputAction> inputAction, TriggerEvent triggerEvent,const TLambda& lambda)
+		{
+			if (inputAction == nullptr)
+				return;
+
+			ElevatedPlayerInputDelegate& delegate = m_InputDelegates.emplace_back();
+			delegate.InputAction = inputAction;
+			delegate.TriggerEvent = triggerEvent;
+			delegate.Function.BindLambda(lambda);
+		}
+
 
 		// member function
 		template <typename TClass>
@@ -118,20 +135,10 @@ namespace Proof
 			ElevatedPlayerInputDelegate& delegate = m_InputDelegates.emplace_back();
 			delegate.InputAction = inputAction;
 			delegate.TriggerEvent = triggerEvent;
-			//delegate.Function.Bind(object, function);
+			delegate.Function.Bind<function>(object);
 
 		}
 
-		template <typename TLambda>
-		void Bind(Count<InputAction> inputAction, TriggerEvent triggerEvent, const TLambda& lambda)
-		{
-			if (inputAction == nullptr)
-				return;
-			ElevatedPlayerInputDelegate& delegate = m_InputDelegates.emplace_back();
-			delegate.InputAction = inputAction;
-			delegate.TriggerEvent = triggerEvent;
-			//delegate.Function.Bind(lambda);
-		}
 	private:
 
 		enum class PlayerInputKeyEvent

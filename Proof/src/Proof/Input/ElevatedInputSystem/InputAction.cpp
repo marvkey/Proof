@@ -4,7 +4,7 @@
 #include "InputTriggers.h"
 namespace Proof
 {
-	TriggerState InputStateTracker::EvaluateTriggers(Count<class ElevatedPlayerInput> player,const std::vector<Count<InputTrigger>>& triggers, const InputActionValue& modifiedValue, float deltaTime)
+	TriggerState InputStateTracker::EvaluateTriggers(Count<class ElevatedPlayer> player,const std::vector<Count<InputTrigger>>& triggers, const InputActionValue& modifiedValue, float deltaTime)
     {
         //https://github.com/EpicGames/UnrealEngine/blob/072300df18a94f18077ca20a14224b5d99fee872/Engine/Plugins/EnhancedInput/Source/EnhancedInput/Private/InputAction.cpp#L75
 

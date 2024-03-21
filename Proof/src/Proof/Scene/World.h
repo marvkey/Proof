@@ -16,6 +16,7 @@ namespace Proof {
 	struct TransformComponent;
 	struct DynamicMeshComponent;
 	struct MeshNode;
+	struct ElevatedInputKeyParams;
 	enum class WorldState
 	{
 		Play,
@@ -127,6 +128,8 @@ namespace Proof {
 		bool EnableRestart = false;
 
 		const std::unordered_map<UUID, Entity>& GetEntities() { return m_EntitiesMap; };
+
+		bool OnElevatedKeyEvent(const ElevatedInputKeyParams& keyParams);
 	private:
 		Camera m_Camera;
 		glm::vec3 m_CameraPositon;

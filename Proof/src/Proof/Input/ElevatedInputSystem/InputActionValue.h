@@ -16,6 +16,10 @@ namespace Proof
 	struct InputActionValue
 	{
 	public:
+		InputActionValue()
+		{
+
+		}
 		InputActionValue(bool inValue) : m_Value(inValue ? 1.f : 0.f, 0.f, 0.f), m_ValueType(InputActionValueType::Bool) {}
 		InputActionValue(float inValue) : m_Value(inValue, 0, 0), m_ValueType(InputActionValueType::Float) {}
 		InputActionValue(glm::vec2 inValue) : m_Value(inValue.x,inValue.y,0), m_ValueType(InputActionValueType::Vector2D) {}
@@ -70,7 +74,7 @@ namespace Proof
 	private:
 		glm::vec3 m_Value = glm::vec3(0);
 
-		InputActionValueType m_ValueType;
+		InputActionValueType m_ValueType = InputActionValueType::Bool;
 	};
 
 	// Supported getter specializations

@@ -1055,11 +1055,6 @@ namespace Proof
 				out << YAML::BeginMap; // PlayerInputComponent
 				out << YAML::Key << "InputPlayer" << EnumReflection::EnumString(playerInput.InputPlayer);
 
-				if (CanSaveAsset(playerInput.Player))
-					out << YAML::Key << "PrefabID" << 0;
-				else
-					out << YAML::Key << "PrefabID" << (uint64_t)playerInput.Player->GetID();
-
 				out << YAML::EndMap; // PlayerInputComponent
 			}
 		}
@@ -1639,9 +1634,6 @@ namespace Proof
 				{
 					auto& pic = NewEntity.AddComponent<PlayerInputComponent>();
 					pic.InputPlayer = EnumReflection::StringEnum< Players>(playerInputComponent["InputPlayer"].as<std::string>());
-					uint64_t assetId = playerInputComponent["PrefabID"].as<uint64_t>();
-					if (AssetManager::HasAsset(assetId))
-						pic.Player = AssetManager::GetAsset<Prefab>(assetId);
 				}
 			}
 			// PlayerHudComppoent

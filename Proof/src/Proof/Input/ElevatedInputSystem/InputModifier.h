@@ -5,17 +5,17 @@
 #include "InputTypes.h"
 namespace Proof
 {
-	class ElevatedPlayerInput;
+	class ElevatedPlayer;
 	class InputModifier : public RefCounted
 	{
 	public:
 
 	protected:
-		virtual InputActionValue ModifyActionValue(Count<ElevatedPlayerInput> player,InputActionValue currentValue, float DeltaTime)
+		virtual InputActionValue ModifyActionValue(Count<ElevatedPlayer> player,InputActionValue currentValue, float DeltaTime)
 		{
 			return currentValue;
 		}
 
-		friend class ElevatedPlayerInput;
+		friend class ElevatedPlayer;
 	};
 }

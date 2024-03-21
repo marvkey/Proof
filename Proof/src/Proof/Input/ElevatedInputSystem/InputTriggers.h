@@ -4,7 +4,7 @@
 #include "InputTypes.h"
 namespace Proof
 {
-    class ElevatedPlayerInput;
+    class ElevatedPlayer;
     /*
     *
     * 
@@ -53,6 +53,7 @@ namespace Proof
 	class InputTrigger : public RefCounted
 	{
     public:
+
         INPUT_TRIGGER_MODE(Explicit);
         float TriggerThreshold = 0.5f;
 
@@ -63,7 +64,7 @@ namespace Proof
         */
         bool IsTriggerDetected(const InputActionValue& value) const { return  value.GetMagnitudeSq() >= TriggerThreshold * TriggerThreshold; }
     protected:
-        virtual TriggerState UpdateTriggerState(Count<ElevatedPlayerInput> player, InputActionValue modifiedValue, float deltaTime) { return TriggerState::None; };
+        virtual TriggerState UpdateTriggerState(Count<ElevatedPlayer> player, InputActionValue modifiedValue, float deltaTime) { return IsTriggerDetected(modifiedValue) ? TriggerState::Triggered : TriggerState::None;; };
     private:
         InputActionValue m_LastValue;	
         friend class InputStateTracker;
@@ -76,18 +77,18 @@ namespace Proof
 
     protected:
         float CalculateHeldDuration(const float deltaTime) const;
-        virtual TriggerState UpdateTriggerState(Count<ElevatedPlayerInput> player,InputActionValue modifiedValue, float deltaTime) override;
+        virtual TriggerState UpdateTriggerState(Count<ElevatedPlayer> player,InputActionValue modifiedValue, float deltaTime) override;
     private:
         float m_HeldDuration = 0.0f;
     };
 
-    class InputTriggerPressed final : public InputTrigger
+    class InputTriggerPressed : public InputTrigger
     {
     public:
         INPUT_TRIGGER_MODE(Explicit);
 
     protected:
-        virtual TriggerState UpdateTriggerState(Count<ElevatedPlayerInput> player,InputActionValue modifiedValue, float deltaTime) override;
+        virtual TriggerState UpdateTriggerState(Count<ElevatedPlayer> player,InputActionValue modifiedValue, float deltaTime) override;
     };
 
     class InputTriggerReleased final : public InputTrigger
@@ -95,6 +96,6 @@ namespace Proof
     public:
         INPUT_TRIGGER_MODE(Explicit);
     protected:
-        virtual TriggerState UpdateTriggerState(Count<ElevatedPlayerInput> player,InputActionValue modifiedValue, float deltaTime) override;
+        virtual TriggerState UpdateTriggerState(Count<ElevatedPlayer> player,InputActionValue modifiedValue, float deltaTime) override;
     };
 }

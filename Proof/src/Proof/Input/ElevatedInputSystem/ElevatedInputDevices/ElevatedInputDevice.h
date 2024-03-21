@@ -11,42 +11,33 @@ namespace Proof
 	public:
 		virtual void OnEvent(Event& event) {};
 
-        // Bind a free function to the event delegate
-        template<typename TReturn, typename... TArgs>
-        void Bind(TReturn(*function)(TArgs...)) {
-            m_EventDelegate.Bind<function>();
+        // Function to bind to the multicast delegate
+        template <bool(*TFunction)(const ElevatedInputKeyParams&)>
+        void BindToEventDelegate()
+        {
+            m_EventDelegate.Bind<TFunction>();
         }
 
-        // Bind a lambda to the event delegate
-        template<typename TLambda>
-        void Bind(const TLambda& lambda) {
+        // Lambda binding
+        template <class TLambda>
+        void BindToEventDelegate(const TLambda& lambda) 
+        {
             m_EventDelegate.Bind(lambda);
         }
 
-        // Bind a member function to the event delegate
-        template<typename TClass>
-        void Bind(bool (TClass::* function)(const ElevatedInputKeyParams&), TClass* object) {
-            m_EventDelegate.Bind<function>(object);
+        // Member function binding
+        template <auto TFunction, class TClass>
+        void BindToEventDelegate(TClass* object) 
+        {
+            m_EventDelegate.Bind<TFunction>(object);
         }
 
-        // Unbind a free function from the event delegate
-        template<typename TReturn, typename... TArgs>
-        void Unbind(TReturn(*function)(TArgs...)) {
-            m_EventDelegate.Unbind<function>();
+        // Const member function binding
+        template <class TClass, auto TFunction>
+        void BindToEventDelegate(const TClass* object)
+        {
+            m_EventDelegate.Bind<TFunction>(object);
         }
-
-        // Unbind a lambda from the event delegate
-        template<typename TLambda>
-        void Unbind(const TLambda& lambda) {
-            m_EventDelegate.Unbind(lambda);
-        }
-
-        // Unbind a member function from the event delegate
-        template<typename TClass>
-        void Unbind(bool (TClass::* function)(const ElevatedInputKeyParams&), TClass* object) {
-            m_EventDelegate.Unbind<TClass, function>(object);
-        }
-
 	protected:
 		MulticastDelegate<bool(const ElevatedInputKeyParams&)> m_EventDelegate;
 

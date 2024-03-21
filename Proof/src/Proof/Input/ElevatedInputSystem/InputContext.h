@@ -15,6 +15,8 @@ namespace Proof
 	class InputMappingContext : public Asset
 	{
 	public:
+		ASSET_CLASS_TYPE(InputAction);
+
 		void AddKey(Count<InputAction> action, const ElevatedInputKey& inputKey);
 		void RemoveKey(Count<InputAction> action, const ElevatedInputKey& inputKey);
 		void RemoveAllKeysFromAction(Count<InputAction> action);
@@ -25,6 +27,6 @@ namespace Proof
 		bool IsKeyMapped(const ElevatedInputKey& key);
 	private:
 		std::vector<ElevatedActionKeyMappingContainer> m_Mappings;
-		friend class ElevatedPlayerInput;
+		friend class ElevatedPlayer;
 	};
 }

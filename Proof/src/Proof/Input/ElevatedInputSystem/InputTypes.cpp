@@ -5,6 +5,7 @@
 //https://github.com/EpicGames/UnrealEngine/blob/072300df18a94f18077ca20a14224b5d99fee872/Engine/Source/Runtime/InputCore/Private/InputCoreTypes.cpp
 namespace Proof
 {
+	const ElevatedInputKey ElevatedInputKeys::Invalid(ElevatedInputKeyDeviceType::None,"Invalid");
 	const ElevatedInputKey ElevatedInputKeys::MouseMoveX(ElevatedInputKeyDeviceType::Mouse,"MouseX", ElevatedInputKey::Axis1D | ElevatedInputKey::MouseButton);
 	const ElevatedInputKey ElevatedInputKeys::MouseMoveY(ElevatedInputKeyDeviceType::Mouse,"MouseY", ElevatedInputKey::Axis1D | ElevatedInputKey::MouseButton);
 	const ElevatedInputKey ElevatedInputKeys::MouseMoveAxis(ElevatedInputKeyDeviceType::Mouse,"Mouse2D", ElevatedInputKey::Axis2D);
@@ -199,26 +200,26 @@ namespace Proof
 
 	static void AddKeyBoardKey(KeyBoardKey key, const ElevatedInputKey* inputKey)
 	{
-		PF_CORE_ASSERT(s_InputKeysData->KeyBoardKeys.contains(key));
-		PF_CORE_ASSERT(s_InputKeysData->Keys.contains(inputKey->KeyName));
+		PF_CORE_ASSERT(!s_InputKeysData->KeyBoardKeys.contains(key), fmt::format("Contains {} Already", inputKey->KeyName));
+		PF_CORE_ASSERT(!s_InputKeysData->Keys.contains(inputKey->KeyName));
 		s_InputKeysData->KeyBoardKeys[key] = { inputKey->KeyName };
 		s_InputKeysData->Keys[inputKey->KeyName] = { inputKey };
 	}
 
 	static void AddKey(const ElevatedInputKey* inputKey)
 	{
-		PF_CORE_ASSERT(s_InputKeysData->Keys.contains(inputKey->KeyName));
+		PF_CORE_ASSERT(!s_InputKeysData->Keys.contains(inputKey->KeyName), fmt::format("Contains {} Already", inputKey->KeyName));
 		s_InputKeysData->Keys[inputKey->KeyName] = { inputKey };
 	}
 
 	static void AddPairedKey(const ElevatedInputKey* key, const ElevatedInputKey* keyXAxis, const ElevatedInputKey* keyYAxis)
 	{
-		PF_CORE_ASSERT(s_InputKeysData->Keys.contains(key->KeyName));
+		PF_CORE_ASSERT(!s_InputKeysData->Keys.contains(key->KeyName),fmt::format("Contains {} Already",key->KeyName));
 
 		PF_CORE_ASSERT(key->IsAxis2D(), fmt::format("Paired Key must be a Paired Axis2D {}", key->KeyName));
 
-		PF_CORE_ASSERT(keyXAxis->IsAxis2D(), fmt::format("Axis Key must be a Axis1D {}", keyXAxis->KeyName));
-		PF_CORE_ASSERT(keyYAxis->IsAxis2D(), fmt::format("Axis Key must be a Axis1D {}", keyYAxis->KeyName));
+		PF_CORE_ASSERT(keyXAxis->IsAxis1D(), fmt::format("Axis Key must be a Axis1D {}", keyXAxis->KeyName));
+		PF_CORE_ASSERT(keyYAxis->IsAxis1D(), fmt::format("Axis Key must be a Axis1D {}", keyYAxis->KeyName));
 
 		s_InputKeysData->Keys[key->KeyName] = { key };
 
@@ -248,6 +249,8 @@ namespace Proof
 	
 	void ElevatedInputKeys::Init()
 	{
+		ScopeTimer timer(__FUNCTION__);
+		PF_PROFILE_FUNC();
 		//https://github.com/EpicGames/UnrealEngine/blob/072300df18a94f18077ca20a14224b5d99fee872/Engine/Source/Runtime/InputCore/Private/InputCoreTypes.cpp#L1007
 		s_InputKeysData = new InputKeysData();
 
@@ -267,15 +270,10 @@ namespace Proof
 		AddKey(&ThumbMouseButton2);
 
 		//keybaord
-		AddKeyBoardKey(KeyBoardKey::Backspace, &BackSpace);
 		AddKeyBoardKey(KeyBoardKey::Tab, &Tab);
 		AddKeyBoardKey(KeyBoardKey::Enter, &Enter);
 		AddKeyBoardKey(KeyBoardKey::Pause, &Pause);
-
 		AddKeyBoardKey(KeyBoardKey::Backspace, &BackSpace);
-		AddKeyBoardKey(KeyBoardKey::Tab, &Tab);
-		AddKeyBoardKey(KeyBoardKey::Enter, &Enter);
-		AddKeyBoardKey(KeyBoardKey::Pause, &Pause);
 		AddKeyBoardKey(KeyBoardKey::CapsLock, &CapsLock);
 		AddKeyBoardKey(KeyBoardKey::Escape, &Escape);
 		AddKeyBoardKey(KeyBoardKey::Space, &SpaceBar);
@@ -401,5 +399,10 @@ namespace Proof
 		AddKey(&E_AccentAigu);
 		AddKey(&C_Cedille);
 		AddKey(&Section);
+	}
+	void ElevatedInputKeys::ShutDown()
+	{
+		delete s_InputKeysData;
+		s_InputKeysData = nullptr;
 	}
 }
