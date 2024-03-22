@@ -9,63 +9,23 @@
 #include "Proof/Core/Delegate.h"
 namespace Proof
 {
-	enum class ElevatedPairedAxesBit : uint8_t 
-	{
-		None = 0,
-		X = 0b001,
-		Y = 0b010,
-		Z = 0b100
-	};
-	DEFINE_ENUM_CLASS_FLAGS(ElevatedPairedAxesBit);
 
 	struct ElevatedInputKeyState
 	{
-		/** This is the most recent raw value reported by the device.  For digital buttons, 0 or 1.  For analog buttons, 0->1.  For axes, -1->1. The X field is for non-vector keys */
-		glm::vec3 RawValue;
+		/** Latest raw input value, ranging from 0 to 1 for buttons and -1 to 1 for axes. */
+		glm::vec3 RawAxis = glm::vec3(0);
 
-		/** The final "value" for this control, after any optional processing. */
-		glm::vec3 Value;
+		/** Processed input value after optional adjustments. */
+		glm::vec3 Value = glm::vec3(0);
 
-		/** Global time of last up->down or down->up transition. */
-		float LastUpDownTransitionTime;
+		/** Time of last state change. */
+		float LastTransitionTime;
 
-		/** True if this key is "down", false otherwise. */
-		bool bDown : 1;
+		/** Current key down state. */
+		bool Down = false;
 
-		/** Queued state information.  This data is updated or flushed once player input is processed. */
-		bool bDownPrevious : 1;
-
-		/** True if this key has been "consumed" by an InputComponent and should be ignored for further components during this update. */
-		bool bConsumed : 1;
-
-		/** Flag paired axes that have been sampled this tick. X = LSB, Z = MSB */
-		ElevatedPairedAxesBit PairSampledAxes = ElevatedPairedAxesBit::None;
-
-		/** How many samples contributed to RawValueAccumulator. Used for smoothing operations, e.g. mouse */
-		uint32_t SampleCountAccumulator;
-
-		/** Used to accumulate input values during the frame and flushed after processing. */
-		glm::vec3 RawValueAccumulator;
-
-
-		glm::vec3 CurrentAxis;
-		/** How many of each event type had been received when input was last processed. */
-		std::unordered_map< ElevatedKeyEventType,std::vector<uint32_t>> EventCounts;
-
-		/** Used to accumulate events during the frame and flushed when processed. */
-		std::unordered_map< ElevatedKeyEventType, std::vector<uint32_t>> EventAccumulator;
-		ElevatedInputKeyState()
-			: RawValue(0.f, 0.f, 0.f)
-			, Value(0.f, 0.f, 0.f)
-			, LastUpDownTransitionTime(0.f)
-			, bDown(false)
-			, bDownPrevious(false)
-			, bConsumed(false)
-			, PairSampledAxes(ElevatedPairedAxesBit::None)
-			, SampleCountAccumulator(0)
-			, RawValueAccumulator(0.f, 0.f, 0.f)
-		{
-		}
+		/** Previous frame's key down state. */
+		bool DownPrevious = false;
 	};
 	
 	class InputMappingContext;
@@ -140,19 +100,10 @@ namespace Proof
 		}
 
 	private:
-
-		enum class PlayerInputKeyEvent
-		{
-			None,		// Key did not generate an event this tick and is not being held
-			Actuated,	// Key has generated an event this tick
-			Held,		// Key generated no event, but is in a held state and wants to continue applying modifiers and triggers
-		};
-
-		void EvaluateKeyMapState(float deltaTime);
 		void ProccessAxisInput(ElevatedInputKey key, float rawValue);
 		bool ProccessInput(ElevatedInputKey key, const ElevatedInputKeyState& keyState);
 
-		void ProcessActionMappingKeyEvent(PlayerInputKeyEvent keyEvent,InputActionValue actionValue, Count<InputMappingContext> actionMapping,ElevatedActionKeyMappingContainer& actionKeyMappingContainer, const ElevatedActionKeyMapping& keyMapping);
+		void ProcessActionMappingKeyEvent(InputActionValue actionValue, Count<InputMappingContext> actionMapping,ElevatedActionKeyMappingContainer& actionKeyMappingContainer, const ElevatedActionKeyMapping& keyMapping);
 	
 		InputActionValue ApplyModifiers(const std::vector<Count< class InputModifier>>& modifiers, InputActionValue actionValue,float deltaTime);
 	private:

@@ -7,14 +7,6 @@
 
 namespace Proof
 {
-	enum class InputAxisType
-	{
-		None,
-		Button,			// Whilst the physical input is an analog axis the InputKey uses it to emulate a digital button.
-		Axis1D,
-		Axis2D,
-		Axis3D,
-	};
 	enum class ElevatedInputKeyDeviceType
 	{
 		None = 0,
@@ -25,17 +17,17 @@ namespace Proof
 
 	enum class ElevatedAxisPairing
 	{
-		Unpaired,			// This key is unpaired
-		X,					// This key represents the X axis of its PairedAxisKey
-		Y,					// This key represents the Y axis of its PairedAxisKey
-		Z,					// This key represents the Z axis of its PairedAxisKey - Currently unused
+		None,			
+		X,					
+		Y,					
+		Z,					
 	};
 	struct ElevatedInputKey
 	{
 		enum class InputAxisType
 		{
 			None,
-			Button,			// Whilst the physical input is an analog axis the InputKey uses it to emulate a digital button.
+			Button,			// a joystick click
 			Axis1D,
 			Axis2D,
 			Axis3D,
@@ -153,17 +145,14 @@ namespace Proof
 
 			if ((keyFlags & KeyFlags::AxisButton) != 0)
 			{
-				//ensure((keyFlags& (KeyFlags::Axis1D | KeyFlags::Axis2D | KeyFlags::Axis3D)) == 0);
 				m_AxisType = InputAxisType::Button;
 			}
 			else if ((keyFlags & KeyFlags::Axis1D) != 0)
 			{
-				//ensure((keyFlags& (KeyFlags::Axis2D | KeyFlags::Axis3D)) == 0);
 				m_AxisType = InputAxisType::Axis1D;
 			}
 			else if ((keyFlags & KeyFlags::Axis2D) != 0)
 			{
-				//ensure((keyFlags& KeyFlags::Axis3D) == 0);
 				m_AxisType = InputAxisType::Axis2D;
 			}
 			else if ((keyFlags & KeyFlags::Axis3D) != 0)
@@ -389,13 +378,9 @@ namespace Proof
 	{
 		None = 0,
 		Clicked = 1,
-		Repeat = 2, //Repeat
-		//Pressed = 3,
+		Repeat = 2, 
 		Released = 4,
 		Double = 5,
-		//Axis1D,
-		//Axis2D,
-		//Axis3D
 	};
 
 	// Axis event should be used as Clicked
@@ -507,25 +492,25 @@ namespace Proof
     enum class TriggerEvent
     {
         // No significant changes occurred in trigger state and there are no active device inputs
-        None = (0x0),
+        None = 0,
         // A triggering event occurred after one or more processing ticks
-        Triggered = (1 << 0),    // TriggerState (None -> Triggered, Ongoing -> Triggered, Triggered -> Triggered)
+        Triggered = BIT(0),    // TriggerState (None -> Triggered, Ongoing -> Triggered, Triggered -> Triggered)
 
         // An event has initiated trigger evaluation. Note: Triggered may also occur this frame, but this event will always be fired first.
-        Started = (1 << 1),    // TriggerState (None -> Ongoing, None -> Triggered)
+        Started = BIT(1),    // TriggerState (None -> Ongoing, None -> Triggered)
 
         // Triggering is still in progress. For instance, an action with a "Press and Hold" trigger
         // will be "Ongoing" while the user is holding down the key but the time threshold has not been met yet. 
-        Ongoing = (1 << 2),    // TriggerState (Ongoing -> Ongoing)
+        Ongoing = BIT(2),    // TriggerState (Ongoing -> Ongoing)
 
         // Triggering has been canceled. For example, the user released a key before the "Press and Hold" time threshold.
         // The action began evaluation but was not completed. 
-        Canceled = (1 << 3),    // TriggerState (Ongoing -> None)
+        Canceled = BIT(3),    // TriggerState (Ongoing -> None)
 
         // The trigger state transitioned from Triggered to None this frame, indicating the completion of triggering.
         // Note: Using this event limits you to one set of triggers for Started/Completed events. You may prefer two actions, each with its own trigger rules.
         // Completed will not fire if any trigger reports Ongoing on the same frame, but both should fire. For example, Tick 2 of Hold (= Ongoing) + Pressed (= None) combo will raise Ongoing event only.
-        Completed = (1 << 4),    // TriggerState (Triggered -> None)
+        Completed = BIT(4),    // TriggerState (Triggered -> None)
     };
 	DEFINE_ENUM_CLASS_FLAGS(TriggerEvent);
     

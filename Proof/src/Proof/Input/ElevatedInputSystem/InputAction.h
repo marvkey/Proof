@@ -38,28 +38,4 @@ namespace Proof
 		//std::vector<InputTrigger> Triggers;
 	private:
 	};
-	/*
-	struct InputActionInstance
-	{
-
-	private:
-		Count<InputAction> InputAction;
-		TriggerEvent LastTriggerState = TriggerEvent::None;
-		InputStateTracker TriggerStateTracker;
-
-		float m_LastTriggeredWorldTime = 0.0f;
-
-		// Total trigger processing/evaluation time (How long this action has been in event Started, Ongoing, or Triggered
-		float m_ElapsedProcessedTime = 0.f;
-
-		// Triggered time (How long this action has been in event Triggered only)
-		float m_ElapsedTriggeredTime = 0.f;
-		// Combined value of all inputs mapped to this action
-		InputActionValue Value;
-		std::vector<InputTrigger> Triggers;
-		std::vector<InputModifier> Modifiers;
-		// modifiers
-	};
-	*/
-	
 }

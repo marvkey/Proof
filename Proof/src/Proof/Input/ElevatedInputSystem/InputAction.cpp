@@ -37,7 +37,6 @@ namespace Proof
 				break;
 			case TriggerMode::Blocker:
 				m_Blocking |= (currentState == TriggerState::Triggered);
-				// Ongoing blockers don't count as active triggers
 				break;
 			}
 		}

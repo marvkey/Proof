@@ -82,7 +82,7 @@ namespace Proof
         float m_HeldDuration = 0.0f;
     };
 
-    class InputTriggerPressed : public InputTrigger
+    class InputTriggerClicked : public InputTrigger
     {
     public:
         INPUT_TRIGGER_MODE(Explicit);

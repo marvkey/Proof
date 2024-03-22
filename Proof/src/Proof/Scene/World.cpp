@@ -1150,6 +1150,9 @@ namespace Proof {
 				auto player = input.Player;
 				if (player != nullptr)
 				{
+					// have to do this
+					input.Player = Count<ElevatedPlayer>::CreateFrom(player);
+					player = input.Player;
 					player->AddInputMapping(inputMappingContext);
 
 					player->Bind(inputAction, TriggerEvent::Triggered, [](const InputActionValue& actionvalue)

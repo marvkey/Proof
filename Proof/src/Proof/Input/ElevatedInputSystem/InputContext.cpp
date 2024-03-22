@@ -18,7 +18,7 @@ namespace Proof
 		}
 
 		ElevatedActionKeyMappingContainer keyMap(action);
-		keyMap.m_Triggers.push_back(Count<InputTriggerPressed>::Create());
+		keyMap.m_Triggers.push_back(Count<InputTriggerClicked>::Create());
 
 		keyMap.m_ActionValue = InputActionValue(action->ValueType, glm::vec3(0));
 		keyMap.m_KeyMappings.push_back(ElevatedActionKeyMapping(action, inputKey));
@@ -26,7 +26,6 @@ namespace Proof
 	}
 	void InputMappingContext::RemoveKey(Count<InputAction> action, const ElevatedInputKey& key)
 	{
-
 		for (auto& keyMappingHolder : m_Mappings)
 		{
 			if (keyMappingHolder.m_InputAction == action)

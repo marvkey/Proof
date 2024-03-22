@@ -27,7 +27,7 @@ namespace Proof
     {
         return m_HeldDuration + deltaTime;
     }
-	TriggerState InputTriggerPressed::UpdateTriggerState(Count<ElevatedPlayer> player,InputActionValue modifiedValue, float deltaTime)
+	TriggerState InputTriggerClicked::UpdateTriggerState(Count<ElevatedPlayer> player,InputActionValue modifiedValue, float deltaTime)
 	{
 		return IsTriggerDetected(modifiedValue) && !IsTriggerDetected(GetLastActionValue()) ? TriggerState::Triggered : TriggerState::None;
 	}
