@@ -201,28 +201,28 @@ namespace Proof
 
 	static void AddKeyBoardKey(KeyBoardKey key, const ElevatedInputKey* inputKey)
 	{
-		PF_CORE_ASSERT(!s_InputKeysData->KeyBoardKeys.contains(key), fmt::format("Contains {} Already", inputKey->KeyName));
-		PF_CORE_ASSERT(!s_InputKeysData->Keys.contains(inputKey->KeyName));
-		s_InputKeysData->KeyBoardKeys[key] = { inputKey->KeyName };
-		s_InputKeysData->Keys[inputKey->KeyName] = { inputKey };
+		PF_CORE_ASSERT(!s_InputKeysData->KeyBoardKeys.contains(key), fmt::format("Contains {} Already", inputKey->GetKeyName()));
+		PF_CORE_ASSERT(!s_InputKeysData->Keys.contains(inputKey->GetKeyName()));
+		s_InputKeysData->KeyBoardKeys[key] = { inputKey->GetKeyName() };
+		s_InputKeysData->Keys[inputKey->GetKeyName()] = { inputKey };
 	}
 
 	static void AddKey(const ElevatedInputKey* inputKey)
 	{
-		PF_CORE_ASSERT(!s_InputKeysData->Keys.contains(inputKey->KeyName), fmt::format("Contains {} Already", inputKey->KeyName));
-		s_InputKeysData->Keys[inputKey->KeyName] = { inputKey };
+		PF_CORE_ASSERT(!s_InputKeysData->Keys.contains(inputKey->GetKeyName()), fmt::format("Contains {} Already", inputKey->GetKeyName()));
+		s_InputKeysData->Keys[inputKey->GetKeyName()] = { inputKey };
 	}
 
 	static void AddPairedKey(const ElevatedInputKey* key, const ElevatedInputKey* keyXAxis, const ElevatedInputKey* keyYAxis)
 	{
-		PF_CORE_ASSERT(!s_InputKeysData->Keys.contains(key->KeyName),fmt::format("Contains {} Already",key->KeyName));
+		PF_CORE_ASSERT(!s_InputKeysData->Keys.contains(key->GetKeyName()),fmt::format("Contains {} Already",key->GetKeyName()));
 
-		PF_CORE_ASSERT(key->IsAxis2D(), fmt::format("Paired Key must be a Paired Axis2D {}", key->KeyName));
+		PF_CORE_ASSERT(key->IsAxis2D(), fmt::format("Paired Key must be a Paired Axis2D {}", key->GetKeyName()));
 
-		PF_CORE_ASSERT(keyXAxis->IsAxis1D(), fmt::format("Axis Key must be a Axis1D {}", keyXAxis->KeyName));
-		PF_CORE_ASSERT(keyYAxis->IsAxis1D(), fmt::format("Axis Key must be a Axis1D {}", keyYAxis->KeyName));
+		PF_CORE_ASSERT(keyXAxis->IsAxis1D(), fmt::format("Axis Key must be a Axis1D {}", keyXAxis->GetKeyName()));
+		PF_CORE_ASSERT(keyYAxis->IsAxis1D(), fmt::format("Axis Key must be a Axis1D {}", keyYAxis->GetKeyName()));
 
-		s_InputKeysData->Keys[key->KeyName] = { key };
+		s_InputKeysData->Keys[key->GetKeyName()] = { key };
 
 		// Temporarily remove const-ness to modify the objects
 		ElevatedInputKey* nonConstKeyXAxis = const_cast<ElevatedInputKey*>(keyXAxis);
@@ -233,8 +233,8 @@ namespace Proof
 		nonConstKeyYAxis->m_AxisParing = ElevatedAxisPairing::Y;
 
 
-		nonConstKeyXAxis->AxisParingKey = key;
-		nonConstKeyYAxis->AxisParingKey = key;
+		nonConstKeyXAxis->m_AxisParingKey = key;
+		nonConstKeyYAxis->m_AxisParingKey = key;
 	}
 	ElevatedInputKey ElevatedInputKeys::GetKeyBoardKey(KeyBoardKey key)
 	{

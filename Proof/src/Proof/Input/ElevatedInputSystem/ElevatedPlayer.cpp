@@ -9,8 +9,105 @@
 #include "ElevatedActionKeyMapping.h"
 #include "Proof/Utils/ContainerUtils.h"
 #include "Proof/Math/Math.h"
+#include <type_traits>
+
 namespace Proof
 {
+	/*
+*
+The Popcount function calculates the number of set bits (bits with a value of 1) in an integer. Here's a breakdown of how it works:
+
+Input:
+
+The function takes an integer n as input.
+Loop:
+
+Inside the function, there's a while loop that continues until n becomes zero.
+In each iteration of the loop, the least significant bit (LSB) of n is cleared. This is done by performing a bitwise AND operation between n and n - 1. This operation effectively clears the rightmost set bit in n.
+After clearing the LSB, the loop increments the count of set bits.
+Count:
+
+The function keeps track of the count of set bits encountered during the loop iterations.
+Return:
+
+Once all bits in n are cleared (i.e., n becomes zero), the function returns the count of set bits.
+In essence, the Popcount function calculates the Hamming weight of the integer n, which represents the number of set bits in its binary representation.
+
+This function is useful for various tasks, such as counting the number of set bits in a bit mask, determining the parity of a number, or implementing certain algorithms like population count-based sorting algorithms.
+	**/
+	template<typename T>
+	constexpr int Popcount(T n) {
+		int count = 0;
+		while (n) {
+			n &= (n - 1);
+			count++;
+		}
+		return count;
+	}
+
+	template<typename Enum>
+	constexpr bool EnumHasAllFlags(Enum Flags, Enum Contains)
+	{
+		using UnderlyingType = __underlying_type(Enum);
+		return ((UnderlyingType)Flags & (UnderlyingType)Contains) == (UnderlyingType)Contains;
+	}
+
+	template<typename Enum>
+	constexpr bool EnumHasAnyFlags(Enum Flags, Enum Contains)
+	{
+		using UnderlyingType = __underlying_type(Enum);
+		return ((UnderlyingType)Flags & (UnderlyingType)Contains) != 0;
+	}
+
+	template<typename Enum>
+	constexpr bool EnumHasOnlyFlags(Enum Flags, Enum Contains)
+	{
+		using UnderlyingType = typename std::underlying_type<Enum>::type;
+		UnderlyingType allFlags = static_cast<UnderlyingType>(Flags);
+		UnderlyingType containsFlags = static_cast<UnderlyingType>(Contains);
+
+		// Check if Flags contains only the flags specified in Contains
+		return (allFlags & containsFlags) == containsFlags && allFlags == containsFlags;
+	}
+
+	template<typename Enum>
+	constexpr bool EnumHasMultipleFlags(Enum Flags, Enum Contains)
+	{
+		using UnderlyingType = typename std::underlying_type<Enum>::type;
+		UnderlyingType allFlags = static_cast<UnderlyingType>(Flags);
+		UnderlyingType containsFlags = static_cast<UnderlyingType>(Contains);
+
+		// Count the number of set bits (flags) in Flags that are also set in Contains
+		UnderlyingType commonFlags = allFlags & containsFlags;
+
+		// If the count of common flags is greater than 1, return true
+		return Popcount(commonFlags) > 1;
+	}
+
+	template<typename Enum>
+	constexpr int EnumCountFlags(Enum Flags)
+	{
+		using UnderlyingType = typename std::underlying_type<Enum>::type;
+		UnderlyingType allFlags = static_cast<UnderlyingType>(Flags);
+
+		// Count the number of set bits (flags) in Flags
+		int count = Popcount(allFlags);
+		return count;
+	}
+
+	template<typename Enum>
+	void EnumAddFlags(Enum& Flags, Enum FlagsToAdd)
+	{
+		using UnderlyingType = __underlying_type(Enum);
+		Flags = (Enum)((UnderlyingType)Flags | (UnderlyingType)FlagsToAdd);
+	}
+
+	template<typename Enum>
+	void EnumRemoveFlags(Enum& Flags, Enum FlagsToRemove)
+	{
+		using UnderlyingType = __underlying_type(Enum);
+		Flags = (Enum)((UnderlyingType)Flags & ~(UnderlyingType)FlagsToRemove);
+	}
 	InputActionData::InputActionData(Count<InputAction> action)
 		: m_InputAction(action)
 	{
@@ -21,11 +118,229 @@ namespace Proof
 		PF_PROFILE_FUNC();
 		m_ActionsWithEvents.clear();
 		m_EventCount = 0;
+		/*
+		for (auto& actionData : m_ActionData)
+		{
+			if (!EnumHasAnyFlags(actionData.TriggerEvent, TriggerEvent::None))
+			{
+				for (auto& inputDelegate : m_InputDelegates)
+				{
+					if (inputDelegate.InputAction == actionData.m_InputAction)
+					{
+						//PF_ENGINE_INFO("Number of flags {}", EnumCountFlags(inputDelegate.TriggerEvent));
+						if (EnumHasAllFlags(actionData.TriggerEvent, inputDelegate.TriggerEvent))
+						{
+							if (inputDelegate.Function.IsBound())
+								inputDelegate.Function.Invoke(actionData.ActionValue);
+						}
+					}
+				}
+			}
+
+			switch (actionData.TriggerEvent)
+			{
+			case TriggerEvent::None:
+			case TriggerEvent::Canceled:
+			case TriggerEvent::Completed:
+				actionData.ElapsedProcessedTime = 0.f;
+				break;
+			}
+			if (!EnumHasAnyFlags(actionData.TriggerEvent, TriggerEvent::Triggered))
+			{
+				actionData.ElapsedTriggeredTime = 0.f;
+			}
+			if (EnumHasAnyFlags(actionData.TriggerEvent, TriggerEvent::Started))
+				actionData.TriggerEvent = TriggerEvent::Triggered;
+
+			if (EnumHasAnyFlags(actionData.TriggerEvent, TriggerEvent::Completed))
+				actionData.TriggerEvent = TriggerEvent::None;
+		}
+		*/
+		std::vector<ElevatedActionKeyMapping*> validKeyMappings;
+		std::vector<ElevatedActionKeyMapping*> blockedByModifiers;
+		for (uint32_t i = 0; i<m_CapableKeyMappings.size(); i++)
+		{
+			
+			ElevatedActionKeyData data = m_CapableKeyMappings[i];
+			// basicaly we are makign sure int he input map was not changed during the tick
+			InputMappingContextInstance* inputMappingContextInstance = GetInputMappingContextInstance(data.InputMappingContext);
+			if (!inputMappingContextInstance || !inputMappingContextInstance->Active)
+			{
+				m_CapableKeyMappings.erase(m_CapableKeyMappings.begin() + i);
+				continue;
+			}
+			ElevatedActionKeyMapping* actionKeyMapping = inputMappingContextInstance->InputMappingContext->GetActionKeyMappings(data.InputAction);
+			
+			if (!actionKeyMapping)
+			{
+				m_CapableKeyMappings.erase(m_CapableKeyMappings.begin() + i);
+				continue;
+			}
+			if (!Utils::Contains(actionKeyMapping->m_KeyMappings,data.InputKeyBinding))
+			{
+				m_CapableKeyMappings.erase(m_CapableKeyMappings.begin() + i);
+				continue;
+			}
+
+			auto elevatedKey = data.InputKeyBinding;
+			glm::vec3 rawKeyValue = m_KeyStates[data.Key].RawAxis;
+
+			// key shoudl already be the main key to be here 
+			//if (elevatedKey->IsKeyMappedAsMain(data.Key))
+
+			if (ShouldProccessInput(data.Key))
+			{
+				// key modifiers may not be allowed to procces input 
+				// so technically this key shoudl be able to proccess input  ShouldProccessInput (function) 
+				// since its modifiers make a part of its input system
+				bool state = ProcessActionMappingKeyEvent(InputActionValue(rawKeyValue), data.InputAction, elevatedKey, data.Key);
+				if (state)
+					validKeyMappings.emplace_back(actionKeyMapping);
+				else
+				{
+					blockedByModifiers.emplace_back(actionKeyMapping);
+					//m_CapableKeyMappings.erase(m_CapableKeyMappings.begin() + i);
+				}
+
+			}
+			else
+			{
+				m_CapableKeyMappings.erase(m_CapableKeyMappings.begin() + i);
+			}
+			/*
+			// basically what if the main key is being pressed 
+			// but a modifier key is released we need a way to basically signify 
+			//modifier has been released thats why we do this 
+			else if (elevatedKey->IsKeyMappedAsModifier(data.Key))
+			{
+				// basically chekcing if the modifer key cannot no longer be used
+				InputActionValue actionValueRaw(rawKeyValue);
+				if (!elevatedKey->ProcessInputData(this, actionValueRaw, data.InputAction, data.Key, true))
+					blockedByModifiers.emplace_back(&mapping);
+
+			}
+			*/
+
+		}
+
+		for (ElevatedActionKeyMapping* blockedMofierMapping : blockedByModifiers)
+		{
+			auto& actionData = GetActionData(blockedMofierMapping->InputAction);
+
+			actionData.TriggerEventInternal = GetTriggerStateChangeEvent(actionData.LastTriggerState, TriggerState::None);
+			actionData.TriggerEvent = ConvertInternalTriggerEvent(actionData.TriggerEventInternal);
+			actionData.LastTriggerState = TriggerState::None;
+			
+			actionData.TriggerStateTracker = InputStateTracker();
+
+			if (!EnumHasAnyFlags(actionData.TriggerEvent, TriggerEvent::None))
+			{
+				for (auto& inputDelegate : m_InputDelegates)
+				{
+					if (inputDelegate.InputAction == actionData.m_InputAction)
+					{
+						//PF_ENGINE_INFO("Number of flags {}", EnumCountFlags(inputDelegate.TriggerEvent));
+						if (EnumHasAllFlags(actionData.TriggerEvent, inputDelegate.TriggerEvent))
+						{
+							if (inputDelegate.Function.IsBound())
+								inputDelegate.Function.Invoke(actionData.ActionValue);
+						}
+					}
+				}
+			}
+			/*
+			if (actionData.TriggerEvent != TriggerEvent::None)
+			{
+				for (auto& inputDelegate : m_InputDelegates)
+				{
+					if (inputDelegate.InputAction == actionData.m_InputAction)
+					{
+						if (EnumHasAnyFlags(actionData.TriggerEvent,inputDelegate.TriggerEvent))
+						{
+							if (inputDelegate.Function.IsBound())
+								inputDelegate.Function.Invoke(actionData.ActionValue);
+						}
+					}
+				}
+			}
+			*/
+		}
+		blockedByModifiers.clear();
+
+		for (ElevatedActionKeyMapping* elevatedKeyMapping : validKeyMappings)
+		{
+			auto inputAction = elevatedKeyMapping->InputAction;
+			auto& actionData = GetActionData(inputAction);
+
+			TriggerState triggerState = TriggerState::None;
+
+			auto rawValue = actionData.ActionValue;
+			actionData.ActionValue = ApplyCustomizer(elevatedKeyMapping->m_Customizers, actionData.ActionValue, deltaTime);
+
+			if (actionData.ActionValue.Get<glm::vec3>() != rawValue.Get<glm::vec3>())
+			{
+				actionData.TriggerStateTracker.SetStateForNoTriggers(actionData.ActionValue.IsNonZero() ? TriggerState::Triggered : TriggerState::None);
+			}
+
+			TriggerState PrevState = actionData.TriggerStateTracker.GetState();
+			triggerState = actionData.TriggerStateTracker.EvaluateTriggers(this, elevatedKeyMapping->m_Triggers, actionData.ActionValue, deltaTime);
+			triggerState = actionData.TriggerStateTracker.GetMappingTriggerApplied() ? Math::Min(triggerState, PrevState) : triggerState;
+
+			if (m_GamePaused && !inputAction->TriggerWhenPaused)
+			{
+				triggerState = TriggerState::None;
+			}
+
+			actionData.TriggerEventInternal = GetTriggerStateChangeEvent(actionData.LastTriggerState, triggerState);
+			actionData.TriggerEvent = ConvertInternalTriggerEvent(actionData.TriggerEventInternal);
+			actionData.LastTriggerState = triggerState;
+
+			actionData.ElapsedProcessedTime += triggerState != TriggerState::None ? deltaTime.Get() : 0.f;
+			actionData.ElapsedTriggeredTime += (actionData.TriggerEvent == TriggerEvent::Triggered) ? deltaTime.Get() : 0.f;
+
+			if (triggerState == TriggerState::Triggered)
+			{
+				actionData.LastTriggeredWorldTime = FrameTime::GetTime();
+			}
+			if (!EnumHasAnyFlags(actionData.TriggerEvent, TriggerEvent::None))
+			{
+				for (auto& inputDelegate : m_InputDelegates)
+				{
+					if (inputDelegate.InputAction == actionData.m_InputAction)
+					{
+						//PF_ENGINE_INFO("Number of flags {}", EnumCountFlags(inputDelegate.TriggerEvent));
+						if (EnumHasAllFlags(actionData.TriggerEvent, inputDelegate.TriggerEvent))
+						{
+							if (inputDelegate.Function.IsBound())
+								inputDelegate.Function.Invoke(actionData.ActionValue);
+						}
+					}
+				}
+			}
+		}
+
+		for (auto& actionData : m_ActionData)
+		{
+
+			switch (actionData.TriggerEvent)
+			{
+			case TriggerEvent::None:
+			case TriggerEvent::Canceled:
+			case TriggerEvent::Completed:
+				actionData.ElapsedProcessedTime = 0.f;
+				break;
+			}
+			if (actionData.TriggerEvent != TriggerEvent::Triggered)
+			{
+				actionData.ElapsedTriggeredTime = 0.f;
+			}
+			actionData.TriggerStateTracker = InputStateTracker();
+		}
+
 		for (auto& [key, keyState] : m_KeyStates)
 		{
 			keyState.DownPrevious = keyState.Down;
 		}
-
 	}
 
 	void ElevatedPlayer::ProccessAxisInput(ElevatedInputKey key, float rawValue)
@@ -263,6 +578,18 @@ bool outValue = false;
 				{
 					for (auto elevatedKey : mapping.m_KeyMappings)
 					{
+						if (elevatedKey->IsKeyMappedAsMain(key) )
+						{
+							ElevatedActionKeyData data{ mapping.InputAction,key,elevatedKey,inputMappingInstance.InputMappingContext };
+
+							if (!Utils::Contains(m_CapableKeyMappings, data))
+							{
+								outValue |= true;
+								m_CapableKeyMappings.push_back(data);
+							}
+							
+						}
+						/*
 						if (elevatedKey->IsKeyMappedAsMain(key))
 						{
 							// key modifiers may not be allowed to procces input 
@@ -288,10 +615,13 @@ bool outValue = false;
 								blockedByModifiers.emplace_back(&mapping);
 
 						}
+						*/
 					}
 				}
 			}
 		}
+
+		return outValue;
 
 		for (ElevatedActionKeyMapping* blockedMofierMapping : blockedByModifiers)
 		{
@@ -313,14 +643,14 @@ bool outValue = false;
 				actionData.ElapsedTriggeredTime = 0.f;
 			}
 			actionData.TriggerStateTracker = InputStateTracker();
-
+			/*
 			if (actionData.TriggerEvent != TriggerEvent::None)
 			{
 				for (auto& inputDelegate : m_InputDelegates)
 				{
 					if (inputDelegate.InputAction == actionData.m_InputAction)
 					{
-						if (inputDelegate.TriggerEvent == actionData.TriggerEvent)
+						if (EnumHasAnyFlags(actionData.TriggerEvent,inputDelegate.TriggerEvent))
 						{
 							if (inputDelegate.Function.IsBound())
 								inputDelegate.Function.Invoke(actionData.ActionValue);
@@ -328,6 +658,7 @@ bool outValue = false;
 					}
 				}
 			}
+			*/
 		}
 		blockedByModifiers.clear();
 		if (outValue == false)
@@ -351,7 +682,6 @@ bool outValue = false;
 				actionData.TriggerStateTracker.SetStateForNoTriggers(actionData.ActionValue.IsNonZero() ? TriggerState::Triggered : TriggerState::None);
 			}
 
-
 			TriggerState PrevState = actionData.TriggerStateTracker.GetState();
 			triggerState = actionData.TriggerStateTracker.EvaluateTriggers(this, elevatedKeyMapping->m_Triggers, actionData.ActionValue, deltaTime);
 			triggerState = actionData.TriggerStateTracker.GetMappingTriggerApplied() ? Math::Min(triggerState, PrevState) : triggerState;
@@ -372,14 +702,15 @@ bool outValue = false;
 			{
 				actionData.LastTriggeredWorldTime = FrameTime::GetTime();
 			}
-
-			if (actionData.TriggerEvent != TriggerEvent::None)
+			/*
+			if (!EnumHasAnyFlags(actionData.TriggerEvent, TriggerEvent::None))
 			{
 				for (auto& inputDelegate : m_InputDelegates)
 				{
 					if (inputDelegate.InputAction == actionData.m_InputAction)
 					{
-						if (inputDelegate.TriggerEvent == actionData.TriggerEvent)
+						PF_ENGINE_INFO("Number of flags {}", EnumCountFlags(inputDelegate.TriggerEvent));
+						if (EnumHasAllFlags(actionData.TriggerEvent, inputDelegate.TriggerEvent))
 						{
 							if (inputDelegate.Function.IsBound())
 								inputDelegate.Function.Invoke(actionData.ActionValue);
@@ -387,7 +718,7 @@ bool outValue = false;
 					}
 				}
 			}
-
+			*/
 		}
 
 		for (ElevatedActionKeyMapping* elevatedKeyMapping : validKeyMappings)
@@ -409,7 +740,6 @@ bool outValue = false;
 			actionData.TriggerStateTracker = InputStateTracker();
 		}
 		validKeyMappings.clear();
-
 		return outValue;
 #endif
 
@@ -537,6 +867,16 @@ bool outValue = false;
 	}
 #endif
 
+
+	InputMappingContextInstance* ElevatedPlayer::GetInputMappingContextInstance(Count<InputMappingContext> mapping)
+	{
+		for (auto& inputMappingContext : m_InputMappingContext)
+		{
+			if (inputMappingContext.InputMappingContext == mapping)
+				return &inputMappingContext;
+		}
+		return nullptr;
+	}
 
 	void ElevatedPlayer::AddInputMapping(Count<InputMappingContext> mapping)
 	{

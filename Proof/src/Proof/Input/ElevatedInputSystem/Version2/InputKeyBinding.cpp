@@ -37,11 +37,7 @@ namespace Proof
     {
         if (!InputKeyBindingBase::ProcessInputData(player, actionValue, action, key, isModifierKey))
             return false;
-        if (m_InputKey == ElevatedInputKeys::LeftShift)
-        {
-            auto inputState = player->ShouldProccessInput(m_InputKey);
-            PF_ENGINE_INFO("Left shift Input State {}", inputState == true ? "TRUE" : "FALSE");
-        }
+
 
         if (!player->ShouldProccessInput(m_InputKey))
             return false;
@@ -120,7 +116,7 @@ namespace Proof
         {
             if (keyBinding.IsAnalog())
             {
-                PF_ENGINE_ERROR("InputKeyBindingBundle only supports Digital Input {} is not Digital", keyBinding.KeyName);
+                PF_ENGINE_ERROR("InputKeyBindingBundle only supports Digital Input {} is not Digital", keyBinding.GetKeyName());
                 continue;
             }
 

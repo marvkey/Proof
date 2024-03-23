@@ -77,7 +77,7 @@ namespace Proof
 			NoFlags = 0,
 		};
 		ElevatedInputKey(ElevatedInputKeyDeviceType inputDevice, const std::string& keyName, const uint32_t keyFlags = 0) :
-			Device(inputDevice), KeyName(keyName), KeyFlags(keyFlags)
+			m_Device(inputDevice), m_KeyName(keyName), m_KeyFlags(keyFlags)
 		{
 			Init(keyFlags);
 		}
@@ -124,13 +124,14 @@ namespace Proof
 		bool ShouldUpdateAxisWithoutSamples ()const { return m_UpdateAxisWithoutSamples; }
 		InputAxisType GetAxisType()const { return m_AxisType; }
 		ElevatedAxisPairing GetPairedAxis()const { return m_AxisParing; }
-		friend bool operator==(const ElevatedInputKey& KeyA, const ElevatedInputKey& KeyB) { return KeyA.KeyName == KeyB.KeyName; }
-		friend bool operator!=(const ElevatedInputKey& KeyA, const ElevatedInputKey& KeyB) { return KeyA.KeyName != KeyB.KeyName; }
+		friend bool operator==(const ElevatedInputKey& KeyA, const ElevatedInputKey& KeyB) { return KeyA.m_KeyName == KeyB.m_KeyName; }
+		friend bool operator!=(const ElevatedInputKey& KeyA, const ElevatedInputKey& KeyB) { return KeyA.m_KeyName != KeyB.m_KeyName; }
 	public:
-		const std::string KeyName;
-		const ElevatedInputKeyDeviceType Device = ElevatedInputKeyDeviceType::None;
-		const uint32_t KeyFlags;
-		const ElevatedInputKey* AxisParingKey = nullptr;
+		// Getters for all members
+		const std::string& GetKeyName() const { return m_KeyName; }
+		ElevatedInputKeyDeviceType GetDevice() const { return m_Device; }
+		uint32_t GetKeyFlags() const { return m_KeyFlags; }
+		const ElevatedInputKey* GetAxisParingKey() const { return m_AxisParingKey; }
 
 		
 	private:
@@ -175,6 +176,12 @@ namespace Proof
 		bool m_IsGesture = false;
 		
 		bool m_UpdateAxisWithoutSamples = false;
+
+		std::string m_KeyName;
+		ElevatedInputKeyDeviceType m_Device;
+		uint32_t m_KeyFlags;
+		const ElevatedInputKey* m_AxisParingKey;
+
 	};
 	
 	struct ElevatedInputKeys
@@ -597,6 +604,7 @@ namespace Proof
 		case TriggerEventInternal::Canceled:
 			return TriggerEvent::Canceled;
 		case TriggerEventInternal::StartedAndTriggered:
+			return TriggerEvent::Started | TriggerEvent::Triggered;
 		case TriggerEventInternal::Triggered:
 			return TriggerEvent::Triggered;
 		case TriggerEventInternal::Completed:
@@ -615,7 +623,7 @@ namespace std
 	{
 		std::size_t operator()(const Proof::ElevatedInputKey& key) const noexcept
 		{
-			return std::hash<std::string>{}(key.KeyName);
+			return std::hash<std::string>{}(key.GetKeyName());
 		}
 	};
 };

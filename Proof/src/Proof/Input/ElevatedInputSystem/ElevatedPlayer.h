@@ -43,6 +43,33 @@ namespace Proof
 		TriggerEvent TriggerEvent;
 		Delegate<void(const InputActionValue&)> Function; 
 	};
+	// because the input action context coudl remove the key mapping
+			// so storing a pointer will just be wierd cause it would cause an error
+	struct ElevatedActionKeyData
+	{
+		Count<class InputAction> InputAction;
+		ElevatedInputKey Key = ElevatedInputKeys::Invalid;
+		Count<class InputKeyBindingBase> InputKeyBinding;
+		Count<class InputMappingContext> InputMappingContext;
+
+		ElevatedActionKeyData(Count<class InputAction> action, ElevatedInputKey key, Count<InputKeyBindingBase> inputBinding, Count<class InputMappingContext> inputMapping)
+			:InputAction(action), Key(key), InputKeyBinding(inputBinding), InputMappingContext(inputMapping)
+		{
+
+
+		}
+
+	};
+	static inline bool operator==(const ElevatedActionKeyData& lhs, const ElevatedActionKeyData& rhs) {
+		return lhs.InputAction == rhs.InputAction &&
+			lhs.Key == rhs.Key &&
+			lhs.InputKeyBinding == rhs.InputKeyBinding &&
+			lhs.InputMappingContext == rhs.InputMappingContext;
+	}
+
+	static inline bool operator!=(const ElevatedActionKeyData& lhs, const ElevatedActionKeyData& rhs) {
+		return !(lhs == rhs);
+	}
 
 	struct InputActionData
 	{
@@ -76,6 +103,8 @@ namespace Proof
 		bool IsCtrlPressed() const;
 		bool IsShiftPressed() const;
 		bool IsCmdPressed() const;
+
+		InputMappingContextInstance* GetInputMappingContextInstance(Count<InputMappingContext> mapping);
 
 		void AddInputMapping(Count<InputMappingContext> mapping);
 
@@ -153,6 +182,10 @@ namespace Proof
 		std::vector< ElevatedPlayerInputDelegate> m_InputDelegates;
 
 		std::vector<InputActionData> m_ActionData;
+
+		
+
+		std::vector<ElevatedActionKeyData> m_CapableKeyMappings;
 
 		uint32_t m_EventCount = 0;
 		bool m_GamePaused = false;

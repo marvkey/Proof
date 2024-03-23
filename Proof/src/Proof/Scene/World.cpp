@@ -1155,7 +1155,7 @@ namespace Proof {
 					player = input.Player;
 					player->AddInputMapping(inputMappingContext);
 
-					player->Bind(inputAction, TriggerEvent::Triggered, [](const InputActionValue& actionvalue)
+					player->Bind(inputAction, TriggerEvent::Started, [](const InputActionValue& actionvalue)
 						{
 							PF_INFO("Player Started Jump");
 						});
