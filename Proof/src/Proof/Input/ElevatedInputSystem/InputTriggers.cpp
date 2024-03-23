@@ -8,7 +8,6 @@ namespace Proof
 
 		TriggerState State = TriggerState::None;
 
-		// Transition to Ongoing on actuation. Update the held duration.
 		if (IsTriggerDetected(modifiedValue))
 		{
 			State = TriggerState::Ongoing;
@@ -16,7 +15,6 @@ namespace Proof
 		}
 		else
 		{
-			// Reset duration
 			m_HeldDuration = 0.0f;
 		}
 

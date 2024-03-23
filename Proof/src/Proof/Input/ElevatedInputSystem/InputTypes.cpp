@@ -180,6 +180,7 @@ namespace Proof
 	const ElevatedInputKey ElevatedInputKeys::ControllerDPadDown(ElevatedInputKeyDeviceType::Controller, "ControllerDPadDown", ElevatedInputKey::ControllerButton);
 	const ElevatedInputKey ElevatedInputKeys::ControllerDPadRight(ElevatedInputKeyDeviceType::Controller, "ControllerDPadRight", ElevatedInputKey::ControllerButton);
 	const ElevatedInputKey ElevatedInputKeys::ControllerDPadLeft(ElevatedInputKeyDeviceType::Controller, "ControllerDPadLeft", ElevatedInputKey::ControllerButton);
+	const ElevatedInputKey ElevatedInputKeys::ControllerDPad(ElevatedInputKeyDeviceType::Controller, "ControllerDPad", ElevatedInputKey::ControllerButton | ElevatedInputKey::Axis2D);
 
 	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickUp(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickUp", ElevatedInputKey::ControllerButton | ElevatedInputKey::AxisButton);
 	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickDown(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickDown", ElevatedInputKey::ControllerButton | ElevatedInputKey::AxisButton);

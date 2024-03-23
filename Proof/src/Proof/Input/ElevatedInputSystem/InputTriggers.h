@@ -58,10 +58,7 @@ namespace Proof
         float TriggerThreshold = 0.5f;
 
         const InputActionValue& GetLastActionValue()const { return m_LastValue; }
-        /*
-        * Is the value passed in sufficiently large to be of interest to the trigger.
-        * This is a helper function that implements the most obvious (>=) interpretation of the actuation threshold.
-        */
+        
         bool IsTriggerDetected(const InputActionValue& value) const { return  value.GetMagnitudeSq() >= TriggerThreshold * TriggerThreshold; }
     protected:
         virtual TriggerState UpdateTriggerState(Count<ElevatedPlayer> player, InputActionValue modifiedValue, float deltaTime) { return IsTriggerDetected(modifiedValue) ? TriggerState::Triggered : TriggerState::None;; };
@@ -91,7 +88,7 @@ namespace Proof
         virtual TriggerState UpdateTriggerState(Count<ElevatedPlayer> player,InputActionValue modifiedValue, float deltaTime) override;
     };
 
-    class InputTriggerReleased final : public InputTrigger
+    class InputTriggerReleased  : public InputTrigger
     {
     public:
         INPUT_TRIGGER_MODE(Explicit);

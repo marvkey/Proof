@@ -353,6 +353,7 @@ namespace Proof
 		static const ElevatedInputKey ControllerDPadDown;
 		static const ElevatedInputKey ControllerDPadRight;
 		static const ElevatedInputKey ControllerDPadLeft;
+		static const ElevatedInputKey ControllerDPad; // 2d axis
 
 		// Virtual key codes used for input axis button press/release emulation
 		static const ElevatedInputKey ControllerLeftStickUp;

@@ -19,7 +19,7 @@ namespace Proof
 		glm::vec3 Value = glm::vec3(0);
 
 		/** Time of last state change. */
-		float LastTransitionTime;
+		float LastUpDownChangeTime;
 
 		/** Current key down state. */
 		bool Down = false;
@@ -42,6 +42,31 @@ namespace Proof
 		Count<InputAction> InputAction;
 		TriggerEvent TriggerEvent;
 		Delegate<void(const InputActionValue&)> Function; 
+	};
+
+	struct InputActionData
+	{
+		InputActionData(Count<InputAction> action);
+		TriggerState LastTriggerState = TriggerState::None;
+		// Trigger state
+		TriggerEvent TriggerEvent = TriggerEvent::None;
+		TriggerEventInternal TriggerEventInternal = TriggerEventInternal::None;
+
+		// The last time that this evaluated to a Triggered State
+		float LastTriggeredWorldTime = 0.0f;
+
+		// Combined value of all inputs mapped to this action
+		struct InputActionValue ActionValue = InputActionValue(glm::vec3(0));
+
+		// Total trigger processing/evaluation time (How long this action has been in event Started, Ongoing, or Triggered
+		float ElapsedProcessedTime = 0.f;
+
+		// Triggered time (How long this action has been in event Triggered only)
+		float ElapsedTriggeredTime = 0.f;
+		InputStateTracker TriggerStateTracker;
+		InputActionValue GetActionValue() const { return TriggerEvent == TriggerEvent::Triggered ? ActionValue : InputActionValue(ActionValue.GetValueType(), glm::vec3(0)); }
+
+		Count<InputAction> m_InputAction;
 	};
 	//https://github.com/EpicGames/UnrealEngine/blob/072300df18a94f18077ca20a14224b5d99fee872/Engine/Source/Runtime/Engine/Classes/GameFramework/PlayerInput.h
 	class ElevatedPlayer : public RefCounted
@@ -98,14 +123,25 @@ namespace Proof
 			delegate.Function.Bind<function>(object);
 
 		}
+		InputActionData& GetActionData(Count<class InputAction> action);
+		bool ShouldProccessInput(const ElevatedInputKey& key);
+
+#if OLD_ELEVATE_INPUT
+		InputActionValue ApplyModifiers(const std::vector<Count< class InputModifier>>& modifiers, InputActionValue actionValue, float deltaTime);
+#else
+		InputActionValue ApplyCustomizer(const std::vector<Count< class InputCustomizer>>& customizer, const InputActionValue& actionValue, float deltaTime);
+#endif
 
 	private:
 		void ProccessAxisInput(ElevatedInputKey key, float rawValue);
 		bool ProccessInput(ElevatedInputKey key, const ElevatedInputKeyState& keyState);
+#if OLD_ELEVATE_INPUT
 
 		void ProcessActionMappingKeyEvent(InputActionValue actionValue, Count<InputMappingContext> actionMapping,ElevatedActionKeyMappingContainer& actionKeyMappingContainer, const ElevatedActionKeyMapping& keyMapping);
-	
-		InputActionValue ApplyModifiers(const std::vector<Count< class InputModifier>>& modifiers, InputActionValue actionValue,float deltaTime);
+#else
+		//retutnrs if key and modifeirs are able to proccess input
+		bool ProcessActionMappingKeyEvent(InputActionValue actionValue, Count<class InputAction>, Count<class InputKeyBindingBase> keyMapping, const ElevatedInputKey& key);
+#endif
 	private:
 		int m_Player = -1; // none, player starts counting from 0
 
@@ -115,6 +151,9 @@ namespace Proof
 		std::vector<Count<InputAction>> m_ActionsWithEvents;
 
 		std::vector< ElevatedPlayerInputDelegate> m_InputDelegates;
+
+		std::vector<InputActionData> m_ActionData;
+
 		uint32_t m_EventCount = 0;
 		bool m_GamePaused = false;
 		

@@ -49,8 +49,8 @@ namespace Proof
 		bool m_MappingTriggerApplied = false; // Set to true when an actionmapping is processed and triggers were found
 
 	};
+#ifdef OLD_ELEVATE_INPUT
 
-	//https://github.com/EpicGames/UnrealEngine/blob/072300df18a94f18077ca20a14224b5d99fee872/Engine/Plugins/EnhancedInput/Source/EnhancedInput/Public/EnhancedActionKeyMapping.h#L134
 	struct ElevatedActionKeyMapping
 	{
 	public:
@@ -66,7 +66,6 @@ namespace Proof
 		Count<InputAction> InputAction;
 		ElevatedInputKey InputKey;
 	};
-
 	struct ElevatedActionKeyMappingContainer
 	{
 	public:
@@ -133,4 +132,6 @@ namespace Proof
 		friend class InputMappingContext;
 		friend class ElevatedPlayer;
 	};
+#endif
+
 }
