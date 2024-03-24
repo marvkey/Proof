@@ -8,7 +8,7 @@ namespace Proof
 {
 	class InputKeyBinding;
 
-	class InputTrigger;
+	class InputInteraction;
 	class InputModifier;
 	class InputAction;
 	// returns the axis of the main key not the modifier keys 
@@ -33,11 +33,11 @@ namespace Proof
 		virtual bool ProcessInputData(Count <class ElevatedPlayer> player, InputActionValue& actionValue, Count<InputAction> action, const ElevatedInputKey& key, bool isModifierKey = false);
 
 		std::vector< Count<InputKeyBinding>> m_ModifierKeys; // have to be pressed 
+		std::vector<Count< class InputInteraction>> m_Triggers;
 	protected:
 		// mainly for inputBundle
 		virtual void CheckOrUpdateAction(const ElevatedInputKey& key, glm::vec3& axis, Count<InputAction> action) {};
 		std::vector<Count< class InputCustomizer>> m_Customizers;
-		std::vector<Count< class InputTrigger>> m_Triggers;
 
 		friend class ElevatedPlayer;
 	};
@@ -131,7 +131,7 @@ namespace Proof
 	struct ElevatedActionKeyMapping
 	{
 		Count<class InputAction> InputAction;
-		std::vector<Count<class InputTrigger>> m_Triggers;
+		std::vector<Count<class InputInteraction>> m_Triggers;
 		std::vector<Count<class InputCustomizer>> m_Customizers;
 
 		std::vector<Count<InputKeyBindingBase>> m_KeyMappings;

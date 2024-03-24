@@ -9,7 +9,7 @@
 namespace Proof
 {
 	class InputAction;
-	class InputTrigger;
+	class InputInteraction;
 	class InputModifiers;
 
 #ifdef OLD_ELEVATE_INPUT

@@ -6,7 +6,7 @@
 #include <vector>
 namespace Proof
 {
-	class InputTrigger;
+	class InputInteraction;
 	class InputModifier;
 
 	enum class InputActionAccumulationBehavior 

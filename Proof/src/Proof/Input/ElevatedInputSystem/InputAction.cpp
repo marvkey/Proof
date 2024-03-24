@@ -4,11 +4,10 @@
 #include "InputTriggers.h"
 namespace Proof
 {
-	TriggerState InputStateTracker::EvaluateTriggers(Count<class ElevatedPlayer> player,const std::vector<Count<InputTrigger>>& triggers, const InputActionValue& modifiedValue, float deltaTime)
+	TriggerState InputStateTracker::EvaluateTriggers(Count<class ElevatedPlayer> player,const std::vector<Count<InputInteraction>>& triggers, const InputActionValue& modifiedValue, float deltaTime)
     {
         //https://github.com/EpicGames/UnrealEngine/blob/072300df18a94f18077ca20a14224b5d99fee872/Engine/Plugins/EnhancedInput/Source/EnhancedInput/Private/InputAction.cpp#L75
 
-		m_EvaluatedTriggers = false;
 
 		for( auto trigger : triggers)
 		{
@@ -19,23 +18,23 @@ namespace Proof
 
 			m_EvaluatedTriggers = true;
 
-			TriggerState currentState = trigger->UpdateTriggerState(player,modifiedValue, deltaTime);
+			TriggerState currentState = trigger->UpdateInteractionState(player,modifiedValue, deltaTime);
 
 			// Automatically update the last value, avoiding the trigger having to track it.
 			trigger->m_LastValue = modifiedValue;
 
 			switch (trigger->GetTriggerMode())
 			{
-			case TriggerMode::Explicit:
+			case InteractionMode::Direct:
 				m_FoundExplicit = true;
 				m_AnyExplictTriggered |= (currentState == TriggerState::Triggered);
 				m_FoundActiveTrigger |= (currentState != TriggerState::None);
 				break;
-			case TriggerMode::Implicit:
+			case InteractionMode::Indirect:
 				m_AllImplicitsTriggered &= (currentState == TriggerState::Triggered);
 				m_FoundActiveTrigger |= (currentState != TriggerState::None);
 				break;
-			case TriggerMode::Blocker:
+			case InteractionMode::Blocker:
 				m_Blocking |= (currentState == TriggerState::Triggered);
 				break;
 			}

@@ -150,6 +150,16 @@ namespace Proof {
                     KeyDoubleClickEvent keyevent((KeyBoardKey)key);
                     EventCallback(keyevent);
                 }
+                KeyboardReleased.emplace_back((KeyBoardKey)key);
+                {
+                    // have to use this because GLFW someties will not send that a key hasb een released
+                    KeyReleasedEvent keyevent((KeyBoardKey)key);
+                    EventCallback(keyevent);
+                    if (key < KeyPressed.size())
+                    {
+                        KeyPressed[key] = false;
+                    }
+                }
                 break;
             case (int)InputEvent::KeyHold:
                 KeyboardKeyHold.emplace_back((KeyBoardKey)key);
@@ -200,6 +210,13 @@ namespace Proof {
                 {
                     MouseButtonDoubleClickEvent mouseEvent((MouseButton)button);
                     EventCallback(mouseEvent);
+                }
+
+                MouseButtonReleased.emplace_back((MouseButton)button);
+                {
+                    MouseButtonReleasedEvent mouseEvent((MouseButton)button);
+                    EventCallback(mouseEvent);
+                    MouseButtonPressed[button] = false;
                 }
                 break;
         }
@@ -486,6 +503,9 @@ namespace Proof {
                     break;
                 case InputEvent::KeyDouble:
                     {
+                        ControllerButtonReleasedEvent eventRelease(ctrlID, button);
+                        EventCallback(eventRelease);
+
                         ControllerButtonDoubleClickEvent event(ctrlID, button);
                         EventCallback(event);
                     }
@@ -521,6 +541,9 @@ namespace Proof {
                     }
                     case InputEvent::KeyDouble:
                     {
+                        ControllerButtonReleasedEvent eventRelease(ctrlID, button);
+                        EventCallback(eventRelease);
+
                         ControllerButtonDoubleClickEvent event(ctrlID, button);
                         EventCallback(event);
                         break;
@@ -554,6 +577,9 @@ namespace Proof {
                 break;
                 case InputEvent::KeyDouble:
                 {
+                    ControllerButtonReleasedEvent eventRelease(ctrlID, button);
+                    EventCallback(eventRelease);
+
                     ControllerButtonDoubleClickEvent event(ctrlID, button);
                     EventCallback(event);
                 }

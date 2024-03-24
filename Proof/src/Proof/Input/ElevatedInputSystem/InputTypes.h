@@ -50,16 +50,12 @@ namespace Proof
 			Function (Fn): Found on laptops and used to access additional functions assigned to keys on the keyboard.
 			*/
 			ModifierKey = 1 << 3,
-			// Denotes a one-dimensional axis input, typically used for analog inputs like triggers or thumbsticks.
 			Axis1D = 1 << 4,
-			//Denotes a two-dimensional axis input, often used for movement or camera control in 2D space
 			Axis2D = 1 << 5,
-			// Represents a three-dimensional axis input, often used for motion or orientation tracking.
 			Axis3D = 1 << 6,
-			// Gesture input types such as Flick, Pinch, and Rotate
 			Gesture = 1 << 7,
 
-			//An axis acting as a button like for example right stick of controller input
+			//An axis acting as a button like clcikcing on right joystick
 			AxisButton = 1 << 8,
 
 			/*
@@ -431,17 +427,13 @@ namespace Proof
 			, bIsGamepadOverride(bGamepadOverride)
 		{};
 		Count<class ElevatedInputDevice> InputDevice;
-		/** The key that has been pressed */
 		ElevatedInputKey Key = ElevatedInputKeys::Invalid;
 
-		/** The event that has caused a Button key to be considered */
 		ElevatedKeyEventType Event = ElevatedKeyEventType::None;
 
-		/** The Delta that the given key/axis has been changed by */
 		/*if key clicked Axis.x = 1 if reelaes axis.x =0*/
 		glm::vec3 Axis = glm::vec3(0.0f);
 
-		/** If set to true, treat this input event as if it were from a gamepad, whether the InputKey is a gamepad key or not. */
 		bool bIsGamepadOverride = false;
 
 		/*
@@ -468,16 +460,12 @@ namespace Proof
 			The specific values assigned to NumSamples depend on the type of input event being handled and whether it involves analog input or discrete events.
 		*/
 		uint32_t NumSamples = 0;
-		/** Returns true if the Key used for this input is a gamepad key */
 		bool IsGamepad() const { return Key.IsControllerKey() || bIsGamepadOverride; }
 
-		/** Get the delta of the given axis for 1D axis */
 		float Get1DAxis() const { return Axis.x; }
 
-		/** Get the delta of the given axis for 2D axis */
 		glm::vec2 Get2DAxis() const { return glm::vec2((float)Axis.x, (float)Axis.y); }
 
-		/** Get the delta of the given axis for 3D axis */
 		glm::vec3 Get3DAxis() const { return Axis; }
 	};
 

@@ -79,7 +79,10 @@ namespace Proof
 			actionMapping = &m_Mappings.emplace_back(ElevatedActionKeyMapping{ action });
 		}
 		auto keyBinding = Count<InputKeyBinding>::Create(inputKey);
-		keyBinding->m_ModifierKeys.push_back(Count<InputKeyBinding>::Create(ElevatedInputKeys::LeftShift));
+		//keyBinding->m_ModifierKeys.push_back(Count<InputKeyBinding>::Create(ElevatedInputKeys::LeftShift));
+
+		auto data = Count<InputInteractionMultiClick>::Create();
+		keyBinding->m_Triggers.push_back(data);
 		actionMapping->m_KeyMappings.push_back(keyBinding);
 
 		return keyBinding;
