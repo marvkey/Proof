@@ -1,60 +1,75 @@
 #include "Proofprch.h"
 #include "ElevatedActionKeyMapping.h"
 #include "InputAction.h"
-#include "InputTriggers.h"
+#include "InputInteractions.h"
 namespace Proof
 {
-	TriggerState InputStateTracker::EvaluateTriggers(Count<class ElevatedPlayer> player,const std::vector<Count<InputInteraction>>& triggers, const InputActionValue& modifiedValue, float deltaTime)
+	InteractionState InputStateTracker::EvaluateInteractions(Count<class ElevatedPlayer> player,const std::vector<Count<InputInteraction>>& interactions, const InputActionOutput& modifiedValue, float deltaTime)
     {
         //https://github.com/EpicGames/UnrealEngine/blob/072300df18a94f18077ca20a14224b5d99fee872/Engine/Plugins/EnhancedInput/Source/EnhancedInput/Private/InputAction.cpp#L75
 
 
-		for( auto trigger : triggers)
+		for( auto interaction : interactions)
 		{
-			if (!trigger)
+			if (!interaction)
 			{
 				continue;
 			}
 
-			m_EvaluatedTriggers = true;
+			m_EvaluatedInteractions = true;
 
-			TriggerState currentState = trigger->UpdateInteractionState(player,modifiedValue, deltaTime);
+			InteractionState currentState = interaction->UpdateInteractionState(player,modifiedValue, deltaTime);
 
 			// Automatically update the last value, avoiding the trigger having to track it.
-			trigger->m_LastValue = modifiedValue;
+			interaction->m_LastValue = modifiedValue;
 
-			switch (trigger->GetTriggerMode())
+			switch (interaction->GetInteractionMode())
 			{
 			case InteractionMode::Direct:
-				m_FoundExplicit = true;
-				m_AnyExplictTriggered |= (currentState == TriggerState::Triggered);
-				m_FoundActiveTrigger |= (currentState != TriggerState::None);
+				m_FoundDirect = true;
+				m_AnyDirectTriggered |= (currentState == InteractionState::Triggered);
+				m_FoundActiveInteraction |= (currentState != InteractionState::None);
 				break;
 			case InteractionMode::Indirect:
-				m_AllImplicitsTriggered &= (currentState == TriggerState::Triggered);
-				m_FoundActiveTrigger |= (currentState != TriggerState::None);
+				m_AllIndirectTriggered &= (currentState == InteractionState::Triggered);
+				m_FoundActiveInteraction |= (currentState != InteractionState::None);
 				break;
 			case InteractionMode::Blocker:
-				m_Blocking |= (currentState == TriggerState::Triggered);
+				m_Blocking |= (currentState == InteractionState::Triggered);
 				break;
 			}
 		}
 
 		return GetState();
     }
-	TriggerState InputStateTracker::GetState() const
+	InteractionState InputStateTracker::GetState() const
 	{
-		if (!m_EvaluatedTriggers)
+		if (!m_EvaluatedInteractions)
 		{
-			return m_NoTriggerState;
+			return m_NoInteractionState;
 		}
 
 		if (m_Blocking)
 		{
-			return TriggerState::None;
+			return InteractionState::None;
+		}
+		bool triggered = false;
+		if ((!m_FoundDirect || m_AnyDirectTriggered) && m_AllIndirectTriggered)
+		{
+			triggered = true;
 		}
 
-		bool bTriggered = ((!m_FoundExplicit || m_AnyExplictTriggered) && m_AllImplicitsTriggered);
-		return bTriggered ? TriggerState::Triggered : (m_FoundActiveTrigger ? TriggerState::Ongoing : TriggerState::None);
+		if (triggered)
+		{
+			return InteractionState::Triggered;
+		}
+		else if (m_FoundActiveInteraction)
+		{
+			return InteractionState::Ongoing;
+		}
+		else
+		{
+			return InteractionState::None;
+		}
 	}
 }

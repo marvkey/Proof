@@ -1,117 +1,22 @@
 #include "Proofprch.h"
 #include "ElevatedPlayer.h"
-#include "InputContext.h"
+#include "InputBindingContext.h"
 #include "InputAction.h"
-#include "InputActionValue.h"
+#include "InputActionOutput.h"
 #include "InputTypes.h"
-#include "InputModifier.h"
-#include "Version2/InputCustomizer.h"
+#include "InputCustomizers.h"
 #include "ElevatedActionKeyMapping.h"
 #include "Proof/Utils/ContainerUtils.h"
 #include "Proof/Math/Math.h"
-#include <type_traits>
 
 namespace Proof
 {
-	/*
-*
-The Popcount function calculates the number of set bits (bits with a value of 1) in an integer. Here's a breakdown of how it works:
 
-Input:
-
-The function takes an integer n as input.
-Loop:
-
-Inside the function, there's a while loop that continues until n becomes zero.
-In each iteration of the loop, the least significant bit (LSB) of n is cleared. This is done by performing a bitwise AND operation between n and n - 1. This operation effectively clears the rightmost set bit in n.
-After clearing the LSB, the loop increments the count of set bits.
-Count:
-
-The function keeps track of the count of set bits encountered during the loop iterations.
-Return:
-
-Once all bits in n are cleared (i.e., n becomes zero), the function returns the count of set bits.
-In essence, the Popcount function calculates the Hamming weight of the integer n, which represents the number of set bits in its binary representation.
-
-This function is useful for various tasks, such as counting the number of set bits in a bit mask, determining the parity of a number, or implementing certain algorithms like population count-based sorting algorithms.
-	**/
-	template<typename T>
-	constexpr int Popcount(T n) {
-		int count = 0;
-		while (n) {
-			n &= (n - 1);
-			count++;
-		}
-		return count;
-	}
-
-	template<typename Enum>
-	constexpr bool EnumHasAllFlags(Enum Flags, Enum Contains)
-	{
-		using UnderlyingType = __underlying_type(Enum);
-		return ((UnderlyingType)Flags & (UnderlyingType)Contains) == (UnderlyingType)Contains;
-	}
-
-	template<typename Enum>
-	constexpr bool EnumHasAnyFlags(Enum Flags, Enum Contains)
-	{
-		using UnderlyingType = __underlying_type(Enum);
-		return ((UnderlyingType)Flags & (UnderlyingType)Contains) != 0;
-	}
-
-	template<typename Enum>
-	constexpr bool EnumHasOnlyFlags(Enum Flags, Enum Contains)
-	{
-		using UnderlyingType = typename std::underlying_type<Enum>::type;
-		UnderlyingType allFlags = static_cast<UnderlyingType>(Flags);
-		UnderlyingType containsFlags = static_cast<UnderlyingType>(Contains);
-
-		// Check if Flags contains only the flags specified in Contains
-		return (allFlags & containsFlags) == containsFlags && allFlags == containsFlags;
-	}
-
-	template<typename Enum>
-	constexpr bool EnumHasMultipleFlags(Enum Flags, Enum Contains)
-	{
-		using UnderlyingType = typename std::underlying_type<Enum>::type;
-		UnderlyingType allFlags = static_cast<UnderlyingType>(Flags);
-		UnderlyingType containsFlags = static_cast<UnderlyingType>(Contains);
-
-		// Count the number of set bits (flags) in Flags that are also set in Contains
-		UnderlyingType commonFlags = allFlags & containsFlags;
-
-		// If the count of common flags is greater than 1, return true
-		return Popcount(commonFlags) > 1;
-	}
-
-	template<typename Enum>
-	constexpr int EnumCountFlags(Enum Flags)
-	{
-		using UnderlyingType = typename std::underlying_type<Enum>::type;
-		UnderlyingType allFlags = static_cast<UnderlyingType>(Flags);
-
-		// Count the number of set bits (flags) in Flags
-		int count = Popcount(allFlags);
-		return count;
-	}
-
-	template<typename Enum>
-	void EnumAddFlags(Enum& Flags, Enum FlagsToAdd)
-	{
-		using UnderlyingType = __underlying_type(Enum);
-		Flags = (Enum)((UnderlyingType)Flags | (UnderlyingType)FlagsToAdd);
-	}
-
-	template<typename Enum>
-	void EnumRemoveFlags(Enum& Flags, Enum FlagsToRemove)
-	{
-		using UnderlyingType = __underlying_type(Enum);
-		Flags = (Enum)((UnderlyingType)Flags & ~(UnderlyingType)FlagsToRemove);
-	}
+	
 	InputActionData::InputActionData(Count<InputAction> action)
 		: m_InputAction(action)
 	{
-		ActionValue = InputActionValue(action->ValueType, glm::vec3(0.0f));
+		ActionOutput = InputActionOutput(action->ValueType, glm::vec3(0.0f));
 	}
 	void ElevatedPlayer::OnUpdate(FrameTime deltaTime)
 	{
@@ -131,7 +36,7 @@ This function is useful for various tasks, such as counting the number of set bi
 						if (EnumHasAllFlags(actionData.TriggerEvent, inputDelegate.TriggerEvent))
 						{
 							if (inputDelegate.Function.IsBound())
-								inputDelegate.Function.Invoke(actionData.ActionValue);
+								inputDelegate.Function.Invoke(actionData.ActionOutput);
 						}
 					}
 				}
@@ -193,7 +98,7 @@ This function is useful for various tasks, such as counting the number of set bi
 				// key modifiers may not be allowed to procces input 
 				// so technically this key shoudl be able to proccess input  ShouldProccessInput (function) 
 				// since its modifiers make a part of its input system
-				bool state = ProcessActionMappingKeyEvent(InputActionValue(rawKeyValue), data.InputAction, elevatedKey, data.Key);
+				bool state = ProcessActionMappingKeyEvent(InputActionOutput(rawKeyValue), data.InputAction, elevatedKey, data.Key);
 				if (state)
 					validKeyMappings.emplace_back(actionKeyMapping);
 				else
@@ -205,6 +110,13 @@ This function is useful for various tasks, such as counting the number of set bi
 			}
 			else
 			{
+				// for things liek a release key wich needs to be completed
+				// or like a double click wich needs to set completed
+				auto& actionData = GetActionData(data.InputAction);
+				if (actionData.LastInteractionState != InteractionState::None)
+				{
+					blockedByModifiers.emplace_back(actionKeyMapping);
+				}
 				m_CapableKeyMappings.erase(m_CapableKeyMappings.begin() + i);
 			}
 			/*
@@ -214,8 +126,8 @@ This function is useful for various tasks, such as counting the number of set bi
 			else if (elevatedKey->IsKeyMappedAsModifier(data.Key))
 			{
 				// basically chekcing if the modifer key cannot no longer be used
-				InputActionValue actionValueRaw(rawKeyValue);
-				if (!elevatedKey->ProcessInputData(this, actionValueRaw, data.InputAction, data.Key, true))
+				InputActionOutput ActionOutputRaw(rawKeyValue);
+				if (!elevatedKey->ProcessInputData(this, ActionOutputRaw, data.InputAction, data.Key, true))
 					blockedByModifiers.emplace_back(&mapping);
 
 			}
@@ -227,23 +139,22 @@ This function is useful for various tasks, such as counting the number of set bi
 		{
 			auto& actionData = GetActionData(blockedMofierMapping->InputAction);
 
-			actionData.TriggerEventInternal = GetTriggerStateChangeEvent(actionData.LastTriggerState, TriggerState::None);
-			actionData.TriggerEvent = ConvertInternalTriggerEvent(actionData.TriggerEventInternal);
-			actionData.LastTriggerState = TriggerState::None;
+			actionData.InteractionEvent = GetInteractionStateChangeEvent(actionData.LastInteractionState, InteractionState::None);
+			actionData.LastInteractionState = InteractionState::None;
 			
-			actionData.TriggerStateTracker = InputStateTracker();
+			actionData.InteractionStateTracker = InputStateTracker();
 
-			if (!EnumHasAnyFlags(actionData.TriggerEvent, TriggerEvent::None))
+			if (!EnumReflection::HasAnyFlags(actionData.InteractionEvent, InteractionEvent::None))
 			{
 				for (auto& inputDelegate : m_InputDelegates)
 				{
 					if (inputDelegate.InputAction == actionData.m_InputAction)
 					{
 						//PF_ENGINE_INFO("Number of flags {}", EnumCountFlags(inputDelegate.TriggerEvent));
-						if (EnumHasAllFlags(actionData.TriggerEvent, inputDelegate.TriggerEvent))
+						if (EnumReflection::HasAllFlags(actionData.InteractionEvent, inputDelegate.TriggerEvent))
 						{
 							if (inputDelegate.Function.IsBound())
-								inputDelegate.Function.Invoke(actionData.ActionValue);
+								inputDelegate.Function.Invoke(actionData.ActionOutput);
 						}
 					}
 				}
@@ -258,7 +169,7 @@ This function is useful for various tasks, such as counting the number of set bi
 						if (EnumHasAnyFlags(actionData.TriggerEvent,inputDelegate.TriggerEvent))
 						{
 							if (inputDelegate.Function.IsBound())
-								inputDelegate.Function.Invoke(actionData.ActionValue);
+								inputDelegate.Function.Invoke(actionData.ActionOutput);
 						}
 					}
 				}
@@ -272,47 +183,46 @@ This function is useful for various tasks, such as counting the number of set bi
 			auto inputAction = elevatedKeyMapping->InputAction;
 			auto& actionData = GetActionData(inputAction);
 
-			TriggerState triggerState = TriggerState::None;
+			InteractionState triggerState = InteractionState::None;
 
-			auto rawValue = actionData.ActionValue;
-			actionData.ActionValue = ApplyCustomizer(elevatedKeyMapping->m_Customizers, actionData.ActionValue, deltaTime);
+			auto rawValue = actionData.ActionOutput;
+			actionData.ActionOutput = ApplyCustomizer(elevatedKeyMapping->m_Customizers, actionData.ActionOutput, deltaTime);
 
-			if (actionData.ActionValue.Get<glm::vec3>() != rawValue.Get<glm::vec3>())
+			if (actionData.ActionOutput.Get<glm::vec3>() != rawValue.Get<glm::vec3>())
 			{
-				actionData.TriggerStateTracker.SetStateForNoTriggers(actionData.ActionValue.IsNonZero() ? TriggerState::Triggered : TriggerState::None);
+				actionData.InteractionStateTracker.SetStateForNoTriggers(actionData.ActionOutput.IsNonZero() ? InteractionState::Triggered : InteractionState::None);
 			}
 
-			TriggerState PrevState = actionData.TriggerStateTracker.GetState();
-			triggerState = actionData.TriggerStateTracker.EvaluateTriggers(this, elevatedKeyMapping->m_Triggers, actionData.ActionValue, deltaTime);
-			triggerState = actionData.TriggerStateTracker.GetMappingTriggerApplied() ? Math::Min(triggerState, PrevState) : triggerState;
+			InteractionState PrevState = actionData.InteractionStateTracker.GetState();
+			triggerState = actionData.InteractionStateTracker.EvaluateInteractions(this, elevatedKeyMapping->m_Triggers, actionData.ActionOutput, deltaTime);
+			triggerState = actionData.InteractionStateTracker.GetMappingInteractionApplied() ? Math::Min(triggerState, PrevState) : triggerState;
 
 			if (m_GamePaused && !inputAction->TriggerWhenPaused)
 			{
-				triggerState = TriggerState::None;
+				triggerState = InteractionState::None;
 			}
 
-			actionData.TriggerEventInternal = GetTriggerStateChangeEvent(actionData.LastTriggerState, triggerState);
-			actionData.TriggerEvent = ConvertInternalTriggerEvent(actionData.TriggerEventInternal);
-			actionData.LastTriggerState = triggerState;
+			actionData.InteractionEvent = GetInteractionStateChangeEvent(actionData.LastInteractionState, triggerState);
+			actionData.LastInteractionState = triggerState;
 
-			actionData.ElapsedProcessedTime += triggerState != TriggerState::None ? deltaTime.Get() : 0.f;
-			actionData.ElapsedTriggeredTime += (actionData.TriggerEvent == TriggerEvent::Triggered) ? deltaTime.Get() : 0.f;
+			actionData.ElapsedProcessedTime += triggerState != InteractionState::None ? deltaTime.Get() : 0.f;
+			actionData.ElapsedTriggeredTime += (EnumReflection::HasAnyFlags(actionData.InteractionEvent, InteractionEvent::Triggered)) ? deltaTime.Get() : 0.f;
 
-			if (triggerState == TriggerState::Triggered)
+			if (triggerState == InteractionState::Triggered)
 			{
 				actionData.LastTriggeredWorldTime = FrameTime::GetTime();
 			}
-			if (!EnumHasAnyFlags(actionData.TriggerEvent, TriggerEvent::None))
+			if (!EnumReflection::HasAnyFlags(actionData.InteractionEvent, InteractionEvent::None))
 			{
 				for (auto& inputDelegate : m_InputDelegates)
 				{
 					if (inputDelegate.InputAction == actionData.m_InputAction)
 					{
 						//PF_ENGINE_INFO("Number of flags {}", EnumCountFlags(inputDelegate.TriggerEvent));
-						if (EnumHasAllFlags(actionData.TriggerEvent, inputDelegate.TriggerEvent))
+						if (EnumReflection::HasAllFlags(actionData.InteractionEvent, inputDelegate.TriggerEvent))
 						{
 							if (inputDelegate.Function.IsBound())
-								inputDelegate.Function.Invoke(actionData.ActionValue);
+								inputDelegate.Function.Invoke(actionData.ActionOutput);
 						}
 					}
 				}
@@ -322,19 +232,19 @@ This function is useful for various tasks, such as counting the number of set bi
 		for (auto& actionData : m_ActionData)
 		{
 
-			switch (actionData.TriggerEvent)
+			switch (actionData.InteractionEvent)
 			{
-			case TriggerEvent::None:
-			case TriggerEvent::Canceled:
-			case TriggerEvent::Completed:
+			case InteractionEvent::None:
+			case InteractionEvent::Canceled:
+			case InteractionEvent::Completed:
 				actionData.ElapsedProcessedTime = 0.f;
 				break;
 			}
-			if (actionData.TriggerEvent != TriggerEvent::Triggered)
+			if (!EnumReflection::HasAnyFlags( actionData.InteractionEvent, InteractionEvent::Triggered))
 			{
 				actionData.ElapsedTriggeredTime = 0.f;
 			}
-			actionData.TriggerStateTracker = InputStateTracker();
+			actionData.InteractionStateTracker = InputStateTracker();
 		}
 
 		for (auto& [key, keyState] : m_KeyStates)
@@ -463,7 +373,7 @@ This function is useful for various tasks, such as counting the number of set bi
 							if (elevatedKey.InputKey == key)
 							{
 								outValue = true;
-								ProcessActionMappingKeyEvent(InputActionValue(rawKeyValue), inputMappingContext, mapping, elevatedKey);
+								ProcessActionMappingKeyEvent(InputActionOutput(rawKeyValue), inputMappingContext, mapping, elevatedKey);
 								validKeyMappings.emplace_back(&mapping);
 							}
 						}
@@ -484,17 +394,17 @@ This function is useful for various tasks, such as counting the number of set bi
 
 			TriggerState triggerState = TriggerState::None;
 
-			auto rawValue = actionData.m_ActionValue;
-			actionData.m_ActionValue = ApplyModifiers(actionData.m_Modifiers, actionData.m_ActionValue, deltaTime);
+			auto rawValue = actionData.m_ActionOutput;
+			actionData.m_ActionOutput = ApplyModifiers(actionData.m_Modifiers, actionData.m_ActionOutput, deltaTime);
 
-			if (actionData.m_ActionValue.Get<glm::vec3>() != rawValue.Get<glm::vec3>())
+			if (actionData.m_ActionOutput.Get<glm::vec3>() != rawValue.Get<glm::vec3>())
 			{
-				actionData.m_InputStateTracker.SetStateForNoTriggers(actionData.m_ActionValue.IsNonZero() ? TriggerState::Triggered : TriggerState::None);
+				actionData.m_InputStateTracker.SetStateForNoTriggers(actionData.m_ActionOutput.IsNonZero() ? TriggerState::Triggered : TriggerState::None);
 			}
 
 
 			TriggerState PrevState = actionData.m_InputStateTracker.GetState();
-			triggerState = actionData.m_InputStateTracker.EvaluateTriggers(this, actionData.m_Triggers, actionData.m_ActionValue, deltaTime);
+			triggerState = actionData.m_InputStateTracker.EvaluateTriggers(this, actionData.m_Triggers, actionData.m_ActionOutput, deltaTime);
 			triggerState = actionData.m_InputStateTracker.GetMappingTriggerApplied() ? Math::Min(triggerState, PrevState) : triggerState;
 
 			if (m_GamePaused && !inputAction->TriggerWhenPaused)
@@ -523,7 +433,7 @@ This function is useful for various tasks, such as counting the number of set bi
 						if (inputDelegate.TriggerEvent == actionData.m_TriggerEvent)
 						{
 							if(inputDelegate.Function.IsBound())
-								inputDelegate.Function.Invoke(actionData.m_ActionValue);
+								inputDelegate.Function.Invoke(actionData.m_ActionOutput);
 						}
 					}
 				}
@@ -595,7 +505,7 @@ bool outValue = false;
 							// key modifiers may not be allowed to procces input 
 							// so technically this key shoudl be able to proccess input  ShouldProccessInput (function) 
 							// since its modifiers make a part of its input system
-							bool state = ProcessActionMappingKeyEvent(InputActionValue(rawKeyValue), mapping.InputAction, elevatedKey,key);
+							bool state = ProcessActionMappingKeyEvent(InputActionOutput(rawKeyValue), mapping.InputAction, elevatedKey,key);
 							if (state)
 								validKeyMappings.emplace_back(&mapping);
 							else
@@ -610,8 +520,8 @@ bool outValue = false;
 						else if (elevatedKey->IsKeyMappedAsModifier(key))
 						{
 							// basically chekcing if the modifer key cannot no longer be used
-							InputActionValue actionValueRaw(rawKeyValue);
-							if(!elevatedKey->ProcessInputData(this, actionValueRaw, mapping.InputAction, key, true))
+							InputActionOutput ActionOutputRaw(rawKeyValue);
+							if(!elevatedKey->ProcessInputData(this, ActionOutputRaw, mapping.InputAction, key, true))
 								blockedByModifiers.emplace_back(&mapping);
 
 						}
@@ -622,7 +532,7 @@ bool outValue = false;
 		}
 
 		return outValue;
-
+	#if 0 
 		for (ElevatedActionKeyMapping* blockedMofierMapping : blockedByModifiers)
 		{
 			auto& actionData = GetActionData(blockedMofierMapping->InputAction);
@@ -653,7 +563,7 @@ bool outValue = false;
 						if (EnumHasAnyFlags(actionData.TriggerEvent,inputDelegate.TriggerEvent))
 						{
 							if (inputDelegate.Function.IsBound())
-								inputDelegate.Function.Invoke(actionData.ActionValue);
+								inputDelegate.Function.Invoke(actionData.ActionOutput);
 						}
 					}
 				}
@@ -674,16 +584,16 @@ bool outValue = false;
 
 			TriggerState triggerState = TriggerState::None;
 
-			auto rawValue = actionData.ActionValue;
-			actionData.ActionValue = ApplyCustomizer(elevatedKeyMapping->m_Customizers, actionData.ActionValue, deltaTime);
+			auto rawValue = actionData.ActionOutput;
+			actionData.ActionOutput = ApplyCustomizer(elevatedKeyMapping->m_Customizers, actionData.ActionOutput, deltaTime);
 
-			if (actionData.ActionValue.Get<glm::vec3>() != rawValue.Get<glm::vec3>())
+			if (actionData.ActionOutput.Get<glm::vec3>() != rawValue.Get<glm::vec3>())
 			{
-				actionData.TriggerStateTracker.SetStateForNoTriggers(actionData.ActionValue.IsNonZero() ? TriggerState::Triggered : TriggerState::None);
+				actionData.TriggerStateTracker.SetStateForNoTriggers(actionData.ActionOutput.IsNonZero() ? TriggerState::Triggered : TriggerState::None);
 			}
 
 			TriggerState PrevState = actionData.TriggerStateTracker.GetState();
-			triggerState = actionData.TriggerStateTracker.EvaluateTriggers(this, elevatedKeyMapping->m_Triggers, actionData.ActionValue, deltaTime);
+			triggerState = actionData.TriggerStateTracker.EvaluateTriggers(this, elevatedKeyMapping->m_Triggers, actionData.ActionOutput, deltaTime);
 			triggerState = actionData.TriggerStateTracker.GetMappingTriggerApplied() ? Math::Min(triggerState, PrevState) : triggerState;
 
 			if (m_GamePaused && !inputAction->TriggerWhenPaused)
@@ -713,7 +623,7 @@ bool outValue = false;
 						if (EnumHasAllFlags(actionData.TriggerEvent, inputDelegate.TriggerEvent))
 						{
 							if (inputDelegate.Function.IsBound())
-								inputDelegate.Function.Invoke(actionData.ActionValue);
+								inputDelegate.Function.Invoke(actionData.ActionOutput);
 						}
 					}
 				}
@@ -741,12 +651,13 @@ bool outValue = false;
 		}
 		validKeyMappings.clear();
 		return outValue;
+	#endif
 #endif
 
 	}
 #if OLD_ELEVATE_INPUT
 
-	void ElevatedPlayer::ProcessActionMappingKeyEvent(InputActionValue rawKeyValue, Count<InputMappingContext> actionMapping, ElevatedActionKeyMappingContainer& actionData, const ElevatedActionKeyMapping& keyMapping)
+	void ElevatedPlayer::ProcessActionMappingKeyEvent(InputActionOutput rawKeyValue, Count<InputMappingContext> actionMapping, ElevatedActionKeyMappingContainer& actionData, const ElevatedActionKeyMapping& keyMapping)
 	{
 		InputStateTracker triggerStateTracker;
 
@@ -757,13 +668,13 @@ bool outValue = false;
 		if (bResetActionData)
 		{
 			m_ActionsWithEvents.emplace_back(inputAction);
-			actionData.m_ActionValue.Reset();	
+			actionData.m_ActionOutput.Reset();	
 		}
 
 		float deltaTime = FrameTime::GetWorldDeltaTime();
 
-		InputActionValueType ValueType = actionData.m_ActionValue.GetValueType();
-		InputActionValue modifiedValue = ApplyModifiers(keyMapping.Modifiers, InputActionValue(ValueType, rawKeyValue.Get<glm::vec3>()), deltaTime);
+		InputActionOutputType ValueType = actionData.m_ActionOutput.GetValueType();
+		InputActionOutput modifiedValue = ApplyModifiers(keyMapping.Modifiers, InputActionOutput(ValueType, rawKeyValue.Get<glm::vec3>()), deltaTime);
 
 		TriggerState calcedState = triggerStateTracker.EvaluateTriggers(this, keyMapping.Triggers, modifiedValue, deltaTime);
 		triggerStateTracker.SetStateForNoTriggers(modifiedValue.IsNonZero() ? TriggerState::Triggered : TriggerState::None);
@@ -775,7 +686,7 @@ bool outValue = false;
 		{
 			const int NumComponents = glm::max(1, int(ValueType));
 			glm::vec3 modified = modifiedValue.Get<glm::vec3>();
-			glm::vec3 merged = actionData.m_ActionValue.Get<glm::vec3>();
+			glm::vec3 merged = actionData.m_ActionOutput.Get<glm::vec3>();
 			for (int component = 0; component < NumComponents; ++component)
 			{
 				switch (accumulationBehavior)
@@ -797,7 +708,7 @@ bool outValue = false;
 				break;
 				}
 			}
-			actionData.m_ActionValue = InputActionValue(ValueType, merged);
+			actionData.m_ActionOutput = InputActionOutput(ValueType, merged);
 
 		}
 
@@ -806,7 +717,7 @@ bool outValue = false;
 	}
 #else
 
-	bool ElevatedPlayer::ProcessActionMappingKeyEvent(InputActionValue actionValue, Count<class InputAction>inputAction, Count<class InputKeyBindingBase> keyMapping, const ElevatedInputKey& key)
+	bool ElevatedPlayer::ProcessActionMappingKeyEvent(InputActionOutput ActionOutput, Count<class InputAction>inputAction, Count<class InputKeyBindingBase> keyMapping, const ElevatedInputKey& key)
 	{
 		InputStateTracker triggerStateTracker;
 
@@ -817,50 +728,50 @@ bool outValue = false;
 		if (bResetActionData)
 		{
 			m_ActionsWithEvents.emplace_back(inputAction);
-			actionData.ActionValue.Reset();
+			actionData.ActionOutput.Reset();
 		}
 
 		float deltaTime = FrameTime::GetWorldDeltaTime();
 
 		{
-			auto updateActionValue = actionValue.Get<glm::vec3>();
-			keyMapping->CheckOrUpdateAction(key, updateActionValue, inputAction);
+			auto updateActionOutput = ActionOutput.Get<glm::vec3>();
+			keyMapping->CheckOrUpdateAction(key, updateActionOutput, inputAction);
 
-			actionValue = InputActionValue(actionValue.GetValueType(), updateActionValue);
+			ActionOutput = InputActionOutput(ActionOutput.GetOutputType(), updateActionOutput);
 		}
-		return keyMapping->ProcessInputData(this, actionValue, inputAction, key);
+		return keyMapping->ProcessInputData(this, ActionOutput, inputAction, key);
 	}
 #endif
 
 #if OLD_ELEVATE_INPUT
 
-	InputActionValue ElevatedPlayer::ApplyModifiers(const std::vector<Count<InputModifier>>& modifiers, InputActionValue rawValue, float deltaTime)
+	InputActionOutput ElevatedPlayer::ApplyModifiers(const std::vector<Count<InputModifier>>& modifiers, InputActionOutput rawValue, float deltaTime)
 	{
 		PF_PROFILE_FUNC();
 
-		InputActionValue modifiedValue = rawValue;
+		InputActionOutput modifiedValue = rawValue;
 		for (auto modifier : modifiers)
 		{
 			if (modifier)
 			{
-				modifiedValue = InputActionValue(rawValue.GetValueType(), modifier->ModifyActionValue(this, modifiedValue, deltaTime).Get<glm::vec3>());
+				modifiedValue = InputActionOutput(rawValue.GetValueType(), modifier->ModifyActionOutput(this, modifiedValue, deltaTime).Get<glm::vec3>());
 			}
 		}
 		return modifiedValue;
 	}
 #else
 
-	InputActionValue ElevatedPlayer::ApplyCustomizer(const std::vector<Count<InputCustomizer>>& customizers, const InputActionValue& rawValue, float deltaTime)
+	InputActionOutput ElevatedPlayer::ApplyCustomizer(const std::vector<Count<InputCustomizer>>& customizers, const InputActionOutput& rawValue, float deltaTime)
 	{
 
 		PF_PROFILE_FUNC();
 
-		InputActionValue modifiedValue = rawValue;
+		InputActionOutput modifiedValue = rawValue;
 		for (auto customizers : customizers)
 		{
 			if (customizers)
 			{
-				modifiedValue = InputActionValue(rawValue.GetValueType(), customizers->CustomizeActionValue(this, modifiedValue, deltaTime).Get<glm::vec3>());
+				modifiedValue = InputActionOutput(rawValue.GetOutputType(), customizers->CustomizeActionOutput(this, modifiedValue, deltaTime).Get<glm::vec3>());
 			}
 		}
 		return modifiedValue;
@@ -868,7 +779,7 @@ bool outValue = false;
 #endif
 
 
-	InputMappingContextInstance* ElevatedPlayer::GetInputMappingContextInstance(Count<InputMappingContext> mapping)
+	InputMappingContextInstance* ElevatedPlayer::GetInputMappingContextInstance(Count<InputBindingContext> mapping)
 	{
 		for (auto& inputMappingContext : m_InputMappingContext)
 		{
@@ -878,7 +789,7 @@ bool outValue = false;
 		return nullptr;
 	}
 
-	void ElevatedPlayer::AddInputMapping(Count<InputMappingContext> mapping)
+	void ElevatedPlayer::AddInputMapping(Count<InputBindingContext> mapping)
 	{
 		m_InputMappingContext.emplace_back(InputMappingContextInstance{ mapping,true });
 	}

@@ -30,7 +30,7 @@ namespace Proof
 		MeshCollider,
 		ScriptFile,
 		InputAction,
-		InputMappingContext
+		InputBindingContext
 	};
 	enum class AssetState 
 	{
@@ -73,7 +73,7 @@ namespace Proof
 			{AssetType::MeshCollider, ".MeshCollider.ProofAsset" },
 			{AssetType::ScriptFile, ".cs" },
 			{AssetType::InputAction,".InputAction.ProofAsset"},
-			{AssetType::InputMappingContext,".InputMappingContext.ProofAsset"},
+			{AssetType::InputBindingContext,".InputBindingContext.ProofAsset"},
 		};
 		std::string GetAssetExtensionString(AssetType type);
 		// checks the file extension

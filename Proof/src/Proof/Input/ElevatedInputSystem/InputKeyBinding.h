@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Proof/Input/ElevatedInputSystem/InputTypes.h"
-#include "Proof/Input/ElevatedInputSystem/InputActionValue.h"
+#include "Proof/Input/ElevatedInputSystem/InputActionOutput.h"
 #include <vector>
 #include <unordered_map>
 namespace Proof
@@ -30,7 +30,7 @@ namespace Proof
 		// returns if all keys where allowed to procces input ShouldProccessInput from player class
 		// basically all key conditions where met
 		// as in conditions we mean the modifer keys and also if this key shoudl have input 
-		virtual bool ProcessInputData(Count <class ElevatedPlayer> player, InputActionValue& actionValue, Count<InputAction> action, const ElevatedInputKey& key, bool isModifierKey = false);
+		virtual bool ProcessInputData(Count <class ElevatedPlayer> player, InputActionOutput& actionValue, Count<InputAction> action, const ElevatedInputKey& key, bool isModifierKey = false);
 
 		std::vector< Count<InputKeyBinding>> m_ModifierKeys; // have to be pressed 
 		std::vector<Count< class InputInteraction>> m_Triggers;
@@ -62,7 +62,7 @@ namespace Proof
 		// basically all key conditions where met
 		// as in conditions we mean the modifer keys and also if this key shoudl have input 
 
-		virtual bool ProcessInputData(Count < class ElevatedPlayer> player, InputActionValue& actionValue, Count<InputAction> action, const ElevatedInputKey& key, bool isModifierKey = false) override;
+		virtual bool ProcessInputData(Count < class ElevatedPlayer> player, InputActionOutput& actionValue, Count<InputAction> action, const ElevatedInputKey& key, bool isModifierKey = false) override;
 		ElevatedInputKey m_InputKey = ElevatedInputKeys::Invalid;
 	};
 
@@ -121,7 +121,7 @@ namespace Proof
 			return false;
 		}
 	protected:
-		virtual bool ProcessInputData(Count < class ElevatedPlayer> player, InputActionValue& actionValue, Count<InputAction> action, const ElevatedInputKey& key,bool isModifierKey = false)override;
+		virtual bool ProcessInputData(Count < class ElevatedPlayer> player, InputActionOutput& actionValue, Count<InputAction> action, const ElevatedInputKey& key,bool isModifierKey = false)override;
 
 		virtual void CheckOrUpdateAction(const ElevatedInputKey& key, glm::vec3& axis, Count<InputAction> action)override;
 	private:

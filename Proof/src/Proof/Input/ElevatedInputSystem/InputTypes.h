@@ -469,139 +469,87 @@ namespace Proof
 		glm::vec3 Get3DAxis() const { return Axis; }
 	};
 
-    /**
-    * Trigger states are a light weight interpretation of the provided input values used in trigger UpdateState responses.
-    */
-    enum class TriggerState 
+    enum class InteractionState 
     {
         // No inputs
         None,
 
-        // Triggering is being monitored, but not yet been confirmed (e.g. a time based trigger that requires the trigger state to be maintained over several frames)
+        // Interaction is being checked but it is not triggered yet, like a double click key hte first click has been met
         Ongoing,
 
         // The trigger state has been met
         Triggered,
     };
-	// Define bitwise operators for enum classes to enable flag-based operations
 
-    enum class TriggerEvent
+    enum class InteractionEvent
     {
-        // No significant changes occurred in trigger state and there are no active device inputs
-        None = 0,
-        // A triggering event occurred after one or more processing ticks
-        Triggered = BIT(0),    // TriggerState (None -> Triggered, Ongoing -> Triggered, Triggered -> Triggered)
+		// Indicates that no significant changes have occurred in the trigger state and there are no active device inputs.
+		None = 0,
 
-        // An event has initiated trigger evaluation. Note: Triggered may also occur this frame, but this event will always be fired first.
-        Started = BIT(1),    // TriggerState (None -> Ongoing, None -> Triggered)
+		// Represents a triggering event that occurred after one or more frames.
+		Triggered = BIT(0),    // InteractionEvent (None -> Triggered, Ongoing -> Triggered, Triggered -> Triggered)
 
-        // Triggering is still in progress. For instance, an action with a "Press and Hold" trigger
-        // will be "Ongoing" while the user is holding down the key but the time threshold has not been met yet. 
-        Ongoing = BIT(2),    // TriggerState (Ongoing -> Ongoing)
+		// Indicates that an event has initiated trigger evaluation. This event is fired first before Triggered.
+		Started = BIT(1),    // InteractionEvent (None -> Ongoing, None -> Triggered)
 
-        // Triggering has been canceled. For example, the user released a key before the "Press and Hold" time threshold.
-        // The action began evaluation but was not completed. 
-        Canceled = BIT(3),    // TriggerState (Ongoing -> None)
+		// Represents a continuing process of triggering. For example, Release a key while the key is clicked it would be Ongoing, as the key has not been triggerd yet
+		Ongoing = BIT(2),    // InteractionEvent (Ongoing -> Ongoing)
 
-        // The trigger state transitioned from Triggered to None this frame, indicating the completion of triggering.
-        // Note: Using this event limits you to one set of triggers for Started/Completed events. You may prefer two actions, each with its own trigger rules.
-        // Completed will not fire if any trigger reports Ongoing on the same frame, but both should fire. For example, Tick 2 of Hold (= Ongoing) + Pressed (= None) combo will raise Ongoing event only.
-        Completed = BIT(4),    // TriggerState (Triggered -> None)
+		// Indicates that triggering has been canceled. For example, user did not double click key in a specific threshold;
+		Canceled = BIT(3),    // InteractionEvent (Ongoing -> None)
+
+		// Indicates that the trigger state transitioned from Triggered to None this frame, indicating the completion of triggering.
+		Completed = BIT(4),    // InteractionEvent (Triggered -> None)
     };
-	DEFINE_ENUM_CLASS_FLAGS(TriggerEvent);
+	DEFINE_ENUM_CLASS_FLAGS(InteractionEvent);
     
-	enum class TriggerEventInternal 
+	static inline InteractionEvent GetInteractionStateChangeEvent(InteractionState lastTriggerState, InteractionState newTriggerState)
 	{
-		None,					// No significant trigger state changes occurred
-		Completed,				// Triggering stopped after one or more triggered ticks										TriggerState (Triggered -> None)
-		Started,				// Triggering has begun																		TriggerState (None -> Ongoing)
-		Ongoing,				// Triggering is still being processed														TriggerState (Ongoing -> Ongoing)
-		Canceled,				// Triggering has been canceled	mid processing												TriggerState (Ongoing -> None)
-		StartedAndTriggered,	// Triggering occurred in a single tick (fires both started and triggered events)			TriggerState (None -> Triggered)
-		Triggered,				// Triggering occurred after one or more processing ticks									TriggerState (Ongoing -> Triggered, Triggered -> Triggered)
-	};
-
-	static inline TriggerEventInternal GetTriggerStateChangeEvent(TriggerState LastTriggerState, TriggerState NewTriggerState) 
-	{
-		// LastTState	NewTState     Event
-
-		// None		 -> Ongoing		= Started
-		// None		 -> Triggered	= Started + Triggered
-		// Ongoing	 -> None		= Canceled
-		// Ongoing	 -> Ongoing		= Ongoing
-		// Ongoing	 -> Triggered	= Triggered
-		// Triggered -> Triggered	= Triggered
-		// Triggered -> Ongoing		= Ongoing
-		// Triggered -> None	    = Completed
-
-		switch (LastTriggerState)
+		switch (lastTriggerState)
 		{
-		case TriggerState::None:
-			if (NewTriggerState == TriggerState::Ongoing)
-			{
-				return TriggerEventInternal::Started;
-			}
-			else if (NewTriggerState == TriggerState::Triggered)
-			{
-				return TriggerEventInternal::StartedAndTriggered;
-			}
-			break;
-		case TriggerState::Ongoing:
-			if (NewTriggerState == TriggerState::None)
-			{
-				return TriggerEventInternal::Canceled;
-			}
-			else if (NewTriggerState == TriggerState::Ongoing)
-			{
-				return TriggerEventInternal::Ongoing;
-			}
-			else if (NewTriggerState == TriggerState::Triggered)
-			{
-				return TriggerEventInternal::Triggered;
-			}
-			break;
-		case TriggerState::Triggered:
-			if (NewTriggerState == TriggerState::Triggered)
-			{
-				return TriggerEventInternal::Triggered;	// Don't re-raise Started event for multiple completed ticks.
-			}
-			else if (NewTriggerState == TriggerState::Ongoing)
-			{
-				return TriggerEventInternal::Ongoing;
-			}
-			else if (NewTriggerState == TriggerState::None)
-			{
-				return TriggerEventInternal::Completed;
-			}
-			break;
+			case InteractionState::None:
+				if (newTriggerState== InteractionState::Ongoing)
+				{
+					return InteractionEvent::Started;
+				}
+				else if (newTriggerState== InteractionState::Triggered)
+				{
+					return InteractionEvent::Started | InteractionEvent::Triggered;
+				}
+				break;
+			case InteractionState::Ongoing:
+				if (newTriggerState== InteractionState::None)
+				{
+					return InteractionEvent::Canceled;
+				}
+				else if (newTriggerState== InteractionState::Ongoing)
+				{
+					return InteractionEvent::Ongoing;
+				}
+				else if (newTriggerState== InteractionState::Triggered)
+				{
+					return InteractionEvent::Triggered;
+				}
+				break;
+			case InteractionState::Triggered:
+				if (newTriggerState== InteractionState::Triggered)
+				{
+					return InteractionEvent::Triggered;
+				}
+				else if (newTriggerState== InteractionState::Ongoing)
+				{
+					return InteractionEvent::Ongoing;
+				}
+				else if (newTriggerState== InteractionState::None)
+				{
+					return InteractionEvent::Completed;
+				}
+				break;
 		}
 
-		return TriggerEventInternal::None;
+		return InteractionEvent::None;
 	}
-
-	static inline TriggerEvent ConvertInternalTriggerEvent(TriggerEventInternal InternalEvent) 
-	{
-		switch (InternalEvent)
-		{
-		case TriggerEventInternal::None:
-			return TriggerEvent::None;
-		case TriggerEventInternal::Started:
-			return TriggerEvent::Started;
-		case TriggerEventInternal::Ongoing:
-			return TriggerEvent::Ongoing;
-		case TriggerEventInternal::Canceled:
-			return TriggerEvent::Canceled;
-		case TriggerEventInternal::StartedAndTriggered:
-			return TriggerEvent::Started | TriggerEvent::Triggered;
-		case TriggerEventInternal::Triggered:
-			return TriggerEvent::Triggered;
-		case TriggerEventInternal::Completed:
-			return TriggerEvent::Completed;
-		}
-		return TriggerEvent::None;
-	}
-    
-
+	
 }
 
 namespace std 

@@ -1,6 +1,6 @@
 #pragma once
 #include "Proof/Asset/Asset.h"
-#include "InputActionValue.h"
+#include "InputActionOutput.h"
 #include "InputTypes.h"
 
 #include <vector>
@@ -32,7 +32,7 @@ namespace Proof
 	public:
 		ASSET_CLASS_TYPE(InputAction);
 		bool TriggerWhenPaused = false;
-		InputActionValueType ValueType = InputActionValueType::Bool;
+		InputActionOutputType ValueType = InputActionOutputType::Bool;
 		InputActionAccumulationBehavior AccumulationBehavior = InputActionAccumulationBehavior::TakeHighestAbsoluteValue;
 
 		//std::vector<InputTrigger> Triggers;

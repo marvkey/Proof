@@ -1,6 +1,6 @@
 #include "Proofprch.h"
 #include "InputKeyBinding.h"
-#include "Proof/Input/ElevatedInputSystem/InputActionValue.h"
+#include "Proof/Input/ElevatedInputSystem/InputActionOutput.h"
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
 #include "Proof/Input/ElevatedInputSystem/InputAction.h"
 namespace Proof
@@ -14,7 +14,7 @@ namespace Proof
         }
         return false;
     }
-    bool InputKeyBindingBase::ProcessInputData(Count<class ElevatedPlayer> player, InputActionValue& actionValue, Count<InputAction> action, const ElevatedInputKey& key, bool isModifierKey)
+    bool InputKeyBindingBase::ProcessInputData(Count<class ElevatedPlayer> player, InputActionOutput& actionValue, Count<InputAction> action, const ElevatedInputKey& key, bool isModifierKey)
     {
         for (auto& modiferKeys : m_ModifierKeys)
         {
@@ -33,7 +33,7 @@ namespace Proof
 
         return true;
     }
-    bool InputKeyBinding::ProcessInputData(Count<class ElevatedPlayer> player, InputActionValue& actionValue, Count<InputAction> action, const ElevatedInputKey& key, bool isModifierKey)
+    bool InputKeyBinding::ProcessInputData(Count<class ElevatedPlayer> player, InputActionOutput& actionValue, Count<InputAction> action, const ElevatedInputKey& key, bool isModifierKey)
     {
         if (!InputKeyBindingBase::ProcessInputData(player, actionValue, action, key, isModifierKey))
             return false;
@@ -46,29 +46,29 @@ namespace Proof
         auto& actionData = player->GetActionData(action);
 
         auto rawValue = actionValue.Get<glm::vec3>();
-        InputActionValueType ValueType = actionData.ActionValue.GetValueType();
-        InputActionValue modifiedValue = player->ApplyCustomizer(m_Customizers, InputActionValue(ValueType, rawValue), deltaTime);
+        InputActionOutputType ValueType = actionData.ActionOutput.GetOutputType();
+        InputActionOutput modifiedValue = player->ApplyCustomizer(m_Customizers, InputActionOutput(ValueType, rawValue), deltaTime);
 
         InputStateTracker triggerStateTracker;
-        TriggerState calcedState = triggerStateTracker.EvaluateTriggers(player, m_Triggers, modifiedValue, deltaTime);
+        InteractionState calcedState = triggerStateTracker.EvaluateInteractions(player, m_Triggers, modifiedValue, deltaTime);
 
 
-        triggerStateTracker.SetStateForNoTriggers(modifiedValue.IsNonZero() ? TriggerState::Triggered : TriggerState::None);
+        triggerStateTracker.SetStateForNoTriggers(modifiedValue.IsNonZero() ? InteractionState::Triggered : InteractionState::None);
 
         // modifeeir key must be triggerd to be able to procces input data
 
         if (isModifierKey)
         {
-            return triggerStateTracker.GetState() == TriggerState::Triggered;
+            return triggerStateTracker.GetState() == InteractionState::Triggered;
         }
 
-        bool triggersApplied = (m_Triggers.size()) > 0;
+        bool interactionsApplied = (m_Triggers.size()) > 0;
         const InputActionAccumulationBehavior accumulationBehavior = action->AccumulationBehavior;
         if (modifiedValue.GetMagnitudeSq())
         {
             const int NumComponents = glm::max(1, int(ValueType));
             glm::vec3 modified = modifiedValue.Get<glm::vec3>();
-            glm::vec3 merged = actionData.ActionValue.Get<glm::vec3>();
+            glm::vec3 merged = actionData.ActionOutput.Get<glm::vec3>();
             for (int component = 0; component < NumComponents; ++component)
             {
                 switch (accumulationBehavior)
@@ -90,12 +90,12 @@ namespace Proof
                 break;
                 }
             }
-            actionData.ActionValue = InputActionValue(ValueType, merged);
+            actionData.ActionOutput = InputActionOutput(ValueType, merged);
 
         }
 
-        actionData.TriggerStateTracker = actionData.TriggerStateTracker > triggerStateTracker ? actionData.TriggerStateTracker : triggerStateTracker;
-        actionData.TriggerStateTracker.SetMappingTriggerApplied(triggersApplied);
+        actionData.InteractionStateTracker = actionData.InteractionStateTracker > triggerStateTracker ? actionData.InteractionStateTracker : triggerStateTracker;
+        actionData.InteractionStateTracker.SetMappingInteractionApplied(interactionsApplied);
 
     }
     InputKeyBindingBundle::InputKeyBindingBundle()
@@ -123,7 +123,7 @@ namespace Proof
             m_Bindings[binding] = Count<InputKeyBinding>::Create(keyBinding);
         }
     }
-    bool InputKeyBindingBundle::ProcessInputData(Count<class ElevatedPlayer> player, InputActionValue& actionValue, Count<InputAction> action, const ElevatedInputKey& key,bool isModifierKey)
+    bool InputKeyBindingBundle::ProcessInputData(Count<class ElevatedPlayer> player, InputActionOutput& actionValue, Count<InputAction> action, const ElevatedInputKey& key,bool isModifierKey)
     {
         if (!InputKeyBindingBase::ProcessInputData(player, actionValue, action, key, isModifierKey))
             return false;
@@ -171,28 +171,28 @@ namespace Proof
                 break;
                 case Proof::InputKeyBidningBundleTypes::PositiveY:
                 {
-                    if(action->ValueType > InputActionValueType::Float)
+                    if(action->ValueType > InputActionOutputType::Float)
                         axis.y = axis.x;
                     //axis.x = 0;
                 }
                 break;
                 case Proof::InputKeyBidningBundleTypes::NegativeY:
                 {
-                    if (action->ValueType > InputActionValueType::Float)
+                    if (action->ValueType > InputActionOutputType::Float)
                         axis.y = -axis.x;
                     //axis.x = 0;
                 }
                 break;
                 case Proof::InputKeyBidningBundleTypes::PositiveZ:
                 {
-                    if (action->ValueType > InputActionValueType::Vector2D)
+                    if (action->ValueType > InputActionOutputType::Vector2D)
                         axis.z = axis.x;
                     //axis.x = 0;
                 }
                 break;
                 case Proof::InputKeyBidningBundleTypes::NegativeZ:
                 {
-                    if (action->ValueType > InputActionValueType::Vector2D)
+                    if (action->ValueType > InputActionOutputType::Vector2D)
                         axis.z = -axis.x;
                     //axis.x = 0;
                 }

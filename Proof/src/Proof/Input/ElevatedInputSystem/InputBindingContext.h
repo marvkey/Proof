@@ -5,7 +5,7 @@
 #include <unordered_map>
 #include <vector>
 #include <glm/glm.hpp>
-#include "Version2/InputKeyBinding.h"
+#include "InputKeyBinding.h"
 namespace Proof
 {
 	class InputAction;
@@ -32,10 +32,10 @@ namespace Proof
 		friend class ElevatedPlayer;
 	};
 #else
-	class InputMappingContext : public Asset
+	class InputBindingContext : public Asset
 	{
 	public:
-		ASSET_CLASS_TYPE(InputMappingContext);
+		ASSET_CLASS_TYPE(InputBindingContext);
 		bool IsKeyMappedAsModifier(const ElevatedInputKey& key)
 		{
 			for (auto& actionKeyMapping : m_Mappings)

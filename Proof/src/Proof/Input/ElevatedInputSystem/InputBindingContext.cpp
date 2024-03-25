@@ -1,7 +1,6 @@
 #include "Proofprch.h"
-#include "InputContext.h"
+#include "InputBindingContext.h"
 #include "InputAction.h"
-#include "InputTriggers.h"
 #include "Proof/Utils/ContainerUtils.h"
 namespace Proof
 {
@@ -71,7 +70,7 @@ namespace Proof
 		return false;
 	}
 #else
-	Count<InputKeyBinding> InputMappingContext::AddKey(Count<InputAction> action, const ElevatedInputKey& inputKey)
+	Count<InputKeyBinding> InputBindingContext::AddKey(Count<InputAction> action, const ElevatedInputKey& inputKey)
 	{
 		ElevatedActionKeyMapping* actionMapping = GetActionKeyMappings(action);
 		if (actionMapping == nullptr)
@@ -81,21 +80,21 @@ namespace Proof
 		auto keyBinding = Count<InputKeyBinding>::Create(inputKey);
 		//keyBinding->m_ModifierKeys.push_back(Count<InputKeyBinding>::Create(ElevatedInputKeys::LeftShift));
 
-		auto data = Count<InputInteractionMultiClick>::Create();
-		keyBinding->m_Triggers.push_back(data);
+		//auto data = Count<InputInteractionMultiClick>::Create();
+		//keyBinding->m_Triggers.push_back(data);
 		actionMapping->m_KeyMappings.push_back(keyBinding);
 
 		return keyBinding;
 	}
-	void InputMappingContext::RemoveAllKeysFromAction(Count<InputAction> action)
+	void InputBindingContext::RemoveAllKeysFromAction(Count<InputAction> action)
 	{
 
 	}
-	void InputMappingContext::RemoveAllKeys()
+	void InputBindingContext::RemoveAllKeys()
 	{
 
 	}
-	ElevatedActionKeyMapping* InputMappingContext::GetActionKeyMappings(Count<InputAction> action)
+	ElevatedActionKeyMapping* InputBindingContext::GetActionKeyMappings(Count<InputAction> action)
 	{
 		for (auto& keyMappingHolder : m_Mappings)
 		{

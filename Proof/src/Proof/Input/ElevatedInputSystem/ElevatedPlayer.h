@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "InputTypes.h"
-#include "InputActionValue.h"
+#include "InputActionOutput.h"
 #include "ElevatedActionKeyMapping.h"
 #include <glm/glm.hpp>
 #include <unordered_map>
@@ -28,20 +28,20 @@ namespace Proof
 		bool DownPrevious = false;
 	};
 	
-	class InputMappingContext;
+	class InputBindingContext;
 	class InputAction;
 
 	struct InputMappingContextInstance
 	{
-		Count<InputMappingContext> InputMappingContext;
+		Count<InputBindingContext> InputMappingContext;
 		bool Active = true;
 	};
 
 	struct ElevatedPlayerInputDelegate
 	{
 		Count<InputAction> InputAction;
-		TriggerEvent TriggerEvent;
-		Delegate<void(const InputActionValue&)> Function; 
+		InteractionEvent TriggerEvent;
+		Delegate<void(const InputActionOutput&)> Function; 
 	};
 	// because the input action context coudl remove the key mapping
 			// so storing a pointer will just be wierd cause it would cause an error
@@ -50,9 +50,9 @@ namespace Proof
 		Count<class InputAction> InputAction;
 		ElevatedInputKey Key = ElevatedInputKeys::Invalid;
 		Count<class InputKeyBindingBase> InputKeyBinding;
-		Count<class InputMappingContext> InputMappingContext;
+		Count<class InputBindingContext> InputMappingContext;
 
-		ElevatedActionKeyData(Count<class InputAction> action, ElevatedInputKey key, Count<InputKeyBindingBase> inputBinding, Count<class InputMappingContext> inputMapping)
+		ElevatedActionKeyData(Count<class InputAction> action, ElevatedInputKey key, Count<InputKeyBindingBase> inputBinding, Count<class InputBindingContext> inputMapping)
 			:InputAction(action), Key(key), InputKeyBinding(inputBinding), InputMappingContext(inputMapping)
 		{
 
@@ -74,24 +74,18 @@ namespace Proof
 	struct InputActionData
 	{
 		InputActionData(Count<InputAction> action);
-		TriggerState LastTriggerState = TriggerState::None;
-		// Trigger state
-		TriggerEvent TriggerEvent = TriggerEvent::None;
-		TriggerEventInternal TriggerEventInternal = TriggerEventInternal::None;
+		InteractionState LastInteractionState = InteractionState::None;
+		InteractionEvent InteractionEvent = InteractionEvent::None;
 
-		// The last time that this evaluated to a Triggered State
 		float LastTriggeredWorldTime = 0.0f;
 
-		// Combined value of all inputs mapped to this action
-		struct InputActionValue ActionValue = InputActionValue(glm::vec3(0));
+		struct InputActionOutput ActionOutput = InputActionOutput(glm::vec3(0));
 
-		// Total trigger processing/evaluation time (How long this action has been in event Started, Ongoing, or Triggered
 		float ElapsedProcessedTime = 0.f;
 
-		// Triggered time (How long this action has been in event Triggered only)
 		float ElapsedTriggeredTime = 0.f;
-		InputStateTracker TriggerStateTracker;
-		InputActionValue GetActionValue() const { return TriggerEvent == TriggerEvent::Triggered ? ActionValue : InputActionValue(ActionValue.GetValueType(), glm::vec3(0)); }
+		InputStateTracker InteractionStateTracker;
+		InputActionOutput GetActionValue() const { return InteractionEvent == InteractionEvent::Triggered ? ActionOutput : InputActionOutput(ActionOutput.GetOutputType(), glm::vec3(0)); }
 
 		Count<InputAction> m_InputAction;
 	};
@@ -99,14 +93,10 @@ namespace Proof
 	class ElevatedPlayer : public RefCounted
 	{
 	public:
-		bool IsAltPressed() const;
-		bool IsCtrlPressed() const;
-		bool IsShiftPressed() const;
-		bool IsCmdPressed() const;
 
-		InputMappingContextInstance* GetInputMappingContextInstance(Count<InputMappingContext> mapping);
+		InputMappingContextInstance* GetInputMappingContextInstance(Count<InputBindingContext> mapping);
 
-		void AddInputMapping(Count<InputMappingContext> mapping);
+		void AddInputMapping(Count<InputBindingContext> mapping);
 
 		bool InputKey(const ElevatedInputKeyParams& params);
 
@@ -114,7 +104,7 @@ namespace Proof
 		// free function 
 // Bind the function pointer using a template specialization
 		template <void(*TFunction)(const ElevatedInputKeyParams&)>
-		void Bind(Count<InputAction> inputAction, TriggerEvent triggerEvent)
+		void Bind(Count<InputAction> inputAction, InteractionEvent triggerEvent)
 		{
 			if (inputAction == nullptr)
 				return;
@@ -127,7 +117,7 @@ namespace Proof
 
 		// Lambda binding
 		template <class TLambda>
-		void Bind(Count<InputAction> inputAction, TriggerEvent triggerEvent,const TLambda& lambda)
+		void Bind(Count<InputAction> inputAction, InteractionEvent triggerEvent,const TLambda& lambda)
 		{
 			if (inputAction == nullptr)
 				return;
@@ -141,7 +131,7 @@ namespace Proof
 
 		// member function
 		template <typename TClass>
-		void Bind(Count<InputAction> inputAction, TriggerEvent triggerEvent, TClass* object,void (TClass::* function)(const InputActionValue&))
+		void Bind(Count<InputAction> inputAction, InteractionEvent triggerEvent, TClass* object,void (TClass::* function)(const InputActionOutput&))
 		{
 
 			if (inputAction == nullptr)
@@ -158,7 +148,7 @@ namespace Proof
 #if OLD_ELEVATE_INPUT
 		InputActionValue ApplyModifiers(const std::vector<Count< class InputModifier>>& modifiers, InputActionValue actionValue, float deltaTime);
 #else
-		InputActionValue ApplyCustomizer(const std::vector<Count< class InputCustomizer>>& customizer, const InputActionValue& actionValue, float deltaTime);
+		InputActionOutput ApplyCustomizer(const std::vector<Count< class InputCustomizer>>& customizer, const InputActionOutput& actionValue, float deltaTime);
 #endif
 
 	private:
@@ -169,7 +159,7 @@ namespace Proof
 		void ProcessActionMappingKeyEvent(InputActionValue actionValue, Count<InputMappingContext> actionMapping,ElevatedActionKeyMappingContainer& actionKeyMappingContainer, const ElevatedActionKeyMapping& keyMapping);
 #else
 		//retutnrs if key and modifeirs are able to proccess input
-		bool ProcessActionMappingKeyEvent(InputActionValue actionValue, Count<class InputAction>, Count<class InputKeyBindingBase> keyMapping, const ElevatedInputKey& key);
+		bool ProcessActionMappingKeyEvent(InputActionOutput actionValue, Count<class InputAction>, Count<class InputKeyBindingBase> keyMapping, const ElevatedInputKey& key);
 #endif
 	private:
 		int m_Player = -1; // none, player starts counting from 0

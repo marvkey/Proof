@@ -1,16 +1,16 @@
 #include "Proofprch.h"
-#include "InputTriggers.h"
+#include "InputInteractions.h"
 
 namespace Proof
 {
-	TriggerState InputInteractionTimeBound::UpdateInteractionState(Count<ElevatedPlayer> player,InputActionValue modifiedValue, float deltaTime)
+	InteractionState InputInteractionTimeBound::UpdateInteractionState(Count<ElevatedPlayer> player,InputActionOutput modifiedValue, float deltaTime)
     {
 
-		TriggerState State = TriggerState::None;
+		InteractionState State = InteractionState::None;
 
 		if (IsInteractionDetected(modifiedValue))
 		{
-			State = TriggerState::Ongoing;
+			State = InteractionState::Ongoing;
 			m_HeldDuration = CalculateHeldDuration(deltaTime);
 		}
 		else
@@ -26,7 +26,7 @@ namespace Proof
         return m_HeldDuration + deltaTime;
     }
 	
-	TriggerState InputInteractionClickRelease::UpdateInteractionState(Count<ElevatedPlayer> player, InputActionValue modifiedValue, float deltaTime)
+	InteractionState InputInteractionClickRelease::UpdateInteractionState(Count<ElevatedPlayer> player, InputActionOutput modifiedValue, float deltaTime)
 	{
 		switch (Mode)
 		{
@@ -34,11 +34,11 @@ namespace Proof
 		{
 			if (IsInteractionDetected(modifiedValue) && !IsInteractionDetected(GetLastActionValue()))
 			{
-				return TriggerState::Triggered;
+				return InteractionState::Triggered;
 			}
 			else
 			{
-				return TriggerState::None;
+				return InteractionState::None;
 			}
 		}
 			break;
@@ -48,16 +48,16 @@ namespace Proof
 			// Ongoing on hold
 			if (IsInteractionDetected(modifiedValue))
 			{
-				return TriggerState::Ongoing;
+				return InteractionState::Ongoing;
 			}
 
 			// Triggered on release
 			if (IsInteractionDetected(GetLastActionValue()))
 			{
-				return TriggerState::Triggered;
+				return InteractionState::Triggered;
 			}
 
-			return TriggerState::None;
+			return InteractionState::None;
 		}
 		break;
 		case Proof::InputInteractionClickRelease::ClickReleaseMode::ClickRelease:
@@ -65,34 +65,34 @@ namespace Proof
 				// triggered when key is clicked
 				if (IsInteractionDetected(modifiedValue) && !IsInteractionDetected(GetLastActionValue()))
 				{
-					return TriggerState::Triggered;
+					return InteractionState::Triggered;
 				}
 
 				// Ongoing on hold when key is waiting to be released
 				if (IsInteractionDetected(modifiedValue))
 				{
-					return TriggerState::Ongoing;
+					return InteractionState::Ongoing;
 				}
 
 				// Triggered on release
 				if (IsInteractionDetected(GetLastActionValue()))
 				{
-					return TriggerState::Triggered;
+					return InteractionState::Triggered;
 				}
 
-				return TriggerState::None;
+				return InteractionState::None;
 			}
 			break;
 		}
 		PF_CORE_ASSERT(false);
-		return TriggerState::None;
+		return InteractionState::None;
 	}
-	TriggerState InputInteractionDown::UpdateInteractionState(Count<ElevatedPlayer> player, InputActionValue modifiedValue, float deltaTime)
+	InteractionState InputInteractionDown::UpdateInteractionState(Count<ElevatedPlayer> player, InputActionOutput modifiedValue, float deltaTime)
 	{
 		// key is Down
-		return IsInteractionDetected(modifiedValue) ? TriggerState::Triggered : TriggerState::None;
+		return IsInteractionDetected(modifiedValue) ? InteractionState::Triggered : InteractionState::None;
 	}
-	TriggerState InputInteractionHold::UpdateInteractionState(Count<ElevatedPlayer> player, InputActionValue modifiedValue, float deltaTime)
+	InteractionState InputInteractionHold::UpdateInteractionState(Count<ElevatedPlayer> player, InputActionOutput modifiedValue, float deltaTime)
 	{
 		auto state = InputInteractionTimeBound::UpdateInteractionState(player, modifiedValue, deltaTime);
 
@@ -103,16 +103,16 @@ namespace Proof
 		{
 			if (isFirstTrigger || !FireOnce)
 			{
-				return TriggerState::Triggered;
+				return InteractionState::Triggered;
 			}
 			else
 			{
-				return TriggerState::None;
+				return InteractionState::None;
 			}
 		}
-		return TriggerState::None;
+		return InteractionState::None;
 	}
-	TriggerState InputInteractionMultiClick::UpdateInteractionState(Count<ElevatedPlayer> player, InputActionValue modifiedValue, float deltaTime)
+	InteractionState InputInteractionMultiClick::UpdateInteractionState(Count<ElevatedPlayer> player, InputActionOutput modifiedValue, float deltaTime)
 	{
 		switch (m_Phase)
 		{
@@ -123,11 +123,11 @@ namespace Proof
 					{
 						m_Phase = Phase::ReleasePending;
 						m_LastStartTime = FrameTime::GetTime();
-						return TriggerState::Ongoing;
+						return InteractionState::Ongoing;
 					}
 					else
 					{
-						return TriggerState::None;
+						return InteractionState::None;
 					}
 				}
 				break;
@@ -143,25 +143,25 @@ namespace Proof
 							if (m_CurrentTapCount >= TapCount)
 							{
 								Reset();
-								return TriggerState::Triggered;
+								return InteractionState::Triggered;
 							}
 							else
 							{
 								m_Phase = Phase::ClickPending;
 								m_LastReleaseTime = FrameTime::GetTime();
-								return TriggerState::Ongoing;
+								return InteractionState::Ongoing;
 							}
 						}
 						else
 						{
 							// canceled
 							Reset();
-							return TriggerState::None;
+							return InteractionState::None;
 						}
 					}
 					else
 					{
-						return TriggerState::Ongoing;
+						return InteractionState::Ongoing;
 					}
 				}
 				break;
@@ -174,24 +174,24 @@ namespace Proof
 						{
 							m_Phase = Phase::ReleasePending;
 							m_LastStartTime = FrameTime::GetTime();
-							return TriggerState::Ongoing;
+							return InteractionState::Ongoing;
 						}
 						else
 						{
 
 							// canceled
 							Reset();
-							return TriggerState::None;
+							return InteractionState::None;
 						}
 
 					}
 					else
 					{
-						return TriggerState::Ongoing;
+						return InteractionState::Ongoing;
 					}
 				}
 				break;
 		}
-		return TriggerState::None;
+		return InteractionState::None;
 	}
 }

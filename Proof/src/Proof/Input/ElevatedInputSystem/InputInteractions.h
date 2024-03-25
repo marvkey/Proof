@@ -1,6 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "InputActionValue.h"
+#include "InputActionOutput.h"
 #include "InputTypes.h"
 namespace Proof
 {
@@ -43,8 +43,8 @@ namespace Proof
     };
 
 
-#define INPUT_INTERACTION_MODE(type) static InteractionMode GetStaticTriggerMode() { return InteractionMode::type; }\
-								virtual InteractionMode GetTriggerMode() const { return GetStaticTriggerMode(); }
+#define INPUT_INTERACTION_MODE(type) static InteractionMode GetStaticInteractionMode() { return InteractionMode::type; }\
+								virtual InteractionMode GetInteractionMode() const { return GetStaticInteractionMode(); }
 	class InputInteraction : public RefCounted
 	{
     public:
@@ -64,13 +64,13 @@ namespace Proof
     */
         float InteractionThreshold = 0.5f;
 
-        const InputActionValue& GetLastActionValue()const { return m_LastValue; }
+        const InputActionOutput& GetLastActionValue()const { return m_LastValue; }
         
-        bool IsInteractionDetected(const InputActionValue& value) const { return  value.GetMagnitudeSq() >= InteractionThreshold * InteractionThreshold; }
+        bool IsInteractionDetected(const InputActionOutput& value) const { return  value.GetMagnitudeSq() >= InteractionThreshold * InteractionThreshold; }
     protected:
-        virtual TriggerState UpdateInteractionState(Count<ElevatedPlayer> player, InputActionValue modifiedValue, float deltaTime) { return IsInteractionDetected(modifiedValue) ? TriggerState::Triggered : TriggerState::None;; };
+        virtual InteractionState UpdateInteractionState(Count<ElevatedPlayer> player, InputActionOutput modifiedValue, float deltaTime) { return IsInteractionDetected(modifiedValue) ? InteractionState::Triggered : InteractionState::None;; };
     private:
-        InputActionValue m_LastValue;	
+        InputActionOutput m_LastValue;	
         friend class InputStateTracker;
 	};
     /**
@@ -79,9 +79,10 @@ namespace Proof
     class InputInteractionDown : public InputInteraction
     {
     public:
+        INPUT_INTERACTION_MODE(Direct);
 
     protected:
-        virtual TriggerState UpdateInteractionState(Count<ElevatedPlayer> player, InputActionValue modifiedValue, float deltaTime) override;
+        virtual InteractionState UpdateInteractionState(Count<ElevatedPlayer> player, InputActionOutput modifiedValue, float deltaTime) override;
     };
 
 
@@ -98,7 +99,7 @@ namespace Proof
         INPUT_INTERACTION_MODE(Direct);
 
     protected:
-        virtual TriggerState UpdateInteractionState(Count<ElevatedPlayer> player, InputActionValue modifiedValue, float deltaTime) override;
+        virtual InteractionState UpdateInteractionState(Count<ElevatedPlayer> player, InputActionOutput modifiedValue, float deltaTime) override;
     };
 
     class InputInteractionTimeBound : public InputInteraction
@@ -108,7 +109,7 @@ namespace Proof
 
     protected:
         float CalculateHeldDuration(const float deltaTime) const;
-        virtual TriggerState UpdateInteractionState(Count<ElevatedPlayer> player, InputActionValue modifiedValue, float deltaTime) override;
+        virtual InteractionState UpdateInteractionState(Count<ElevatedPlayer> player, InputActionOutput modifiedValue, float deltaTime) override;
     private:
         float m_HeldDuration = 0.0f;
     };
@@ -124,7 +125,7 @@ namespace Proof
         // Determine whether this trigger should activate only once or every frame after the hold time threshold is met.
         bool FireOnce = false;
     protected:
-        virtual TriggerState UpdateInteractionState(Count<ElevatedPlayer> player, InputActionValue modifiedValue, float deltaTime) override;
+        virtual InteractionState UpdateInteractionState(Count<ElevatedPlayer> player, InputActionOutput modifiedValue, float deltaTime) override;
     private:
         bool m_IsTriggered = false;
     };
@@ -146,7 +147,7 @@ namespace Proof
         float TapTime = 0.2f;
 
     protected:
-        virtual TriggerState UpdateInteractionState(Count<ElevatedPlayer> player, InputActionValue modifiedValue, float deltaTime) override;
+        virtual InteractionState UpdateInteractionState(Count<ElevatedPlayer> player, InputActionOutput modifiedValue, float deltaTime) override;
 
     private:
         void Reset()
