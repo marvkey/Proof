@@ -131,8 +131,8 @@ namespace Proof
 	struct ElevatedActionKeyMapping
 	{
 		Count<class InputAction> InputAction;
-		std::vector<Count<class InputInteraction>> m_Triggers;
-		std::vector<Count<class InputCustomizer>> m_Customizers;
+		std::vector<Count<class InputInteraction>> Interactions;
+		std::vector<Count<class InputCustomizer>> Customizers;
 
 		std::vector<Count<InputKeyBindingBase>> m_KeyMappings;
 

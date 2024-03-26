@@ -3,6 +3,43 @@
 
 namespace Proof
 {
+	Count<InputInteraction> InputInteraction::CreateInputInteraction(InputInteractionType type)
+	{
+		switch (type)
+		{
+			case Proof::InputInteractionType::Default:
+			{
+				PF_CORE_ASSERT(type == InputInteraction::GetStaticInteractionType(), "Interaction Type does not match");
+				return Count<InputInteraction>::Create();
+			}
+				break;
+			case Proof::InputInteractionType::Down:
+			{
+				PF_CORE_ASSERT(type == InputInteractionDown::GetStaticInteractionType(), "Interaction Type does not match");
+				return Count<InputInteractionDown>::Create();
+			}
+				break;
+			case Proof::InputInteractionType::ClickRelease:
+			{
+				PF_CORE_ASSERT(type == InputInteractionClickRelease::GetStaticInteractionType(), "Interaction Type does not match");
+				return Count<InputInteractionClickRelease>::Create();
+			}
+				break;
+			case Proof::InputInteractionType::Hold:
+			{
+				PF_CORE_ASSERT(type == InputInteractionHold::GetStaticInteractionType(), "Interaction Type does not match");
+				return Count<InputInteractionHold>::Create();
+			}
+				break;
+			case Proof::InputInteractionType::MultiTap:
+			{
+				PF_CORE_ASSERT(type == InputInteractionMultiTap::GetStaticInteractionType(), "Interaction Type does not match");
+				return Count<InputInteractionMultiTap>::Create();
+			}
+		}
+		PF_CORE_ASSERT(false);
+		return nullptr;
+	}
 	InteractionState InputInteractionTimeBound::UpdateInteractionState(Count<ElevatedPlayer> player,InputActionOutput modifiedValue, float deltaTime)
     {
 
@@ -112,11 +149,11 @@ namespace Proof
 		}
 		return InteractionState::None;
 	}
-	InteractionState InputInteractionMultiClick::UpdateInteractionState(Count<ElevatedPlayer> player, InputActionOutput modifiedValue, float deltaTime)
+	InteractionState InputInteractionMultiTap::UpdateInteractionState(Count<ElevatedPlayer> player, InputActionOutput modifiedValue, float deltaTime)
 	{
 		switch (m_Phase)
 		{
-			case Proof::InputInteractionMultiClick::Phase::None:
+			case Proof::InputInteractionMultiTap::Phase::None:
 				{
 				// key is down
 					if (IsInteractionDetected(modifiedValue))
@@ -131,7 +168,7 @@ namespace Proof
 					}
 				}
 				break;
-			case Proof::InputInteractionMultiClick::Phase::ReleasePending:
+			case Proof::InputInteractionMultiTap::Phase::ReleasePending:
 				{
 					
 					// on release
@@ -165,7 +202,7 @@ namespace Proof
 					}
 				}
 				break;
-			case Proof::InputInteractionMultiClick::Phase::ClickPending:
+			case Proof::InputInteractionMultiTap::Phase::ClickPending:
 				{
 					// key is down
 					if (IsInteractionDetected(modifiedValue))
@@ -194,4 +231,5 @@ namespace Proof
 		}
 		return InteractionState::None;
 	}
+	
 }

@@ -159,7 +159,7 @@ namespace Proof::UI
 	//bool AttributeTreeNodeWithDisabled(const std::string& label, bool& disabled, bool OpenDefault);
 	void DrawItemActivityOutline(float rounding = 0.0f, bool drawWhenInactive = false, ImColor colourWhenActive = (236, 158, 36, 255));
 	void ShowRawMessageBox(const std::string& title, UIMessageBoxData& data);
-
+		
 	template<UIMessageBoxBit flags = UIMessageBoxBit::OkButton, typename... TArgs>
 	static void ShowSimpleMessageBox(const std::string& title, const std::string& content, TArgs&&... contentArgs)
 	{

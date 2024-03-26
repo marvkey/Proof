@@ -7,6 +7,9 @@ namespace Proof
 	public:
 		//refrences to icons https://www.flaticon.com/
 
+		static inline Count<class Texture2D> DeleteIcon;
+		static inline Count<class Texture2D> AddIcon;
+		static inline Count<class Texture2D> InsertIcon;
 
 		static inline Count<class Texture2D> CheckerBoardWhiteGrey;
 		static inline Count<class Texture2D> FolderIcon;

@@ -8,3 +8,6 @@ Assets:
   - Asset: 12508729347451298576
     Type: ScriptFile
     Path: Scripts\PlayerMovement.cs
+  - Asset: 1939643375930245746
+    Type: InputAction
+    Path: Input\Actions\Move.InputAction.ProofAsset

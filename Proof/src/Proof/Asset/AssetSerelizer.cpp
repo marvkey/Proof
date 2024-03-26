@@ -20,6 +20,8 @@
 #include "Proof/Scene/SceneSerializer.h"
 #include "MeshImpoter.h"
 #include "Proof/Asset/AssetCustomData/MeshSourceSavedSettings.h"
+#include "Proof/Input/ElevatedInputSystem/InputAction.h"
+#include "SerializeCommon.h"
 namespace Proof {
 	void AssetSerializer::SetID(const AssetInfo& data, const Count<class Asset>& asset)
 	{
@@ -740,6 +742,47 @@ namespace $NAMESPACE_NAME$
 	{
 		PF_CORE_ASSERT(false, "Cannot World Asset from asset Manager");
 		return Count<class Asset>();
+	}
+
+	void InputActionSerealizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
+	{
+
+		Count<InputAction> inputAction = asset.As<InputAction>();
+
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(inputAction->GetAssetType());
+		out << YAML::Key << "ID" << YAML::Value << inputAction->GetID();
+		out << YAML::Key << "OutputType" << YAML::Value << EnumReflection::EnumString( inputAction->OutputType);
+		out << YAML::Key << "OutputValueBehavior" << YAML::Value << EnumReflection::EnumString(inputAction->OutputValueBehavior);
+
+		SerializeCommon::SerializeInputInteractions(out,inputAction->Interactions);
+
+		out << YAML::EndMap;
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		stream << out.c_str();
+		stream.close();
+	}
+
+	Count<class Asset> InputActionSerealizer::TryLoadAsset(const AssetInfo& assetData) const
+	{
+		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		if (!data["AssetType"])
+			return nullptr;
+
+		Count<InputAction> inputAction = Count<InputAction>::Create();
+
+		inputAction->OutputType = EnumReflection::StringEnum<InputActionOutputType>(data["OutputType"].as<std::string>
+			(EnumReflection::EnumString(InputActionOutputType::Bool)));
+
+		inputAction->OutputValueBehavior = EnumReflection::StringEnum<InputActionOutputValueBehavior>(data["OutputValueBehavior"].as<std::string>
+			(EnumReflection::EnumString(InputActionOutputValueBehavior::MaximumAbsolute)));
+
+		SerializeCommon::LoadInputInteractions(data, inputAction->Interactions);
+
+		SetID(assetData, inputAction);
+		return inputAction;
 	}
 
 }

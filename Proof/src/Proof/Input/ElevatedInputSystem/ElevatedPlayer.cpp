@@ -16,7 +16,7 @@ namespace Proof
 	InputActionData::InputActionData(Count<InputAction> action)
 		: m_InputAction(action)
 	{
-		ActionOutput = InputActionOutput(action->ValueType, glm::vec3(0.0f));
+		ActionOutput = InputActionOutput(action->OutputType, glm::vec3(0.0f));
 	}
 	void ElevatedPlayer::OnUpdate(FrameTime deltaTime)
 	{
@@ -186,7 +186,9 @@ namespace Proof
 			InteractionState triggerState = InteractionState::None;
 
 			auto rawValue = actionData.ActionOutput;
-			actionData.ActionOutput = ApplyCustomizer(elevatedKeyMapping->m_Customizers, actionData.ActionOutput, deltaTime);
+
+			actionData.ActionOutput = ApplyCustomizer(elevatedKeyMapping->Customizers, actionData.ActionOutput, deltaTime);
+			actionData.ActionOutput = ApplyCustomizer(inputAction->Customizers, actionData.ActionOutput, deltaTime);
 
 			if (actionData.ActionOutput.Get<glm::vec3>() != rawValue.Get<glm::vec3>())
 			{
@@ -194,7 +196,8 @@ namespace Proof
 			}
 
 			InteractionState PrevState = actionData.InteractionStateTracker.GetState();
-			triggerState = actionData.InteractionStateTracker.EvaluateInteractions(this, elevatedKeyMapping->m_Triggers, actionData.ActionOutput, deltaTime);
+			triggerState = actionData.InteractionStateTracker.EvaluateInteractions(this, elevatedKeyMapping->Interactions, actionData.ActionOutput, deltaTime);
+			triggerState = actionData.InteractionStateTracker.EvaluateInteractions(this, inputAction->Interactions, actionData.ActionOutput, deltaTime);
 			triggerState = actionData.InteractionStateTracker.GetMappingInteractionApplied() ? Math::Min(triggerState, PrevState) : triggerState;
 
 			if (m_GamePaused && !inputAction->TriggerWhenPaused)

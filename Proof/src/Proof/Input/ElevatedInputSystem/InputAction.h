@@ -7,35 +7,45 @@
 namespace Proof
 {
 	class InputInteraction;
-	class InputModifier;
+	class InputCustomizer;
 
-	enum class InputActionAccumulationBehavior 
+	enum class InputActionOutputValueBehavior 
 	{
 		/**
-		* Take the value from the mapping with the highest Absolute Value.
-		*
-		* For example, given a value of -0.3 and 0.5, the input action's value would be 0.5.
-		*/
-		TakeHighestAbsoluteValue,
+		 * Takes the value from the mapping with the highest Absolute Value.
+		 *
+		 * For example, in a game where the player controls character movement using the arrow keys:
+		 * - Pressing the "Up" arrow key produces a positive value (e.g., +0.8) for forward movement.
+		 * - Simultaneously pressing the "Down" arrow key produces a negative value (e.g., -0.6) for backward movement.
+		 * - Despite conflicting inputs, the resulting action's value reflects the highest absolute movement input (e.g., 0.8).
+		 * - 
+		 * This behavior is particularly useful for player movement in games, where simultaneous input from multiple keys may lead to conflicting movement directions.
+		 * By considering only the highest absolute input value, the player's movement accurately reflects the most significant directional change,
+		 * ensuring smooth and intuitive character control even amidst conflicting key presses.
+		 */
+		MaximumAbsolute,
 
 		/**
-		* Cumulatively adds the key values for each mapping.
+		* Aggregates the values from different mappings.
 		*
-		* For example, a value of -0.7 and +0.75 on the same input action would result in a value of 0.05.
+		* For example, if pressing the up arrow key contributes a value of +0.5 and pressing the down arrow key contributes -0.5 to the same input action,
+		* the resulting value would be 0.0, effectively canceling each other out.
 		*
-		* A practical example of when to use this would be for something like WASD movement, if you want pressing W and S to cancel each other out.
+		* This behavior might be useful in scenarios where you want conflicting inputs, such as pressing up and down arrow keys simultaneously, to result in no net movement or action.
 		*/
-		Cumulative,
+		Aggregate,
 	};
 	class InputAction : public Asset
 	{
 	public:
 		ASSET_CLASS_TYPE(InputAction);
 		bool TriggerWhenPaused = false;
-		InputActionOutputType ValueType = InputActionOutputType::Bool;
-		InputActionAccumulationBehavior AccumulationBehavior = InputActionAccumulationBehavior::TakeHighestAbsoluteValue;
+		InputActionOutputType OutputType = InputActionOutputType::Bool;
+		InputActionOutputValueBehavior OutputValueBehavior = InputActionOutputValueBehavior::MaximumAbsolute;
 
-		//std::vector<InputTrigger> Triggers;
+		std::vector<Count< InputInteraction>> Interactions;
+		std::vector<Count< InputCustomizer>> Customizers;
 	private:
+		
 	};
 }

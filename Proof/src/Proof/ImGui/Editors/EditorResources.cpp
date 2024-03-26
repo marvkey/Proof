@@ -5,6 +5,10 @@
 namespace Proof {
 	void EditorResources::Init()
 	{
+		DeleteIcon = Texture2D::Create(TextureConfiguration("DeleteIcon"), "Resources/Icons/Delete.png");
+		AddIcon = Texture2D::Create(TextureConfiguration("AddIcon"), "Resources/Icons/Add.png");
+		InsertIcon = Texture2D::Create(TextureConfiguration("InsertIcon"), "Resources/Icons/Insert.png");
+
 		CheckerBoardWhiteGrey = Texture2D::Create(TextureConfiguration("WhiteAndGreyCheckerBoard"), "Assets/Textures/WhiteAndGreyCheckerBoard.png");
 		FolderIcon = Texture2D::Create(TextureConfiguration("FolderIcon"), "Resources/Icons/ContentBrowser/FolderIcon.png");
 		FileIcon = Texture2D::Create(TextureConfiguration("FIleIcon"), "Resources/Icons/ContentBrowser/FileIcon.png");

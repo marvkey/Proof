@@ -1952,9 +1952,10 @@ namespace Proof::UI
 
         UpdateIDBuffer(label);
 
-        ImGui::PushID(s_IDBuffer);
+        ImGui::PushID(GenerateID());
 
-        open = ImGui::TreeNodeEx("##dummy_id", treeNodeFlags, Utils::String::ToUpper(label).c_str());
+        //open = ImGui::TreeNodeEx("##dummy_id", treeNodeFlags, Utils::String::ToUpper(label).c_str());
+        open = ImGui::TreeNodeEx("##dummy_id", treeNodeFlags, label.c_str());
         ImGui::PopID();
 
         return open;
@@ -2313,7 +2314,7 @@ namespace Proof::UI
 
     bool ImageButton(const Count<Proof::Image>& image, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
     {
-        return ImageButton(nullptr, image, size, uv0, uv1, frame_padding, bg_col, tint_col);
+        return ImageButton(UI::GenerateID(), image, size, uv0, uv1, frame_padding, bg_col, tint_col);
     }
 
     bool ImageButton(const char* stringID, const Count<Proof::Image>& image, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
@@ -2333,7 +2334,7 @@ namespace Proof::UI
 
     bool ImageButton(const Count<Texture2D>& texture, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
     {
-        return ImageButton(nullptr, texture->GetImage(), size, uv0, uv1, frame_padding, bg_col, tint_col);
+        return ImageButton(UI::GenerateID(), texture->GetImage(), size, uv0, uv1, frame_padding, bg_col, tint_col);
     }
 
     template<class ValueType>

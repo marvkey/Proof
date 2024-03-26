@@ -3,7 +3,6 @@
 #include "Proof/Scene/Camera/EditorCamera.h"
 namespace Proof
 {
-
 	class MeshEditorPanel : public AssetEditor
 	{
 	public:

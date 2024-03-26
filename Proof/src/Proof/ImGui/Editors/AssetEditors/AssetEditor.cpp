@@ -13,6 +13,7 @@
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Input/Input.h"
 #include "Proof/ImGui/Editors/AssetEditors/PrefabEditor.h"
+#include "InputActionPanel.h"
 namespace Proof 
 {
 	AssetEditor::AssetEditor(const char* id)
@@ -193,6 +194,7 @@ namespace Proof
 		RegisterEditor(AssetType::Mesh);
 		RegisterEditor(AssetType::MeshCollider);
 		RegisterEditor(AssetType::Prefab);
+		RegisterEditor(AssetType::InputAction);
 	}
 
 	void AssetEditorPanel::UnregisterAllEditors()
@@ -292,6 +294,8 @@ namespace Proof
 				case Proof::AssetType::MeshCollider:
 					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<MeshColliderEditorPanel>::Create();
 					break;
+				case Proof::AssetType::InputAction:
+					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<InputActionEditorPanel>::Create();
 				default:
 					break;
 			}

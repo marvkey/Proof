@@ -28,7 +28,7 @@
 #include "Proof/Physics/PhysicsShapes.h"
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
 #include "Proof/Input/ElevatedInputSystem/InputAction.h"
-#include "Proof/Input/ElevatedInputSystem/InputContext.h"
+#include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 
 #include "Proof/Scripting/ScriptWorld.h"
 #include <glm/gtx/euler_angles.hpp>

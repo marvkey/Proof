@@ -42,14 +42,28 @@ namespace Proof
         Blocker,
     };
 
+    enum class InputInteractionType
+    {
+        Default = 0,
+        Down,
+        ClickRelease,
+        Hold,
+        MultiTap
+    };
 
 #define INPUT_INTERACTION_MODE(type) static InteractionMode GetStaticInteractionMode() { return InteractionMode::type; }\
 								virtual InteractionMode GetInteractionMode() const { return GetStaticInteractionMode(); }
+
+
+
+#define INPUT_INTERACTION_TYPE(type) static InputInteractionType GetStaticInteractionType() { return InputInteractionType::type; }\
+								virtual InputInteractionType GetInteractionType() const { return GetStaticInteractionType(); }
 	class InputInteraction : public RefCounted
 	{
     public:
 
         INPUT_INTERACTION_MODE(Direct);
+        INPUT_INTERACTION_TYPE(Default);
         /*
         
         The InteractionThreshold within the InputInteraction class serves as a pivotal parameter dictating the sensitivity of interaction detection. 
@@ -67,6 +81,8 @@ namespace Proof
         const InputActionOutput& GetLastActionValue()const { return m_LastValue; }
         
         bool IsInteractionDetected(const InputActionOutput& value) const { return  value.GetMagnitudeSq() >= InteractionThreshold * InteractionThreshold; }
+
+        static Count<InputInteraction> CreateInputInteraction(InputInteractionType type);
     protected:
         virtual InteractionState UpdateInteractionState(Count<ElevatedPlayer> player, InputActionOutput modifiedValue, float deltaTime) { return IsInteractionDetected(modifiedValue) ? InteractionState::Triggered : InteractionState::None;; };
     private:
@@ -80,15 +96,16 @@ namespace Proof
     {
     public:
         INPUT_INTERACTION_MODE(Direct);
-
+        INPUT_INTERACTION_TYPE(Down);
     protected:
         virtual InteractionState UpdateInteractionState(Count<ElevatedPlayer> player, InputActionOutput modifiedValue, float deltaTime) override;
     };
 
-
     class InputInteractionClickRelease : public InputInteraction
     {
     public:
+        INPUT_INTERACTION_TYPE(ClickRelease);
+
         enum class ClickReleaseMode
         {
             Click, // return trigger event when the key is Click
@@ -117,6 +134,7 @@ namespace Proof
     class InputInteractionHold : public InputInteractionTimeBound
     {
     public:
+        INPUT_INTERACTION_TYPE(Hold);
         INPUT_INTERACTION_MODE(Direct);
 
         // How Long to hold before Trigger Event fired
@@ -131,10 +149,11 @@ namespace Proof
     };
 
 
-    class InputInteractionMultiClick : public InputInteraction
+    class InputInteractionMultiTap : public InputInteraction
     {
     public:
         INPUT_INTERACTION_MODE(Direct);
+        INPUT_INTERACTION_TYPE(MultiTap);
 
         uint32_t TapCount = 2;
 
@@ -168,4 +187,5 @@ namespace Proof
         };
         Phase m_Phase = Phase::None;
     };
+
 }

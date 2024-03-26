@@ -14,6 +14,7 @@
 
 #include "Proof/ImGui/SelectionManager.h"
 #include "Proof/Input/Input.h"
+#include "Proof/Input/ElevatedInputSystem/InputAction.h"
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/MouseEvent.h"
 #include "../../EditorResources.h"
@@ -251,7 +252,6 @@ namespace Proof
 								if (ImGui::MenuItem("World"))
 								{
 									CreateAsset<World>("New World");
-
 								}
 
 								if (ImGui::BeginMenu("Physics"))
@@ -265,7 +265,6 @@ namespace Proof
 									ImGui::EndMenu();
 								}
 
-
 								if (ImGui::MenuItem("Material"))
 									CreateAsset<Material>("New Material");
 
@@ -275,6 +274,14 @@ namespace Proof
 								if (ImGui::MenuItem("Script"))
 									m_OpenNewScriptPopup = true;
 
+								if (ImGui::BeginMenu("Input"))
+								{
+
+									if (ImGui::MenuItem("InputAction"))
+										CreateAsset<InputAction>("InputAction");
+
+									ImGui::EndMenu();
+								}
 								ImGui::EndMenu();
 							}
 							if (ImGui::MenuItem("Folder"))

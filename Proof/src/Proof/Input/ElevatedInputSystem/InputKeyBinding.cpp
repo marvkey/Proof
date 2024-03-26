@@ -63,7 +63,7 @@ namespace Proof
         }
 
         bool interactionsApplied = (m_Triggers.size()) > 0;
-        const InputActionAccumulationBehavior accumulationBehavior = action->AccumulationBehavior;
+        const InputActionOutputValueBehavior accumulationBehavior = action->OutputValueBehavior;
         if (modifiedValue.GetMagnitudeSq())
         {
             const int NumComponents = glm::max(1, int(ValueType));
@@ -71,23 +71,20 @@ namespace Proof
             glm::vec3 merged = actionData.ActionOutput.Get<glm::vec3>();
             for (int component = 0; component < NumComponents; ++component)
             {
-                switch (accumulationBehavior)
-                {
-                case InputActionAccumulationBehavior::Cumulative:
+                if (accumulationBehavior == InputActionOutputValueBehavior::Aggregate)
                 {
                     merged[component] += modified[component];
                 }
-                break;
-
-                case InputActionAccumulationBehavior::TakeHighestAbsoluteValue:
-                default:
+                else // Maximum absolute
                 {
-                    if (glm::abs(modified[component]) >= glm::abs(merged[component]))
+                    // going to use > just to ensure teh existing value is kept
+                    // because it could be a negative 
+                    
+                    //if (glm::abs(modified[component]) >= glm::abs(merged[component]))
+                    if (glm::abs(modified[component]) > glm::abs(merged[component]))
                     {
                         merged[component] = modified[component];
                     }
-                }
-                break;
                 }
             }
             actionData.ActionOutput = InputActionOutput(ValueType, merged);
@@ -171,28 +168,28 @@ namespace Proof
                 break;
                 case Proof::InputKeyBidningBundleTypes::PositiveY:
                 {
-                    if(action->ValueType > InputActionOutputType::Float)
+                    if(action->OutputType > InputActionOutputType::Float)
                         axis.y = axis.x;
                     //axis.x = 0;
                 }
                 break;
                 case Proof::InputKeyBidningBundleTypes::NegativeY:
                 {
-                    if (action->ValueType > InputActionOutputType::Float)
+                    if (action->OutputType > InputActionOutputType::Float)
                         axis.y = -axis.x;
                     //axis.x = 0;
                 }
                 break;
                 case Proof::InputKeyBidningBundleTypes::PositiveZ:
                 {
-                    if (action->ValueType > InputActionOutputType::Vector2D)
+                    if (action->OutputType > InputActionOutputType::Vector2D)
                         axis.z = axis.x;
                     //axis.x = 0;
                 }
                 break;
                 case Proof::InputKeyBidningBundleTypes::NegativeZ:
                 {
-                    if (action->ValueType > InputActionOutputType::Vector2D)
+                    if (action->OutputType > InputActionOutputType::Vector2D)
                         axis.z = -axis.x;
                     //axis.x = 0;
                 }
