@@ -15,6 +15,7 @@
 #include "Proof/ImGui/SelectionManager.h"
 #include "Proof/Input/Input.h"
 #include "Proof/Input/ElevatedInputSystem/InputAction.h"
+#include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/MouseEvent.h"
 #include "../../EditorResources.h"
@@ -279,6 +280,8 @@ namespace Proof
 
 									if (ImGui::MenuItem("InputAction"))
 										CreateAsset<InputAction>("InputAction");
+									if (ImGui::MenuItem("InputBindingContext"))
+										CreateAsset<InputBindingContext>("InputBindingContext");
 
 									ImGui::EndMenu();
 								}

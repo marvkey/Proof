@@ -1137,12 +1137,6 @@ namespace Proof {
 		numPlayrs += Application::Get()->GetWindow()->GetControllers().size();
 		InputManager::StartRuntime(numPlayrs);
 
-
-		auto inputAction = Count<InputAction>::Create();
-		
-		auto inputMappingContext = Count<InputBindingContext>::Create();
-
-		inputMappingContext->AddKey(inputAction, ElevatedInputKeys::H);
 		ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) 
 			{
 				PlayerInputComponent& input = entity.GetComponent<PlayerInputComponent>();
@@ -1153,17 +1147,6 @@ namespace Proof {
 					// have to do this
 					input.Player = Count<ElevatedPlayer>::CreateFrom(player);
 					player = input.Player;
-					player->AddInputMapping(inputMappingContext);
-
-					player->Bind(inputAction, InteractionEvent::Started, [](const InputActionOutput& actionvalue)
-						{
-							PF_INFO("Player Started Jump");
-						});
-
-					player->Bind(inputAction, InteractionEvent::Completed, [](const InputActionOutput& actionvalue)
-						{
-							PF_INFO("Player Ended Jump");
-						});
 				}
 			});
 		

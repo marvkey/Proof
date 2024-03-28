@@ -354,7 +354,7 @@ namespace Proof
 		//	entity.GetComponent<TransformComponent>().GetRotationEuler().y, entity.GetComponent<TransformComponent>().GetRotationEuler().z);
 
 		ImGui::PushID(entity.GetUUID());
-		ImGuiTreeNodeFlags flags;
+		ImGuiTreeNodeFlags flags;	
 		if(m_IsWorld)
 			flags= ((SelectionManager::IsSelected(SelectionContext::Scene, entity.GetUUID()) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow);
 		else

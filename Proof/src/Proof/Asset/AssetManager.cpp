@@ -60,6 +60,7 @@ namespace Proof
 			s_AssetManagerData->AssetSerilizer[AssetType::ScriptFile] = CreateSpecial<ScriptFileAssetSerilizer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::World] = CreateSpecial<WorldAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::InputAction] = CreateSpecial<InputActionSerealizer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::InputBindingContext] = CreateSpecial<InputBindingContextSerializer>();
 		}
 
 		{

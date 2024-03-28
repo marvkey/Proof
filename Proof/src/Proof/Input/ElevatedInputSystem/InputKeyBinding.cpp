@@ -14,7 +14,35 @@ namespace Proof
         }
         return false;
     }
-    bool InputKeyBindingBase::ProcessInputData(Count<class ElevatedPlayer> player, InputActionOutput& actionValue, Count<InputAction> action, const ElevatedInputKey& key, bool isModifierKey)
+    Count<InputKeyBinding> InputKeyBindingBase::AddModifierKey(const ElevatedInputKey& key)
+    {
+        m_ModifierKeys.push_back(Count<InputKeyBinding>::Create(key, true));
+        return m_ModifierKeys.back();
+    }
+    void InputKeyBindingBase::AddModifierKey(Count<InputKeyBinding> modifer)
+    {
+        if (!modifer->IsModifier())
+        {
+            PF_ENGINE_ERROR("Cannot add key that is not a Mofifier");
+            return;
+        }
+        m_ModifierKeys.push_back(modifer);
+
+    }
+    void InputKeyBindingBase::RemoveModifierKey(uint32_t index)
+    {
+        if (m_ModifierKeys.size() > index)
+            m_ModifierKeys.erase(m_ModifierKeys.begin() + index);
+        else
+            PF_ENGINE_WARN("Cannot Remove Modifier key it is out of Index");
+    }
+    Count<InputKeyBinding> InputKeyBindingBase::GetModifierKey(uint32_t index)
+    {
+        if (m_ModifierKeys.size() > index)
+            return m_ModifierKeys.at(index);
+        return nullptr;
+    }
+    bool InputKeyBindingBase::ProcessInputData(Count<class ElevatedPlayer> player, InputActionOutput& actionValue, Count<InputAction> action, const ElevatedInputKey& key, float deltaTime)
     {
         for (auto& modiferKeys : m_ModifierKeys)
         {
@@ -22,7 +50,7 @@ namespace Proof
             // that means this action should not be proccessing an Input
             if (player->ShouldProccessInput(modiferKeys->GetKey()))
             {
-                if (!modiferKeys.As<InputKeyBindingBase>()->ProcessInputData(player, actionValue, action, key, true))
+                if (!modiferKeys.As<InputKeyBindingBase>()->ProcessInputData(player, actionValue, action, key, deltaTime))
                     return false;
             }
             else
@@ -33,36 +61,35 @@ namespace Proof
 
         return true;
     }
-    bool InputKeyBinding::ProcessInputData(Count<class ElevatedPlayer> player, InputActionOutput& actionValue, Count<InputAction> action, const ElevatedInputKey& key, bool isModifierKey)
+    bool InputKeyBinding::ProcessInputData(Count<class ElevatedPlayer> player, InputActionOutput& actionValue, Count<InputAction> action, const ElevatedInputKey& key, float deltaTime)
     {
-        if (!InputKeyBindingBase::ProcessInputData(player, actionValue, action, key, isModifierKey))
+        if (!InputKeyBindingBase::ProcessInputData(player, actionValue, action, key, m_IsModifierKey))
             return false;
 
 
-        if (!player->ShouldProccessInput(m_InputKey))
+        if (!player->ShouldProccessInput(InputKey))
             return false;
-        float deltaTime = FrameTime::GetWorldDeltaTime();
 
         auto& actionData = player->GetActionData(action);
 
         auto rawValue = actionValue.Get<glm::vec3>();
         InputActionOutputType ValueType = actionData.ActionOutput.GetOutputType();
-        InputActionOutput modifiedValue = player->ApplyCustomizer(m_Customizers, InputActionOutput(ValueType, rawValue), deltaTime);
+        InputActionOutput modifiedValue = player->ApplyCustomizer(Customizers, InputActionOutput(ValueType, rawValue), deltaTime);
 
         InputStateTracker triggerStateTracker;
-        InteractionState calcedState = triggerStateTracker.EvaluateInteractions(player, m_Triggers, modifiedValue, deltaTime);
+        InteractionState calcedState = triggerStateTracker.EvaluateInteractions(player, Interactions, modifiedValue, deltaTime);
 
 
         triggerStateTracker.SetStateForNoTriggers(modifiedValue.IsNonZero() ? InteractionState::Triggered : InteractionState::None);
 
         // modifeeir key must be triggerd to be able to procces input data
 
-        if (isModifierKey)
+        if (m_IsModifierKey)
         {
             return triggerStateTracker.GetState() == InteractionState::Triggered;
         }
 
-        bool interactionsApplied = (m_Triggers.size()) > 0;
+        bool interactionsApplied = (Interactions.size()) > 0;
         const InputActionOutputValueBehavior accumulationBehavior = action->OutputValueBehavior;
         if (modifiedValue.GetMagnitudeSq())
         {
@@ -92,19 +119,19 @@ namespace Proof
         }
 
         actionData.InteractionStateTracker = actionData.InteractionStateTracker > triggerStateTracker ? actionData.InteractionStateTracker : triggerStateTracker;
-        actionData.InteractionStateTracker.SetMappingInteractionApplied(interactionsApplied);
+        actionData.InteractionStateTracker.SetBindingInteractionApplied(interactionsApplied);
 
     }
     InputKeyBindingBundle::InputKeyBindingBundle()
     {
-        EnumReflection::ForEach< InputKeyBidningBundleTypes>([&](InputKeyBidningBundleTypes val)
+        EnumReflection::ForEach< InputKeyBindingBundleTypes>([&](InputKeyBindingBundleTypes val)
             {
                 m_Bindings[val] = Count<InputKeyBinding>::Create();
             });
     }
-    InputKeyBindingBundle::InputKeyBindingBundle(const std::unordered_map< InputKeyBidningBundleTypes, ElevatedInputKey>& inputBindings)
+    InputKeyBindingBundle::InputKeyBindingBundle(const std::unordered_map< InputKeyBindingBundleTypes, ElevatedInputKey>& inputBindings)
     {
-        EnumReflection::ForEach< InputKeyBidningBundleTypes>([&](InputKeyBidningBundleTypes val)
+        EnumReflection::ForEach< InputKeyBindingBundleTypes>([&](InputKeyBindingBundleTypes val)
             {
                 m_Bindings[val] = Count<InputKeyBinding>::Create();
             });
@@ -120,9 +147,34 @@ namespace Proof
             m_Bindings[binding] = Count<InputKeyBinding>::Create(keyBinding);
         }
     }
-    bool InputKeyBindingBundle::ProcessInputData(Count<class ElevatedPlayer> player, InputActionOutput& actionValue, Count<InputAction> action, const ElevatedInputKey& key,bool isModifierKey)
+    Count<InputKeyBinding> InputKeyBindingBundle::SetKey(InputKeyBindingBundleTypes type, const ElevatedInputKey& key)
     {
-        if (!InputKeyBindingBase::ProcessInputData(player, actionValue, action, key, isModifierKey))
+        if(key.IsDigital())
+            m_Bindings[type]->InputKey = key;
+
+        return m_Bindings[type];
+    }
+    void InputKeyBindingBundle::SetKey(InputKeyBindingBundleTypes type, Count<InputKeyBinding> binding)
+    {
+        if (!binding->GetKey().IsDigital())
+            return;
+
+        if(binding && !binding->IsModifier())
+            m_Bindings[type] = binding;
+    }
+    void InputKeyBindingBundle::UnSetKey(InputKeyBindingBundleTypes type)
+    {
+        m_Bindings[type]->InputKey = ElevatedInputKeys::Invalid;
+    }
+
+    Count<InputKeyBinding> InputKeyBindingBundle::GetKey(InputKeyBindingBundleTypes type)
+    {
+        return m_Bindings[type];
+    }
+
+    bool InputKeyBindingBundle::ProcessInputData(Count<class ElevatedPlayer> player, InputActionOutput& actionValue, Count<InputAction> action, const ElevatedInputKey& key,float deltaTime)
+    {
+        if (!InputKeyBindingBase::ProcessInputData(player, actionValue, action, key, deltaTime))
             return false;
 
         for (auto& [binding, keyBinding] : m_Bindings)
@@ -133,13 +185,13 @@ namespace Proof
             if (keyBinding->GetKey() == key)
                 continue;
 
-            if (!keyBinding.As<InputKeyBindingBase>()->ProcessInputData(player, actionValue, action,key, false))
+            if (!keyBinding.As<InputKeyBindingBase>()->ProcessInputData(player, actionValue, action,key, deltaTime))
                 return false;
         }
 
         return true;
     }
-    void InputKeyBindingBundle::CheckOrUpdateAction(const ElevatedInputKey& key, glm::vec3& axis, Count<InputAction> action)
+    void InputKeyBindingBundle::CheckOrUpdateAction(const ElevatedInputKey& key, glm::vec3& axis, Count<InputAction> action, float deltaTime)
     {
         for (auto& [binding, keyBinding] : m_Bindings)
         {
@@ -155,39 +207,39 @@ namespace Proof
 
             switch (binding)
             {
-                case Proof::InputKeyBidningBundleTypes::PositiveX:
+                case Proof::InputKeyBindingBundleTypes::PositiveX:
                 {
                     axis.x = axis.x;
                 }
                 break;
-                case Proof::InputKeyBidningBundleTypes::NegativeX:
+                case Proof::InputKeyBindingBundleTypes::NegativeX:
                 {
                     axis.x = -axis.x;
                     //axis.x = 0;
                 }
                 break;
-                case Proof::InputKeyBidningBundleTypes::PositiveY:
+                case Proof::InputKeyBindingBundleTypes::PositiveY:
                 {
                     if(action->OutputType > InputActionOutputType::Float)
                         axis.y = axis.x;
                     //axis.x = 0;
                 }
                 break;
-                case Proof::InputKeyBidningBundleTypes::NegativeY:
+                case Proof::InputKeyBindingBundleTypes::NegativeY:
                 {
                     if (action->OutputType > InputActionOutputType::Float)
                         axis.y = -axis.x;
                     //axis.x = 0;
                 }
                 break;
-                case Proof::InputKeyBidningBundleTypes::PositiveZ:
+                case Proof::InputKeyBindingBundleTypes::PositiveZ:
                 {
                     if (action->OutputType > InputActionOutputType::Vector2D)
                         axis.z = axis.x;
                     //axis.x = 0;
                 }
                 break;
-                case Proof::InputKeyBidningBundleTypes::NegativeZ:
+                case Proof::InputKeyBindingBundleTypes::NegativeZ:
                 {
                     if (action->OutputType > InputActionOutputType::Vector2D)
                         axis.z = -axis.x;

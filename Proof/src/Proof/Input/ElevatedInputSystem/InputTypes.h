@@ -22,70 +22,67 @@ namespace Proof
 		Y,					
 		Z,					
 	};
+	enum class ElevatedInputKeyInputAxisType
+	{
+		None,
+		Button,			// a joystick click
+		Axis1D,
+		Axis2D,
+		Axis3D,
+	};
+
+	enum class ElevatedInputKeyFlags
+	{
+		/*
+		Modifier keys are keys on a keyboard that are used to modify the function of other keys when pressed simultaneously.
+		Here are some common modifier keys:
+		Shift: Used to type capital letters and access symbols above numbers on the keyboard.
+		Control (Ctrl): Often used in combination with other keys to perform shortcuts and commands.
+		Alt (Alternate): Also known as Option on Mac keyboards, it is used to access alternate functions of other keys.
+		Command (Cmd): Found on Mac keyboards, used to perform various system and application-specific commands.
+		Windows key: Found on Windows keyboards, used to access the Start menu and perform system shortcuts.
+		Meta key: Found on some Unix-based systems, used similarly to the Windows key or Command key.
+		Function (Fn): Found on laptops and used to access additional functions assigned to keys on the keyboard.
+		*/
+		ModifierKey = BIT(0),
+		Axis1D = BIT(1),
+		Axis2D = BIT(2),
+		Axis3D = BIT(3),
+		Gesture = BIT(4),
+		Touch = BIT(5),
+
+		//An axis acting as a button like clcikcing on right joystick
+		AxisButton = BIT(6),
+
+		/*
+		*
+			The UpdateAxisWithoutSamples flag determines whether an axis should be
+			updated even when no continuous input samples are available.
+			This is particularly useful for handling inputs that are binary in nature,
+			such as button presses, where continuous sampling isn't necessary.
+			For instance, imagine a game where pressing a button toggles the player's flashlight.
+			In this scenario, setting UpdateAxisWithoutSamples to true for the flashlight button ensures that the flashlight state
+			is updated immediately upon pressing the button, without waiting for continuous input samples.
+		*/
+		UpdateAxisWithoutSamples = BIT(7),
+		NoFlags = 0,
+	};
+
 	struct ElevatedInputKey
 	{
-		enum class InputAxisType
-		{
-			None,
-			Button,			// a joystick click
-			Axis1D,
-			Axis2D,
-			Axis3D,
-		};
-
-		enum KeyFlags
-		{
-			ControllerButton = 1 << 0,
-			Touch = 1 << 1,
-			MouseButton = 1 << 2,
-			/*
-			Modifier keys are keys on a keyboard that are used to modify the function of other keys when pressed simultaneously.
-			Here are some common modifier keys:
-			Shift: Used to type capital letters and access symbols above numbers on the keyboard.
-			Control (Ctrl): Often used in combination with other keys to perform shortcuts and commands.
-			Alt (Alternate): Also known as Option on Mac keyboards, it is used to access alternate functions of other keys.
-			Command (Cmd): Found on Mac keyboards, used to perform various system and application-specific commands.
-			Windows key: Found on Windows keyboards, used to access the Start menu and perform system shortcuts.
-			Meta key: Found on some Unix-based systems, used similarly to the Windows key or Command key.
-			Function (Fn): Found on laptops and used to access additional functions assigned to keys on the keyboard.
-			*/
-			ModifierKey = 1 << 3,
-			Axis1D = 1 << 4,
-			Axis2D = 1 << 5,
-			Axis3D = 1 << 6,
-			Gesture = 1 << 7,
-
-			//An axis acting as a button like clcikcing on right joystick
-			AxisButton = 1 << 8,
-
-			/*
-			*
-				The UpdateAxisWithoutSamples flag determines whether an axis should be 
-				updated even when no continuous input samples are available. 
-				This is particularly useful for handling inputs that are binary in nature,
-				such as button presses, where continuous sampling isn't necessary. 
-				For instance, imagine a game where pressing a button toggles the player's flashlight. 
-				In this scenario, setting UpdateAxisWithoutSamples to true for the flashlight button ensures that the flashlight state 
-				is updated immediately upon pressing the button, without waiting for continuous input samples.
-			*/
-			UpdateAxisWithoutSamples = 1 << 9,
-
-			NoFlags = 0,
-		};
-		ElevatedInputKey(ElevatedInputKeyDeviceType inputDevice, const std::string& keyName, const uint32_t keyFlags = 0) :
+		
+		ElevatedInputKey(ElevatedInputKeyDeviceType inputDevice, const std::string& keyName, const ElevatedInputKeyFlags keyFlags = ElevatedInputKeyFlags::NoFlags) :
 			m_Device(inputDevice), m_KeyName(keyName), m_KeyFlags(keyFlags)
 		{
 			Init(keyFlags);
 		}
 
 		bool IsModifierKey() const { return m_IsModifierKey != 0; }
-		bool IsControllerKey() const { return m_IsControllerKey != 0; }
 		bool IsTouch() const { return m_IsTouch != 0; }
-		bool IsMouseButton() const { return m_IsMouseButton != 0; }
-		bool IsAxis1D() const { return m_AxisType == InputAxisType::Axis1D; }
-		bool IsAxis2D() const { return m_AxisType == InputAxisType::Axis2D; }
-		bool IsAxis3D() const { return m_AxisType == InputAxisType::Axis3D; }
-		bool IsAxisButton() const { return m_AxisType == InputAxisType::Button; }	// Analog 1D axis emulating a digital button press.
+		bool IsAxis1D() const { return m_AxisType == ElevatedInputKeyInputAxisType::Axis1D; }
+		bool IsAxis2D() const { return m_AxisType == ElevatedInputKeyInputAxisType::Axis2D; }
+		bool IsAxis3D() const { return m_AxisType == ElevatedInputKeyInputAxisType::Axis3D; }
+		bool IsAxisButton() const { return m_AxisType == ElevatedInputKeyInputAxisType::Button; }	// Analog 1D axis emulating a digital button press.
 		//if key is axis1d axis2d or axis 3d
 		/**
 		*
@@ -118,7 +115,7 @@ namespace Proof
 		bool IsGesture() const { return m_IsGesture != 0; }
 
 		bool ShouldUpdateAxisWithoutSamples ()const { return m_UpdateAxisWithoutSamples; }
-		InputAxisType GetAxisType()const { return m_AxisType; }
+		ElevatedInputKeyInputAxisType GetAxisType()const { return m_AxisType; }
 		ElevatedAxisPairing GetPairedAxis()const { return m_AxisParing; }
 		friend bool operator==(const ElevatedInputKey& KeyA, const ElevatedInputKey& KeyB) { return KeyA.m_KeyName == KeyB.m_KeyName; }
 		friend bool operator!=(const ElevatedInputKey& KeyA, const ElevatedInputKey& KeyB) { return KeyA.m_KeyName != KeyB.m_KeyName; }
@@ -126,60 +123,29 @@ namespace Proof
 		// Getters for all members
 		const std::string& GetKeyName() const { return m_KeyName; }
 		ElevatedInputKeyDeviceType GetDevice() const { return m_Device; }
-		uint32_t GetKeyFlags() const { return m_KeyFlags; }
+		ElevatedInputKeyFlags GetKeyFlags() const { return m_KeyFlags; }
 		const ElevatedInputKey* GetAxisParingKey() const { return m_AxisParingKey; }
 
 		
 	private:
-		void Init(uint32_t keyFlags)
-		{
-			m_IsModifierKey = ((keyFlags & KeyFlags::ModifierKey) != 0);
-			m_IsControllerKey = ((keyFlags & KeyFlags::ControllerButton) != 0);
-			m_IsTouch = ((keyFlags & KeyFlags::Touch) != 0);
-			m_IsMouseButton = ((keyFlags & KeyFlags::MouseButton) != 0);
-			m_IsGesture = ((keyFlags & KeyFlags::Gesture) != 0);
-			m_UpdateAxisWithoutSamples = ((keyFlags & KeyFlags::UpdateAxisWithoutSamples) != 0);
-
-			if ((keyFlags & KeyFlags::AxisButton) != 0)
-			{
-				m_AxisType = InputAxisType::Button;
-			}
-			else if ((keyFlags & KeyFlags::Axis1D) != 0)
-			{
-				m_AxisType = InputAxisType::Axis1D;
-			}
-			else if ((keyFlags & KeyFlags::Axis2D) != 0)
-			{
-				m_AxisType = InputAxisType::Axis2D;
-			}
-			else if ((keyFlags & KeyFlags::Axis3D) != 0)
-			{
-				m_AxisType = InputAxisType::Axis3D;
-			}
-			else
-			{
-				m_AxisType = InputAxisType::None;
-			}
-		}
+		void Init(ElevatedInputKeyFlags keyFlags);
 	private:
 		friend void AddPairedKey(const ElevatedInputKey* key, const ElevatedInputKey* keyXAxis, const ElevatedInputKey* keyYAxis);
-		InputAxisType m_AxisType;
+		ElevatedInputKeyInputAxisType m_AxisType;
 		ElevatedAxisPairing m_AxisParing;
 		bool m_IsModifierKey = false;
-		bool m_IsControllerKey = false;
 		bool m_IsTouch = false;
-		bool m_IsMouseButton = false;
 		bool m_IsGesture = false;
 		
 		bool m_UpdateAxisWithoutSamples = false;
 
 		std::string m_KeyName;
 		ElevatedInputKeyDeviceType m_Device;
-		uint32_t m_KeyFlags;
+		ElevatedInputKeyFlags m_KeyFlags;
 		const ElevatedInputKey* m_AxisParingKey;
 
 	};
-	
+	DEFINE_ENUM_CLASS_FLAGS(ElevatedInputKeyFlags);
 	struct ElevatedInputKeys
 	{
 		static const ElevatedInputKey Invalid;
@@ -371,6 +337,11 @@ namespace Proof
 
 	public:
 		static ElevatedInputKey GetKeyBoardKey(enum KeyBoardKey key);
+		static ElevatedInputKey GetKeyByName(const std::string& name);// returns invalid if name not found
+
+		static const std::unordered_map<std::string, const ElevatedInputKey*>& GetKeys();
+		static const std::unordered_map<ElevatedInputKeyDeviceType, std::vector<const ElevatedInputKey*>>& GetDeviceKeys();
+
 	private:
 		static void Init();
 		static void ShutDown();
@@ -460,7 +431,7 @@ namespace Proof
 			The specific values assigned to NumSamples depend on the type of input event being handled and whether it involves analog input or discrete events.
 		*/
 		uint32_t NumSamples = 0;
-		bool IsGamepad() const { return Key.IsControllerKey() || bIsGamepadOverride; }
+		bool IsGamepad() const { return Key.GetDevice() == ElevatedInputKeyDeviceType::Controller || bIsGamepadOverride; }
 
 		float Get1DAxis() const { return Axis.x; }
 

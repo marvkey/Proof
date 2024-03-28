@@ -63,7 +63,7 @@ namespace Proof
 	}
 	void EditInputInteractions(std::vector<Count<class InputInteraction>>& interactions)
 	{
-		bool isOpen = UI::AttributeTreeNode("InputInteractions");
+		bool isOpen = UI::AttributeTreeNode("InputInteractions",false);
 		auto imageSize = ImVec2{ 25,25 };
 		{
 			ImGui::SameLine();

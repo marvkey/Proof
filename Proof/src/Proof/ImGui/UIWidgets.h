@@ -4,6 +4,13 @@
 #include "UITypes.h"
 #include "UiUtilities.h"
 #include "UI.h"
+
+namespace Proof
+{
+	struct ElevatedInputKey;
+	enum class ElevatedInputKeyFlags;
+	enum class ElevatedInputKeyDeviceType;
+}
 namespace Proof::UI
 {
 	
@@ -160,6 +167,7 @@ namespace Proof::UI
 		static bool EntitySearchPopup(const char* ID, Count<class World> scene, UUID& selected, bool* cleared = nullptr, const char* hint = "Search Entities", ImVec2 size = ImVec2{ 250.0f, 350.0f });
 		static bool AssetSearchPopup(const char* ID, AssetType assetType, AssetID& selected, UIMemoryAssetTypes types, bool allowClear = true, const char* hint = "Search Assets", ImVec2 size = ImVec2{ 250.0f, 350.0f });
 		static bool AssetSearchPopup(const char* ID, std::initializer_list<AssetType> assetTypes, AssetID& selected, UIMemoryAssetTypes types, bool allowClear = true, const char* hint = "Search Assets", ImVec2 size = ImVec2{ 250.0f, 350.0f });
-		static bool SearchScriptsPopup(const char* ID, std::string& selected,bool allowClear = true, const char* hint = "Search Scripts", ImVec2 size = ImVec2{ 250.0f, 350.0f });
+		static bool SearchScriptsPopup(const char* ID, std::string& selected, bool allowClear = true, const char* hint = "Search Scripts", ImVec2 size = ImVec2{ 250.0f, 350.0f });
+		static bool ElevatedInputKeySearchPopup(const char* ID,ElevatedInputKey* key, ElevatedInputKeyFlags keyFlags = (ElevatedInputKeyFlags)0 , ElevatedInputKeyDeviceType device =(ElevatedInputKeyDeviceType) 0, bool analogKeys = true, bool digiitalKeys = true,const char* hint = "Search Keys",bool allowClear = true, ImVec2 size = ImVec2{ 250.0f, 350.0f });
 	};
 }

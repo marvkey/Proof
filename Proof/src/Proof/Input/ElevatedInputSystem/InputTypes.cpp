@@ -6,18 +6,18 @@
 namespace Proof
 {
 	const ElevatedInputKey ElevatedInputKeys::Invalid(ElevatedInputKeyDeviceType::None,"Invalid");
-	const ElevatedInputKey ElevatedInputKeys::MouseMoveX(ElevatedInputKeyDeviceType::Mouse,"MouseX", ElevatedInputKey::Axis1D | ElevatedInputKey::MouseButton);
-	const ElevatedInputKey ElevatedInputKeys::MouseMoveY(ElevatedInputKeyDeviceType::Mouse,"MouseY", ElevatedInputKey::Axis1D | ElevatedInputKey::MouseButton);
-	const ElevatedInputKey ElevatedInputKeys::MouseMoveAxis(ElevatedInputKeyDeviceType::Mouse,"Mouse2D", ElevatedInputKey::Axis2D);
-	const ElevatedInputKey ElevatedInputKeys::MouseScrollUp(ElevatedInputKeyDeviceType::Mouse,"MouseScrollUp", ElevatedInputKey::AxisButton | ElevatedInputKey::MouseButton);
-	const ElevatedInputKey ElevatedInputKeys::MouseScrollDown(ElevatedInputKeyDeviceType::Mouse,"MouseScrollDown", ElevatedInputKey::AxisButton | ElevatedInputKey::MouseButton);
-	const ElevatedInputKey ElevatedInputKeys::MouseWheelAxis(ElevatedInputKeyDeviceType::Mouse,"MouseWheelAxis", ElevatedInputKey::Axis1D | ElevatedInputKey::MouseButton);
+	const ElevatedInputKey ElevatedInputKeys::MouseMoveX(ElevatedInputKeyDeviceType::Mouse,"MouseX", ElevatedInputKeyFlags::Axis1D );
+	const ElevatedInputKey ElevatedInputKeys::MouseMoveY(ElevatedInputKeyDeviceType::Mouse,"MouseY", ElevatedInputKeyFlags::Axis1D );
+	const ElevatedInputKey ElevatedInputKeys::MouseMoveAxis(ElevatedInputKeyDeviceType::Mouse,"Mouse2D", ElevatedInputKeyFlags::Axis2D);
+	const ElevatedInputKey ElevatedInputKeys::MouseScrollUp(ElevatedInputKeyDeviceType::Mouse,"MouseScrollUp", ElevatedInputKeyFlags::AxisButton );
+	const ElevatedInputKey ElevatedInputKeys::MouseScrollDown(ElevatedInputKeyDeviceType::Mouse,"MouseScrollDown", ElevatedInputKeyFlags::AxisButton);
+	const ElevatedInputKey ElevatedInputKeys::MouseWheelAxis(ElevatedInputKeyDeviceType::Mouse,"MouseWheelAxis", ElevatedInputKeyFlags::Axis1D );
 
-	const ElevatedInputKey ElevatedInputKeys::LeftMouseButton(ElevatedInputKeyDeviceType::Mouse, "LeftMouseButton", ElevatedInputKey::MouseButton);
-	const ElevatedInputKey ElevatedInputKeys::RightMouseButton(ElevatedInputKeyDeviceType::Mouse, "RightMouseButton", ElevatedInputKey::MouseButton);
-	const ElevatedInputKey ElevatedInputKeys::MiddleMouseButton(ElevatedInputKeyDeviceType::Mouse, "MiddleMouseButton", ElevatedInputKey::MouseButton);
-	const ElevatedInputKey ElevatedInputKeys::ThumbMouseButton(ElevatedInputKeyDeviceType::Mouse, "ThumbMouseButton", ElevatedInputKey::MouseButton);
-	const ElevatedInputKey ElevatedInputKeys::ThumbMouseButton2(ElevatedInputKeyDeviceType::Mouse, "ThumbMouseButton2", ElevatedInputKey::MouseButton);
+	const ElevatedInputKey ElevatedInputKeys::LeftMouseButton(ElevatedInputKeyDeviceType::Mouse, "LeftMouseButton");
+	const ElevatedInputKey ElevatedInputKeys::RightMouseButton(ElevatedInputKeyDeviceType::Mouse, "RightMouseButton");
+	const ElevatedInputKey ElevatedInputKeys::MiddleMouseButton(ElevatedInputKeyDeviceType::Mouse, "MiddleMouseButton");
+	const ElevatedInputKey ElevatedInputKeys::ThumbMouseButton(ElevatedInputKeyDeviceType::Mouse, "ThumbMouseButton");
+	const ElevatedInputKey ElevatedInputKeys::ThumbMouseButton2(ElevatedInputKeyDeviceType::Mouse, "ThumbMouseButton2");
 
 	const ElevatedInputKey ElevatedInputKeys::BackSpace(ElevatedInputKeyDeviceType::KeyBoard, "BackSpace");
 	const ElevatedInputKey ElevatedInputKeys::Tab(ElevatedInputKeyDeviceType::KeyBoard, "Tab");
@@ -112,14 +112,14 @@ namespace Proof
 	const ElevatedInputKey ElevatedInputKeys::ScrollLock(ElevatedInputKeyDeviceType::KeyBoard, "ScrollLock");
 	const ElevatedInputKey ElevatedInputKeys::Menu(ElevatedInputKeyDeviceType::KeyBoard, "Menu");
 
-	const ElevatedInputKey ElevatedInputKeys::LeftShift(ElevatedInputKeyDeviceType::KeyBoard, "LeftShift",ElevatedInputKey::ModifierKey);
-	const ElevatedInputKey ElevatedInputKeys::RightShift(ElevatedInputKeyDeviceType::KeyBoard, "RightShift", ElevatedInputKey::ModifierKey);
-	const ElevatedInputKey ElevatedInputKeys::LeftControl(ElevatedInputKeyDeviceType::KeyBoard, "LeftControl", ElevatedInputKey::ModifierKey);
-	const ElevatedInputKey ElevatedInputKeys::RightControl(ElevatedInputKeyDeviceType::KeyBoard, "RightControl", ElevatedInputKey::ModifierKey);
-	const ElevatedInputKey ElevatedInputKeys::LeftAlt(ElevatedInputKeyDeviceType::KeyBoard, "LeftAlt", ElevatedInputKey::ModifierKey);
-	const ElevatedInputKey ElevatedInputKeys::RightAlt(ElevatedInputKeyDeviceType::KeyBoard, "RightAlt", ElevatedInputKey::ModifierKey);
-	const ElevatedInputKey ElevatedInputKeys::LeftCommand(ElevatedInputKeyDeviceType::KeyBoard, "LeftCommand", ElevatedInputKey::ModifierKey);
-	const ElevatedInputKey ElevatedInputKeys::RightCommand(ElevatedInputKeyDeviceType::KeyBoard, "RightCommand", ElevatedInputKey::ModifierKey);
+	const ElevatedInputKey ElevatedInputKeys::LeftShift(ElevatedInputKeyDeviceType::KeyBoard, "LeftShift",ElevatedInputKeyFlags::ModifierKey);
+	const ElevatedInputKey ElevatedInputKeys::RightShift(ElevatedInputKeyDeviceType::KeyBoard, "RightShift", ElevatedInputKeyFlags::ModifierKey);
+	const ElevatedInputKey ElevatedInputKeys::LeftControl(ElevatedInputKeyDeviceType::KeyBoard, "LeftControl", ElevatedInputKeyFlags::ModifierKey);
+	const ElevatedInputKey ElevatedInputKeys::RightControl(ElevatedInputKeyDeviceType::KeyBoard, "RightControl", ElevatedInputKeyFlags::ModifierKey);
+	const ElevatedInputKey ElevatedInputKeys::LeftAlt(ElevatedInputKeyDeviceType::KeyBoard, "LeftAlt", ElevatedInputKeyFlags::ModifierKey);
+	const ElevatedInputKey ElevatedInputKeys::RightAlt(ElevatedInputKeyDeviceType::KeyBoard, "RightAlt", ElevatedInputKeyFlags::ModifierKey);
+	const ElevatedInputKey ElevatedInputKeys::LeftCommand(ElevatedInputKeyDeviceType::KeyBoard, "LeftCommand", ElevatedInputKeyFlags::ModifierKey);
+	const ElevatedInputKey ElevatedInputKeys::RightCommand(ElevatedInputKeyDeviceType::KeyBoard, "RightCommand", ElevatedInputKeyFlags::ModifierKey);
 
 	const ElevatedInputKey ElevatedInputKeys::Semicolon(ElevatedInputKeyDeviceType::KeyBoard, ";");
 	const ElevatedInputKey ElevatedInputKeys::Equals(ElevatedInputKeyDeviceType::KeyBoard, "=");
@@ -150,52 +150,53 @@ namespace Proof
 	const ElevatedInputKey ElevatedInputKeys::C_Cedille(ElevatedInputKeyDeviceType::KeyBoard, std::string(1, char(231)));
 	const ElevatedInputKey ElevatedInputKeys::Section(ElevatedInputKeyDeviceType::KeyBoard, std::string(1, char(167)));
 
-	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStick2D(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStick2D",ElevatedInputKey::Axis1D | ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerRightStick2D(ElevatedInputKeyDeviceType::Controller, "ControllerRightStick2D", ElevatedInputKey::Axis1D | ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickX(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickX", ElevatedInputKey::Axis1D | ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickY(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickY", ElevatedInputKey::Axis1D | ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerRightStickX(ElevatedInputKeyDeviceType::Controller, "ControllerRightStickX", ElevatedInputKey::Axis1D | ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerRightStickY(ElevatedInputKeyDeviceType::Controller, "ControllerRightStickY", ElevatedInputKey::Axis1D | ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerLeftTriggerAxis(ElevatedInputKeyDeviceType::Controller, "ControllerLeftTriggerAxis", ElevatedInputKey::Axis1D | ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerRightTriggerAxis(ElevatedInputKeyDeviceType::Controller, "ControllerRightTriggerAxis", ElevatedInputKey::Axis1D | ElevatedInputKey::ControllerButton);
+	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStick2D(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStick2D",ElevatedInputKeyFlags::Axis1D );
+	const ElevatedInputKey ElevatedInputKeys::ControllerRightStick2D(ElevatedInputKeyDeviceType::Controller, "ControllerRightStick2D", ElevatedInputKeyFlags::Axis1D );
+	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickX(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickX", ElevatedInputKeyFlags::Axis1D );
+	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickY(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickY", ElevatedInputKeyFlags::Axis1D );
+	const ElevatedInputKey ElevatedInputKeys::ControllerRightStickX(ElevatedInputKeyDeviceType::Controller, "ControllerRightStickX", ElevatedInputKeyFlags::Axis1D );
+	const ElevatedInputKey ElevatedInputKeys::ControllerRightStickY(ElevatedInputKeyDeviceType::Controller, "ControllerRightStickY", ElevatedInputKeyFlags::Axis1D );
+	const ElevatedInputKey ElevatedInputKeys::ControllerLeftTriggerAxis(ElevatedInputKeyDeviceType::Controller, "ControllerLeftTriggerAxis", ElevatedInputKeyFlags::Axis1D );
+	const ElevatedInputKey ElevatedInputKeys::ControllerRightTriggerAxis(ElevatedInputKeyDeviceType::Controller, "ControllerRightTriggerAxis", ElevatedInputKeyFlags::Axis1D );
 
-	const ElevatedInputKey ElevatedInputKeys::ControllerLeftThumbstick(ElevatedInputKeyDeviceType::Controller, "ControllerLeftThumbstick", ElevatedInputKey::ControllerButton | ElevatedInputKey::Axis2D);
-	const ElevatedInputKey ElevatedInputKeys::ControllerRightThumbstick(ElevatedInputKeyDeviceType::Controller, "ControllerRightThumbstick", ElevatedInputKey::ControllerButton | ElevatedInputKey::Axis2D);
+	const ElevatedInputKey ElevatedInputKeys::ControllerLeftThumbstick(ElevatedInputKeyDeviceType::Controller, "ControllerLeftThumbstick", ElevatedInputKeyFlags::Axis2D);
+	const ElevatedInputKey ElevatedInputKeys::ControllerRightThumbstick(ElevatedInputKeyDeviceType::Controller, "ControllerRightThumbstick", ElevatedInputKeyFlags::Axis2D);
 
-	const ElevatedInputKey ElevatedInputKeys::ControllerBack(ElevatedInputKeyDeviceType::Controller, "ControllerBack", ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerStart(ElevatedInputKeyDeviceType::Controller, "ControllerStart", ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerGuide(ElevatedInputKeyDeviceType::Controller, "ControllerGuide", ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerSpecialRight(ElevatedInputKeyDeviceType::Controller, "ControllerSpecialRight", ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerFaceButtonBottom(ElevatedInputKeyDeviceType::Controller, "ControllerFaceButtonBottom", ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerFaceButtonRight(ElevatedInputKeyDeviceType::Controller, "ControllerFaceButtonRight", ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerFaceButtonLeft(ElevatedInputKeyDeviceType::Controller, "ControllerFaceButtonLeft", ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerFaceButtonTop(ElevatedInputKeyDeviceType::Controller, "ControllerFaceButtonTop", ElevatedInputKey::ControllerButton);
+	const ElevatedInputKey ElevatedInputKeys::ControllerBack(ElevatedInputKeyDeviceType::Controller, "ControllerBack");
+	const ElevatedInputKey ElevatedInputKeys::ControllerStart(ElevatedInputKeyDeviceType::Controller, "ControllerStart");
+	const ElevatedInputKey ElevatedInputKeys::ControllerGuide(ElevatedInputKeyDeviceType::Controller, "ControllerGuide");
+	const ElevatedInputKey ElevatedInputKeys::ControllerSpecialRight(ElevatedInputKeyDeviceType::Controller, "ControllerSpecialRight");
+	const ElevatedInputKey ElevatedInputKeys::ControllerFaceButtonBottom(ElevatedInputKeyDeviceType::Controller, "ControllerFaceButtonBottom");
+	const ElevatedInputKey ElevatedInputKeys::ControllerFaceButtonRight(ElevatedInputKeyDeviceType::Controller, "ControllerFaceButtonRight");
+	const ElevatedInputKey ElevatedInputKeys::ControllerFaceButtonLeft(ElevatedInputKeyDeviceType::Controller, "ControllerFaceButtonLeft");
+	const ElevatedInputKey ElevatedInputKeys::ControllerFaceButtonTop(ElevatedInputKeyDeviceType::Controller, "ControllerFaceButtonTop");
 
-	const ElevatedInputKey ElevatedInputKeys::ControllerLeftShoulder(ElevatedInputKeyDeviceType::Controller, "ControllerLeftShoulder", ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerRightShoulder(ElevatedInputKeyDeviceType::Controller, "ControllerRightShoulder", ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerLeftTrigger(ElevatedInputKeyDeviceType::Controller, "ControllerLeftTrigger", ElevatedInputKey::ControllerButton | ElevatedInputKey::AxisButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerRightTrigger(ElevatedInputKeyDeviceType::Controller, "ControllerRightTrigger", ElevatedInputKey::ControllerButton | ElevatedInputKey::AxisButton);
+	const ElevatedInputKey ElevatedInputKeys::ControllerLeftShoulder(ElevatedInputKeyDeviceType::Controller, "ControllerLeftShoulder");
+	const ElevatedInputKey ElevatedInputKeys::ControllerRightShoulder(ElevatedInputKeyDeviceType::Controller, "ControllerRightShoulder");
+	const ElevatedInputKey ElevatedInputKeys::ControllerLeftTrigger(ElevatedInputKeyDeviceType::Controller, "ControllerLeftTrigger", ElevatedInputKeyFlags::AxisButton);
+	const ElevatedInputKey ElevatedInputKeys::ControllerRightTrigger(ElevatedInputKeyDeviceType::Controller, "ControllerRightTrigger", ElevatedInputKeyFlags::AxisButton);
 
-	const ElevatedInputKey ElevatedInputKeys::ControllerDPadUp(ElevatedInputKeyDeviceType::Controller, "ControllerDPadUp", ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerDPadDown(ElevatedInputKeyDeviceType::Controller, "ControllerDPadDown", ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerDPadRight(ElevatedInputKeyDeviceType::Controller, "ControllerDPadRight", ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerDPadLeft(ElevatedInputKeyDeviceType::Controller, "ControllerDPadLeft", ElevatedInputKey::ControllerButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerDPad(ElevatedInputKeyDeviceType::Controller, "ControllerDPad", ElevatedInputKey::ControllerButton | ElevatedInputKey::Axis2D);
+	const ElevatedInputKey ElevatedInputKeys::ControllerDPadUp(ElevatedInputKeyDeviceType::Controller, "ControllerDPadUp");
+	const ElevatedInputKey ElevatedInputKeys::ControllerDPadDown(ElevatedInputKeyDeviceType::Controller, "ControllerDPadDown");
+	const ElevatedInputKey ElevatedInputKeys::ControllerDPadRight(ElevatedInputKeyDeviceType::Controller, "ControllerDPadRight");
+	const ElevatedInputKey ElevatedInputKeys::ControllerDPadLeft(ElevatedInputKeyDeviceType::Controller, "ControllerDPadLeft");
+	const ElevatedInputKey ElevatedInputKeys::ControllerDPad(ElevatedInputKeyDeviceType::Controller, "ControllerDPad", ElevatedInputKeyFlags::Axis2D);
 
-	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickUp(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickUp", ElevatedInputKey::ControllerButton | ElevatedInputKey::AxisButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickDown(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickDown", ElevatedInputKey::ControllerButton | ElevatedInputKey::AxisButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickRight(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickRight", ElevatedInputKey::ControllerButton | ElevatedInputKey::AxisButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickLeft(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickLeft", ElevatedInputKey::ControllerButton | ElevatedInputKey::AxisButton);
+	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickUp(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickUp", ElevatedInputKeyFlags::AxisButton);
+	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickDown(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickDown", ElevatedInputKeyFlags::AxisButton);
+	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickRight(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickRight", ElevatedInputKeyFlags::AxisButton);
+	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickLeft(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickLeft", ElevatedInputKeyFlags::AxisButton);
 
-	const ElevatedInputKey ElevatedInputKeys::ControllerRightStickUp(ElevatedInputKeyDeviceType::Controller, "ControllerRightStickUp", ElevatedInputKey::ControllerButton | ElevatedInputKey::AxisButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerRightStickDown(ElevatedInputKeyDeviceType::Controller, "ControllerRightStickDown", ElevatedInputKey::ControllerButton | ElevatedInputKey::AxisButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerRightStickRight(ElevatedInputKeyDeviceType::Controller, "ControllerRightStickRight", ElevatedInputKey::ControllerButton | ElevatedInputKey::AxisButton);
-	const ElevatedInputKey ElevatedInputKeys::ControllerRightStickLeft(ElevatedInputKeyDeviceType::Controller, "ControllerRightStickLeft", ElevatedInputKey::ControllerButton | ElevatedInputKey::AxisButton);
+	const ElevatedInputKey ElevatedInputKeys::ControllerRightStickUp(ElevatedInputKeyDeviceType::Controller, "ControllerRightStickUp", ElevatedInputKeyFlags::AxisButton);
+	const ElevatedInputKey ElevatedInputKeys::ControllerRightStickDown(ElevatedInputKeyDeviceType::Controller, "ControllerRightStickDown", ElevatedInputKeyFlags::AxisButton);
+	const ElevatedInputKey ElevatedInputKeys::ControllerRightStickRight(ElevatedInputKeyDeviceType::Controller, "ControllerRightStickRight", ElevatedInputKeyFlags::AxisButton);
+	const ElevatedInputKey ElevatedInputKeys::ControllerRightStickLeft(ElevatedInputKeyDeviceType::Controller, "ControllerRightStickLeft", ElevatedInputKeyFlags::AxisButton);
 
 	struct InputKeysData
 	{
 		std::unordered_map<KeyBoardKey, std::string> KeyBoardKeys;
 		std::unordered_map<std::string, const ElevatedInputKey*> Keys;
+		std::unordered_map<ElevatedInputKeyDeviceType, std::vector<const ElevatedInputKey*>> DeviceKeys;
 	};
 	static InputKeysData* s_InputKeysData;
 
@@ -205,12 +206,15 @@ namespace Proof
 		PF_CORE_ASSERT(!s_InputKeysData->Keys.contains(inputKey->GetKeyName()));
 		s_InputKeysData->KeyBoardKeys[key] = { inputKey->GetKeyName() };
 		s_InputKeysData->Keys[inputKey->GetKeyName()] = { inputKey };
+		s_InputKeysData->Keys[inputKey->GetKeyName()] = { inputKey };
+		s_InputKeysData->DeviceKeys[inputKey->GetDevice()].push_back(inputKey);
 	}
 
 	static void AddKey(const ElevatedInputKey* inputKey)
 	{
 		PF_CORE_ASSERT(!s_InputKeysData->Keys.contains(inputKey->GetKeyName()), fmt::format("Contains {} Already", inputKey->GetKeyName()));
 		s_InputKeysData->Keys[inputKey->GetKeyName()] = { inputKey };
+		s_InputKeysData->DeviceKeys[inputKey->GetDevice()].push_back(inputKey);
 	}
 
 	static void AddPairedKey(const ElevatedInputKey* key, const ElevatedInputKey* keyXAxis, const ElevatedInputKey* keyYAxis)
@@ -223,6 +227,7 @@ namespace Proof
 		PF_CORE_ASSERT(keyYAxis->IsAxis1D(), fmt::format("Axis Key must be a Axis1D {}", keyYAxis->GetKeyName()));
 
 		s_InputKeysData->Keys[key->GetKeyName()] = { key };
+		s_InputKeysData->DeviceKeys[key->GetDevice()].push_back(key);
 
 		// Temporarily remove const-ness to modify the objects
 		ElevatedInputKey* nonConstKeyXAxis = const_cast<ElevatedInputKey*>(keyXAxis);
@@ -248,6 +253,23 @@ namespace Proof
 		return ElevatedInputKeys::Invalid;
 	}
 	
+	ElevatedInputKey ElevatedInputKeys::GetKeyByName(const std::string& name)
+	{
+		if (s_InputKeysData->Keys.contains(name))
+			return *s_InputKeysData->Keys.at(name);
+		return ElevatedInputKeys::Invalid;
+	}
+
+	const std::unordered_map<std::string, const ElevatedInputKey*>& ElevatedInputKeys::GetKeys()
+	{
+		return s_InputKeysData->Keys;
+	}
+
+	const std::unordered_map<ElevatedInputKeyDeviceType, std::vector<const ElevatedInputKey*>>& ElevatedInputKeys::GetDeviceKeys()
+	{
+		return s_InputKeysData->DeviceKeys;
+	}
+
 	void ElevatedInputKeys::Init()
 	{
 		ScopeTimer timer(__FUNCTION__);
@@ -405,5 +427,33 @@ namespace Proof
 	{
 		delete s_InputKeysData;
 		s_InputKeysData = nullptr;
+	}
+	void ElevatedInputKey::Init(ElevatedInputKeyFlags keyFlags)
+	{
+		m_IsModifierKey = EnumReflection::HasAnyFlags(keyFlags, ElevatedInputKeyFlags::ModifierKey);
+		m_IsTouch = EnumReflection::HasAnyFlags(keyFlags, ElevatedInputKeyFlags::Touch);
+		m_IsGesture = EnumReflection::HasAnyFlags(keyFlags, ElevatedInputKeyFlags::Gesture);
+		m_UpdateAxisWithoutSamples = EnumReflection::HasAnyFlags(keyFlags, ElevatedInputKeyFlags::UpdateAxisWithoutSamples);
+
+		if (EnumReflection::HasAnyFlags(keyFlags, ElevatedInputKeyFlags::AxisButton))
+		{
+			m_AxisType = ElevatedInputKeyInputAxisType::Button;
+		}
+		else if (EnumReflection::HasAnyFlags(keyFlags, ElevatedInputKeyFlags::Axis1D))
+		{
+			m_AxisType = ElevatedInputKeyInputAxisType::Axis1D;
+		}
+		else if (EnumReflection::HasAnyFlags(keyFlags, ElevatedInputKeyFlags::Axis2D))
+		{
+			m_AxisType = ElevatedInputKeyInputAxisType::Axis2D;
+		}
+		else if (EnumReflection::HasAnyFlags(keyFlags, ElevatedInputKeyFlags::Axis3D))
+		{
+			m_AxisType = ElevatedInputKeyInputAxisType::Axis3D;
+		}
+		else
+		{
+			m_AxisType = ElevatedInputKeyInputAxisType::None;
+		}
 	}
 }

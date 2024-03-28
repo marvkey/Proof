@@ -7,63 +7,63 @@ namespace Proof
 
 #ifdef OLD_ELEVATE_INPUT
 
-	void InputMappingContext::AddKey(Count<InputAction> action, const ElevatedInputKey& inputKey)
+	void InputBindingContext::AddKey(Count<InputAction> action, const ElevatedInputKey& inputKey)
 	{
 
-		for (auto& keyMappingHolder : m_Mappings)
+		for (auto& keyBindingHolder : m_Bindings)
 		{
-			if (keyMappingHolder.m_InputAction  == action)
+			if (keyBindingHolder.m_InputAction  == action)
 			{
-				keyMappingHolder.m_KeyMappings.push_back(ElevatedActionKeyMapping(action, inputKey));
+				keyBindingHolder.m_KeyBindings.push_back(ElevatedActionKeyBinding(action, inputKey));
 				return;
 			}
 		}
 
-		ElevatedActionKeyMappingContainer keyMap(action);
+		ElevatedActionKeyBindingContainer keyMap(action);
 		keyMap.m_Triggers.push_back(Count<InputTriggerClicked>::Create());
 
 		keyMap.m_ActionValue = InputActionValue(action->ValueType, glm::vec3(0));
-		keyMap.m_KeyMappings.push_back(ElevatedActionKeyMapping(action, inputKey));
-		m_Mappings.emplace_back(keyMap);
+		keyMap.m_KeyBindings.push_back(ElevatedActionKeyBinding(action, inputKey));
+		m_Bindings.emplace_back(keyMap);
 	}
-	void InputMappingContext::RemoveKey(Count<InputAction> action, const ElevatedInputKey& key)
+	void InputBindingContext::RemoveKey(Count<InputAction> action, const ElevatedInputKey& key)
 	{
-		for (auto& keyMappingHolder : m_Mappings)
+		for (auto& keyBindingHolder : m_Bindings)
 		{
-			if (keyMappingHolder.m_InputAction == action)
+			if (keyBindingHolder.m_InputAction == action)
 			{
-				for (auto& inputKey : keyMappingHolder.m_KeyMappings)
+				for (auto& inputKey : keyBindingHolder.m_KeyBindings)
 				{
 				}
 			}
 		}
 
 	}
-	void InputMappingContext::RemoveAllKeysFromAction(Count<InputAction> action)
+	void InputBindingContext::RemoveAllKeysFromAction(Count<InputAction> action)
 	{
 
-		for (auto& keyMappingHolder : m_Mappings)
+		for (auto& keyBindingHolder : m_Bindings)
 		{
-			if (keyMappingHolder.m_InputAction == action)
+			if (keyBindingHolder.m_InputAction == action)
 			{
-				keyMappingHolder.m_KeyMappings.clear();
+				keyBindingHolder.m_KeyBindings.clear();
 				break;
 			}
 		}
 	}
-	void InputMappingContext::RemoveAllKeys()
+	void InputBindingContext::RemoveAllKeys()
 	{
-		m_Mappings.clear();
+		m_Bindings.clear();
 	}
 	
 	
-	bool InputMappingContext::IsKeyMapped(const ElevatedInputKey& key)
+	bool InputBindingContext::IsKeyMapped(const ElevatedInputKey& key)
 	{
 		PF_PROFILE_FUNC();
 
-		for (auto& keyMapping : m_Mappings)
+		for (auto& keyBinding : m_Bindings)
 		{
-			if (keyMapping.KeyHasMapping(key))
+			if (keyBinding.KeyHasBinding(key))
 				return true;
 		}
 
@@ -72,19 +72,28 @@ namespace Proof
 #else
 	Count<InputKeyBinding> InputBindingContext::AddKey(Count<InputAction> action, const ElevatedInputKey& inputKey)
 	{
-		ElevatedActionKeyMapping* actionMapping = GetActionKeyMappings(action);
-		if (actionMapping == nullptr)
+		ElevatedActionKeyBinding* actionBinding = GetActionKeyBindings(action);
+		if (actionBinding == nullptr)
 		{
-			actionMapping = &m_Mappings.emplace_back(ElevatedActionKeyMapping{ action });
+			actionBinding = &m_Bindings.emplace_back(ElevatedActionKeyBinding{ action });
 		}
 		auto keyBinding = Count<InputKeyBinding>::Create(inputKey);
 		//keyBinding->m_ModifierKeys.push_back(Count<InputKeyBinding>::Create(ElevatedInputKeys::LeftShift));
 
 		//auto data = Count<InputInteractionMultiClick>::Create();
 		//keyBinding->m_Triggers.push_back(data);
-		actionMapping->m_KeyMappings.push_back(keyBinding);
+		actionBinding->KeyBindings.push_back(keyBinding);
 
 		return keyBinding;
+	}
+	ElevatedActionKeyBinding* InputBindingContext::AddOrGetBinding(Count<InputAction> action)
+	{
+		ElevatedActionKeyBinding* actionBinding = GetActionKeyBindings(action);
+		if (actionBinding == nullptr)
+		{
+			actionBinding = &m_Bindings.emplace_back(ElevatedActionKeyBinding{ action });
+		}
+		return actionBinding;
 	}
 	void InputBindingContext::RemoveAllKeysFromAction(Count<InputAction> action)
 	{
@@ -94,13 +103,13 @@ namespace Proof
 	{
 
 	}
-	ElevatedActionKeyMapping* InputBindingContext::GetActionKeyMappings(Count<InputAction> action)
+	ElevatedActionKeyBinding* InputBindingContext::GetActionKeyBindings(Count<InputAction> action)
 	{
-		for (auto& keyMappingHolder : m_Mappings)
+		for (auto& keyBindingHolder : m_Bindings)
 		{
-			if (keyMappingHolder.InputAction == action)
+			if (keyBindingHolder.InputAction == action)
 			{
-				return &keyMappingHolder;
+				return &keyBindingHolder;
 			}
 		}
 

@@ -9,6 +9,7 @@
 #include "Proof/Scene/World.h"
 #include "Proof/Scene/Component.h"
 #include "Proof/Scripting/ScriptEngine.h"
+#include "Proof/Input/ElevatedInputSystem/InputTypes.h"
 #include "Proof/Project/Project.h"
 namespace Proof::UI
 {
@@ -526,5 +527,174 @@ namespace Proof::UI
 
 		return modified;
 	}
-	
+
+	bool Widgets::ElevatedInputKeySearchPopup(const char* ID, ElevatedInputKey* selectedKey, ElevatedInputKeyFlags keyFlags, ElevatedInputKeyDeviceType device, bool analogKeys,bool digiitalKeys , const char* hint, bool allowClear, ImVec2 size)
+	{
+		UI::ScopedStyleColor popupBG(ImGuiCol_PopupBg, UI::ColourWithMultipliedValue(Colours::Theme::Background, 1.6f).Value);
+
+		bool modified = false;
+
+		auto current = *selectedKey;
+
+		ImGui::SetNextWindowSize({ size.x, 0.0f });
+
+		static bool grabFocus = true;
+
+		if (UI::BeginPopup(ID, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
+		{
+			static std::string searchString;
+
+			if (ImGui::GetCurrentWindow()->Appearing)
+			{
+				grabFocus = true;
+				searchString.clear();
+			}
+
+			// Search widget
+			UI::ShiftCursor(3.0f, 2.0f);
+			ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - ImGui::GetCursorPosX() * 2.0f);
+			SearchWidget(searchString, hint, &grabFocus);
+
+			const bool searching = !searchString.empty();
+
+			// Clear property button
+			if (allowClear)
+			{
+				UI::ScopedColourStack buttonColours(
+					ImGuiCol_Button, UI::ColourWithMultipliedValue(Colours::Theme::Background, 1.0f),
+					ImGuiCol_ButtonHovered, UI::ColourWithMultipliedValue(Colours::Theme::Background, 1.2f),
+					ImGuiCol_ButtonActive, UI::ColourWithMultipliedValue(Colours::Theme::Background, 0.9f));
+
+				UI::ScopedStyleVar border(ImGuiStyleVar_FrameBorderSize, 0.0f);
+
+				ImGui::SetCursorPosX(0);
+
+				ImGui::PushItemFlag(ImGuiItemFlags_NoNav, searching);
+
+				if (ImGui::Button("CLEAR", { ImGui::GetWindowWidth(), 0.0f }))
+				{
+					allowClear = true;
+					modified = true;
+				}
+
+				ImGui::PopItemFlag();
+			}
+
+			static auto deviceMatchesParam = [&](ElevatedInputKeyDeviceType deviceParam)
+			{
+				if (device == ElevatedInputKeyDeviceType::None)
+					return true;
+				return device == deviceParam;
+			};
+
+			static auto keyMatchesParam = [&](const ElevatedInputKey* paramKey)
+			{
+				if (keyFlags == ElevatedInputKeyFlags::NoFlags)
+					return true;
+
+				if (keyFlags == paramKey->GetKeyFlags())
+					return true;
+
+				return false;
+			};
+
+			static auto viewKeys = [&](ElevatedInputKeyDeviceType deviceType, bool& forwardFocus)
+			{
+				if (!ElevatedInputKeys::GetDeviceKeys().contains(deviceType))
+					return;
+
+				auto& list = ElevatedInputKeys::GetDeviceKeys().at(deviceType);
+
+				for (const ElevatedInputKey* key : list)
+				{
+					if (!keyMatchesParam(key))
+						continue;
+
+					if (!searchString.empty() && !UI::IsMatchingSearch(key->GetKeyName(), searchString))
+						continue;
+
+					if (analogKeys == false)
+					{
+						if (key->IsAnalog())
+							continue;
+					}
+
+					if (digiitalKeys == false)
+					{
+						if (key->IsDigital())
+							continue;
+					}
+					bool is_selected = (current.GetKeyName() == key->GetKeyName());
+					if (ImGui::Selectable(key->GetKeyName().c_str(), is_selected))
+					{
+						current = *key;
+						*selectedKey = *key;
+						modified = true;
+					}
+
+					if (forwardFocus)
+					{
+						forwardFocus = false;
+					}
+					else if (is_selected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+
+			};
+
+			// List of assets
+			{
+				UI::ScopedStyleColor listBoxBg(ImGuiCol_FrameBg, IM_COL32_DISABLE);
+				UI::ScopedStyleColor listBoxBorder(ImGuiCol_Border, IM_COL32_DISABLE);
+
+				ImGuiID listID = ImGui::GetID("##SearchInputKey");
+				if (ImGui::BeginListBox("##SearchInputKey", ImVec2(-FLT_MIN, 0.0f)))
+				{
+					bool forwardFocus = false;
+
+					ImGuiContext& g = *GImGui;
+					if (g.NavJustMovedToId != 0)
+					{
+						if (g.NavJustMovedToId == listID)
+						{
+							forwardFocus = true;
+							// ActivateItem moves keyboard navigation focuse inside of the window
+							ImGui::ActivateItem(listID);
+							ImGui::SetKeyboardFocusHere(1);
+						}
+					}
+
+					EnumReflection::ForEach< ElevatedInputKeyDeviceType>([&](ElevatedInputKeyDeviceType type)
+						{
+							if (type == ElevatedInputKeyDeviceType::None)
+								return;
+
+							if (searchString.empty())
+							{
+								if (UI::AttributeTreeNode(EnumReflection::EnumString(type), false, 6, 3))
+								{
+									viewKeys(type, forwardFocus);
+									UI::EndTreeNode();
+								}
+							}
+							else 
+							{
+								viewKeys(type, forwardFocus);
+							}
+						});
+					ImGui::EndListBox();
+				}
+			}
+			if (modified)
+				ImGui::CloseCurrentPopup();
+
+			UI::EndPopup();
+		}
+		HandleModified(modified);
+
+		return modified;
+	}
+
 }

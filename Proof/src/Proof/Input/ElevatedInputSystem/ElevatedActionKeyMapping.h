@@ -23,8 +23,8 @@ namespace Proof
 		bool operator< (const InputStateTracker& Other) const { return GetState() < Other.GetState(); }
 		bool operator> (const InputStateTracker& Other) const { return GetState() > Other.GetState(); }
 
-		void SetMappingInteractionApplied(bool val) { m_MappingInteractionApplied = val; }
-		bool GetMappingInteractionApplied() const { return m_MappingInteractionApplied; }
+		void SetBindingInteractionApplied(bool val) { m_BindingInteractionApplied = val; }
+		bool GetBindingInteractionApplied() const { return m_BindingInteractionApplied; }
 	private:
 		InteractionState m_NoInteractionState = InteractionState::None;
 
@@ -34,15 +34,15 @@ namespace Proof
 		bool m_FoundDirect = false;		
 		bool m_AllIndirectTriggered = true;
 		bool m_Blocking = false;				
-		bool m_MappingInteractionApplied = false; 
+		bool m_BindingInteractionApplied = false; 
 
 	};
 #ifdef OLD_ELEVATE_INPUT
 
-	struct ElevatedActionKeyMapping
+	struct ElevatedActionKeyBinding
 	{
 	public:
-		ElevatedActionKeyMapping(Count<InputAction> action = nullptr, const ElevatedInputKey& key = ElevatedInputKeys::Invalid)
+		ElevatedActionKeyBinding(Count<InputAction> action = nullptr, const ElevatedInputKey& key = ElevatedInputKeys::Invalid)
 			: InputAction(action)
 			, InputKey(key)
 		{
@@ -54,11 +54,11 @@ namespace Proof
 		Count<InputAction> InputAction;
 		ElevatedInputKey InputKey;
 	};
-	struct ElevatedActionKeyMappingContainer
+	struct ElevatedActionKeyBindingContainer
 	{
 	public:
-		ElevatedActionKeyMappingContainer() = default;
-		ElevatedActionKeyMappingContainer(Count<InputAction> inputAction) :
+		ElevatedActionKeyBindingContainer() = default;
+		ElevatedActionKeyBindingContainer(Count<InputAction> inputAction) :
 			m_InputAction(inputAction)
 		{
 
@@ -82,11 +82,11 @@ namespace Proof
 		const std::vector<Count<InputTrigger>>& GetTriggers() const { return m_Triggers; }
 		const std::vector<Count<InputModifier>>& GetModifiers() const { return m_Modifiers; }
 
-		bool KeyHasMapping(const ElevatedInputKey& inputKey) const 
+		bool KeyHasBinding(const ElevatedInputKey& inputKey) const 
 		{
-			for (auto& keyMapping : m_KeyMappings)
+			for (auto& keyBinding : m_KeyBindings)
 			{
-				if (keyMapping.InputKey == inputKey)
+				if (keyBinding.InputKey == inputKey)
 					return true;
 			}
 
@@ -115,9 +115,9 @@ namespace Proof
 		std::vector<Count<InputTrigger>> m_Triggers;
 		std::vector<Count<InputModifier>> m_Modifiers;
 
-		std::vector< ElevatedActionKeyMapping> m_KeyMappings;
+		std::vector< ElevatedActionKeyBinding> m_KeyBindings;
 		InputStateTracker m_InputStateTracker;
-		friend class InputMappingContext;
+		friend class InputBindingContext;
 		friend class ElevatedPlayer;
 	};
 #endif

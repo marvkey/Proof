@@ -14,21 +14,21 @@ namespace Proof
 
 #ifdef OLD_ELEVATE_INPUT
 
-	class InputMappingContext : public Asset
+	class InputBindingContext : public Asset
 	{
 	public:
-		ASSET_CLASS_TYPE(InputMappingContext);
+		ASSET_CLASS_TYPE(InputBindingContext);
 
 		void AddKey(Count<InputAction> action, const ElevatedInputKey& inputKey);
 		void RemoveKey(Count<InputAction> action, const ElevatedInputKey& inputKey);
 		void RemoveAllKeysFromAction(Count<InputAction> action);
 		void RemoveAllKeys();
 
-		const std::vector<ElevatedActionKeyMappingContainer>& GetMappings()const { return m_Mappings; }
+		const std::vector<ElevatedActionKeyBindingContainer>& GetBindings()const { return m_Bindings; }
 
 		bool IsKeyMapped(const ElevatedInputKey& key);
 	private:
-		std::vector<ElevatedActionKeyMappingContainer> m_Mappings;
+		std::vector<ElevatedActionKeyBindingContainer> m_Bindings;
 		friend class ElevatedPlayer;
 	};
 #else
@@ -38,9 +38,9 @@ namespace Proof
 		ASSET_CLASS_TYPE(InputBindingContext);
 		bool IsKeyMappedAsModifier(const ElevatedInputKey& key)
 		{
-			for (auto& actionKeyMapping : m_Mappings)
+			for (auto& actionKeyBinding : m_Bindings)
 			{
-				for (auto& inputKeyBase : actionKeyMapping.m_KeyMappings)
+				for (auto& inputKeyBase : actionKeyBinding.KeyBindings)
 				{
 					if (inputKeyBase->IsKeyMappedAsModifier(key))
 						return true;
@@ -51,9 +51,9 @@ namespace Proof
 		}
 		bool IsKeyMappedAsMain(const ElevatedInputKey& key)
 		{
-			for (auto actionKeyMapping : m_Mappings)
+			for (auto actionKeyBinding : m_Bindings)
 			{
-				for (auto inputKeyBase : actionKeyMapping.m_KeyMappings)
+				for (auto inputKeyBase : actionKeyBinding.KeyBindings)
 				{
 					if (inputKeyBase->IsKeyMappedAsMain(key))
 						return true;
@@ -64,9 +64,9 @@ namespace Proof
 		}
 		bool IsKeyMapped(const ElevatedInputKey& key)
 		{
-			for (auto& actionKeyMapping : m_Mappings)
+			for (auto& actionKeyBinding : m_Bindings)
 			{
-				for (auto& inputKeyBase : actionKeyMapping.m_KeyMappings)
+				for (auto& inputKeyBase : actionKeyBinding.KeyBindings)
 				{
 					if (inputKeyBase->IsKeyMapped(key))
 						return true;
@@ -77,12 +77,16 @@ namespace Proof
 		}
 
 		Count<InputKeyBinding> AddKey(Count<InputAction> action, const ElevatedInputKey& inputKey);
+
+		ElevatedActionKeyBinding* AddOrGetBinding(Count<InputAction> action);
 		void RemoveAllKeysFromAction(Count<InputAction> action);
 		void RemoveAllKeys();
 
+		const std::vector<ElevatedActionKeyBinding>& GetBindings()const { return m_Bindings; }
+
 	private:
-		ElevatedActionKeyMapping* GetActionKeyMappings(Count<InputAction> action);
-		std::vector<ElevatedActionKeyMapping> m_Mappings;
+		ElevatedActionKeyBinding* GetActionKeyBindings(Count<InputAction> action);
+		std::vector<ElevatedActionKeyBinding> m_Bindings;
 		friend class ElevatedPlayer;
 
 	};

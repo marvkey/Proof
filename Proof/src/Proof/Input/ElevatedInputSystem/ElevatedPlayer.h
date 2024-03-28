@@ -31,9 +31,9 @@ namespace Proof
 	class InputBindingContext;
 	class InputAction;
 
-	struct InputMappingContextInstance
+	struct InputBindingContextInstance
 	{
-		Count<InputBindingContext> InputMappingContext;
+		Count<InputBindingContext> InputBindingContext;
 		bool Active = true;
 	};
 
@@ -43,17 +43,17 @@ namespace Proof
 		InteractionEvent TriggerEvent;
 		Delegate<void(const InputActionOutput&)> Function; 
 	};
-	// because the input action context coudl remove the key mapping
+	// because the input action context coudl remove the key Binding
 			// so storing a pointer will just be wierd cause it would cause an error
 	struct ElevatedActionKeyData
 	{
 		Count<class InputAction> InputAction;
 		ElevatedInputKey Key = ElevatedInputKeys::Invalid;
 		Count<class InputKeyBindingBase> InputKeyBinding;
-		Count<class InputBindingContext> InputMappingContext;
+		Count<class InputBindingContext> InputBindingContext;
 
-		ElevatedActionKeyData(Count<class InputAction> action, ElevatedInputKey key, Count<InputKeyBindingBase> inputBinding, Count<class InputBindingContext> inputMapping)
-			:InputAction(action), Key(key), InputKeyBinding(inputBinding), InputMappingContext(inputMapping)
+		ElevatedActionKeyData(Count<class InputAction> action, ElevatedInputKey key, Count<InputKeyBindingBase> inputBinding, Count<class InputBindingContext> inputBindingContext)
+			:InputAction(action), Key(key), InputKeyBinding(inputBinding), InputBindingContext(inputBindingContext)
 		{
 
 
@@ -64,7 +64,7 @@ namespace Proof
 		return lhs.InputAction == rhs.InputAction &&
 			lhs.Key == rhs.Key &&
 			lhs.InputKeyBinding == rhs.InputKeyBinding &&
-			lhs.InputMappingContext == rhs.InputMappingContext;
+			lhs.InputBindingContext == rhs.InputBindingContext;
 	}
 
 	static inline bool operator!=(const ElevatedActionKeyData& lhs, const ElevatedActionKeyData& rhs) {
@@ -94,9 +94,9 @@ namespace Proof
 	{
 	public:
 
-		InputMappingContextInstance* GetInputMappingContextInstance(Count<InputBindingContext> mapping);
+		InputBindingContextInstance* GetInputBindingContextInstance(Count<InputBindingContext> Binding);
 
-		void AddInputMapping(Count<InputBindingContext> mapping);
+		void AddInputBinding(Count<InputBindingContext> Binding);
 
 		bool InputKey(const ElevatedInputKeyParams& params);
 
@@ -156,17 +156,17 @@ namespace Proof
 		bool ProccessInput(ElevatedInputKey key, const ElevatedInputKeyState& keyState);
 #if OLD_ELEVATE_INPUT
 
-		void ProcessActionMappingKeyEvent(InputActionValue actionValue, Count<InputMappingContext> actionMapping,ElevatedActionKeyMappingContainer& actionKeyMappingContainer, const ElevatedActionKeyMapping& keyMapping);
+		void ProcessActionBindingKeyEvent(InputActionValue actionValue, Count<InputBindingContext> actionBinding,ElevatedActionKeyBindingContainer& actionKeyBindingContainer, const ElevatedActionKeyBinding& keyBinding);
 #else
 		//retutnrs if key and modifeirs are able to proccess input
-		bool ProcessActionMappingKeyEvent(InputActionOutput actionValue, Count<class InputAction>, Count<class InputKeyBindingBase> keyMapping, const ElevatedInputKey& key);
+		bool ProcessActionBindingKeyEvent(InputActionOutput actionValue, Count<class InputAction>, Count<class InputKeyBindingBase> keyBinding, const ElevatedInputKey& key, float deltaTime);
 #endif
 	private:
 		int m_Player = -1; // none, player starts counting from 0
 
 		std::unordered_map<ElevatedInputKey, ElevatedInputKeyState> m_KeyStates;
 		std::unordered_map<ElevatedInputKey, ElevatedInputKeyState> m_KeyWithEvents;
-		std::vector<InputMappingContextInstance> m_InputMappingContext;
+		std::vector<InputBindingContextInstance> m_InputBindingContext;
 		std::vector<Count<InputAction>> m_ActionsWithEvents;
 
 		std::vector< ElevatedPlayerInputDelegate> m_InputDelegates;
@@ -175,7 +175,7 @@ namespace Proof
 
 		
 
-		std::vector<ElevatedActionKeyData> m_CapableKeyMappings;
+		std::vector<ElevatedActionKeyData> m_CapableKeyBindings;
 
 		uint32_t m_EventCount = 0;
 		bool m_GamePaused = false;

@@ -14,6 +14,7 @@
 #include "Proof/Input/Input.h"
 #include "Proof/ImGui/Editors/AssetEditors/PrefabEditor.h"
 #include "InputActionPanel.h"
+#include "InputBindingContextPanel.h"
 namespace Proof 
 {
 	AssetEditor::AssetEditor(const char* id)
@@ -195,6 +196,7 @@ namespace Proof
 		RegisterEditor(AssetType::MeshCollider);
 		RegisterEditor(AssetType::Prefab);
 		RegisterEditor(AssetType::InputAction);
+		RegisterEditor(AssetType::InputBindingContext);
 	}
 
 	void AssetEditorPanel::UnregisterAllEditors()
@@ -296,6 +298,10 @@ namespace Proof
 					break;
 				case Proof::AssetType::InputAction:
 					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<InputActionEditorPanel>::Create();
+					break;
+				case Proof::AssetType::InputBindingContext:
+					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<InputBindingContextPanel>::Create();
+					break;
 				default:
 					break;
 			}

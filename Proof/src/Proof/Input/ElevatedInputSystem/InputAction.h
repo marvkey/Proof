@@ -12,7 +12,7 @@ namespace Proof
 	enum class InputActionOutputValueBehavior 
 	{
 		/**
-		 * Takes the value from the mapping with the highest Absolute Value.
+		 * Takes the value from the Binding with the highest Absolute Value.
 		 *
 		 * For example, in a game where the player controls character movement using the arrow keys:
 		 * - Pressing the "Up" arrow key produces a positive value (e.g., +0.8) for forward movement.
@@ -26,7 +26,7 @@ namespace Proof
 		MaximumAbsolute,
 
 		/**
-		* Aggregates the values from different mappings.
+		* Aggregates the values from different Bindings.
 		*
 		* For example, if pressing the up arrow key contributes a value of +0.5 and pressing the down arrow key contributes -0.5 to the same input action,
 		* the resulting value would be 0.0, effectively canceling each other out.

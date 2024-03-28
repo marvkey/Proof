@@ -5,7 +5,6 @@
 #include "InputActionOutput.h"
 #include "InputTypes.h"
 #include "InputCustomizers.h"
-#include "ElevatedActionKeyMapping.h"
 #include "Proof/Utils/ContainerUtils.h"
 #include "Proof/Math/Math.h"
 
@@ -61,29 +60,29 @@ namespace Proof
 				actionData.TriggerEvent = TriggerEvent::None;
 		}
 		*/
-		std::vector<ElevatedActionKeyMapping*> validKeyMappings;
-		std::vector<ElevatedActionKeyMapping*> blockedByModifiers;
-		for (uint32_t i = 0; i<m_CapableKeyMappings.size(); i++)
+		std::vector<ElevatedActionKeyBinding*> validKeyBindings;
+		std::vector<ElevatedActionKeyBinding*> blockedByModifiers;
+		for (uint32_t i = 0; i<m_CapableKeyBindings.size(); i++)
 		{
 			
-			ElevatedActionKeyData data = m_CapableKeyMappings[i];
+			ElevatedActionKeyData data = m_CapableKeyBindings[i];
 			// basicaly we are makign sure int he input map was not changed during the tick
-			InputMappingContextInstance* inputMappingContextInstance = GetInputMappingContextInstance(data.InputMappingContext);
-			if (!inputMappingContextInstance || !inputMappingContextInstance->Active)
+			InputBindingContextInstance* inputBindingContextInstance = GetInputBindingContextInstance(data.InputBindingContext);
+			if (!inputBindingContextInstance || !inputBindingContextInstance->Active)
 			{
-				m_CapableKeyMappings.erase(m_CapableKeyMappings.begin() + i);
+				m_CapableKeyBindings.erase(m_CapableKeyBindings.begin() + i);
 				continue;
 			}
-			ElevatedActionKeyMapping* actionKeyMapping = inputMappingContextInstance->InputMappingContext->GetActionKeyMappings(data.InputAction);
+			ElevatedActionKeyBinding* actionKeyBinding = inputBindingContextInstance->InputBindingContext->GetActionKeyBindings(data.InputAction);
 			
-			if (!actionKeyMapping)
+			if (!actionKeyBinding)
 			{
-				m_CapableKeyMappings.erase(m_CapableKeyMappings.begin() + i);
+				m_CapableKeyBindings.erase(m_CapableKeyBindings.begin() + i);
 				continue;
 			}
-			if (!Utils::Contains(actionKeyMapping->m_KeyMappings,data.InputKeyBinding))
+			if (!Utils::Contains(actionKeyBinding->KeyBindings,data.InputKeyBinding))
 			{
-				m_CapableKeyMappings.erase(m_CapableKeyMappings.begin() + i);
+				m_CapableKeyBindings.erase(m_CapableKeyBindings.begin() + i);
 				continue;
 			}
 
@@ -98,13 +97,13 @@ namespace Proof
 				// key modifiers may not be allowed to procces input 
 				// so technically this key shoudl be able to proccess input  ShouldProccessInput (function) 
 				// since its modifiers make a part of its input system
-				bool state = ProcessActionMappingKeyEvent(InputActionOutput(rawKeyValue), data.InputAction, elevatedKey, data.Key);
+				bool state = ProcessActionBindingKeyEvent(InputActionOutput(rawKeyValue), data.InputAction, elevatedKey, data.Key,deltaTime);
 				if (state)
-					validKeyMappings.emplace_back(actionKeyMapping);
+					validKeyBindings.emplace_back(actionKeyBinding);
 				else
 				{
-					blockedByModifiers.emplace_back(actionKeyMapping);
-					//m_CapableKeyMappings.erase(m_CapableKeyMappings.begin() + i);
+					blockedByModifiers.emplace_back(actionKeyBinding);
+					//m_CapableKeyBindings.erase(m_CapableKeyBindings.begin() + i);
 				}
 
 			}
@@ -115,9 +114,9 @@ namespace Proof
 				auto& actionData = GetActionData(data.InputAction);
 				if (actionData.LastInteractionState != InteractionState::None)
 				{
-					blockedByModifiers.emplace_back(actionKeyMapping);
+					blockedByModifiers.emplace_back(actionKeyBinding);
 				}
-				m_CapableKeyMappings.erase(m_CapableKeyMappings.begin() + i);
+				m_CapableKeyBindings.erase(m_CapableKeyBindings.begin() + i);
 			}
 			/*
 			// basically what if the main key is being pressed 
@@ -128,16 +127,16 @@ namespace Proof
 				// basically chekcing if the modifer key cannot no longer be used
 				InputActionOutput ActionOutputRaw(rawKeyValue);
 				if (!elevatedKey->ProcessInputData(this, ActionOutputRaw, data.InputAction, data.Key, true))
-					blockedByModifiers.emplace_back(&mapping);
+					blockedByModifiers.emplace_back(&Binding);
 
 			}
 			*/
 
 		}
 
-		for (ElevatedActionKeyMapping* blockedMofierMapping : blockedByModifiers)
+		for (ElevatedActionKeyBinding* blockedMofierBinding : blockedByModifiers)
 		{
-			auto& actionData = GetActionData(blockedMofierMapping->InputAction);
+			auto& actionData = GetActionData(blockedMofierBinding->InputAction);
 
 			actionData.InteractionEvent = GetInteractionStateChangeEvent(actionData.LastInteractionState, InteractionState::None);
 			actionData.LastInteractionState = InteractionState::None;
@@ -178,16 +177,16 @@ namespace Proof
 		}
 		blockedByModifiers.clear();
 
-		for (ElevatedActionKeyMapping* elevatedKeyMapping : validKeyMappings)
+		for (ElevatedActionKeyBinding* elevatedKeyBinding : validKeyBindings)
 		{
-			auto inputAction = elevatedKeyMapping->InputAction;
+			auto inputAction = elevatedKeyBinding->InputAction;
 			auto& actionData = GetActionData(inputAction);
 
 			InteractionState triggerState = InteractionState::None;
 
 			auto rawValue = actionData.ActionOutput;
 
-			actionData.ActionOutput = ApplyCustomizer(elevatedKeyMapping->Customizers, actionData.ActionOutput, deltaTime);
+			actionData.ActionOutput = ApplyCustomizer(elevatedKeyBinding->Customizers, actionData.ActionOutput, deltaTime);
 			actionData.ActionOutput = ApplyCustomizer(inputAction->Customizers, actionData.ActionOutput, deltaTime);
 
 			if (actionData.ActionOutput.Get<glm::vec3>() != rawValue.Get<glm::vec3>())
@@ -196,9 +195,9 @@ namespace Proof
 			}
 
 			InteractionState PrevState = actionData.InteractionStateTracker.GetState();
-			triggerState = actionData.InteractionStateTracker.EvaluateInteractions(this, elevatedKeyMapping->Interactions, actionData.ActionOutput, deltaTime);
+			triggerState = actionData.InteractionStateTracker.EvaluateInteractions(this, elevatedKeyBinding->Interactions, actionData.ActionOutput, deltaTime);
 			triggerState = actionData.InteractionStateTracker.EvaluateInteractions(this, inputAction->Interactions, actionData.ActionOutput, deltaTime);
-			triggerState = actionData.InteractionStateTracker.GetMappingInteractionApplied() ? Math::Min(triggerState, PrevState) : triggerState;
+			triggerState = actionData.InteractionStateTracker.GetBindingInteractionApplied() ? Math::Min(triggerState, PrevState) : triggerState;
 
 			if (m_GamePaused && !inputAction->TriggerWhenPaused)
 			{
@@ -318,32 +317,32 @@ namespace Proof
 		bool bKeyIsReleased = !bKeyIsDown && wasDownLastTick;
 		bool bKeyIsHeld = bKeyIsDown && wasDownLastTick;
 
-		bool proccesActionMapping = false;
+		bool proccesActionBinding = false;
 
 		if (bKeyIsHeld)
-			proccesActionMapping = true; // key held
+			proccesActionBinding = true; // key held
 		else if (bKeyIsDown || bKeyIsReleased)
-			proccesActionMapping = true; // key has had an release or enter event
+			proccesActionBinding = true; // key has had an release or enter event
 		else
-			proccesActionMapping = false;
-		return proccesActionMapping;
+			proccesActionBinding = false;
+		return proccesActionBinding;
 	}
 
 	bool ElevatedPlayer::ProccessInput(ElevatedInputKey key, const ElevatedInputKeyState& keyState)
 	{
 #if OLD_ELEVATE_INPUT
-		std::vector<ElevatedActionKeyMappingContainer*> validKeyMappings;
+		std::vector<ElevatedActionKeyBindingContainer*> validKeyBindings;
 		const float deltaTime = FrameTime::GetWorldDeltaTime();
 
 		bool outValue = false;
-		for (auto& inputMappingInstance : m_InputMappingContext)
+		for (auto& inputBindingInstance : m_InputBindingContext)
 		{
-			if (!inputMappingInstance.Active)
+			if (!inputBindingInstance.Active)
 				continue;
 
-			auto inputMappingContext = inputMappingInstance.InputMappingContext;
+			auto inputBindingContext = inputBindingInstance.InputBindingContext;
 
-			if (!inputMappingContext->IsKeyMapped(key))
+			if (!inputBindingContext->IsKeyMapped(key))
 				continue;
 
 			glm::vec3 rawKeyValue = keyState.RawAxis;
@@ -356,28 +355,28 @@ namespace Proof
 			bool bKeyIsReleased = !bKeyIsDown && wasDownLastTick;
 			bool bKeyIsHeld = bKeyIsDown && wasDownLastTick;
 
-			bool proccesActionMapping = false; 
+			bool proccesActionBinding = false; 
 			
 			if (bKeyIsHeld)
-				proccesActionMapping = true; // key held
+				proccesActionBinding = true; // key held
 			else if (bKeyIsDown || bKeyIsReleased)
-				proccesActionMapping = true; // key has had an release or enter event
+				proccesActionBinding = true; // key has had an release or enter event
 			else
-				proccesActionMapping = false;
+				proccesActionBinding = false;
 			
-			if (proccesActionMapping)
+			if (proccesActionBinding)
 			{
-				for (auto& mapping : inputMappingContext->m_Mappings)
+				for (auto& Binding : inputBindingContext->m_Bindings)
 				{
-					if (mapping.KeyHasMapping(key))
+					if (Binding.KeyHasBinding(key))
 					{
-						for (auto& elevatedKey : mapping.m_KeyMappings)
+						for (auto& elevatedKey : Binding.m_KeyBindings)
 						{
 							if (elevatedKey.InputKey == key)
 							{
 								outValue = true;
-								ProcessActionMappingKeyEvent(InputActionOutput(rawKeyValue), inputMappingContext, mapping, elevatedKey);
-								validKeyMappings.emplace_back(&mapping);
+								ProcessActionBindingKeyEvent(InputActionOutput(rawKeyValue), inputBindingContext, Binding, elevatedKey);
+								validKeyBindings.emplace_back(&Binding);
 							}
 						}
 					}
@@ -387,13 +386,13 @@ namespace Proof
 
 		if (outValue == false)
 		{
-			validKeyMappings.clear();
+			validKeyBindings.clear();
 			return false;
 		}
-		for (ElevatedActionKeyMappingContainer* elevatedKeyMapping : validKeyMappings)
+		for (ElevatedActionKeyBindingContainer* elevatedKeyBinding : validKeyBindings)
 		{
-			auto inputAction = elevatedKeyMapping->m_InputAction;
-			ElevatedActionKeyMappingContainer& actionData = *elevatedKeyMapping;
+			auto inputAction = elevatedKeyBinding->m_InputAction;
+			ElevatedActionKeyBindingContainer& actionData = *elevatedKeyBinding;
 
 			TriggerState triggerState = TriggerState::None;
 
@@ -408,7 +407,7 @@ namespace Proof
 
 			TriggerState PrevState = actionData.m_InputStateTracker.GetState();
 			triggerState = actionData.m_InputStateTracker.EvaluateTriggers(this, actionData.m_Triggers, actionData.m_ActionOutput, deltaTime);
-			triggerState = actionData.m_InputStateTracker.GetMappingTriggerApplied() ? Math::Min(triggerState, PrevState) : triggerState;
+			triggerState = actionData.m_InputStateTracker.GetBindingTriggerApplied() ? Math::Min(triggerState, PrevState) : triggerState;
 
 			if (m_GamePaused && !inputAction->TriggerWhenPaused)
 			{
@@ -444,9 +443,9 @@ namespace Proof
 
 		}
 
-		for (ElevatedActionKeyMappingContainer* elevatedKeyMapping : validKeyMappings)
+		for (ElevatedActionKeyBindingContainer* elevatedKeyBinding : validKeyBindings)
 		{
-			ElevatedActionKeyMappingContainer& actionData = *elevatedKeyMapping;
+			ElevatedActionKeyBindingContainer& actionData = *elevatedKeyBinding;
 
 			switch (actionData.m_TriggerEvent)
 			{
@@ -462,43 +461,43 @@ namespace Proof
 			}
 			actionData.m_InputStateTracker = InputStateTracker();
 		}
-		validKeyMappings.clear();
+		validKeyBindings.clear();
 
 		return outValue;
 
 #else
 bool outValue = false;
 
-	std::vector<ElevatedActionKeyMapping*> validKeyMappings;
-	std::vector<ElevatedActionKeyMapping*> blockedByModifiers;
+	std::vector<ElevatedActionKeyBinding*> validKeyBindings;
+	std::vector<ElevatedActionKeyBinding*> blockedByModifiers;
 		const float deltaTime = FrameTime::GetWorldDeltaTime();
 
-		for (auto& inputMappingInstance : m_InputMappingContext)
+		for (auto& inputBindingInstance : m_InputBindingContext)
 		{
-			if (!inputMappingInstance.Active)
+			if (!inputBindingInstance.Active)
 				continue;
 
-			auto inputMappingContext = inputMappingInstance.InputMappingContext;
+			auto inputBindingContext = inputBindingInstance.InputBindingContext;
 
-			if (!inputMappingContext->IsKeyMapped(key))
+			if (!inputBindingContext->IsKeyMapped(key))
 				continue;
 
 			if (ShouldProccessInput(key))
 			{
 				glm::vec3 rawKeyValue = keyState.RawAxis;
 
-				for (auto& mapping : inputMappingContext->m_Mappings)
+				for (auto& Binding : inputBindingContext->m_Bindings)
 				{
-					for (auto elevatedKey : mapping.m_KeyMappings)
+					for (auto elevatedKey : Binding.KeyBindings)
 					{
 						if (elevatedKey->IsKeyMappedAsMain(key) )
 						{
-							ElevatedActionKeyData data{ mapping.InputAction,key,elevatedKey,inputMappingInstance.InputMappingContext };
+							ElevatedActionKeyData data{ Binding.InputAction,key,elevatedKey,inputBindingInstance.InputBindingContext };
 
-							if (!Utils::Contains(m_CapableKeyMappings, data))
+							if (!Utils::Contains(m_CapableKeyBindings, data))
 							{
 								outValue |= true;
-								m_CapableKeyMappings.push_back(data);
+								m_CapableKeyBindings.push_back(data);
 							}
 							
 						}
@@ -508,11 +507,11 @@ bool outValue = false;
 							// key modifiers may not be allowed to procces input 
 							// so technically this key shoudl be able to proccess input  ShouldProccessInput (function) 
 							// since its modifiers make a part of its input system
-							bool state = ProcessActionMappingKeyEvent(InputActionOutput(rawKeyValue), mapping.InputAction, elevatedKey,key);
+							bool state = ProcessActionBindingKeyEvent(InputActionOutput(rawKeyValue), Binding.InputAction, elevatedKey,key);
 							if (state)
-								validKeyMappings.emplace_back(&mapping);
+								validKeyBindings.emplace_back(&Binding);
 							else
-								blockedByModifiers.emplace_back(&mapping);
+								blockedByModifiers.emplace_back(&Binding);
 
 							outValue |= state;
 						}
@@ -524,8 +523,8 @@ bool outValue = false;
 						{
 							// basically chekcing if the modifer key cannot no longer be used
 							InputActionOutput ActionOutputRaw(rawKeyValue);
-							if(!elevatedKey->ProcessInputData(this, ActionOutputRaw, mapping.InputAction, key, true))
-								blockedByModifiers.emplace_back(&mapping);
+							if(!elevatedKey->ProcessInputData(this, ActionOutputRaw, Binding.InputAction, key, true))
+								blockedByModifiers.emplace_back(&Binding);
 
 						}
 						*/
@@ -536,9 +535,9 @@ bool outValue = false;
 
 		return outValue;
 	#if 0 
-		for (ElevatedActionKeyMapping* blockedMofierMapping : blockedByModifiers)
+		for (ElevatedActionKeyBinding* blockedMofierBinding : blockedByModifiers)
 		{
-			auto& actionData = GetActionData(blockedMofierMapping->InputAction);
+			auto& actionData = GetActionData(blockedMofierBinding->InputAction);
 
 			actionData.TriggerEventInternal = GetTriggerStateChangeEvent(actionData.LastTriggerState, TriggerState::None);
 			actionData.TriggerEvent = ConvertInternalTriggerEvent(actionData.TriggerEventInternal);
@@ -577,18 +576,18 @@ bool outValue = false;
 		if (outValue == false)
 		{
 
-			validKeyMappings.clear();
+			validKeyBindings.clear();
 			return false;
 		}
-		for (ElevatedActionKeyMapping* elevatedKeyMapping : validKeyMappings)
+		for (ElevatedActionKeyBinding* elevatedKeyBinding : validKeyBindings)
 		{
-			auto inputAction = elevatedKeyMapping->InputAction;
+			auto inputAction = elevatedKeyBinding->InputAction;
 			auto& actionData = GetActionData(inputAction);
 
 			TriggerState triggerState = TriggerState::None;
 
 			auto rawValue = actionData.ActionOutput;
-			actionData.ActionOutput = ApplyCustomizer(elevatedKeyMapping->m_Customizers, actionData.ActionOutput, deltaTime);
+			actionData.ActionOutput = ApplyCustomizer(elevatedKeyBinding->m_Customizers, actionData.ActionOutput, deltaTime);
 
 			if (actionData.ActionOutput.Get<glm::vec3>() != rawValue.Get<glm::vec3>())
 			{
@@ -596,8 +595,8 @@ bool outValue = false;
 			}
 
 			TriggerState PrevState = actionData.TriggerStateTracker.GetState();
-			triggerState = actionData.TriggerStateTracker.EvaluateTriggers(this, elevatedKeyMapping->m_Triggers, actionData.ActionOutput, deltaTime);
-			triggerState = actionData.TriggerStateTracker.GetMappingTriggerApplied() ? Math::Min(triggerState, PrevState) : triggerState;
+			triggerState = actionData.TriggerStateTracker.EvaluateTriggers(this, elevatedKeyBinding->m_Triggers, actionData.ActionOutput, deltaTime);
+			triggerState = actionData.TriggerStateTracker.GetBindingTriggerApplied() ? Math::Min(triggerState, PrevState) : triggerState;
 
 			if (m_GamePaused && !inputAction->TriggerWhenPaused)
 			{
@@ -634,9 +633,9 @@ bool outValue = false;
 			*/
 		}
 
-		for (ElevatedActionKeyMapping* elevatedKeyMapping : validKeyMappings)
+		for (ElevatedActionKeyBinding* elevatedKeyBinding : validKeyBindings)
 		{
-			auto& actionData = GetActionData(elevatedKeyMapping->InputAction);
+			auto& actionData = GetActionData(elevatedKeyBinding->InputAction);
 
 			switch (actionData.TriggerEvent)
 			{
@@ -652,7 +651,7 @@ bool outValue = false;
 			}
 			actionData.TriggerStateTracker = InputStateTracker();
 		}
-		validKeyMappings.clear();
+		validKeyBindings.clear();
 		return outValue;
 	#endif
 #endif
@@ -660,7 +659,7 @@ bool outValue = false;
 	}
 #if OLD_ELEVATE_INPUT
 
-	void ElevatedPlayer::ProcessActionMappingKeyEvent(InputActionOutput rawKeyValue, Count<InputMappingContext> actionMapping, ElevatedActionKeyMappingContainer& actionData, const ElevatedActionKeyMapping& keyMapping)
+	void ElevatedPlayer::ProcessActionBindingKeyEvent(InputActionOutput rawKeyValue, Count<InputBindingContext> actionBinding, ElevatedActionKeyBindingContainer& actionData, const ElevatedActionKeyBinding& keyBinding)
 	{
 		InputStateTracker triggerStateTracker;
 
@@ -677,12 +676,12 @@ bool outValue = false;
 		float deltaTime = FrameTime::GetWorldDeltaTime();
 
 		InputActionOutputType ValueType = actionData.m_ActionOutput.GetValueType();
-		InputActionOutput modifiedValue = ApplyModifiers(keyMapping.Modifiers, InputActionOutput(ValueType, rawKeyValue.Get<glm::vec3>()), deltaTime);
+		InputActionOutput modifiedValue = ApplyModifiers(keyBinding.Modifiers, InputActionOutput(ValueType, rawKeyValue.Get<glm::vec3>()), deltaTime);
 
-		TriggerState calcedState = triggerStateTracker.EvaluateTriggers(this, keyMapping.Triggers, modifiedValue, deltaTime);
+		TriggerState calcedState = triggerStateTracker.EvaluateTriggers(this, keyBinding.Triggers, modifiedValue, deltaTime);
 		triggerStateTracker.SetStateForNoTriggers(modifiedValue.IsNonZero() ? TriggerState::Triggered : TriggerState::None);
 
-		bool triggersApplied = (keyMapping.Triggers.size() )> 0;
+		bool triggersApplied = (keyBinding.Triggers.size() )> 0;
 
 		const InputActionAccumulationBehavior accumulationBehavior = inputAction->AccumulationBehavior;
 		if (modifiedValue.GetMagnitudeSq())
@@ -716,11 +715,11 @@ bool outValue = false;
 		}
 
 		actionData.m_InputStateTracker = actionData.m_InputStateTracker > triggerStateTracker ? actionData.m_InputStateTracker : triggerStateTracker;
-		actionData.m_InputStateTracker.SetMappingTriggerApplied(triggersApplied);
+		actionData.m_InputStateTracker.SetBindingTriggerApplied(triggersApplied);
 	}
 #else
 
-	bool ElevatedPlayer::ProcessActionMappingKeyEvent(InputActionOutput ActionOutput, Count<class InputAction>inputAction, Count<class InputKeyBindingBase> keyMapping, const ElevatedInputKey& key)
+	bool ElevatedPlayer::ProcessActionBindingKeyEvent(InputActionOutput ActionOutput, Count<class InputAction>inputAction, Count<class InputKeyBindingBase> keyBinding, const ElevatedInputKey& key, float deltaTime)
 	{
 		InputStateTracker triggerStateTracker;
 
@@ -734,15 +733,14 @@ bool outValue = false;
 			actionData.ActionOutput.Reset();
 		}
 
-		float deltaTime = FrameTime::GetWorldDeltaTime();
 
 		{
 			auto updateActionOutput = ActionOutput.Get<glm::vec3>();
-			keyMapping->CheckOrUpdateAction(key, updateActionOutput, inputAction);
+			keyBinding->CheckOrUpdateAction(key, updateActionOutput, inputAction, deltaTime);
 
 			ActionOutput = InputActionOutput(ActionOutput.GetOutputType(), updateActionOutput);
 		}
-		return keyMapping->ProcessInputData(this, ActionOutput, inputAction, key);
+		return keyBinding->ProcessInputData(this, ActionOutput, inputAction, key, deltaTime);
 	}
 #endif
 
@@ -782,19 +780,19 @@ bool outValue = false;
 #endif
 
 
-	InputMappingContextInstance* ElevatedPlayer::GetInputMappingContextInstance(Count<InputBindingContext> mapping)
+	InputBindingContextInstance* ElevatedPlayer::GetInputBindingContextInstance(Count<InputBindingContext> Binding)
 	{
-		for (auto& inputMappingContext : m_InputMappingContext)
+		for (auto& inputBindingContext : m_InputBindingContext)
 		{
-			if (inputMappingContext.InputMappingContext == mapping)
-				return &inputMappingContext;
+			if (inputBindingContext.InputBindingContext == Binding)
+				return &inputBindingContext;
 		}
 		return nullptr;
 	}
 
-	void ElevatedPlayer::AddInputMapping(Count<InputBindingContext> mapping)
+	void ElevatedPlayer::AddInputBinding(Count<InputBindingContext> Binding)
 	{
-		m_InputMappingContext.emplace_back(InputMappingContextInstance{ mapping,true });
+		m_InputBindingContext.emplace_back(InputBindingContextInstance{ Binding,true });
 	}
 	
 	

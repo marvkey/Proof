@@ -21,6 +21,8 @@
 #include "MeshImpoter.h"
 #include "Proof/Asset/AssetCustomData/MeshSourceSavedSettings.h"
 #include "Proof/Input/ElevatedInputSystem/InputAction.h"
+#include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
+#include "Proof/Input/ElevatedInputSystem/ElevatedActionKeyMapping.h"
 #include "SerializeCommon.h"
 namespace Proof {
 	void AssetSerializer::SetID(const AssetInfo& data, const Count<class Asset>& asset)
@@ -783,6 +785,70 @@ namespace $NAMESPACE_NAME$
 
 		SetID(assetData, inputAction);
 		return inputAction;
+	}
+
+	void InputBindingContextSerializer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
+	{
+
+		Count<InputBindingContext> inputBindingContext = asset.As<InputBindingContext>();
+
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(inputBindingContext->GetAssetType());
+		out << YAML::Key << "ID" << YAML::Value << inputBindingContext->GetID();
+
+		out << YAML::Key << "InputBindings" << YAML::Value << YAML::BeginSeq; //InputBindings
+		for (auto& binding : inputBindingContext->GetBindings())
+		{
+			if (!binding.InputAction)
+				continue;
+			out << YAML::BeginMap;// InputBinding
+			out << YAML::Key << "InputActionID" << YAML::Value << binding.InputAction->GetID();
+			SerializeCommon::SerializeInputKeyBindings(out, binding.KeyBindings);
+			SerializeCommon::SerializeInputInteractions(out, binding.Interactions);
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;//InputBindings
+
+		out << YAML::EndMap;
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		stream << out.c_str();
+		stream.close();
+	}
+
+	Count<class Asset> InputBindingContextSerializer::TryLoadAsset(const AssetInfo& assetData) const
+	{
+		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		if (!data["AssetType"])
+			return nullptr;
+
+		Count<InputBindingContext> inputBindingContext = Count<InputBindingContext>::Create();
+
+		if (!data["InputBindings"])
+		{
+			SetID(assetData, inputBindingContext);
+			return inputBindingContext;
+		}
+		
+		auto inputBindings = data["InputBindings"];
+
+		for (auto inputBinding : inputBindings)
+		{
+			auto assetID = inputBinding["InputActionID"].as<uint64_t>(0);
+			if (!AssetManager::HasAsset(assetID))
+				continue;
+
+			auto action = AssetManager::GetAsset<InputAction>(assetID);
+			ElevatedActionKeyBinding* binding =  inputBindingContext->AddOrGetBinding(action);
+
+			SerializeCommon::DeserializeInputKeyBindings(inputBinding, binding->KeyBindings);
+			SerializeCommon::LoadInputInteractions(inputBinding, binding->Interactions);
+		}
+
+		out:
+		SetID(assetData, inputBindingContext);
+		return inputBindingContext;
 	}
 
 }
