@@ -96,6 +96,11 @@ namespace Proof::ScriptUtils
 					if (PF_CORE_CLASS(Texture2D) && typeClass == PF_CORE_CLASS(Texture2D)->Class)
 						return ScriptFieldType::Texture2D;
 
+					if (PF_CORE_CLASS(InputAction) && typeClass == PF_CORE_CLASS(InputAction)->Class)
+						return ScriptFieldType::InputAction;
+
+					if (PF_CORE_CLASS(InputBindingContext) && typeClass == PF_CORE_CLASS(InputBindingContext)->Class)
+						return ScriptFieldType::InputBindingContext;
 					break;
 				}
 			case MONO_TYPE_SZARRAY:
@@ -193,6 +198,8 @@ namespace Proof::ScriptUtils
 				case ScriptFieldType::Material: return ScriptEngine::CreateManagedObject("Proof.Material", *(AssetID*)data);
 				case ScriptFieldType::PhysicsMaterial: return ScriptEngine::CreateManagedObject("Proof.PhysicsMaterial", *(AssetID*)data);
 				case ScriptFieldType::Texture2D: return ScriptEngine::CreateManagedObject("Proof.Texture2D", *(AssetID*)data);
+				case ScriptFieldType::InputAction: return ScriptEngine::CreateManagedObject("Proof.InputAction", *(AssetID*)data);
+				case ScriptFieldType::InputBindingContext: return ScriptEngine::CreateManagedObject("Proof.InputBindingContext", *(AssetID*)data);
 			}
 		}
 
@@ -368,6 +375,8 @@ namespace Proof::ScriptUtils
 			case ScriptFieldType::Material:
 			case ScriptFieldType::PhysicsMaterial:
 			case ScriptFieldType::Texture2D:
+			case ScriptFieldType::InputAction:
+			case ScriptFieldType::InputBindingContext:
 				{
 					Buffer handleBuffer = GetFieldValue(obj, "m_ID", ScriptFieldType::AssetID, false);
 					result.Write(handleBuffer.Data, sizeof(AssetID));

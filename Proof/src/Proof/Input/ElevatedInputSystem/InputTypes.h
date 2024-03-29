@@ -451,7 +451,7 @@ namespace Proof
         // The trigger state has been met
         Triggered,
     };
-
+	// DONT change it is in the C# uses it
     enum class InteractionEvent
     {
 		// Indicates that no significant changes have occurred in the trigger state and there are no active device inputs.

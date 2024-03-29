@@ -12,6 +12,7 @@
 
 #include <list>
 #include "Assert.h"
+#include <memory>
 namespace Proof
 {
 
@@ -38,11 +39,19 @@ namespace Proof
 			InvocationElement() = default;
 			InvocationElement(TInstancePtr thisPtr, TInternalFunction aStub) : Object(thisPtr), Stub(aStub) {}
 
+			~InvocationElement()
+			{
+				if (DynamicCopy && Object != nullptr)
+				{
+					delete Object;
+				}
+			}
 			bool operator ==(const InvocationElement& another) const { return another.Stub == Stub && another.Object == Object; }
 			bool operator !=(const InvocationElement& another) const { return another.Stub != Stub || another.Object != Object; }
 
 			TInstancePtr Object = nullptr;
 			TInternalFunction Stub = nullptr;
+			bool DynamicCopy = false; //lamdas
 		};
 
 	public:
@@ -65,7 +74,21 @@ namespace Proof
 		template<class TLambda>
 		void BindLambda(const TLambda& lambda)
 		{
+
+			// Make a copy of the lambda and store it in a persistent storage
+			auto* lambdaCopy = new TLambda(lambda);
+
+			// Use lambdaCopy to avoid dangling references
+			Assign((TInstancePtr)(lambdaCopy), LambdaStub<TLambda>,true);
+
+
+			/*
 			Assign((TInstancePtr)(&lambda), LambdaStub<TLambda>);
+			*/
+			/*
+			m_LambdaCopy = std::make_unique<TLambda>(lambda);
+			Assign((TInstancePtr)(m_LambdaCopy.get()), LambdaStub<TLambda>);
+			*/
 		}
 
 		/// Member function binding
@@ -105,10 +128,11 @@ namespace Proof
 		}
 
 	private:
-		inline void Assign(TInstancePtr anObject, TInternalFunction aStub)
+		inline void Assign(TInstancePtr anObject, TInternalFunction aStub,bool createnew = false)
 		{
 			m_Invocation.Object = anObject;
 			m_Invocation.Stub = aStub;
+			m_Invocation.DynamicCopy = createnew;
 		}
 
 		template <class TClass, TReturn(TClass::* TFunction)(TArgs...)>

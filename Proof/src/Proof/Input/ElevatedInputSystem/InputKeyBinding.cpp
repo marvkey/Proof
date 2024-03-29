@@ -182,7 +182,7 @@ namespace Proof
             if (!keyBinding)
                 continue;
 
-            if (keyBinding->GetKey() == key)
+            if (keyBinding->GetKey() != key)
                 continue;
 
             if (!keyBinding.As<InputKeyBindingBase>()->ProcessInputData(player, actionValue, action,key, deltaTime))
@@ -222,28 +222,28 @@ namespace Proof
                 {
                     if(action->OutputType > InputActionOutputType::Float)
                         axis.y = axis.x;
-                    //axis.x = 0;
+                    axis.x = 0;
                 }
                 break;
                 case Proof::InputKeyBindingBundleTypes::NegativeY:
                 {
                     if (action->OutputType > InputActionOutputType::Float)
                         axis.y = -axis.x;
-                    //axis.x = 0;
+                    axis.x = 0;
                 }
                 break;
                 case Proof::InputKeyBindingBundleTypes::PositiveZ:
                 {
                     if (action->OutputType > InputActionOutputType::Vector2D)
                         axis.z = axis.x;
-                    //axis.x = 0;
+                    axis.x = 0;
                 }
                 break;
                 case Proof::InputKeyBindingBundleTypes::NegativeZ:
                 {
                     if (action->OutputType > InputActionOutputType::Vector2D)
                         axis.z = -axis.x;
-                    //axis.x = 0;
+                    axis.x = 0;
                 }
             break;
             default:

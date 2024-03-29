@@ -60,7 +60,40 @@ namespace Proof
             return (X * vec.X + Y * vec.Y + Z * vec.Z);
         }
 
-
+        public float this[int index]
+        {
+            get
+            {
+                switch (index)
+                {
+                    case 0:
+                        return X;
+                    case 1:
+                        return Y;
+                    case 2:
+                        return Z;
+                    default:
+                        throw new IndexOutOfRangeException();
+                }
+            }
+            set
+            {
+                switch (index)
+                {
+                    case 0:
+                        X = value;
+                        break;
+                    case 1:
+                        Y = value;
+                        break;
+                    case 2:
+                        Z = value;
+                        break;
+                    default:
+                        throw new IndexOutOfRangeException();
+                }
+            }
+        }
 
         public static Vector3 operator *(Vector3 left, float scalar) => new Vector3(left.X * scalar, left.Y * scalar, left.Z * scalar);
         public static Vector3 operator *(float scalar, Vector3 right) => new Vector3(scalar * right.X, scalar * right.Y, scalar * right.Z);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Proof
 {
@@ -416,6 +417,9 @@ namespace Proof
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void PlayerInputComponent_SetInputState(ulong entityID, int inputState);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PlayerInputComponent_BindAction(ulong entityID,AssetID actionID, InteractionEvent interactionEvent,  object Object, string methodName);
 
         #endregion
 

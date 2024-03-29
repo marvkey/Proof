@@ -657,6 +657,7 @@ namespace Proof
 	public:
 		PlayerInputComponent();
 		PlayerInputComponent(Players playerInput, Count<class ElevatedPlayer> elevatedPlayer);
+		PlayerInputComponent(const PlayerInputComponent& other);
 
 		Players InputPlayer = Players::None;
 		Count<class ElevatedPlayer> Player;
@@ -664,12 +665,15 @@ namespace Proof
 
 	struct ParticleSystemComponent {
 	public:
-		ParticleSystemComponent(const ParticleSystemComponent& other) = default;
+		ParticleSystemComponent(const ParticleSystemComponent& other);
 		ParticleSystemComponent() = default;
 		Count< ParticleHandlerTable> ParticleHandlerTable = Count<class ParticleHandlerTable>::Create();
 	};
 
-	struct PlayerHUDComponent {
+	struct PlayerHUDComponent 
+	{
+		PlayerHUDComponent(const PlayerHUDComponent& other);
+		PlayerHUDComponent() = default;
 		Count< UITable> HudTable = Count<class UITable>::Create();
 	};
 

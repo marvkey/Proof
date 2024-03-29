@@ -19,6 +19,8 @@
 #include "Proof/Physics/PhysicsActor.h"
 #include "Proof/Physics/PhysicsShapes.h"
 #include "Proof/Physics/PhysicsMaterial.h"
+#include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
+#include "Proof/Input/ElevatedInputSystem/InputAction.h"
 
 #include "Proof/Scene/Mesh.h"
 
@@ -2486,6 +2488,40 @@ namespace Proof
 
 #pragma endregion
 	#pragma region PlayerInputComponent
+
+
+	static void PlayerInputComponent_BindAction(uint64_t entityID, AssetID actionID, InteractionEvent interactionEvent, MonoObject* managedObject, MonoString* meathodName)
+	{
+		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
+		#if PF_ENABLE_DEBUG
+			if (!entity)
+			{
+				PF_ERROR("PlayerInputComponent.BindAction - entity is invalid or Does not have rigidBody");
+				return;
+			}
+		#endif
+
+		if (!entity.HasComponent<PlayerInputComponent>())
+			return;
+
+
+		if (AssetManager::HasAsset(actionID) && AssetManager::GetAssetInfo(actionID).Type == AssetType::InputAction)
+		{
+			auto playerInput = entity.GetComponent<PlayerInputComponent>().Player;
+
+			auto inputAction = AssetManager::GetAsset<InputAction>(actionID);
+
+			auto call = [managedObject, meathodName](const InputActionOutput& actionvalue) 
+			{
+				ScriptEngine::CallMethod(managedObject, ScriptUtils::MonoStringToUTF8( meathodName), actionvalue);
+			};
+		
+			//ScriptEngine::CallMethod(managedObject, ScriptUtils::MonoStringToUTF8(meathodName), InputActionOutput{});
+
+			playerInput->Bind(inputAction, interactionEvent, call);
+		}
+	}
+
 	static void PlayerInputComponent_SetAction(uint64_t entityID, MonoString* className,MonoString* ActionName, uint32_t inputState, MonoString* meathodName)
 	{
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
@@ -3561,6 +3597,7 @@ namespace Proof
 			PF_ADD_INTERNAL_CALL(PlayerInputComponent_SetAction);
 			PF_ADD_INTERNAL_CALL(PlayerInputComponent_SetMotion);
 			PF_ADD_INTERNAL_CALL(PlayerInputComponent_SetInputState);
+			PF_ADD_INTERNAL_CALL(PlayerInputComponent_BindAction);
 		}
 		
 		//playerHud COmponent

@@ -21,6 +21,8 @@
 #include "Proof/Scripting/ScriptField.h"
 #include "Proof/Scripting/ScriptFile.h"
 
+#include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
+#include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 #include "Material.h"
 namespace Proof
 {
@@ -584,6 +586,8 @@ namespace Proof
 				case ScriptFieldType::Material:
 				case ScriptFieldType::PhysicsMaterial:
 				case ScriptFieldType::Texture2D:
+				case ScriptFieldType::InputAction:
+				case ScriptFieldType::InputBindingContext:
 				{
 					out << arrayStorage->GetValue<UUID>(i);
 					break;
@@ -1054,6 +1058,27 @@ namespace Proof
 				out << YAML::Key << "PlayerInputComponent";
 				out << YAML::BeginMap; // PlayerInputComponent
 				out << YAML::Key << "InputPlayer" << EnumReflection::EnumString(playerInput.InputPlayer);
+
+
+				out << YAML::Key << "InputBindings";
+				out << YAML::BeginSeq;//InputBindings
+				{
+					if (playerInput.Player != nullptr)
+					{
+						for (auto& inputBinding : playerInput.Player->GetInputBindingContextList())
+						{
+							out << YAML::BeginMap;// InputBindingContextHandler
+							out << YAML::Key << "InputBindingContextHandler" << YAML::Key << "";
+
+							out << YAML::Key << "InputBindingID" << YAML::Value << inputBinding.InputBindingContext->GetID();
+							out << YAML::Key << "Active" << YAML::Value << inputBinding.Active;
+
+							out << YAML::EndMap;// InputBindingContextHandler
+
+						}
+					}
+				}
+				out << YAML::EndSeq; // InputBindings
 
 				out << YAML::EndMap; // PlayerInputComponent
 			}
@@ -1634,6 +1659,20 @@ namespace Proof
 				{
 					auto& pic = NewEntity.AddComponent<PlayerInputComponent>();
 					pic.InputPlayer = EnumReflection::StringEnum< Players>(playerInputComponent["InputPlayer"].as<std::string>());
+
+					for (auto inputBinding : playerInputComponent["InputBindings"])
+					{
+						AssetID id = inputBinding["InputBindingID"].as<uint64_t>(0);
+						bool active = inputBinding["Active"].as<bool>(false);
+
+						if (AssetManager::HasAsset(id) && AssetManager::GetAssetInfo(id).Type == AssetType::InputBindingContext)
+						{
+							pic.Player->AddInputBinding(AssetManager::GetAsset<InputBindingContext>(id));
+
+							InputBindingContextInstance* instnace = pic.Player->GetInputBindingContextInstance(AssetManager::GetAsset<InputBindingContext>(id));
+							instnace->Active = active;
+						}
+					}
 				}
 			}
 			// PlayerHudComppoent

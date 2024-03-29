@@ -95,8 +95,10 @@ namespace Proof
 	public:
 
 		InputBindingContextInstance* GetInputBindingContextInstance(Count<InputBindingContext> Binding);
+		const std::vector<InputBindingContextInstance>& GetInputBindingContextList()const;
 
 		void AddInputBinding(Count<InputBindingContext> Binding);
+		void RemoveInputBinding(size_t index);
 
 		bool InputKey(const ElevatedInputKeyParams& params);
 

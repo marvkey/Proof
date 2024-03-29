@@ -13,4 +13,4 @@ Assets:
     Path: Scripts\PlayerMovement.cs
   - Asset: 8021289418374761399
     Type: InputBindingContext
-    Path: Input\InputBindingContext.InputBindingContext.ProofAsset
+    Path: Input\PlayerMoveInputContext.InputBindingContext.ProofAsset

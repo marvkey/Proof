@@ -191,4 +191,23 @@ namespace Proof
 	{
 	}
 
+	PlayerInputComponent::PlayerInputComponent(const PlayerInputComponent& other)
+	{
+		if (other.Player)
+			Player = Count<ElevatedPlayer>::CreateFrom(other.Player);
+	}
+
+	ParticleSystemComponent::ParticleSystemComponent(const ParticleSystemComponent& other)
+	{
+
+		if (other.ParticleHandlerTable)
+			ParticleHandlerTable = Count<class ParticleHandlerTable>::CreateFrom(other.ParticleHandlerTable);
+	}
+
+	PlayerHUDComponent::PlayerHUDComponent(const PlayerHUDComponent& other)
+	{
+		if (other.HudTable)
+			HudTable = Count<UITable>::Create(other.HudTable->Generate());
+	}
+
 }

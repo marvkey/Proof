@@ -97,8 +97,7 @@ namespace Proof
 				// key modifiers may not be allowed to procces input 
 				// so technically this key shoudl be able to proccess input  ShouldProccessInput (function) 
 				// since its modifiers make a part of its input system
-				bool state = ProcessActionBindingKeyEvent(InputActionOutput(rawKeyValue), data.InputAction, elevatedKey, data.Key,deltaTime);
-				if (state)
+				if (ProcessActionBindingKeyEvent(InputActionOutput(rawKeyValue), data.InputAction, elevatedKey, data.Key, deltaTime))
 					validKeyBindings.emplace_back(actionKeyBinding);
 				else
 				{
@@ -740,7 +739,8 @@ bool outValue = false;
 
 			ActionOutput = InputActionOutput(ActionOutput.GetOutputType(), updateActionOutput);
 		}
-		return keyBinding->ProcessInputData(this, ActionOutput, inputAction, key, deltaTime);
+		bool val  = keyBinding->ProcessInputData(this, ActionOutput, inputAction, key, deltaTime);
+		return val;
 	}
 #endif
 
@@ -790,9 +790,26 @@ bool outValue = false;
 		return nullptr;
 	}
 
+	const std::vector<InputBindingContextInstance>& ElevatedPlayer::GetInputBindingContextList() const
+	{
+		return m_InputBindingContext;
+	}
+
 	void ElevatedPlayer::AddInputBinding(Count<InputBindingContext> Binding)
 	{
+		for (auto& binding : m_InputBindingContext)
+		{
+			if (binding.InputBindingContext == Binding)
+				return;
+		}
+
 		m_InputBindingContext.emplace_back(InputBindingContextInstance{ Binding,true });
+	}
+
+	void ElevatedPlayer::RemoveInputBinding(size_t index)
+	{
+		if (m_InputBindingContext.size() > index)
+			m_InputBindingContext.erase(m_InputBindingContext.begin() + index);
 	}
 	
 	

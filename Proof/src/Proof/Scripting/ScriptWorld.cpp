@@ -141,13 +141,13 @@ namespace Proof
 
         if (!ScriptEngine::IsModuleValid(classFullName))
         {
-            PF_ENGINE_ERROR("Trying to add invalid script to Entity {}", entity.GetName());
+            PF_EC_ERROR("Trying to add invalid script to Entity {}", entity.GetName());
             return;
         }
 
         if (m_EntityClassesStorage[entity.GetUUID()].HasClassMetaData(classFullName))
         {
-            PF_ENGINE_ERROR("Trying to add Script: {} to Entity:{} that already contains script", classFullName, entity.GetName());
+            PF_EC_ERROR("Trying to add Script: {} to Entity:{} that already contains script", classFullName, entity.GetName());
             return;
         }
         ManagedClass* managedClass = ScriptRegistry::GetManagedClassByName(classFullName);
@@ -209,13 +209,13 @@ namespace Proof
 
         if (!ScriptEngine::IsModuleValid(classFullName))
         {
-            PF_ENGINE_ERROR("Runtime Trying to add invalid script to Entity {}", entity.GetName());
+            PF_EC_ERROR("Runtime Trying to add invalid script to Entity {}", entity.GetName());
             return;
         }
 
         if (m_RuntimeEntityClassStorage[entity.GetUUID()].HasClassMetaData(classFullName))
         {
-            PF_ENGINE_ERROR("Runtime Trying to add Script: {} to Entity:{} that already contains script", classFullName, entity.GetName());
+            PF_EC_ERROR("Runtime Trying to add Script: {} to Entity:{} that already contains script", classFullName, entity.GetName());
             return;
         }
         ManagedClass* managedClass = ScriptRegistry::GetManagedClassByName(classFullName);

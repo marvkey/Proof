@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -133,10 +134,17 @@ namespace Proof
 		VelocityChange,
 		Acceleration
 	};
-	public class PlayerInputComponent : Component
+    [RegisterCoreClassStruct]
+    public class PlayerInputComponent : Component
 	{
+        public delegate void VoidActionWithInput(InputActionOutput input);
 
-	}
+        public void BindAction(InputAction action, InteractionEvent interactionEvent, VoidActionWithInput callback)
+        {
+            if (callback == null) return;
+            InternalCalls.PlayerInputComponent_BindAction(Entity.ID, action.ID, interactionEvent, callback.Target, callback.Method.Name);
+        }
+    }
     [RegisterCoreClassStruct]
     public class MeshComponent : Component
 	{

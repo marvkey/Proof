@@ -160,6 +160,8 @@ namespace Proof
 			case ScriptFieldType::Material: return PF_REGISTERED_CLASS("PF.Material")->Class;
 			case ScriptFieldType::PhysicsMaterial: return PF_REGISTERED_CLASS("PF.PhysicsMaterial")->Class;
 			case ScriptFieldType::Texture2D: return PF_REGISTERED_CLASS("PF.Texture2D")->Class;
+			case ScriptFieldType::InputAction: return PF_REGISTERED_CLASS("PF.InputAction")->Class;
+			case ScriptFieldType::InputBindingContext: return PF_REGISTERED_CLASS("PF.InputBindingContext")->Class;
 		}
 		PF_ENGINE_ERROR("NOt supported type {}", EnumReflection::EnumString(fieldType));
 		PF_CORE_ASSERT(false);

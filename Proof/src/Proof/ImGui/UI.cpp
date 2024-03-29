@@ -1294,6 +1294,28 @@ namespace Proof::UI
                     }
                     break;
                 }
+            case ScriptFieldType::InputAction:
+            {
+                AssetID handle = storage->GetValue<AssetID>();
+                if (AttributeAssetReference(fieldName.c_str(), AssetType::InputAction, handle))
+                {
+                    storage->SetValue(handle);
+                    result = true;
+                }
+                break;
+            }
+
+            case ScriptFieldType::InputBindingContext:
+            {
+                AssetID handle = storage->GetValue<AssetID>();
+                if (AttributeAssetReference(fieldName.c_str(), AssetType::InputBindingContext, handle))
+                {
+                    storage->SetValue(handle);
+                    result = true;
+                }
+                break;
+            }
+
         }
 
         ImGui::PopID();
@@ -1916,6 +1938,18 @@ namespace Proof::UI
                 {
                     AssetID handle = arrayStorage->GetValue<AssetID>(i);
                     AttributeAssetReferenceArray(indexString.c_str(), handle, AssetType::Texture, UIMemoryAssetTypes::None, arrayStorage, i, elementToRemove);
+                    break;
+                }
+                case ScriptFieldType::InputAction:
+                {
+                    AssetID handle = arrayStorage->GetValue<AssetID>(i);
+                    AttributeAssetReferenceArray(indexString.c_str(), handle, AssetType::InputAction, UIMemoryAssetTypes::None, arrayStorage, i, elementToRemove);
+                    break;
+                }
+                case ScriptFieldType::InputBindingContext:
+                {
+                    AssetID handle = arrayStorage->GetValue<AssetID>(i);
+                    AttributeAssetReferenceArray(indexString.c_str(), handle, AssetType::InputBindingContext, UIMemoryAssetTypes::None, arrayStorage, i, elementToRemove);
                     break;
                 }
             }

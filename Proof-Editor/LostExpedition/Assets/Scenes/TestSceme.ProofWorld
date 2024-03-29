@@ -59,7 +59,15 @@ World:
             ScriptClassName: LostExpedition.PlayerMovement
             ScriptName: LostExpedition.PlayerMovement
             Fields:
-              []
+              - NameID: LostExpedition.PlayerMovement.WalkSpeed
+                Type: Float
+                Data: 0
+              - NameID: LostExpedition.PlayerMovement.RunSpeed
+                Type: Float
+                Data: 0
+              - NameID: LostExpedition.PlayerMovement.MoveAction
+                Type: InputAction
+                Data: 1939643375930245746
       BoxColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
@@ -77,6 +85,10 @@ World:
         CollisionDetection: Discrete
       PlayerInputComponent:
         InputPlayer: None
+        InputBindings:
+          - InputBindingContextHandler: ""
+            InputBindingID: 8021289418374761399
+            Active: true
     - Entity: 9992972947132147716
       TagComponent:
         Tag: Sky Light

@@ -23,6 +23,8 @@
 #include <string.h>
 #include<magic_enum.hpp>
 #include "Proof/Resources/EnumReflection.h"
+#include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
+#include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Proof/Imgui/UI.h"
 #include "Proof/Imgui/UIHandlers.h"
@@ -636,7 +638,7 @@ namespace Proof
 
 			AddComponentGui<ScriptComponent>(entity, "Scripts");
 			AddComponentGui<PlayerInputComponent>(entity, "Player Input");
-			AddComponentGui<PlayerHUDComponent>(entity, "Player HUD");
+			//AddComponentGui<PlayerHUDComponent>(entity, "Player HUD");
 
 			AddComponentGui<ParticleSystemComponent>(entity, "Particle System");
 
@@ -1728,9 +1730,37 @@ namespace Proof
 			UI::EnumCombo("Player", player.InputPlayer);
 			//UI::AttributeAssetReference("Player",AssetType::Prefab, player.Player);
 			UI::EndPropertyGrid();
+
+
+			{
+				AssetID addInputPopUp = 0;
+				if (UI::Widgets::AssetSearchPopup("AddInputContextPopup", AssetType::InputBindingContext, addInputPopUp, UI::UIMemoryAssetTypes::None))
+					player.Player->AddInputBinding(AssetManager::GetAsset<InputBindingContext>(addInputPopUp));
+			}
+
+			if (UI::AttributeButton("", "AddInputMapping"))
+				ImGui::OpenPopup("AddInputContextPopup");
+			for (uint32_t i = 0; i < player.Player->GetInputBindingContextList().size(); i++)
+			{
+
+				UI::PushID();
+
+				if (UI::AttributeTreeNode(fmt::format("Index {}", i).c_str(), true, 6, 2.0f))
+				{
+					InputBindingContextInstance* elevatedInstance = player.Player->GetInputBindingContextInstance(player.Player->GetInputBindingContextList().at(i).InputBindingContext);
+					UI::AttributeBool("Active", elevatedInstance->Active);
+					AssetID Id = elevatedInstance->InputBindingContext->GetID();
+					if (UI::AttributeAssetReference("InputBindingContext", AssetType::InputBindingContext, Id))
+					{
+						elevatedInstance->InputBindingContext = AssetManager::GetAsset<InputBindingContext>(Id);
+					}
+					UI::EndTreeNode();
+				}
+				UI::PopID();
+			}
 		});
 
-
+		/*
 		DrawComponents<PlayerHUDComponent>("Player HUD", entity, [](PlayerHUDComponent& playerHud){
 			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
@@ -1766,7 +1796,7 @@ namespace Proof
 			}
 			ImGui::TreePop();
 		});
-
+		*/
 
 		DrawComponents<AudioComponent>("Audio", entity, [](AudioComponent& audio)
 		{

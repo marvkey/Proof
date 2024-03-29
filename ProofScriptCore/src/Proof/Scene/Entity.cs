@@ -90,7 +90,8 @@ namespace Proof
 			if (!HasComponent<PlayerInputComponent>())
 				return;
 			if (func == null) return;
-			InternalCalls.PlayerInputComponent_SetAction(ID, this.GetType().FullName, ActionName, (int)state, func.Method.Name);
+            
+            InternalCalls.PlayerInputComponent_SetAction(ID, this.GetType().FullName, ActionName, (int)state, func.Method.Name);
 		}
 
 		public void SetInputState(PlayerInputState state)

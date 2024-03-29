@@ -12,7 +12,7 @@ namespace Proof
 		Vector2D,
 		Vector3D
 	};
-
+	//do not modify it is the same as C# class 
 	struct InputActionOutput
 	{
 	public:

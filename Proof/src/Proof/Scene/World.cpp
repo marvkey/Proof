@@ -1137,33 +1137,6 @@ namespace Proof {
 		numPlayrs += Application::Get()->GetWindow()->GetControllers().size();
 		InputManager::StartRuntime(numPlayrs);
 
-		ForEachEnitityWith<PlayerInputComponent>([&](Entity entity) 
-			{
-				PlayerInputComponent& input = entity.GetComponent<PlayerInputComponent>();
-
-				auto player = input.Player;
-				if (player != nullptr)
-				{
-					// have to do this
-					input.Player = Count<ElevatedPlayer>::CreateFrom(player);
-					player = input.Player;
-				}
-			});
-		
-		ForEachEnitityWith<PlayerHUDComponent>([&](Entity entity) {
-			PlayerHUDComponent& hud = entity.GetComponent<PlayerHUDComponent>();
-			if (hud.HudTable != nullptr)
-			{
-				hud.HudTable = Count<UITable>::Create(hud.HudTable->Generate());
-			}
-		});
-		ForEachEnitityWith<ParticleSystemComponent>([&](Entity entity) {
-			ParticleSystemComponent& part = entity.GetComponent<ParticleSystemComponent>();
-			if (part.ParticleHandlerTable != nullptr)
-			{
-				part.ParticleHandlerTable = Count<ParticleHandlerTable>::Create(part.ParticleHandlerTable->Generate());
-			}
-		});
 
 		m_PhysicsWorld = Count<PhysicsWorld>::Create(this);
 		m_PhysicsWorld->StartWorld();

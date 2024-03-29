@@ -4,29 +4,23 @@ InputBindings:
   - InputActionID: 1939643375930245746
     KeyBindings:
       - InputKeyBindingType: Bundle
-        InputKeyBindingBundleName: WSAD
+        InputKeyBindingBundleName: ""
         InputKeyBundleKeys:
-          - InputKeyBindingBundleType: PositiveX
-            InputKeySettings:
-              InputKeyBindingType: Key
-              InputKeyName: D
-          - InputKeyBindingBundleType: NegativeX
-            InputKeySettings:
-              InputKeyBindingType: Key
-              InputKeyName: A
-          - InputKeyBindingBundleType: PositiveY
-            InputKeySettings:
-              InputKeyBindingType: Key
-              InputKeyName: W
-          - InputKeyBindingBundleType: NegativeY
-            InputKeySettings:
-              InputKeyBindingType: Key
-              InputKeyName: S
-          - InputKeyBindingBundleType: PositiveZ
-            InputKeySettings:
-              InputKeyBindingType: Key
+          - InputKeyBindingBundleTypes: PositiveX
+            ? InputKeyBindingType: Key
               InputKeyName: Invalid
-          - InputKeyBindingBundleType: NegativeZ
-            InputKeySettings:
-              InputKeyBindingType: Key
+          - InputKeyBindingBundleTypes: NegativeX
+            ? InputKeyBindingType: Key
+              InputKeyName: Invalid
+          - InputKeyBindingBundleTypes: PositiveY
+            ? InputKeyBindingType: Key
+              InputKeyName: Invalid
+          - InputKeyBindingBundleTypes: NegativeY
+            ? InputKeyBindingType: Key
+              InputKeyName: Invalid
+          - InputKeyBindingBundleTypes: PositiveZ
+            ? InputKeyBindingType: Key
+              InputKeyName: Invalid
+          - InputKeyBindingBundleTypes: NegativeZ
+            ? InputKeyBindingType: Key
               InputKeyName: Invalid
