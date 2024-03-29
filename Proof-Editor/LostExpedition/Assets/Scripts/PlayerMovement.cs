@@ -37,7 +37,10 @@ namespace LostExpedition
 		void Move(InputActionOutput outPut)
 		{
 			Log.Info($"WOrking {outPut.Get<Vector2>().ToString()}");
-		}
+
+            Vector3 vetor3 = new Vector3(-outPut.Get<Vector2>().X, 0.0f, outPut.Get<Vector2>().Y);
+            m_RigidBody.Location += vetor3;
+        }
 
 	}
 }
