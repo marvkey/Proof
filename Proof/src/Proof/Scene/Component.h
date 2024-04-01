@@ -415,8 +415,8 @@ namespace Proof
 		CameraComponent(const CameraComponent&) = default;
 
 		CameraComponent() = default;
-		float NearPlane = 0.1f;
-		float FarPlane = 2000.f;
+		float NearPlane = 0.3f;
+		float FarPlane = 1000.f;
 		float FovDeg = 45;
 
 		bool UseLocalRotation = false;

@@ -174,6 +174,7 @@ namespace Proof{
 		storageBufferInfo.size = m_Size;
 		storageBufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
+
 		allocator.AllocateBuffer(storageBufferInfo, Utils::ProofVulkanMemmoryUsageToVMAMemoryUsage(m_MemoryUsage), m_StorageBuffer);
 	}
 	VulkanStorageBuffer::~VulkanStorageBuffer()

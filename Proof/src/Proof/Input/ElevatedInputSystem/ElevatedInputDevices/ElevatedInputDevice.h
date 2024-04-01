@@ -10,7 +10,7 @@ namespace Proof
 	{
 	public:
 		virtual void OnEvent(Event& event) {};
-
+        virtual void OnUpdate(float deltaTime) {};
         // Function to bind to the multicast delegate
         template <bool(*TFunction)(const ElevatedInputKeyParams&)>
         void BindToEventDelegate()

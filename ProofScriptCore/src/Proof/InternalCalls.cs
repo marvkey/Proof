@@ -16,9 +16,9 @@ namespace Proof
 
         #region Mouse
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void Mouse_CaptureMouse(bool caputre);
+        internal extern static void Mouse_SetCursorMode(MouseCursorMode mode);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool Mouse_IsMouseCaptured();
+        internal extern static MouseCursorMode Mouse_GetCursorMode();
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void Mouse_GetPosition(out Vector2 pos);
         #endregion
@@ -82,7 +82,7 @@ namespace Proof
         internal extern static void World_Restart();
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static float World_GetTimeStep();
+        internal extern static float World_GetDeltaTime();
 
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
         //returns entity ID of objects with class naem
@@ -137,7 +137,11 @@ namespace Proof
 		internal extern static void TransformComponent_SetScale(ulong entityID, ref Vector3 Scale);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void TransformComponent_GetFowardVector(ulong entityID, out Vector3 vec);
+        internal extern static void TransformComponent_GetForwardVector(ulong entityID, out Vector3 vec);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TransformComponent_GetUpVector(ulong entityID, out Vector3 vec);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TransformComponent_GetRightVector(ulong entityID, out Vector3 vec);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void TransformComponent_GetTransform(ulong entityID, out Transform outTransform);

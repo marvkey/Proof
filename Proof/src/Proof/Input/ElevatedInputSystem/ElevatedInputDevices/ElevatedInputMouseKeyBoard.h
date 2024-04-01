@@ -4,7 +4,12 @@
 #include <glm/glm.hpp>
 namespace Proof
 {
-	//https://github.com/EpicGames/UnrealEngine/blob/072300df18a94f18077ca20a14224b5d99fee872/Engine/Plugins/EnhancedInput/Source/InputEditor/Public/EnhancedInputEditorProcessor.h
+	enum class ElevatedInputDeviceMouseKeyboardMouseAxisDispatch
+	{
+		None = 0,
+		X = BIT(0),
+		Y = BIT(1)
+	};
 	class ElevatedInputDeviceMouseKeyboard : public ElevatedInputDevice
 	{
 	public:
@@ -23,5 +28,9 @@ namespace Proof
 
 		/** The value of the mouse cursor from the most recent mouse event */
 		glm::vec2 m_CachedCursorDelta = glm::vec2(0.0f);
+
+		ElevatedInputDeviceMouseKeyboardMouseAxisDispatch m_MouseAxisDispatch;
+		bool m_MousePosSetToRelease = true;// using the mouseAxisDispacth is not workign so using the viariable to track;
 	};
+	DEFINE_ENUM_CLASS_FLAGS(ElevatedInputDeviceMouseKeyboardMouseAxisDispatch);
 }

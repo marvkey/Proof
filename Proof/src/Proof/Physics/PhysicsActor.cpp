@@ -177,9 +177,11 @@ namespace Proof {
 	}
 	void PhysicsActor::OnFixedUpdate(float deltaTime)
 	{
-		//TransformComponent transform = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
-		//physx::PxTransform newPos(PhysXUtils::ToPhysXVector(transform.Location), PhysXUtils::ToPhysXQuat(transform.GetRotation()));
-		//m_RigidActor->setGlobalPose(newPos, false);
+		TransformComponent transform = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
+		physx::PxTransform newPos(PhysXUtils::ToPhysXVector(transform.Location), PhysXUtils::ToPhysXQuat(transform.GetRotation()));
+
+		if(transform.Location != GetLocation() || transform.GetRotationEuler() != GetRotationEuler())
+			m_RigidActor->setGlobalPose(newPos, false);
 
 		//if (!ScriptEngine::IsEntityInstantiated(m_Entity))
 		//	return;
@@ -187,16 +189,6 @@ namespace Proof {
 		//ScriptEngine::CallMethod(m_Entity.GetComponent<ScriptComponent>().ManagedInstance, "OnPhysicsUpdate", fixedDeltaTime);
 	}
 	
-	void PhysicsActor::SetLocation(const glm::vec3& translation, const bool autowake)
-	{
-		physx::PxTransform transform = m_RigidActor->getGlobalPose();
-		transform.p = PhysXUtils::ToPhysXVector(translation);
-		m_RigidActor->setGlobalPose(transform, autowake);
-
-		if (!IsDynamic())
-			SyncTransform();
-	}
-
 	void PhysicsActor::ClearForce(ForceMode mode )
 	{
 		if (!IsDynamic())return;
@@ -495,6 +487,15 @@ namespace Proof {
 				m_Colliders.push_back(triangleShape);
 		}
 	}
+	void PhysicsActor::SetLocation(const glm::vec3& translation, const bool autowake)
+	{
+		physx::PxTransform transform = m_RigidActor->getGlobalPose();
+		transform.p = PhysXUtils::ToPhysXVector(translation);
+		m_RigidActor->setGlobalPose(transform, autowake);
+
+		//if (!IsDynamic())
+			SyncTransform();
+	}
 
 	void PhysicsActor::SetRotation(const glm::quat& rotation, bool autowake)
 	{
@@ -502,7 +503,7 @@ namespace Proof {
 		transform.q = PhysXUtils::ToPhysXQuat(rotation);
 		m_RigidActor->setGlobalPose(transform, autowake);
 
-		if (!IsDynamic())
+		//if (!IsDynamic())
 			SyncTransform();
 	}
 
@@ -512,7 +513,7 @@ namespace Proof {
 		transform.q *= PhysXUtils::ToPhysXQuat(rotation);
 		m_RigidActor->setGlobalPose(transform, autowake);
 
-		if (!IsDynamic())
+		//if (!IsDynamic())
 			SyncTransform();
 	}
 

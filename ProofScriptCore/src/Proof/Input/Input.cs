@@ -7,10 +7,17 @@ using System.Threading.Tasks;
 
 namespace Proof
 {
+    public enum MouseCursorMode
+    {
+
+        Normal = 0,
+        Hidden = 1,
+        Locked = 2
+    }
 	public static class Mouse
 	{
-		public static void Capture(bool capture) => InternalCalls.Mouse_CaptureMouse(capture);
-		public static bool IsMouseCaptured() => InternalCalls.Mouse_IsMouseCaptured();
+		public static void SetCursorMode(MouseCursorMode mode) => InternalCalls.Mouse_SetCursorMode(mode);
+		public static MouseCursorMode GetCursorMode() => InternalCalls.Mouse_GetCursorMode();
 		public static Vector2 GetPositon()
 		{
 			Vector2 vec = new Vector2();

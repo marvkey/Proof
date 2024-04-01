@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -72,13 +73,36 @@ namespace Proof
 				InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
 			}
 		}
-		public Vector3 GetFowardVector()
+		public Vector3 Forward
 		{
-			InternalCalls.TransformComponent_GetFowardVector(Entity.ID, out Vector3 foward);
-			return foward;
+			get
+			{
+
+                InternalCalls.TransformComponent_GetForwardVector(Entity.ID, out Vector3 foward);
+                return foward;
+            }
 		}
 
-		public void Translate(Vector3 vec)
+        public Vector3 Right
+        {
+            get
+            {
+
+                InternalCalls.TransformComponent_GetRightVector(Entity.ID, out Vector3 foward);
+                return foward;
+            }
+        }
+
+        public Vector3 Up
+        {
+            get
+            {
+
+                InternalCalls.TransformComponent_GetUpVector(Entity.ID, out Vector3 foward);
+                return foward;
+            }
+        }
+        public void Translate(Vector3 vec)
 		{
 			Location += vec;
 		}
@@ -107,6 +131,16 @@ namespace Proof
                 InternalCalls.TransformComponent_GetWorldSpaceTransform(Entity.ID, out Transform result);
                 return result;
             }
+        }
+
+        public void Rotate(Vector3 eulers)
+        {
+            // Get the current rotation
+            Vector3 currentRotation = Rotation;
+
+            currentRotation += eulers;
+            // Update the rotation
+            Rotation = currentRotation;
         }
 
     }
@@ -319,6 +353,17 @@ namespace Proof
 			set => InternalCalls.RigidBodyComponent_SetLinearVelocity(Entity.ID, ref value);
 		}
 
+		public Vector3 Velocity
+		{
+			get
+			{
+				return LinearVelocity;
+			}
+			set
+			{
+				LinearVelocity = value;
+			}
+		}
 		public Vector3 AngularVelocity
 		{
 			get

@@ -489,7 +489,6 @@ namespace Proof
 			}
 		}
 	
-		AssetEditorPanel::OnEvent(e);
 
 		//if (m_ActiveWorld->m_CurrentState == WorldState::Play)
 		//	InputManager::OnEvent(e);
@@ -497,8 +496,11 @@ namespace Proof
 		if (s_PlayWorldData != nullptr)
 		{
 			s_PlayWorldData->ElevatedInputManager->OnEvent(e);
+			//	Mouse::SetCursorMode(CursorMode::Locked);
 		}
-		m_EditorCamera.OnEvent(e);
+		AssetEditorPanel::OnEvent(e);
+
+		//m_EditorCamera.OnEvent(e);
 
 		s_EditorData->PanelManager->OnEvent(e);
 		s_EditorData->EditorWorkspaceManager->OnEvent(e);
@@ -610,6 +612,12 @@ namespace Proof
 		}
 		AssetEditorPanel::OnUpdate(DeltaTime);
 		s_EditorData->EditorWorkspaceManager->OnUpdate(DeltaTime);
+
+		if (s_PlayWorldData != nullptr)
+		{
+			s_PlayWorldData->ElevatedInputManager->OnUpdate(DeltaTime);
+			//	Mouse::SetCursorMode(CursorMode::Locked);
+		}
 		/*
 		switch (m_ActiveWorld->GetState())
 		{

@@ -1,6 +1,7 @@
 #include "Proofprch.h"
 #include "ElevatedInputMouseKeyBoard.h"
 #include "Proof/Events/MouseEvent.h"
+#include "Proof/Input/Mouse.h"
 #include "Proof/Events/KeyEvent.h"
 namespace Proof
 {
@@ -41,13 +42,33 @@ namespace Proof
 
 	void ElevatedInputDeviceMouseKeyboard::OnUpdate(float deltaTime)
 	{
-		ProcessAccumulatedPointerInput(deltaTime);
+		Count< ElevatedInputDeviceMouseKeyboard> inputDevice = this;
+
+		if (!Mouse::IsMouseMoved() && m_MousePosSetToRelease == false)
+		{
+			if (EnumReflection::HasAnyFlags(m_MouseAxisDispatch, ElevatedInputDeviceMouseKeyboardMouseAxisDispatch::X))
+			{
+				ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveX,ElevatedKeyEventType::Released, inputDevice, 0,1 };
+				InvokeStep(params);
+			}
+
+			if (EnumReflection::HasAnyFlags(m_MouseAxisDispatch, ElevatedInputDeviceMouseKeyboardMouseAxisDispatch::Y))
+			{
+				ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveY,ElevatedKeyEventType::Released, inputDevice, 0,1 };
+				InvokeStep(params);
+			}
+
+			ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveAxis,ElevatedKeyEventType::Released, inputDevice, glm::vec2{0,0},1};
+			InvokeStep(params);
+			m_MouseAxisDispatch = ElevatedInputDeviceMouseKeyboardMouseAxisDispatch::None;
+			m_MousePosSetToRelease = true;
+		}
+
 	}
 
 	void ElevatedInputDeviceMouseKeyboard::OnEvent(Event& e)
 	{
 		PF_PROFILE_FUNC();
-		//https://github.com/EpicGames/UnrealEngine/blob/072300df18a94f18077ca20a14224b5d99fee872/Engine/Plugins/EnhancedInput/Source/InputEditor/Private/EnhancedInputEditorProcessor.cpp#L119
 		EventDispatcher dispatcher(e);
 
 		Count< ElevatedInputDeviceMouseKeyboard> inputDevice = this;
@@ -81,25 +102,29 @@ namespace Proof
 */
 		dispatcher.Dispatch<MouseMoveEvent>([&](MouseMoveEvent& mouseMovedEvent)
 			{
-				/*
 				bool invokeValue = false;
 				if (mouseMovedEvent.GetMovedX() > 0)
 				{
-					ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveX,ElevatedKeyEventType::Clicked, inputDevice, mouseMovedEvent.GetMovedX() };
+					m_MouseAxisDispatch |= ElevatedInputDeviceMouseKeyboardMouseAxisDispatch::X;
+					ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveX,ElevatedKeyEventType::Clicked, inputDevice, mouseMovedEvent.GetMovedX(),1 };
 					invokeValue |= InvokeStep(params);
 				}
 
 				if (mouseMovedEvent.GetMovedY() > 0)
 				{
-					ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveY,ElevatedKeyEventType::Clicked, inputDevice, mouseMovedEvent.GetMovedY() };
+					m_MouseAxisDispatch |= ElevatedInputDeviceMouseKeyboardMouseAxisDispatch::Y;
+					ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveY,ElevatedKeyEventType::Clicked, inputDevice, mouseMovedEvent.GetMovedY(),1 };
 					invokeValue |= InvokeStep(params);
 				}
 
-				ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveAxis,ElevatedKeyEventType::Clicked, inputDevice, glm::vec2{mouseMovedEvent.GetMovedX(),mouseMovedEvent.GetMovedY()} };
+				ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveAxis,ElevatedKeyEventType::Clicked, inputDevice, glm::vec2{mouseMovedEvent.GetMovedX(),mouseMovedEvent.GetMovedY()},1 };
 				invokeValue |= InvokeStep(params);
-				*/
-				UpdateCachePosition({ mouseMovedEvent.GetMovedX(),mouseMovedEvent.GetMovedY() });
-				return false;
+
+				m_MousePosSetToRelease = false;
+				return true;
+
+				//UpdateCachePosition({ mouseMovedEvent.GetMovedX(),mouseMovedEvent.GetMovedY() });
+				//return false;
 			});
 
 		dispatcher.Dispatch<MouseScrollEvent>([&](MouseScrollEvent& mouseScroll)
@@ -125,6 +150,9 @@ namespace Proof
 				}
 
 				ElevatedInputKeyParams params{ ElevatedInputKeys::MouseWheelAxis,ElevatedKeyEventType::Clicked, inputDevice, mouseScroll.GetScrollY(),1};
+				invokeValue |= InvokeStep(params);
+
+				params.Event = ElevatedKeyEventType::Released;
 				invokeValue |= InvokeStep(params);
 				return invokeValue;
 			});

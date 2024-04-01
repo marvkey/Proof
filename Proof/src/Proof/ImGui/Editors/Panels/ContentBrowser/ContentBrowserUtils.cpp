@@ -260,17 +260,17 @@ namespace Proof
 					if (m_JustSelected)
 						m_JustSelected = false;
 
-					if (!isSelected)
-					{
-						result.Set(ContentBrowserAction::Selected, true);
-						m_JustSelected = true;
-					}
+						if (!isSelected)
+						{
+							result.Set(ContentBrowserAction::Selected, true);
+							m_JustSelected = true;
+						}
 
-					if (!Input::IsKeyHold(KeyBoardKey::LeftControl) && !Input::IsKeyHold(KeyBoardKey::LeftShift) && m_JustSelected)
-						result.Set(ContentBrowserAction::ClearSelections, true);
+						if (!Input::IsKeyHold(KeyBoardKey::LeftControl) && !Input::IsKeyHold(KeyBoardKey::LeftShift) && m_JustSelected)
+							result.Set(ContentBrowserAction::ClearSelections, true);
 
-					if (Input::IsKeyHold(KeyBoardKey::LeftShift))
-						result.Set(ContentBrowserAction::SelectToHere, true);
+						if (Input::IsKeyHold(KeyBoardKey::LeftShift))
+							result.Set(ContentBrowserAction::SelectToHere, true);
 				}
 			}
 		}
@@ -334,7 +334,7 @@ namespace Proof
 		if (ImGui::MenuItem("Reload"))
 			actionResult.Set(ContentBrowserAction::Reload, true);
 
-		
+
 		if (SelectionManager::GetSelectionCount(SelectionContext::ContentBrowser) == 1 && ImGui::MenuItem("Rename"))
 			actionResult.Set(ContentBrowserAction::StartRenaming, true);
 
@@ -354,6 +354,26 @@ namespace Proof
 
 		if (ImGui::MenuItem("Open Externally"))
 			actionResult.Set(ContentBrowserAction::OpenExternal, true);
+
+		if (AssetManager::HasAsset(m_ID))
+		{
+			if (AssetManager::GetAssetInfo(m_ID).Type == AssetType::TextureSourceFile)
+			{
+				if (ImGui::MenuItem("Create Texture"))
+				{
+					auto savePath = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(m_ID).Path).parent_path();
+
+					savePath += "\\";
+					savePath += AssetManager::GetAssetInfo(m_ID).GetName();
+					savePath += Utils::GetAssetExtensionString(AssetType::Texture);
+
+					savePath = FileSystem::GenerateUniqueFileName(savePath);
+
+					Count<Asset> texture = Texture2D::Create(TextureConfiguration{ AssetManager::GetAssetInfo(m_ID).GetName() }, AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(m_ID).Path));
+					AssetManager::NewAsset(texture, savePath);
+				}
+			}
+		}
 
 		RenderCustomContextItems();
 	}

@@ -9,5 +9,7 @@ namespace Proof
 	public:
 		SceneCamera();
 		void SetPerspective(float degfov, uint32_t witdth, uint32_t height, float nearPlane, float farPlane, const glm::vec3& position, const glm::vec3& rotationRadians);
+
+		void SetData(float degfov, float nearPlane, float farPlane, uint32_t witdth, uint32_t height, const glm::mat4& view);
 	};
 }

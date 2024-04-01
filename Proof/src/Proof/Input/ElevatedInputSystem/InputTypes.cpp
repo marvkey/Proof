@@ -8,7 +8,7 @@ namespace Proof
 	const ElevatedInputKey ElevatedInputKeys::Invalid(ElevatedInputKeyDeviceType::None,"Invalid");
 	const ElevatedInputKey ElevatedInputKeys::MouseMoveX(ElevatedInputKeyDeviceType::Mouse,"MouseX", ElevatedInputKeyFlags::Axis1D );
 	const ElevatedInputKey ElevatedInputKeys::MouseMoveY(ElevatedInputKeyDeviceType::Mouse,"MouseY", ElevatedInputKeyFlags::Axis1D );
-	const ElevatedInputKey ElevatedInputKeys::MouseMoveAxis(ElevatedInputKeyDeviceType::Mouse,"Mouse2D", ElevatedInputKeyFlags::Axis2D);
+	const ElevatedInputKey ElevatedInputKeys::MouseMoveAxis(ElevatedInputKeyDeviceType::Mouse,"MouseMoveAxisXY", ElevatedInputKeyFlags::Axis2D);
 	const ElevatedInputKey ElevatedInputKeys::MouseScrollUp(ElevatedInputKeyDeviceType::Mouse,"MouseScrollUp", ElevatedInputKeyFlags::AxisButton );
 	const ElevatedInputKey ElevatedInputKeys::MouseScrollDown(ElevatedInputKeyDeviceType::Mouse,"MouseScrollDown", ElevatedInputKeyFlags::AxisButton);
 	const ElevatedInputKey ElevatedInputKeys::MouseWheelAxis(ElevatedInputKeyDeviceType::Mouse,"MouseWheelAxis", ElevatedInputKeyFlags::Axis1D );

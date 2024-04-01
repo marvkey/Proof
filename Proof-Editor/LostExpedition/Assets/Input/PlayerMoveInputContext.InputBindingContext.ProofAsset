@@ -30,3 +30,17 @@ InputBindings:
             InputKeySettings:
               InputKeyBindingType: Key
               InputKeyName: Invalid
+  - InputActionID: 10608357681865028400
+    KeyBindings:
+      - InputKeyBindingType: Key
+        InputKeyName: MouseMoveAxisXY
+  - InputActionID: 11310292435774158517
+    KeyBindings:
+      - InputKeyBindingType: Key
+        InputKeyName: LeftShift
+    InputInteractions:
+      - InputInteractionType: MultiTap
+        InteractionThreshold: 0.5
+        TapCount: 2
+        TapSpacing: 0.75
+        TapTime: 0.200000003

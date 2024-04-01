@@ -110,17 +110,17 @@ namespace Proof
 	}
 	#pragma endregion 
 	#pragma region Mouse
-	static void Mouse_CaptureMouse(bool caputre) 
+	static void Mouse_SetCursorMode(CursorMode mode) 
 	{
-		//Mouse::CaptureMouse(caputre);
+		Mouse::SetCursorMode(mode);
 	}
 
 	static void Mouse_GetPosition(Vector2* pos) {
 		*pos = { Mouse::GetPosX(),Mouse::GetPosY() };
 	}
-	static bool Mouse_IsMouseCaptured() 
+	static CursorMode Mouse_GetCursorMode()
 	{
-		return Mouse::IsMouseCaptured();
+		return Mouse::GetCursorMode();
 	}
 	#pragma endregion
 
@@ -278,7 +278,7 @@ namespace Proof
 	//
 	//}
 	//static void 
-	static float World_GetTimeStep() {
+	static float World_GetDeltaTime() {
 		return FrameTime::GetWorldDeltaTime();
 	}
 	#pragma endregion
@@ -459,17 +459,44 @@ namespace Proof
 		#endif
 		entity.GetComponent<TransformComponent>().Scale = *scale;
 	};
-	static void TransformComponent_GetFowardVector(uint64_t entityID, glm::vec3* vec)
+	static void TransformComponent_GetForwardVector(uint64_t entityID, glm::vec3* vec)
 	{
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
-			PF_EC_ERROR("TransformComponent.GetFowardVector - entity is invalid");
+			PF_EC_ERROR("TransformComponent.GetForwardVector - entity is invalid");
 			return;
 		}
 		#endif
 		*vec = entity.GetComponent<TransformComponent>().GetFowardVector();
+	}
+
+
+	static void TransformComponent_GetRightVector(uint64_t entityID, glm::vec3* vec)
+	{
+		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
+	#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("TransformComponent.GetRightVector - entity is invalid");
+			return;
+		}
+	#endif
+		* vec = entity.GetComponent<TransformComponent>().GetRightVector();
+	}
+
+	static void TransformComponent_GetUpVector(uint64_t entityID, glm::vec3* vec)
+	{
+		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
+	#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("TransformComponent.GetUpVector - entity is invalid");
+			return;
+		}
+	#endif
+		* vec = entity.GetComponent<TransformComponent>().GetUpVector();
 	}
 
 	static void TransformComponent_GetTransform(uint64_t entityID, Transform* outTransform)
@@ -2511,14 +2538,12 @@ namespace Proof
 
 			auto inputAction = AssetManager::GetAsset<InputAction>(actionID);
 
-			auto call = [managedObject, meathodName](const InputActionOutput& actionvalue) 
-			{
-				ScriptEngine::CallMethod(managedObject, ScriptUtils::MonoStringToUTF8( meathodName), actionvalue);
-			};
-		
-			//ScriptEngine::CallMethod(managedObject, ScriptUtils::MonoStringToUTF8(meathodName), InputActionOutput{});
-
-			playerInput->Bind(inputAction, interactionEvent, call);
+			std::string meathodNameStr = ScriptUtils::MonoStringToUTF8(meathodName);
+			playerInput->Bind(inputAction, interactionEvent, 
+				[managedObject = managedObject, meathodNameStr](const InputActionOutput& actionvalue)
+				{
+					ScriptEngine::CallMethod(managedObject, meathodNameStr, actionvalue);
+				});
 		}
 	}
 
@@ -3380,8 +3405,8 @@ namespace Proof
 		}
 		// Mouse
 		{
-			PF_ADD_INTERNAL_CALL(Mouse_CaptureMouse);
-			PF_ADD_INTERNAL_CALL(Mouse_IsMouseCaptured);
+			PF_ADD_INTERNAL_CALL(Mouse_SetCursorMode);
+			PF_ADD_INTERNAL_CALL(Mouse_GetCursorMode);
 			PF_ADD_INTERNAL_CALL(Mouse_GetPosition);
 		}
 		//Input
@@ -3403,7 +3428,7 @@ namespace Proof
 			PF_ADD_INTERNAL_CALL(World_IsEntityValid);
 			PF_ADD_INTERNAL_CALL(World_TryFindEntityByTag);
 			PF_ADD_INTERNAL_CALL(World_DeleteEntity);
-			PF_ADD_INTERNAL_CALL(World_GetTimeStep);
+			PF_ADD_INTERNAL_CALL(World_GetDeltaTime);
 			PF_ADD_INTERNAL_CALL(World_ForEachEntityWith);
 			PF_ADD_INTERNAL_CALL(World_Restart);
 			PF_ADD_INTERNAL_CALL(World_OpenWorld);
@@ -3434,7 +3459,9 @@ namespace Proof
 			PF_ADD_INTERNAL_CALL(TransformComponent_SetRotation);
 			PF_ADD_INTERNAL_CALL(TransformComponent_GetScale);
 			PF_ADD_INTERNAL_CALL(TransformComponent_SetScale);
-			PF_ADD_INTERNAL_CALL(TransformComponent_GetFowardVector);
+			PF_ADD_INTERNAL_CALL(TransformComponent_GetForwardVector);
+			PF_ADD_INTERNAL_CALL(TransformComponent_GetRightVector);
+			PF_ADD_INTERNAL_CALL(TransformComponent_GetUpVector);
 			PF_ADD_INTERNAL_CALL(TransformComponent_GetTransform);
 			PF_ADD_INTERNAL_CALL(TransformComponent_SetTransform);
 			PF_ADD_INTERNAL_CALL(TransformComponent_GetWorldSpaceTransform);

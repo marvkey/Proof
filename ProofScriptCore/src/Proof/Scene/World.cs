@@ -65,9 +65,9 @@ namespace Proof
             InternalCalls.World_DeleteEntity(entity.ID, deleteChildren);
         }
 
-        public static float GetTimeStep()
+        public static float GetDeltaTime()
         {
-            return InternalCalls.World_GetTimeStep();
+            return InternalCalls.World_GetDeltaTime();
         }
         public static void Restart()
         {

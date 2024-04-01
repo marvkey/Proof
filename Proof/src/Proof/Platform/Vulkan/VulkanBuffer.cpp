@@ -53,6 +53,7 @@ namespace Proof
 			vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 		else
 			vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+
 		allocator.AllocateBuffer(vertexBufferInfo, Utils::ProofVulkanMemmoryUsageToVMAMemoryUsage(m_Usage), m_VertexBuffer);
 	}
 	void VulkanVertexBuffer::Resize(uint64_t size)
@@ -149,11 +150,13 @@ namespace Proof
 	}
 	Buffer VulkanVertexBuffer::GetDataRaw()
 	{
-		Buffer buffer(m_VertexSize);
-		void* vertexData;
-		vmaMapMemory(VulkanVertexBuffer::GetGraphicsAllocator(), m_VertexBuffer.Allocation, &vertexData);
-		std::memcpy(buffer.Get(), vertexData, m_VertexSize); // so we can use delte
-		vmaUnmapMemory(VulkanVertexBuffer::GetGraphicsAllocator(), m_VertexBuffer.Allocation);
+		Buffer buffer;
+		buffer.Data = pnew uint8_t[m_VertexSize];
+		buffer.Size = m_VertexSize;
+		VulkanAllocator allocator("VulkanVertexBufferGetDataRaw");
+		uint8_t* pData = allocator.MapMemory<uint8_t>(m_VertexBuffer.Allocation);
+		memcpy(buffer.Data, pData, m_VertexSize); // so we can use delte
+		allocator.UnmapMemory(m_VertexBuffer.Allocation);
 		return buffer;
 	}
 
@@ -340,11 +343,13 @@ namespace Proof
 
 	Buffer VulkanIndexBuffer::GetDataRaw()
 	{
-		Buffer buffer(m_Size);
-		void* vertexData;
-		vmaMapMemory(VulkanVertexBuffer::GetGraphicsAllocator(), m_IndexBuffer.Allocation, &vertexData);
-		std::memcpy(buffer.Get(), vertexData, m_Size); // so we can use delte
-		vmaUnmapMemory(VulkanVertexBuffer::GetGraphicsAllocator(), m_IndexBuffer.Allocation);
+		Buffer buffer;
+		buffer.Data = pnew uint8_t[m_Size];
+		buffer.Size = m_Size;
+		VulkanAllocator allocator("VulkanIndexBufferGetDataRaw");
+		uint8_t* pData = allocator.MapMemory<uint8_t>(m_IndexBuffer.Allocation);
+		memcpy(buffer.Data, pData, m_Size); // so we can use delte
+		allocator.UnmapMemory(m_IndexBuffer.Allocation);
 		return buffer;
 	}
 

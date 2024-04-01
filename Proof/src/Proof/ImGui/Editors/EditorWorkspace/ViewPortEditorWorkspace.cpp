@@ -739,9 +739,13 @@ namespace Proof
 
 				CameraComponent& cameraComp = entity.GetComponent<CameraComponent>();
 				SceneCamera sceneCamera;
-				sceneCamera.SetPerspective(cameraComp.FovDeg, m_WorldRenderer->GetScreenData().FullResolution.x, m_WorldRenderer->GetScreenData().FullResolution.y,
-					cameraComp.NearPlane, cameraComp.FarPlane, m_WorldContext->GetWorldSpaceLocation(entity),
-					cameraComp.UseLocalRotation ? entity.GetComponent<TransformComponent>().GetRotationEuler() : m_WorldContext->GetWorldSpaceRotation(entity)); 
+				//sceneCamera.SetPerspective(cameraComp.FovDeg, m_WorldRenderer->GetScreenData().FullResolution.x, m_WorldRenderer->GetScreenData().FullResolution.y,
+				//	cameraComp.NearPlane, cameraComp.FarPlane, m_WorldContext->GetWorldSpaceLocation(entity),
+				//	cameraComp.UseLocalRotation ? entity.GetComponent<TransformComponent>().GetRotationEuler() : m_WorldContext->GetWorldSpaceRotation(entity)); 
+
+
+				sceneCamera.SetData(cameraComp.FovDeg, cameraComp.NearPlane, cameraComp.FarPlane,
+					m_WorldRenderer->GetScreenData().FullResolution.x, m_WorldRenderer->GetScreenData().FullResolution.y, glm::inverse(m_WorldContext->GetWorldSpaceTransform(entity)));
 				renderer2D->DrawCameraFrustrum(sceneCamera.GetProjectionMatrix() * sceneCamera.GetViewMatrix(), glm::vec4(0, 1, 0, 1));
 			}
 		}

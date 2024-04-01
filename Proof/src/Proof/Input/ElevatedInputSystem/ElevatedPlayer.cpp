@@ -151,8 +151,11 @@ namespace Proof
 						//PF_ENGINE_INFO("Number of flags {}", EnumCountFlags(inputDelegate.TriggerEvent));
 						if (EnumReflection::HasAllFlags(actionData.InteractionEvent, inputDelegate.TriggerEvent))
 						{
-							if (inputDelegate.Function.IsBound())
-								inputDelegate.Function.Invoke(actionData.ActionOutput);
+							//if (inputDelegate.Function.IsBound())
+							//	inputDelegate.Function.Invoke(actionData.ActionOutput);
+
+							if (inputDelegate.Function != nullptr)
+								inputDelegate.Function(actionData.ActionOutput);
 						}
 					}
 				}
@@ -222,8 +225,11 @@ namespace Proof
 						//PF_ENGINE_INFO("Number of flags {}", EnumCountFlags(inputDelegate.TriggerEvent));
 						if (EnumReflection::HasAllFlags(actionData.InteractionEvent, inputDelegate.TriggerEvent))
 						{
-							if (inputDelegate.Function.IsBound())
-								inputDelegate.Function.Invoke(actionData.ActionOutput);
+							//if (inputDelegate.Function.IsBound())
+							//	inputDelegate.Function.Invoke(actionData.ActionOutput);
+
+							if (inputDelegate.Function != nullptr)
+								inputDelegate.Function(actionData.ActionOutput);
 						}
 					}
 				}
@@ -267,7 +273,8 @@ namespace Proof
 		keyState.RawAxis = params.Axis;
 	
 		keyState.DownPrevious = keyState.Down;
-		if (params.Key.IsDigital())
+
+		//if (params.Key.IsDigital())
 		{
 			if (params.Event == ElevatedKeyEventType::Clicked || params.Event == ElevatedKeyEventType::Repeat)
 			{
@@ -311,7 +318,7 @@ namespace Proof
 		bool wasDownLastTick = keyState.DownPrevious;
 
 		bool bKeyIsDown = keyState.Down;
-		bKeyIsDown |= key.IsAnalog() && glm::length2(rawKeyValue) > 0;
+		//bKeyIsDown |= key.IsAnalog() && glm::length2(rawKeyValue) > 0;
 
 		bool bKeyIsReleased = !bKeyIsDown && wasDownLastTick;
 		bool bKeyIsHeld = bKeyIsDown && wasDownLastTick;

@@ -878,9 +878,13 @@ namespace Proof {
 		CameraComponent& cameraComp = worldCameraEntity.GetComponent<CameraComponent>();
 
 		SceneCamera sceneCamera;
-		sceneCamera.SetPerspective(cameraComp.FovDeg, renderer->GetScreenData().FullResolution.x, renderer->GetScreenData().FullResolution.y,
-			cameraComp.NearPlane, cameraComp.FarPlane, GetWorldSpaceLocation(worldCameraEntity),
-			cameraComp.UseLocalRotation ? worldCameraEntity.GetComponent<TransformComponent>().GetRotationEuler(): GetWorldSpaceRotation(worldCameraEntity));
+		//sceneCamera.SetPerspective(cameraComp.FovDeg, renderer->GetScreenData().FullResolution.x, renderer->GetScreenData().FullResolution.y,
+		//	cameraComp.NearPlane, cameraComp.FarPlane, GetWorldSpaceLocation(worldCameraEntity),
+		//	cameraComp.UseLocalRotation ? worldCameraEntity.GetComponent<TransformComponent>().GetRotationEuler(): GetWorldSpaceRotation(worldCameraEntity));
+
+		sceneCamera.SetData(cameraComp.FovDeg, cameraComp.NearPlane, cameraComp.FarPlane,
+			renderer->GetScreenData().FullResolution.x, renderer->GetScreenData().FullResolution.y, glm::inverse(GetWorldSpaceTransform(worldCameraEntity)));
+
 		OnRender(renderer, time, sceneCamera, GetWorldSpaceLocation(worldCameraEntity), cameraComp.NearPlane, cameraComp.FarPlane, cameraComp.FovDeg);
 	}
 
@@ -1239,23 +1243,38 @@ namespace Proof {
 	glm::vec3 World::GetWorldSpaceLocation(Entity entity) const {
 		return GetWorldSpaceTransformComponent(entity).Location;
 
-		auto& transformComp = entity.GetComponent<TransformComponent>();
-		if (entity.HasParent())
-			return transformComp.Location + GetWorldSpaceLocation(entity.GetParent());
-		return transformComp.Location;
+		//auto& transformComp = entity.GetComponent<TransformComponent>();
+		//if (entity.HasParent())
+		//	return transformComp.Location + GetWorldSpaceLocation(entity.GetParent());
+		//return transformComp.Location;
 	}
 
 	glm::vec3 World::GetWorldSpaceRotation(Entity entity) const {
 		return GetWorldSpaceTransformComponent(entity).GetRotationEuler();
+		
+		//auto& transformComp = entity.GetComponent<TransformComponent>();
+		//if (entity.HasParent())
+		//	return transformComp.GetRotationEuler() + GetWorldSpaceRotation(entity.GetParent());
+		//return transformComp.GetRotationEuler();
 	}
 
 	glm::vec3 World::GetWorldSpaceScale(Entity entity) const 
 	{
 		return GetWorldSpaceTransformComponent(entity).Scale;
+		//auto& transformComp = entity.GetComponent<TransformComponent>();
+		//if (entity.HasParent())
+		//	return transformComp.Scale + GetWorldSpaceScale(entity.GetParent());
+		//return transformComp.Scale;
 	}
 
 	TransformComponent World::GetWorldSpaceTransformComponent(Entity entity) const
 	{
+		//TransformComponent component;
+		//component.Scale = GetWorldSpaceScale(entity);
+		//component.Location = GetWorldSpaceScale(entity);
+		//component.SetRotationEuler(GetWorldSpaceRotation(entity));
+		//
+		//return component;
 		glm::mat4 transform = GetWorldSpaceTransform(entity);
 		TransformComponent transformComponent;
 		transformComponent.SetTransform(transform);
@@ -1270,6 +1289,7 @@ namespace Proof {
 		//	* glm::rotate(glm::mat4(1.0f), rotation.y, { 0,1,0 })
 		//	* glm::rotate(glm::mat4(1.0f), rotation.z, { 0,0,1 })
 		//	* glm::scale(glm::mat4(1.0f), { GetWorldSpaceScale(entity)});
+
 		glm::mat4 transform(1.0f);
 		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
 		if (parent)

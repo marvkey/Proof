@@ -12,7 +12,7 @@ namespace Proof
 		void OnEvent(Event& e);
 
 		const std::vector<Count<ElevatedInputDevice>>& GetInputDevices() { return m_InputDevices; }
-
+		void OnUpdate(float deltaTime);
 	private:
 		std::vector<Count<ElevatedInputDevice>> m_InputDevices;
 		MulticastDelegate<void(Count<ElevatedInputDevice>)> m_OnDevicedAddedOrRemoved;

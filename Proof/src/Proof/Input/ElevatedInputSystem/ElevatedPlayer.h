@@ -41,7 +41,8 @@ namespace Proof
 	{
 		Count<InputAction> InputAction;
 		InteractionEvent TriggerEvent;
-		Delegate<void(const InputActionOutput&)> Function; 
+		//Delegate<void(const InputActionOutput&)> Function; // not capturing pointer when lamdas
+		std::function<void(const InputActionOutput&)> Function;
 	};
 	// because the input action context coudl remove the key Binding
 			// so storing a pointer will just be wierd cause it would cause an error
@@ -105,6 +106,8 @@ namespace Proof
 		void OnUpdate(struct FrameTime deltaTime);
 		// free function 
 // Bind the function pointer using a template specialization
+
+		/*
 		template <void(*TFunction)(const ElevatedInputKeyParams&)>
 		void Bind(Count<InputAction> inputAction, InteractionEvent triggerEvent)
 		{
@@ -144,6 +147,19 @@ namespace Proof
 			delegate.Function.Bind<function>(object);
 
 		}
+		*/
+
+		void Bind(Count<InputAction> inputAction, InteractionEvent triggerEvent, const std::function<void(const InputActionOutput)>& func)
+		{
+
+			if (inputAction == nullptr)
+				return;
+			ElevatedPlayerInputDelegate& delegate = m_InputDelegates.emplace_back();
+			delegate.InputAction = inputAction;
+			delegate.TriggerEvent = triggerEvent;
+			delegate.Function = func;
+
+	}
 		InputActionData& GetActionData(Count<class InputAction> action);
 		bool ShouldProccessInput(const ElevatedInputKey& key);
 

@@ -15,4 +15,12 @@ namespace Proof
 		for (auto device : m_InputDevices)
 			device->OnEvent(e);
 	}
+
+	void ElevatedInputDeviceManager::OnUpdate(float deltaTime)
+	{
+
+		for (auto device : m_InputDevices)
+			device->OnUpdate(deltaTime);
+	}
+
 }
