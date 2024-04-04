@@ -193,8 +193,9 @@ namespace Proof
 
 			if (actionData.ActionOutput.Get<glm::vec3>() != rawValue.Get<glm::vec3>())
 			{
-				actionData.InteractionStateTracker.SetStateForNoTriggers(actionData.ActionOutput.IsNonZero() ? InteractionState::Triggered : InteractionState::None);
+			//	actionData.InteractionStateTracker.SetStateForNoTriggers(actionData.ActionOutput.IsNonZero() ? InteractionState::Triggered : InteractionState::None);
 			}
+			actionData.InteractionStateTracker.SetStateForNoTriggers(InteractionState::Triggered );
 
 			InteractionState PrevState = actionData.InteractionStateTracker.GetState();
 			triggerState = actionData.InteractionStateTracker.EvaluateInteractions(this, elevatedKeyBinding->Interactions, actionData.ActionOutput, deltaTime);

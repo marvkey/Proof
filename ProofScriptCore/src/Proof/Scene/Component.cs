@@ -35,11 +35,11 @@ namespace Proof
     [RegisterCoreClassStruct]
     public class TransformComponent : Component
 	{
-		public Vector3 Location
+		public Proof.Vector3 Location
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetLocation(Entity.ID, out Vector3 loc);
+				InternalCalls.TransformComponent_GetLocation(Entity.ID, out Proof.Vector3 loc);
 				return loc;
 			}
 			set
@@ -48,11 +48,11 @@ namespace Proof
 			}
 		}
 
-		public Vector3 Rotation
+		public Proof.Vector3 Rotation
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetRotation(Entity.ID, out Vector3 rotation);
+				InternalCalls.TransformComponent_GetRotation(Entity.ID, out Proof.Vector3 rotation);
 				return rotation;
 			}
 			set
@@ -61,11 +61,11 @@ namespace Proof
 			}
 		}
 
-		public Vector3 Scale
+		public Proof.Vector3 Scale
 		{
 			get
 			{
-				InternalCalls.TransformComponent_GetScale(Entity.ID, out Vector3 scale);
+				InternalCalls.TransformComponent_GetScale(Entity.ID, out Proof.Vector3 scale);
 				return scale;
 			}
 			set
@@ -73,38 +73,38 @@ namespace Proof
 				InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
 			}
 		}
-		public Vector3 Forward
+		public Proof.Vector3 Forward
 		{
 			get
 			{
 
-                InternalCalls.TransformComponent_GetForwardVector(Entity.ID, out Vector3 foward);
+                InternalCalls.TransformComponent_GetForwardVectortor(Entity.ID, out Proof.Vector3 foward);
                 return foward;
             }
 		}
 
-        public Vector3 Right
+        public Proof.Vector3 Right
         {
             get
             {
 
-                InternalCalls.TransformComponent_GetRightVector(Entity.ID, out Vector3 foward);
+                InternalCalls.TransformComponent_GetRightVectortor(Entity.ID, out Proof.Vector3 foward);
                 return foward;
             }
         }
 
-        public Vector3 Up
+        public Proof.Vector3 Up
         {
             get
             {
 
-                InternalCalls.TransformComponent_GetUpVector(Entity.ID, out Vector3 foward);
+                InternalCalls.TransformComponent_GetUpVectortor(Entity.ID, out Proof.Vector3 foward);
                 return foward;
             }
         }
-        public void Translate(Vector3 vec)
+        public void Translate(Proof.Vector3 Vectortor)
 		{
-			Location += vec;
+			Location += Vectortor;
 		}
 
         /// <summary>
@@ -133,10 +133,10 @@ namespace Proof
             }
         }
 
-        public void Rotate(Vector3 eulers)
+        public void Rotate(Proof.Vector3 eulers)
         {
             // Get the current rotation
-            Vector3 currentRotation = Rotation;
+            Proof.Vector3 currentRotation = Rotation;
 
             currentRotation += eulers;
             // Update the rotation
@@ -289,9 +289,9 @@ namespace Proof
 				InternalCalls.RigidBody_SetGravity(Entity.ID, ref value);
 			}
 		}
-		public void AddForce(Vector3 force, ForceMode mode = ForceMode.Force, bool autoWake = true) =>
+		public void AddForce(Proof.Vector3 force, ForceMode mode = ForceMode.Force, bool autoWake = true) =>
 			InternalCalls.RigidBody_AddForce(Entity.ID, force, (int)mode, autoWake);
-		public void AddTorque(Vector3 force, ForceMode mode = ForceMode.Force, bool autoWake = true) =>
+		public void AddTorque(Proof.Vector3 force, ForceMode mode = ForceMode.Force, bool autoWake = true) =>
 			InternalCalls.RigidBody_AddTorque(Entity.ID, force, (int)mode, autoWake);
 
 
@@ -312,17 +312,17 @@ namespace Proof
 			set => InternalCalls.RigidBodyComponent_SetBodyType(Entity.ID, value);
 		}
 
-		public bool IsKinematic
+		public bool IsKineMatrixic
 		{
-			get => InternalCalls.RigidBodyComponent_IsKinematic(Entity.ID);
-			set => InternalCalls.RigidBodyComponent_SetIsKinematic(Entity.ID, value);
+			get => InternalCalls.RigidBodyComponent_IsKineMatrixic(Entity.ID);
+			set => InternalCalls.RigidBodyComponent_SetIsKineMatrixic(Entity.ID, value);
 		}
 
-		public Vector3 Location
+		public Proof.Vector3 Location
 		{
 			get
 			{
-				InternalCalls.RigidBodyComponent_GetLocation(Entity.ID, out Vector3 translation);
+				InternalCalls.RigidBodyComponent_GetLocation(Entity.ID, out Proof.Vector3 translation);
 				return translation;
 			}
 
@@ -330,11 +330,11 @@ namespace Proof
 		}
 
 		//Radians
-		public Vector3 Rotation
+		public Proof.Vector3 Rotation
 		{
 			get
 			{
-				InternalCalls.RigidBodyComponent_GetRotation(Entity.ID, out Vector3 rotationRadians);
+				InternalCalls.RigidBodyComponent_GetRotation(Entity.ID, out Proof.Vector3 rotationRadians);
 				return rotationRadians;
 			}
 
@@ -342,18 +342,18 @@ namespace Proof
 		}
 
 
-		public Vector3 LinearVelocity
+		public Proof.Vector3 LinearVelocity
 		{
 			get
 			{
-				InternalCalls.RigidBodyComponent_GetLinearVelocity(Entity.ID, out Vector3 velocity);
+				InternalCalls.RigidBodyComponent_GetLinearVelocity(Entity.ID, out Proof.Vector3 velocity);
 				return velocity;
 			}
 
 			set => InternalCalls.RigidBodyComponent_SetLinearVelocity(Entity.ID, ref value);
 		}
 
-		public Vector3 Velocity
+		public Proof.Vector3 Velocity
 		{
 			get
 			{
@@ -364,11 +364,11 @@ namespace Proof
 				LinearVelocity = value;
 			}
 		}
-		public Vector3 AngularVelocity
+		public Proof.Vector3 AngularVelocity
 		{
 			get
 			{
-				InternalCalls.RigidBodyComponent_GetAngularVelocity(Entity.ID, out Vector3 velocity);
+				InternalCalls.RigidBodyComponent_GetAngularVelocity(Entity.ID, out Proof.Vector3 velocity);
 				return velocity;
 			}
 
@@ -417,14 +417,14 @@ namespace Proof
 			set => InternalCalls.RigidBodyComponent_SetIsSleeping(Entity.ID, value);
 		}
 
-		public void GetKinematicTarget(out Vector3 targetPosition, out Vector3 targetRotation)
-			=> InternalCalls.RigidBodyComponent_GetKinematicTarget(Entity.ID, out targetPosition, out targetRotation);
+		public void GetKineMatrixicTarget(out Proof.Vector3 targetPosition, out Proof.Vector3 targetRotation)
+			=> InternalCalls.RigidBodyComponent_GetKineMatrixicTarget(Entity.ID, out targetPosition, out targetRotation);
 
-		public void SetKinematicTarget(Vector3 targetPosition, Vector3 targetRotation)
-			=> InternalCalls.RigidBodyComponent_SetKinematicTarget(Entity.ID, ref targetPosition, ref targetRotation);
+		public void SetKineMatrixicTarget(Proof.Vector3 targetPosition, Proof.Vector3 targetRotation)
+			=> InternalCalls.RigidBodyComponent_SetKineMatrixicTarget(Entity.ID, ref targetPosition, ref targetRotation);
 
 
-		public void AddForceAtLocation(Vector3 force, Vector3 location, ForceMode forceMode = ForceMode.Force)
+		public void AddForceAtLocation(Proof.Vector3 force, Proof.Vector3 location, ForceMode forceMode = ForceMode.Force)
 		{
 			InternalCalls.RigidBodyComponent_AddForceAtLocation(Entity.ID, ref force, ref location, forceMode);
 		}
@@ -433,22 +433,22 @@ namespace Proof
     [RegisterCoreClassStruct]
     public class BoxColliderComponent : Component
     {
-        public Vector3 Size
+        public Proof.Vector3 Size
         {
             get
             {
-                InternalCalls.BoxColliderComponent_GetSize(Entity.ID, out Vector3 halfSize);
+                InternalCalls.BoxColliderComponent_GetSize(Entity.ID, out Proof.Vector3 halfSize);
                 return halfSize;
             }
 
             set => InternalCalls.BoxColliderComponent_SetSize(Entity.ID, ref value);
         }
 
-        public Vector3 Center
+        public Proof.Vector3 Center
         {
             get
             {
-                InternalCalls.BoxColliderComponent_GetCenter(Entity.ID, out Vector3 offset);
+                InternalCalls.BoxColliderComponent_GetCenter(Entity.ID, out Proof.Vector3 offset);
                 return offset;
             }
 
@@ -465,8 +465,8 @@ namespace Proof
         {
             get
             {
-                return InternalCalls.BoxColliderComponent_GetPhysicsMaterialID(Entity.ID, out AssetID materialHandle)
-                    ? new PhysicsMaterial(materialHandle) : null;
+                return InternalCalls.BoxColliderComponent_GetPhysicsMaterialID(Entity.ID, out AssetID MatrixerialHandle)
+                    ? new PhysicsMaterial(MatrixerialHandle) : null;
             }
         }
     }
@@ -480,11 +480,11 @@ namespace Proof
             set => InternalCalls.SphereColliderComponent_SetRadius(Entity.ID, value);
         }
 
-        public Vector3 Center
+        public Proof.Vector3 Center
         {
             get
             {
-                InternalCalls.SphereColliderComponent_GetCenter(Entity.ID, out Vector3 offset);
+                InternalCalls.SphereColliderComponent_GetCenter(Entity.ID, out Proof.Vector3 offset);
                 return offset;
             }
 
@@ -499,8 +499,8 @@ namespace Proof
 
         public PhysicsMaterial Material
         {
-            get => InternalCalls.SphereColliderComponent_GetPhysicsMaterialID(Entity.ID, out AssetID materialHandle)
-                ? new PhysicsMaterial(materialHandle) : null;
+            get => InternalCalls.SphereColliderComponent_GetPhysicsMaterialID(Entity.ID, out AssetID MatrixerialHandle)
+                ? new PhysicsMaterial(MatrixerialHandle) : null;
         }
     }
     /*
@@ -519,11 +519,11 @@ namespace Proof
             set => InternalCalls.CapsuleColliderComponent_SetHeight(Entity.ID, value);
         }
 
-        public Vector3 Offset
+        public Proof.Vector3 Offset
         {
             get
             {
-                InternalCalls.CapsuleColliderComponent_GetOffset(Entity.ID, out Vector3 offset);
+                InternalCalls.CapsuleColliderComponent_GetOffset(Entity.ID, out Proof.Vector3 offset);
                 return offset;
             }
 
@@ -538,8 +538,8 @@ namespace Proof
 
         public PhysicsMaterial Material
         {
-            get => InternalCalls.CapsuleColliderComponent_GetMaterialHandle(Entity.ID, out AssetID materialHandle)
-                ? new PhysicsMaterial(materialHandle) : null;
+            get => InternalCalls.CapsuleColliderComponent_GetMaterialHandle(Entity.ID, out AssetID MatrixerialHandle)
+                ? new PhysicsMaterial(MatrixerialHandle) : null;
         }
     }
 	*/
@@ -562,8 +562,8 @@ namespace Proof
 
         public PhysicsMaterial Material
         {
-            get => InternalCalls.MeshColliderComponent_GetMaterialHandle(Entity.ID, out AssetID materialHandle)
-                ? new PhysicsMaterial(materialHandle) : null;
+            get => InternalCalls.MeshColliderComponent_GetMaterialHandle(Entity.ID, out AssetID MatrixerialHandle)
+                ? new PhysicsMaterial(MatrixerialHandle) : null;
         }
 
 		private MeshBase m_ColliderMesh;

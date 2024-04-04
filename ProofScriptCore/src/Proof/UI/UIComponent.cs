@@ -18,11 +18,11 @@ namespace Proof
 
     struct UIBaseData
     {
-        public Vector2 Position;
-        public Vector2 Rotation;
-        public Vector2 Size;
+        public Proof.Vector2 Position;
+        public Proof.Vector2 Rotation;
+        public Proof.Vector2 Size;
         public bool Visible;
-        public Vector4 Color;
+        public Proof.Vector4 Color;
     }
     public class UIButton : UIComponent
     {
@@ -50,7 +50,7 @@ namespace Proof
                 ButtonData = copy;
             }
         }
-        public Vector2 Position
+        public Proof.Vector2 Position
         {
             get
             {
@@ -63,7 +63,7 @@ namespace Proof
                 ButtonData = copy;
             }
         }
-        public Vector2 Rotation
+        public Proof.Vector2 Rotation
         {
             get { return ButtonData.Rotation; }
             set
@@ -74,7 +74,7 @@ namespace Proof
             }
 
         }
-        public Vector2 Size
+        public Proof.Vector2 Size
         {
             get { return ButtonData.Size; }
             set
@@ -84,7 +84,7 @@ namespace Proof
                 ButtonData = copy;
             }
         }
-        public Vector4 Color
+        public Proof.Vector4 Color
         {
             get { return ButtonData.Color; }
 
@@ -134,7 +134,7 @@ namespace Proof
                 ButtonData = copy;
             }
         }
-        public Vector2 Position
+        public Proof.Vector2 Position
         {
             get
             {
@@ -147,7 +147,7 @@ namespace Proof
                 ButtonData = copy;
             }
         }
-        public Vector2 Rotation
+        public Proof.Vector2 Rotation
         {
             get {return ButtonData.BaseData.Rotation;}
             set
@@ -158,7 +158,7 @@ namespace Proof
             }
 
         }
-        public Vector2 Size
+        public Proof.Vector2 Size
         {
             get { return ButtonData.BaseData.Size; }
             set
@@ -168,7 +168,7 @@ namespace Proof
                 ButtonData = copy;
             }
         }
-        public Vector4 Color
+        public Proof.Vector4 Color
         {
             get { return ButtonData.BaseData.Color; }
 
@@ -235,7 +235,7 @@ namespace Proof
             }
         }
 
-        public Vector2 Position
+        public Proof.Vector2 Position
         {
             get
             {
@@ -248,7 +248,7 @@ namespace Proof
                 TextData = copy;
             }
         }
-        public Vector2 Rotation
+        public Proof.Vector2 Rotation
         {
             get { return TextData.BaseData.Rotation; }
             set
@@ -259,7 +259,7 @@ namespace Proof
             }
 
         }
-        public Vector2 Size
+        public Proof.Vector2 Size
         {
             get { return TextData.BaseData.Size; }
             set
@@ -269,7 +269,7 @@ namespace Proof
                 TextData = copy;
             }
         }
-        public Vector4 Color
+        public Proof.Vector4 Color
         {
             get { return TextData.BaseData.Color; }
 

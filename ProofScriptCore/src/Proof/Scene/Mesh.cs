@@ -11,10 +11,10 @@ namespace Proof
 
         public Material GetMaterial(uint index)
         {
-            if (!InternalCalls.MeshBase_GetMaterialByIndex(ref m_ID, index, out AssetID materialHandle))
+            if (!InternalCalls.MeshBase_GetMaterialByIndex(ref m_ID, index, out AssetID MatrixerialHandle))
                 return null;
 
-            return new Material(materialHandle);
+            return new Material(MatrixerialHandle);
         }
 
         public uint GetMaterialCount() => InternalCalls.MeshBase_GetMaterialCount(ref m_ID);

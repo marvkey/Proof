@@ -10,7 +10,21 @@ project "ProofScriptCore"
 	files 
 	{
 		"src/**.cs",
+		"vendor/**.cs",
 	}
+	
+	links
+    {
+        --"System",
+        --"System.Core",
+        --"System.Numerics",
+        --"System.Runtime.Serialization",
+        --"System.Xml.Linq",
+        --"System.Data.DataSetExtensions",
+        --"Microsoft.CSharp",
+        --"System.Data",
+        --"System.Xml"
+    }
 	
 	filter "configurations:Debug"
 		optimize "Off"

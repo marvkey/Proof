@@ -17,8 +17,9 @@ namespace LostExpedition
 
 		public InputAction MoveAction;
 		public InputAction RotateAction;
-		public InputAction MoveFastAction;
+		public InputAction MoveFastAction; 
 
+		public Vector3 Test;
         enum MoveState
 		{
 			Walking,
@@ -63,15 +64,15 @@ namespace LostExpedition
 
 			Vector2 axisData = outPut.Get<Vector2>();
 
-			if (outPut.Get<Vector2>().Y != 0)
+			if (outPut.Get<Vector2>().y != 0)
 			{
-				Vector3 movement = Transform.Forward * outPut.Get<Vector2>().Y * moveSpeed * World.GetDeltaTime();
-				m_RigidBody.Location += movement;
+				Vector3 movement = Transform.Forward * outPut.Get<Vector2>().y * moveSpeed * World.GetDeltaTime();
+				Transform.Location += movement;
 			}
-			if (outPut.Get<Vector2>().X != 0)
+			if (outPut.Get<Vector2>().x != 0)
 			{
-                Vector3 movement = Transform.Right * outPut.Get<Vector2>().X * moveSpeed * World.GetDeltaTime();
-                m_RigidBody.Location += movement;
+                Vector3 movement = Transform.Right * outPut.Get<Vector2>().x * moveSpeed * World.GetDeltaTime();
+                Transform.Location += movement;
 			}
 
 
@@ -82,25 +83,26 @@ namespace LostExpedition
 
 			float rotateSpeed = 100.5f;
 
-			//Log.Info($"ROtation {outPut.Get<Vector2>().ToString()}");
 
-			if(axisData.X != 0)
+			if(axisData.x != 0)
 			{
-				 
-              Transform.Rotate(Vector3.Up * -axisData.X );   // Adjust the multiplier for different rotation speed
-			}
-            if(axisData.Y != 0)
+				//Transform.Rotation.Y += World.GetDeltaTime() * axisData.X;
+				Transform.Rotation = new Vector3(Transform.Rotation.x, Transform.Rotation.y + World.GetDeltaTime() * -axisData.x, Transform.Rotation.z);
+
+
+              //Transform.Rotate(Vector3.Up * -axisData.X );   // Adjust the multiplier for different rotation speed
+            }
+            if(axisData.y != 0)
 			{
                 Vector3 e = Head.Transform.Rotation;
-				e.X += axisData.Y;
-				e.X = RestrictAngle(e.X, -85, 85);
+				e.x += axisData.y * World.GetDeltaTime();
+				e.x = RestrictAngle(e.x, -85, 85);
                 Head.Transform.Rotation = e;
 			}
 
         }
         void MoveFast(InputActionOutput outPut)
 		{
-			Log.Info($"Move Fast");
             if (m_MoveState == MoveState.Walking)
 				m_MoveState = MoveState.Running;
 			else

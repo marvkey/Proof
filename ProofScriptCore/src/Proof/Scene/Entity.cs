@@ -40,19 +40,19 @@ namespace Proof
             }
         }
 
-        public Vector3 Location
+        public Proof.Vector3 Location
         {
             get => Transform.Location;
             set => Transform.Location = value;
         }
 
-        public Vector3 Rotation
+        public Proof.Vector3 Rotation
         {
             get => Transform.Rotation;
             set => Transform.Rotation = value;
         }
 
-        public Vector3 Scale
+        public Proof.Vector3 Scale
         {
             get => Transform.Scale;
             set => Transform.Scale = value;

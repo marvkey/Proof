@@ -75,7 +75,7 @@ project "Proof"
 		"ProofPhysics",
 		"OptickCore.lib",
 		"SPIRV-Cross",
-		"ProofScriptCore",
+		--"ProofScriptCore",
 		"msdf-atlas-gen",
 		"%{Library.Vulkan}",
 		"%{Library.VulkanUtils}",

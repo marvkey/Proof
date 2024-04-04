@@ -1,0 +1,684 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Runtime.InteropServices;
+
+using System.Numerics;
+using System.Linq;
+using Proof.Swizzle;
+
+// ReSharper disable InconsistentNaming
+
+namespace Proof
+{
+    
+    /// <summary>
+    /// A Matrix of type uint with 2 columns and 2 rows.
+    /// </summary>
+    [RegisterCoreClassStruct]
+    
+    [StructLayout(LayoutKind.Sequential)]
+    public struct uMatrix2 : IReadOnlyList<uint>, IEquatable<uMatrix2>
+    {
+
+        #region Fields
+        
+        /// <summary>
+        /// Column 0, Rows 0
+        /// </summary>
+        
+        public uint m00;
+        
+        /// <summary>
+        /// Column 0, Rows 1
+        /// </summary>
+        
+        public uint m01;
+        
+        /// <summary>
+        /// Column 1, Rows 0
+        /// </summary>
+        
+        public uint m10;
+        
+        /// <summary>
+        /// Column 1, Rows 1
+        /// </summary>
+        
+        public uint m11;
+
+        #endregion
+
+
+        #region Constructors
+        
+        /// <summary>
+        /// Component-wise constructor
+        /// </summary>
+        public uMatrix2(uint m00, uint m01, uint m10, uint m11)
+        {
+            this.m00 = m00;
+            this.m01 = m01;
+            this.m10 = m10;
+            this.m11 = m11;
+        }
+        
+        /// <summary>
+        /// Constructs this Matrix from a uMatrix2. Non-overwritten fields are from an Identity Matrix.
+        /// </summary>
+        public uMatrix2(uMatrix2 m)
+        {
+            this.m00 = m.m00;
+            this.m01 = m.m01;
+            this.m10 = m.m10;
+            this.m11 = m.m11;
+        }
+        
+        /// <summary>
+        /// Constructs this Matrix from a uMatrix3x2. Non-overwritten fields are from an Identity Matrix.
+        /// </summary>
+        public uMatrix2(uMatrix3x2 m)
+        {
+            this.m00 = m.m00;
+            this.m01 = m.m01;
+            this.m10 = m.m10;
+            this.m11 = m.m11;
+        }
+        
+        /// <summary>
+        /// Constructs this Matrix from a uMatrix4x2. Non-overwritten fields are from an Identity Matrix.
+        /// </summary>
+        public uMatrix2(uMatrix4x2 m)
+        {
+            this.m00 = m.m00;
+            this.m01 = m.m01;
+            this.m10 = m.m10;
+            this.m11 = m.m11;
+        }
+        
+        /// <summary>
+        /// Constructs this Matrix from a uMatrix2x3. Non-overwritten fields are from an Identity Matrix.
+        /// </summary>
+        public uMatrix2(uMatrix2x3 m)
+        {
+            this.m00 = m.m00;
+            this.m01 = m.m01;
+            this.m10 = m.m10;
+            this.m11 = m.m11;
+        }
+        
+        /// <summary>
+        /// Constructs this Matrix from a uMatrix3. Non-overwritten fields are from an Identity Matrix.
+        /// </summary>
+        public uMatrix2(uMatrix3 m)
+        {
+            this.m00 = m.m00;
+            this.m01 = m.m01;
+            this.m10 = m.m10;
+            this.m11 = m.m11;
+        }
+        
+        /// <summary>
+        /// Constructs this Matrix from a uMatrix4x3. Non-overwritten fields are from an Identity Matrix.
+        /// </summary>
+        public uMatrix2(uMatrix4x3 m)
+        {
+            this.m00 = m.m00;
+            this.m01 = m.m01;
+            this.m10 = m.m10;
+            this.m11 = m.m11;
+        }
+        
+        /// <summary>
+        /// Constructs this Matrix from a uMatrix2x4. Non-overwritten fields are from an Identity Matrix.
+        /// </summary>
+        public uMatrix2(uMatrix2x4 m)
+        {
+            this.m00 = m.m00;
+            this.m01 = m.m01;
+            this.m10 = m.m10;
+            this.m11 = m.m11;
+        }
+        
+        /// <summary>
+        /// Constructs this Matrix from a uMatrix3x4. Non-overwritten fields are from an Identity Matrix.
+        /// </summary>
+        public uMatrix2(uMatrix3x4 m)
+        {
+            this.m00 = m.m00;
+            this.m01 = m.m01;
+            this.m10 = m.m10;
+            this.m11 = m.m11;
+        }
+        
+        /// <summary>
+        /// Constructs this Matrix from a uMatrix4. Non-overwritten fields are from an Identity Matrix.
+        /// </summary>
+        public uMatrix2(uMatrix4 m)
+        {
+            this.m00 = m.m00;
+            this.m01 = m.m01;
+            this.m10 = m.m10;
+            this.m11 = m.m11;
+        }
+        
+        /// <summary>
+        /// Constructs this Matrix from a series of column Vectortors. Non-overwritten fields are from an Identity Matrix.
+        /// </summary>
+        public uMatrix2(uVector2 c0, uVector2 c1)
+        {
+            this.m00 = c0.x;
+            this.m01 = c0.y;
+            this.m10 = c1.x;
+            this.m11 = c1.y;
+        }
+
+        #endregion
+
+
+        #region Properties
+        
+        /// <summary>
+        /// Creates a 2D array with all values (address: Values[x, y])
+        /// </summary>
+        public uint[,] Values => new[,] { { m00, m01 }, { m10, m11 } };
+        
+        /// <summary>
+        /// Creates a 1D array with all values (internal order)
+        /// </summary>
+        public uint[] Values1D => new[] { m00, m01, m10, m11 };
+        
+        /// <summary>
+        /// Gets or sets the column nr 0
+        /// </summary>
+        public uVector2 Column0
+        {
+            get
+            {
+                return new uVector2(m00, m01);
+            }
+            set
+            {
+                m00 = value.x;
+                m01 = value.y;
+            }
+        }
+        
+        /// <summary>
+        /// Gets or sets the column nr 1
+        /// </summary>
+        public uVector2 Column1
+        {
+            get
+            {
+                return new uVector2(m10, m11);
+            }
+            set
+            {
+                m10 = value.x;
+                m11 = value.y;
+            }
+        }
+        
+        /// <summary>
+        /// Gets or sets the row nr 0
+        /// </summary>
+        public uVector2 Row0
+        {
+            get
+            {
+                return new uVector2(m00, m10);
+            }
+            set
+            {
+                m00 = value.x;
+                m10 = value.y;
+            }
+        }
+        
+        /// <summary>
+        /// Gets or sets the row nr 1
+        /// </summary>
+        public uVector2 Row1
+        {
+            get
+            {
+                return new uVector2(m01, m11);
+            }
+            set
+            {
+                m01 = value.x;
+                m11 = value.y;
+            }
+        }
+
+        #endregion
+
+
+        #region Static Properties
+        
+        /// <summary>
+        /// Predefined all-zero Matrix
+        /// </summary>
+        public static uMatrix2 Zero { get; } = new uMatrix2(0u, 0u, 0u, 0u);
+        
+        /// <summary>
+        /// Predefined all-ones Matrix
+        /// </summary>
+        public static uMatrix2 Ones { get; } = new uMatrix2(1u, 1u, 1u, 1u);
+        
+        /// <summary>
+        /// Predefined identity Matrix
+        /// </summary>
+        public static uMatrix2 Identity { get; } = new uMatrix2(1u, 0u, 0u, 1u);
+        
+        /// <summary>
+        /// Predefined all-MaxValue Matrix
+        /// </summary>
+        public static uMatrix2 AllMaxValue { get; } = new uMatrix2(uint.MaxValue, uint.MaxValue, uint.MaxValue, uint.MaxValue);
+        
+        /// <summary>
+        /// Predefined diagonal-MaxValue Matrix
+        /// </summary>
+        public static uMatrix2 DiagonalMaxValue { get; } = new uMatrix2(uint.MaxValue, 0u, 0u, uint.MaxValue);
+        
+        /// <summary>
+        /// Predefined all-MinValue Matrix
+        /// </summary>
+        public static uMatrix2 AllMinValue { get; } = new uMatrix2(uint.MinValue, uint.MinValue, uint.MinValue, uint.MinValue);
+        
+        /// <summary>
+        /// Predefined diagonal-MinValue Matrix
+        /// </summary>
+        public static uMatrix2 DiagonalMinValue { get; } = new uMatrix2(uint.MinValue, 0u, 0u, uint.MinValue);
+
+        #endregion
+
+
+        #region Functions
+        
+        /// <summary>
+        /// Returns an enumerator that iterates through all fields.
+        /// </summary>
+        public IEnumerator<uint> GetEnumerator()
+        {
+            yield return m00;
+            yield return m01;
+            yield return m10;
+            yield return m11;
+        }
+        
+        /// <summary>
+        /// Returns an enumerator that iterates through all fields.
+        /// </summary>
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        #endregion
+
+        
+        /// <summary>
+        /// Returns the number of Fields (2 x 2 = 4).
+        /// </summary>
+        public int Count => 4;
+        
+        /// <summary>
+        /// Gets/Sets a specific indexed component (a bit slower than direct access).
+        /// </summary>
+        public uint this[int fieldIndex]
+        {
+            get
+            {
+                switch (fieldIndex)
+                {
+                    case 0: return m00;
+                    case 1: return m01;
+                    case 2: return m10;
+                    case 3: return m11;
+                    default: throw new ArgumentOutOfRangeException("fieldIndex");
+                }
+            }
+            set
+            {
+                switch (fieldIndex)
+                {
+                    case 0: this.m00 = value; break;
+                    case 1: this.m01 = value; break;
+                    case 2: this.m10 = value; break;
+                    case 3: this.m11 = value; break;
+                    default: throw new ArgumentOutOfRangeException("fieldIndex");
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Gets/Sets a specific 2D-indexed component (a bit slower than direct access).
+        /// </summary>
+        public uint this[int col, int row]
+        {
+            get
+            {
+                return this[col * 2 + row];
+            }
+            set
+            {
+                this[col * 2 + row] = value;
+            }
+        }
+        
+        /// <summary>
+        /// Returns true iff this equals rhs component-wise.
+        /// </summary>
+        public bool Equals(uMatrix2 rhs) => ((m00.Equals(rhs.m00) && m01.Equals(rhs.m01)) && (m10.Equals(rhs.m10) && m11.Equals(rhs.m11)));
+        
+        /// <summary>
+        /// Returns true iff this equals rhs type- and component-wise.
+        /// </summary>
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            return obj is uMatrix2 && Equals((uMatrix2) obj);
+        }
+        
+        /// <summary>
+        /// Returns true iff this equals rhs component-wise.
+        /// </summary>
+        public static bool operator ==(uMatrix2 lhs, uMatrix2 rhs) => lhs.Equals(rhs);
+        
+        /// <summary>
+        /// Returns true iff this does not equal rhs (component-wise).
+        /// </summary>
+        public static bool operator !=(uMatrix2 lhs, uMatrix2 rhs) => !lhs.Equals(rhs);
+        
+        /// <summary>
+        /// Returns a hash code for this instance.
+        /// </summary>
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                return ((((((m00.GetHashCode()) * 397) ^ m01.GetHashCode()) * 397) ^ m10.GetHashCode()) * 397) ^ m11.GetHashCode();
+            }
+        }
+        
+        /// <summary>
+        /// Returns a transposed version of this Matrix.
+        /// </summary>
+        public uMatrix2 Transposed => new uMatrix2(m00, m10, m01, m11);
+        
+        /// <summary>
+        /// Returns the minimal component of this Matrix.
+        /// </summary>
+        public uint MinElement => Math.Min(Math.Min(Math.Min(m00, m01), m10), m11);
+        
+        /// <summary>
+        /// Returns the maximal component of this Matrix.
+        /// </summary>
+        public uint MaxElement => Math.Max(Math.Max(Math.Max(m00, m01), m10), m11);
+        
+        /// <summary>
+        /// Returns the euclidean length of this Matrix.
+        /// </summary>
+        public float Length => (float)Math.Sqrt(((m00*m00 + m01*m01) + (m10*m10 + m11*m11)));
+        
+        /// <summary>
+        /// Returns the squared euclidean length of this Matrix.
+        /// </summary>
+        public float LengthSqr => ((m00*m00 + m01*m01) + (m10*m10 + m11*m11));
+        
+        /// <summary>
+        /// Returns the sum of all fields.
+        /// </summary>
+        public uint Sum => ((m00 + m01) + (m10 + m11));
+        
+        /// <summary>
+        /// Returns the euclidean norm of this Matrix.
+        /// </summary>
+        public float Norm => (float)Math.Sqrt(((m00*m00 + m01*m01) + (m10*m10 + m11*m11)));
+        
+        /// <summary>
+        /// Returns the one-norm of this Matrix.
+        /// </summary>
+        public float Norm1 => ((m00 + m01) + (m10 + m11));
+        
+        /// <summary>
+        /// Returns the two-norm of this Matrix.
+        /// </summary>
+        public float Norm2 => (float)Math.Sqrt(((m00*m00 + m01*m01) + (m10*m10 + m11*m11)));
+        
+        /// <summary>
+        /// Returns the max-norm of this Matrix.
+        /// </summary>
+        public uint NormMax => Math.Max(Math.Max(Math.Max(m00, m01), m10), m11);
+        
+        /// <summary>
+        /// Returns the p-norm of this Matrix.
+        /// </summary>
+        public double NormP(double p) => Math.Pow(((Math.Pow((double)m00, p) + Math.Pow((double)m01, p)) + (Math.Pow((double)m10, p) + Math.Pow((double)m11, p))), 1 / p);
+        
+        /// <summary>
+        /// Returns determinant of this Matrix.
+        /// </summary>
+        public uint Determinant => m00 * m11 - m10 * m01;
+        
+        /// <summary>
+        /// Executes a Matrix-Matrix-multiplication uMatrix2 * uMatrix2 -> uMatrix2.
+        /// </summary>
+        public static uMatrix2 operator*(uMatrix2 lhs, uMatrix2 rhs) => new uMatrix2((lhs.m00 * rhs.m00 + lhs.m10 * rhs.m01), (lhs.m01 * rhs.m00 + lhs.m11 * rhs.m01), (lhs.m00 * rhs.m10 + lhs.m10 * rhs.m11), (lhs.m01 * rhs.m10 + lhs.m11 * rhs.m11));
+        
+        /// <summary>
+        /// Executes a Matrix-Matrix-multiplication uMatrix2 * uMatrix3x2 -> uMatrix3x2.
+        /// </summary>
+        public static uMatrix3x2 operator*(uMatrix2 lhs, uMatrix3x2 rhs) => new uMatrix3x2((lhs.m00 * rhs.m00 + lhs.m10 * rhs.m01), (lhs.m01 * rhs.m00 + lhs.m11 * rhs.m01), (lhs.m00 * rhs.m10 + lhs.m10 * rhs.m11), (lhs.m01 * rhs.m10 + lhs.m11 * rhs.m11), (lhs.m00 * rhs.m20 + lhs.m10 * rhs.m21), (lhs.m01 * rhs.m20 + lhs.m11 * rhs.m21));
+        
+        /// <summary>
+        /// Executes a Matrix-Matrix-multiplication uMatrix2 * uMatrix4x2 -> uMatrix4x2.
+        /// </summary>
+        public static uMatrix4x2 operator*(uMatrix2 lhs, uMatrix4x2 rhs) => new uMatrix4x2((lhs.m00 * rhs.m00 + lhs.m10 * rhs.m01), (lhs.m01 * rhs.m00 + lhs.m11 * rhs.m01), (lhs.m00 * rhs.m10 + lhs.m10 * rhs.m11), (lhs.m01 * rhs.m10 + lhs.m11 * rhs.m11), (lhs.m00 * rhs.m20 + lhs.m10 * rhs.m21), (lhs.m01 * rhs.m20 + lhs.m11 * rhs.m21), (lhs.m00 * rhs.m30 + lhs.m10 * rhs.m31), (lhs.m01 * rhs.m30 + lhs.m11 * rhs.m31));
+        
+        /// <summary>
+        /// Executes a Matrix-Vectortor-multiplication.
+        /// </summary>
+        public static uVector2 operator*(uMatrix2 m, uVector2 v) => new uVector2((m.m00 * v.x + m.m10 * v.y), (m.m01 * v.x + m.m11 * v.y));
+        
+        /// <summary>
+        /// Executes a component-wise * (multiply).
+        /// </summary>
+        public static uMatrix2 CompMul(uMatrix2 A, uMatrix2 B) => new uMatrix2(A.m00 * B.m00, A.m01 * B.m01, A.m10 * B.m10, A.m11 * B.m11);
+        
+        /// <summary>
+        /// Executes a component-wise / (divide).
+        /// </summary>
+        public static uMatrix2 CompDiv(uMatrix2 A, uMatrix2 B) => new uMatrix2(A.m00 / B.m00, A.m01 / B.m01, A.m10 / B.m10, A.m11 / B.m11);
+        
+        /// <summary>
+        /// Executes a component-wise + (add).
+        /// </summary>
+        public static uMatrix2 CompAdd(uMatrix2 A, uMatrix2 B) => new uMatrix2(A.m00 + B.m00, A.m01 + B.m01, A.m10 + B.m10, A.m11 + B.m11);
+        
+        /// <summary>
+        /// Executes a component-wise - (subtract).
+        /// </summary>
+        public static uMatrix2 CompSub(uMatrix2 A, uMatrix2 B) => new uMatrix2(A.m00 - B.m00, A.m01 - B.m01, A.m10 - B.m10, A.m11 - B.m11);
+        
+        /// <summary>
+        /// Executes a component-wise + (add).
+        /// </summary>
+        public static uMatrix2 operator+(uMatrix2 lhs, uMatrix2 rhs) => new uMatrix2(lhs.m00 + rhs.m00, lhs.m01 + rhs.m01, lhs.m10 + rhs.m10, lhs.m11 + rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise + (add) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator+(uMatrix2 lhs, uint rhs) => new uMatrix2(lhs.m00 + rhs, lhs.m01 + rhs, lhs.m10 + rhs, lhs.m11 + rhs);
+        
+        /// <summary>
+        /// Executes a component-wise + (add) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator+(uint lhs, uMatrix2 rhs) => new uMatrix2(lhs + rhs.m00, lhs + rhs.m01, lhs + rhs.m10, lhs + rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise - (subtract).
+        /// </summary>
+        public static uMatrix2 operator-(uMatrix2 lhs, uMatrix2 rhs) => new uMatrix2(lhs.m00 - rhs.m00, lhs.m01 - rhs.m01, lhs.m10 - rhs.m10, lhs.m11 - rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise - (subtract) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator-(uMatrix2 lhs, uint rhs) => new uMatrix2(lhs.m00 - rhs, lhs.m01 - rhs, lhs.m10 - rhs, lhs.m11 - rhs);
+        
+        /// <summary>
+        /// Executes a component-wise - (subtract) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator-(uint lhs, uMatrix2 rhs) => new uMatrix2(lhs - rhs.m00, lhs - rhs.m01, lhs - rhs.m10, lhs - rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise / (divide) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator/(uMatrix2 lhs, uint rhs) => new uMatrix2(lhs.m00 / rhs, lhs.m01 / rhs, lhs.m10 / rhs, lhs.m11 / rhs);
+        
+        /// <summary>
+        /// Executes a component-wise / (divide) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator/(uint lhs, uMatrix2 rhs) => new uMatrix2(lhs / rhs.m00, lhs / rhs.m01, lhs / rhs.m10, lhs / rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise * (multiply) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator*(uMatrix2 lhs, uint rhs) => new uMatrix2(lhs.m00 * rhs, lhs.m01 * rhs, lhs.m10 * rhs, lhs.m11 * rhs);
+        
+        /// <summary>
+        /// Executes a component-wise * (multiply) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator*(uint lhs, uMatrix2 rhs) => new uMatrix2(lhs * rhs.m00, lhs * rhs.m01, lhs * rhs.m10, lhs * rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise % (modulo).
+        /// </summary>
+        public static uMatrix2 operator%(uMatrix2 lhs, uMatrix2 rhs) => new uMatrix2(lhs.m00 % rhs.m00, lhs.m01 % rhs.m01, lhs.m10 % rhs.m10, lhs.m11 % rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise % (modulo) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator%(uMatrix2 lhs, uint rhs) => new uMatrix2(lhs.m00 % rhs, lhs.m01 % rhs, lhs.m10 % rhs, lhs.m11 % rhs);
+        
+        /// <summary>
+        /// Executes a component-wise % (modulo) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator%(uint lhs, uMatrix2 rhs) => new uMatrix2(lhs % rhs.m00, lhs % rhs.m01, lhs % rhs.m10, lhs % rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise ^ (xor).
+        /// </summary>
+        public static uMatrix2 operator^(uMatrix2 lhs, uMatrix2 rhs) => new uMatrix2(lhs.m00 ^ rhs.m00, lhs.m01 ^ rhs.m01, lhs.m10 ^ rhs.m10, lhs.m11 ^ rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise ^ (xor) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator^(uMatrix2 lhs, uint rhs) => new uMatrix2(lhs.m00 ^ rhs, lhs.m01 ^ rhs, lhs.m10 ^ rhs, lhs.m11 ^ rhs);
+        
+        /// <summary>
+        /// Executes a component-wise ^ (xor) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator^(uint lhs, uMatrix2 rhs) => new uMatrix2(lhs ^ rhs.m00, lhs ^ rhs.m01, lhs ^ rhs.m10, lhs ^ rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise | (bitwise-or).
+        /// </summary>
+        public static uMatrix2 operator|(uMatrix2 lhs, uMatrix2 rhs) => new uMatrix2(lhs.m00 | rhs.m00, lhs.m01 | rhs.m01, lhs.m10 | rhs.m10, lhs.m11 | rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise | (bitwise-or) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator|(uMatrix2 lhs, uint rhs) => new uMatrix2(lhs.m00 | rhs, lhs.m01 | rhs, lhs.m10 | rhs, lhs.m11 | rhs);
+        
+        /// <summary>
+        /// Executes a component-wise | (bitwise-or) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator|(uint lhs, uMatrix2 rhs) => new uMatrix2(lhs | rhs.m00, lhs | rhs.m01, lhs | rhs.m10, lhs | rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise &amp; (bitwise-and).
+        /// </summary>
+        public static uMatrix2 operator&(uMatrix2 lhs, uMatrix2 rhs) => new uMatrix2(lhs.m00 & rhs.m00, lhs.m01 & rhs.m01, lhs.m10 & rhs.m10, lhs.m11 & rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise &amp; (bitwise-and) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator&(uMatrix2 lhs, uint rhs) => new uMatrix2(lhs.m00 & rhs, lhs.m01 & rhs, lhs.m10 & rhs, lhs.m11 & rhs);
+        
+        /// <summary>
+        /// Executes a component-wise &amp; (bitwise-and) with a scalar.
+        /// </summary>
+        public static uMatrix2 operator&(uint lhs, uMatrix2 rhs) => new uMatrix2(lhs & rhs.m00, lhs & rhs.m01, lhs & rhs.m10, lhs & rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise left-shift with a scalar.
+        /// </summary>
+        public static uMatrix2 operator<<(uMatrix2 lhs, int rhs) => new uMatrix2(lhs.m00 << rhs, lhs.m01 << rhs, lhs.m10 << rhs, lhs.m11 << rhs);
+        
+        /// <summary>
+        /// Executes a component-wise right-shift with a scalar.
+        /// </summary>
+        public static uMatrix2 operator>>(uMatrix2 lhs, int rhs) => new uMatrix2(lhs.m00 >> rhs, lhs.m01 >> rhs, lhs.m10 >> rhs, lhs.m11 >> rhs);
+        
+        /// <summary>
+        /// Executes a component-wise lesser-than comparison.
+        /// </summary>
+        public static bMatrix2 operator<(uMatrix2 lhs, uMatrix2 rhs) => new bMatrix2(lhs.m00 < rhs.m00, lhs.m01 < rhs.m01, lhs.m10 < rhs.m10, lhs.m11 < rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise lesser-than comparison with a scalar.
+        /// </summary>
+        public static bMatrix2 operator<(uMatrix2 lhs, uint rhs) => new bMatrix2(lhs.m00 < rhs, lhs.m01 < rhs, lhs.m10 < rhs, lhs.m11 < rhs);
+        
+        /// <summary>
+        /// Executes a component-wise lesser-than comparison with a scalar.
+        /// </summary>
+        public static bMatrix2 operator<(uint lhs, uMatrix2 rhs) => new bMatrix2(lhs < rhs.m00, lhs < rhs.m01, lhs < rhs.m10, lhs < rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise lesser-or-equal comparison.
+        /// </summary>
+        public static bMatrix2 operator<=(uMatrix2 lhs, uMatrix2 rhs) => new bMatrix2(lhs.m00 <= rhs.m00, lhs.m01 <= rhs.m01, lhs.m10 <= rhs.m10, lhs.m11 <= rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise lesser-or-equal comparison with a scalar.
+        /// </summary>
+        public static bMatrix2 operator<=(uMatrix2 lhs, uint rhs) => new bMatrix2(lhs.m00 <= rhs, lhs.m01 <= rhs, lhs.m10 <= rhs, lhs.m11 <= rhs);
+        
+        /// <summary>
+        /// Executes a component-wise lesser-or-equal comparison with a scalar.
+        /// </summary>
+        public static bMatrix2 operator<=(uint lhs, uMatrix2 rhs) => new bMatrix2(lhs <= rhs.m00, lhs <= rhs.m01, lhs <= rhs.m10, lhs <= rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise greater-than comparison.
+        /// </summary>
+        public static bMatrix2 operator>(uMatrix2 lhs, uMatrix2 rhs) => new bMatrix2(lhs.m00 > rhs.m00, lhs.m01 > rhs.m01, lhs.m10 > rhs.m10, lhs.m11 > rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise greater-than comparison with a scalar.
+        /// </summary>
+        public static bMatrix2 operator>(uMatrix2 lhs, uint rhs) => new bMatrix2(lhs.m00 > rhs, lhs.m01 > rhs, lhs.m10 > rhs, lhs.m11 > rhs);
+        
+        /// <summary>
+        /// Executes a component-wise greater-than comparison with a scalar.
+        /// </summary>
+        public static bMatrix2 operator>(uint lhs, uMatrix2 rhs) => new bMatrix2(lhs > rhs.m00, lhs > rhs.m01, lhs > rhs.m10, lhs > rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise greater-or-equal comparison.
+        /// </summary>
+        public static bMatrix2 operator>=(uMatrix2 lhs, uMatrix2 rhs) => new bMatrix2(lhs.m00 >= rhs.m00, lhs.m01 >= rhs.m01, lhs.m10 >= rhs.m10, lhs.m11 >= rhs.m11);
+        
+        /// <summary>
+        /// Executes a component-wise greater-or-equal comparison with a scalar.
+        /// </summary>
+        public static bMatrix2 operator>=(uMatrix2 lhs, uint rhs) => new bMatrix2(lhs.m00 >= rhs, lhs.m01 >= rhs, lhs.m10 >= rhs, lhs.m11 >= rhs);
+        
+        /// <summary>
+        /// Executes a component-wise greater-or-equal comparison with a scalar.
+        /// </summary>
+        public static bMatrix2 operator>=(uint lhs, uMatrix2 rhs) => new bMatrix2(lhs >= rhs.m00, lhs >= rhs.m01, lhs >= rhs.m10, lhs >= rhs.m11);
+    }
+}

@@ -56,9 +56,9 @@ end)
 
 ProofRoootDirectory = os.getenv("PROOF_DIR")
 include (path.join(ProofRoootDirectory, "Proof-Editor", "Resources", "LUA", "Proof.lua"))
-workspace "$PROJECT_NAME$"
+workspace "LostExpedition"
 	targetdir "build"
-	startproject "$PROJECT_NAME$"
+	startproject "LostExpedition"
 	
 	configurations 
 	{ 
@@ -76,13 +76,24 @@ project "ProofScriptCore"
 
 	targetdir ("%{ProofRoootDirectory}/Proof-Editor/Resources/Scripts/Binaries/ScriptCore")
 	objdir ("%{ProofRoootDirectory}/Proof-Editor/Resources/Scripts/Intermediates/ScriptCore")
-
 	files
 	{
 		"%{ProofRoootDirectory}/ProofScriptCore/Src/**.cs",
+		"%{ProofRoootDirectory}/ProofScriptCore/vendor/**.cs",
 		--"%{ProofRoootDirectory}/ProofScriptCore/Properties/**.cs",
 	}
-
+	links
+    {
+        --"System",
+        --"System.Core",
+        --"System.Numerics",
+        --"System.Runtime.Serialization",
+        --"System.Xml.Linq",
+        --"System.Data.DataSetExtensions",
+        --"Microsoft.CSharp",
+        --"System.Data",
+        --"System.Xml"
+    }
 	filter "configurations:Debug"
 		optimize "Off"
 		symbols "Default"
@@ -97,13 +108,13 @@ project "ProofScriptCore"
 
 group ""
 
-project "$PROJECT_NAME$"
+project "LostExpedition"
 	location "Source/ScriptApp"
 	kind "SharedLib"
 	language "C#"
 	dotnetframework "4.7.2"
 
-	targetname "$PROJECT_NAME$"
+	targetname "LostExpedition"
 	targetdir ("%{wks.location}/Binaries/ScriptApp")
 	objdir ("%{wks.location}/Intermediates/ScriptApp")
 
@@ -129,6 +140,7 @@ project "$PROJECT_NAME$"
 	filter "configurations:Dist"
 		optimize "Full"
 		symbols "Off"
+
 )";
 		std::map<std::string, std::string> replacements = { {"$PROJECT_NAME$", projectName} };
 		auto newString = Utils::String::ReplaceInString(templateString, replacements);

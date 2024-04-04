@@ -215,7 +215,6 @@ namespace Proof
 						}
 						else
 						{
-
 							// canceled
 							Reset();
 							return InteractionState::None;

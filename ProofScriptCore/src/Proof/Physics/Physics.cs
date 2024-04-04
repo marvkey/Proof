@@ -11,8 +11,8 @@ namespace Proof
     public struct RaycastHit
     {
         public ulong EntityID { get; internal set; }
-        public Vector3 Position { get; internal set; }
-        public Vector3 Normal { get; internal set; }
+        public Proof.Vector3 Position { get; internal set; }
+        public Proof.Vector3 Normal { get; internal set; }
         public float Distance { get; internal set; }
         public Collider HitCollider { get; internal set; }
 
@@ -22,8 +22,8 @@ namespace Proof
     [StructLayout(LayoutKind.Sequential)]
     public struct RaycastData
     {
-        public Vector3 Origin;
-        public Vector3 Direction;
+        public Proof.Vector3 Origin;
+        public Proof.Vector3 Direction;
         public float MaxDistance;
         public Type[] RequiredComponents;
         public ulong[] ExcludedEntities;
@@ -32,8 +32,8 @@ namespace Proof
     [StructLayout(LayoutKind.Sequential)]
     public struct SphereCastData
     {
-        public Vector3 Origin;
-        public Vector3 Direction;
+        public Proof.Vector3 Origin;
+        public Proof.Vector3 Direction;
         public float Radius;
         public float MaxDistance;
         public Type[] RequiredComponents;
@@ -44,11 +44,11 @@ namespace Proof
     public static class Physics
     {
         /*
-        public static Vector3 Gravity
+        public static Proof.Vector3 Gravity
         {
             get
             {
-                InternalCalls.Physics_GetGravity(out Vector3 gravity);
+                InternalCalls.Physics_GetGravity(out Proof.Vector3 gravity);
                 return gravity;
             }
 
@@ -65,11 +65,11 @@ namespace Proof
         /// <param name="strength">The strength of the impulse</param>
         /// <param name="falloff">The falloff method used when calculating force over distance</param>
         /// <param name="velocityChange">Setting this value to <b>true</b> will make this impulse ignore an actors mass</param>
-        public static void AddRadialImpulse(Vector3 origin, float radius, float strength, EFalloffMode falloff = EFalloffMode.Constant, bool velocityChange = false)
+        public static void AddRadialImpulse(Proof.Vector3 origin, float radius, float strength, EFalloffMode falloff = EFalloffMode.Constant, bool velocityChange = false)
             => InternalCalls.Physics_AddRadialImpulse(ref origin, radius, strength, falloff, velocityChange);
 
         public static bool Raycast(RaycastData raycastData, out RaycastHit hit) => InternalCalls.Physics_Raycast(ref raycastData, out hit);
-        public static bool Raycast(Vector3 origin, Vector3 direction, float maxDistance, out RaycastHit hit, params Type[] componentFilters)
+        public static bool Raycast(Proof.Vector3 origin, Proof.Vector3 direction, float maxDistance, out RaycastHit hit, params Type[] componentFilters)
         {
             s_RaycastData.Origin = origin;
             s_RaycastData.Direction = direction;
@@ -79,7 +79,7 @@ namespace Proof
         }
 
         public static bool SphereCast(SphereCastData spherecastData, out RaycastHit hit) => InternalCalls.Physics_SphereCast(ref spherecastData, out hit);
-        public static bool SphereCast(Vector3 origin, Vector3 direction, float radius, float maxDistance, out RaycastHit hit, params Type[] componentFilters)
+        public static bool SphereCast(Proof.Vector3 origin, Proof.Vector3 direction, float radius, float maxDistance, out RaycastHit hit, params Type[] componentFilters)
         {
             s_SphereCastData.Origin = origin;
             s_SphereCastData.Direction = direction;
@@ -90,7 +90,7 @@ namespace Proof
         }
         /*
         public static RaycastHit2D[] Raycast2D(RaycastData2D raycastData) => InternalCalls.Physics_Raycast2D(ref raycastData);
-        public static RaycastHit2D[] Raycast2D(Vector2 origin, Vector2 direction, float maxDistance, params Type[] componentFilters)
+        public static RaycastHit2D[] Raycast2D(Proof.Vector2 origin, Proof.Vector2 direction, float maxDistance, params Type[] componentFilters)
         {
             s_RaycastData2D.Origin = origin;
             s_RaycastData2D.Direction = direction;
@@ -101,13 +101,13 @@ namespace Proof
         */
 
         /*
-        public static Collider[] OverlapBox(Vector3 origin, Vector3 halfSize) => InternalCalls.Physics_OverlapBox(ref origin, ref halfSize);
-        public static Collider[] OverlapCapsule(Vector3 origin, float radius, float halfHeight) => InternalCalls.Physics_OverlapCapsule(ref origin, radius, halfHeight);
-        public static Collider[] OverlapSphere(Vector3 origin, float radius) => InternalCalls.Physics_OverlapSphere(ref origin, radius);
+        public static Collider[] OverlapBox(Proof.Vector3 origin, Proof.Vector3 halfSize) => InternalCalls.Physics_OverlapBox(ref origin, ref halfSize);
+        public static Collider[] OverlapCapsule(Proof.Vector3 origin, float radius, float halfHeight) => InternalCalls.Physics_OverlapCapsule(ref origin, radius, halfHeight);
+        public static Collider[] OverlapSphere(Proof.Vector3 origin, float radius) => InternalCalls.Physics_OverlapSphere(ref origin, radius);
 
-        public static int OverlapBoxNonAlloc(Vector3 origin, Vector3 halfSize, Collider[] colliders) => InternalCalls.Physics_OverlapBoxNonAlloc(ref origin, ref halfSize, colliders);
-        public static int OverlapCapsuleNonAlloc(Vector3 origin, float radius, float halfHeight, Collider[] colliders) => InternalCalls.Physics_OverlapCapsuleNonAlloc(ref origin, radius, halfHeight, colliders);
-        public static int OverlapSphereNonAlloc(Vector3 origin, float radius, Collider[] colliders) => InternalCalls.Physics_OverlapSphereNonAlloc(ref origin, radius, colliders);
+        public static int OverlapBoxNonAlloc(Proof.Vector3 origin, Proof.Vector3 halfSize, Collider[] colliders) => InternalCalls.Physics_OverlapBoxNonAlloc(ref origin, ref halfSize, colliders);
+        public static int OverlapCapsuleNonAlloc(Proof.Vector3 origin, float radius, float halfHeight, Collider[] colliders) => InternalCalls.Physics_OverlapCapsuleNonAlloc(ref origin, radius, halfHeight, colliders);
+        public static int OverlapSphereNonAlloc(Proof.Vector3 origin, float radius, Collider[] colliders) => InternalCalls.Physics_OverlapSphereNonAlloc(ref origin, radius, colliders);
         */
         private static RaycastData s_RaycastData;
         private static SphereCastData s_SphereCastData;

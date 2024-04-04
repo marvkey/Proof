@@ -20,7 +20,7 @@ namespace Proof
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static MouseCursorMode Mouse_GetCursorMode();
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void Mouse_GetPosition(out Vector2 pos);
+        internal extern static void Mouse_GetPosition(out Proof.Vector2 pos);
         #endregion
         #region Input
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -119,29 +119,29 @@ namespace Proof
 
         #region TransformComponent
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_GetLocation(ulong entityID, out Vector3 location);
+		internal extern static void TransformComponent_GetLocation(ulong entityID, out Proof.Vector3 location);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_SetLocation(ulong entityID, ref Vector3 location);
+		internal extern static void TransformComponent_SetLocation(ulong entityID, ref Proof.Vector3 location);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_GetRotation(ulong entityID, out Vector3 rotation);
+		internal extern static void TransformComponent_GetRotation(ulong entityID, out Proof.Vector3 rotation);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_SetRotation(ulong entityID, ref Vector3 rotation);
+		internal extern static void TransformComponent_SetRotation(ulong entityID, ref Proof.Vector3 rotation);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_GetScale(ulong entityID, out Vector3 scale);
+		internal extern static void TransformComponent_GetScale(ulong entityID, out Proof.Vector3 scale);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void TransformComponent_SetScale(ulong entityID, ref Vector3 Scale);
+		internal extern static void TransformComponent_SetScale(ulong entityID, ref Proof.Vector3 Scale);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void TransformComponent_GetForwardVector(ulong entityID, out Vector3 vec);
+        internal extern static void TransformComponent_GetForwardVectortor(ulong entityID, out Proof.Vector3 Vectortor);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void TransformComponent_GetUpVector(ulong entityID, out Vector3 vec);
+        internal extern static void TransformComponent_GetUpVectortor(ulong entityID, out Proof.Vector3 Vectortor);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void TransformComponent_GetRightVector(ulong entityID, out Vector3 vec);
+        internal extern static void TransformComponent_GetRightVectortor(ulong entityID, out Proof.Vector3 Vectortor);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void TransformComponent_GetTransform(ulong entityID, out Transform outTransform);
@@ -162,25 +162,25 @@ namespace Proof
         internal static extern RaycastHit2D[] Physics_Raycast2D(ref RaycastData2D raycastData);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern Collider[] Physics_OverlapBox(ref Vector3 origin, ref Vector3 halfSize);
+        internal static extern Collider[] Physics_OverlapBox(ref Proof.Vector3 origin, ref Proof.Vector3 halfSize);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern Collider[] Physics_OverlapCapsule(ref Vector3 origin, float radius, float halfHeight);
+        internal static extern Collider[] Physics_OverlapCapsule(ref Proof.Vector3 origin, float radius, float halfHeight);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern Collider[] Physics_OverlapSphere(ref Vector3 origin, float radius);
+        internal static extern Collider[] Physics_OverlapSphere(ref Proof.Vector3 origin, float radius);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int Physics_OverlapBoxNonAlloc(ref Vector3 origin, ref Vector3 halfSize, Collider[] colliders);
+        internal static extern int Physics_OverlapBoxNonAlloc(ref Proof.Vector3 origin, ref Proof.Vector3 halfSize, Collider[] colliders);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int Physics_OverlapCapsuleNonAlloc(ref Vector3 origin, float radius, float halfHeight, Collider[] colliders);
+        internal static extern int Physics_OverlapCapsuleNonAlloc(ref Proof.Vector3 origin, float radius, float halfHeight, Collider[] colliders);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern int Physics_OverlapSphereNonAlloc(ref Vector3 origin, float radius, Collider[] colliders);
+        internal static extern int Physics_OverlapSphereNonAlloc(ref Proof.Vector3 origin, float radius, Collider[] colliders);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void Physics_GetGravity(out Vector3 gravity);
+        internal static extern void Physics_GetGravity(out Proof.Vector3 gravity);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void Physics_SetGravity(ref Vector3 gravity);
+        internal static extern void Physics_SetGravity(ref Proof.Vector3 gravity);
         */
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void Physics_AddRadialImpulse(ref Vector3 origin, float radius, float strength, EFalloffMode falloff, bool velocityChange);
+        internal static extern void Physics_AddRadialImpulse(ref Proof.Vector3 origin, float radius, float strength, EFalloffMode falloff, bool velocityChange);
 
         #endregion
 
@@ -196,9 +196,9 @@ namespace Proof
 		internal extern static void RigidBody_SetMass(ulong entityID, ref float mass);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBody_AddForce(ulong entityID, Vector3 force, int forceMode, bool autoAwake);
+		internal extern static void RigidBody_AddForce(ulong entityID, Proof.Vector3 force, int forceMode, bool autoAwake);
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
-		internal extern static void RigidBody_AddTorque(ulong entityID, Vector3 force, int forceMode, bool autoAwake);
+		internal extern static void RigidBody_AddTorque(ulong entityID, Proof.Vector3 force, int forceMode, bool autoAwake);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void RigidBody_ClearTorque(ulong entityID, int forceMode);
@@ -206,14 +206,14 @@ namespace Proof
         internal extern static void RigidBody_ClearForce(ulong entityID, int forceMode);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBodyComponent_GetLinearVelocity(ulong entityID, out Vector3 linearVelocity);
+        internal extern static void RigidBodyComponent_GetLinearVelocity(ulong entityID, out Proof.Vector3 linearVelocity);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBodyComponent_SetLinearVelocity(ulong entityID, ref Vector3 linearVelocity);
+        internal extern static void RigidBodyComponent_SetLinearVelocity(ulong entityID, ref Proof.Vector3 linearVelocity);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBodyComponent_GetAngularVelocity(ulong entityID, out Vector3 linearVelocity);
+        internal extern static void RigidBodyComponent_GetAngularVelocity(ulong entityID, out Proof.Vector3 linearVelocity);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBodyComponent_SetAngularVelocity(ulong entityID, ref Vector3 linearVelocity);
+        internal extern static void RigidBodyComponent_SetAngularVelocity(ulong entityID, ref Proof.Vector3 linearVelocity);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void RigidBodyComponent_SetBodyType(ulong entityID,RigidBodyType type);
@@ -221,9 +221,9 @@ namespace Proof
         internal extern static RigidBodyType RigidBodyComponent_GetBodyType(ulong entityID);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool RigidBodyComponent_IsKinematic(ulong entityID);
+        internal extern static bool RigidBodyComponent_IsKineMatrixic(ulong entityID);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBodyComponent_SetIsKinematic(ulong entityID,bool state);
+        internal extern static void RigidBodyComponent_SetIsKineMatrixic(ulong entityID,bool state);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool RigidBodyComponent_IsSleeping(ulong entityID);
@@ -231,14 +231,14 @@ namespace Proof
         internal extern static void RigidBodyComponent_SetIsSleeping(ulong entityID, bool state);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBodyComponent_GetLocation(ulong entityID, out Vector3 location);
+        internal extern static void RigidBodyComponent_GetLocation(ulong entityID, out Proof.Vector3 location);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBodyComponent_SetLocation(ulong entityID, ref Vector3 location);
+        internal extern static void RigidBodyComponent_SetLocation(ulong entityID, ref Proof.Vector3 location);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBodyComponent_GetRotation(ulong entityID, out Vector3 rotation);
+        internal extern static void RigidBodyComponent_GetRotation(ulong entityID, out Proof.Vector3 rotation);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBodyComponent_SetRotation(ulong entityID, ref Vector3 rotation);
+        internal extern static void RigidBodyComponent_SetRotation(ulong entityID, ref Proof.Vector3 rotation);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static float RigidBodyComponent_GetMaxLinearVelocity(ulong entityID);
@@ -271,23 +271,23 @@ namespace Proof
         internal static extern void RigidBodyComponent_SetLayerByName(ulong entityID, ref string layerName);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void RigidBodyComponent_GetKinematicTarget(ulong entityID, out Vector3 targetPosition, out Vector3 targetRotation);
+        internal static extern void RigidBodyComponent_GetKineMatrixicTarget(ulong entityID, out Proof.Vector3 targetPosition, out Proof.Vector3 targetRotation);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void RigidBodyComponent_SetKinematicTarget(ulong entityID, ref Vector3 targetPosition, ref Vector3 targetRotation);
+        internal static extern void RigidBodyComponent_SetKineMatrixicTarget(ulong entityID, ref Proof.Vector3 targetPosition, ref Proof.Vector3 targetRotation);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void RigidBodyComponent_AddForceAtLocation(ulong entityID, ref Vector3 force, ref Vector3 location, ForceMode forceMode);
+        internal static extern void RigidBodyComponent_AddForceAtLocation(ulong entityID, ref Proof.Vector3 force, ref Proof.Vector3 location, ForceMode forceMode);
         #endregion
         #region BoxColliderComponent
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void BoxColliderComponent_GetSize(ulong entityID, out Vector3 halfSize);
+        internal static extern void BoxColliderComponent_GetSize(ulong entityID, out Proof.Vector3 halfSize);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void BoxColliderComponent_SetSize(ulong entityID, ref Vector3 halfSize);
+        internal static extern void BoxColliderComponent_SetSize(ulong entityID, ref Proof.Vector3 halfSize);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void BoxColliderComponent_GetCenter(ulong entityID, out Vector3 offset);
+        internal static extern void BoxColliderComponent_GetCenter(ulong entityID, out Proof.Vector3 offset);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void BoxColliderComponent_SetCenter(ulong entityID, ref Vector3 offset);
+        internal static extern void BoxColliderComponent_SetCenter(ulong entityID, ref Proof.Vector3 offset);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool BoxColliderComponent_IsTrigger(ulong entityID);
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -304,9 +304,9 @@ namespace Proof
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void SphereColliderComponent_SetRadius(ulong entityID, float radius);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SphereColliderComponent_GetCenter(ulong entityID, out Vector3 offset);
+        internal static extern void SphereColliderComponent_GetCenter(ulong entityID, out Proof.Vector3 offset);
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void SphereColliderComponent_SetCenter(ulong entityID, ref Vector3 offset);
+        internal static extern void SphereColliderComponent_SetCenter(ulong entityID, ref Proof.Vector3 offset);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool SphereColliderComponent_IsTrigger(ulong entityID);
         [MethodImpl(MethodImplOptions.InternalCall)]

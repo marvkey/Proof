@@ -492,7 +492,7 @@ namespace Proof {
                 case InputEvent::KeyPressed:
                     {
                         ControllerButtonPressedEvent event(ctrlID, button);
-                        EventCallback(event); bg
+                        EventCallback(event); 
                     }
                     break;
                 case InputEvent::KeyReleased:

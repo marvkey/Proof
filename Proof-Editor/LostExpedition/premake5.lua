@@ -38,9 +38,21 @@ project "ProofScriptCore"
 	files
 	{
 		"%{ProofRoootDirectory}/ProofScriptCore/Src/**.cs",
+		"%{ProofRoootDirectory}/ProofScriptCore/vendor/**.cs",
 		--"%{ProofRoootDirectory}/ProofScriptCore/Properties/**.cs",
 	}
-
+	links
+    {
+      --  "System",
+      --  "System.Core",
+      --  "System.Numerics",
+      --  "System.Runtime.Serialization",
+      --  "System.Xml.Linq",
+      --  "System.Data.DataSetExtensions",
+      --  "Microsoft.CSharp",
+      --  "System.Data",
+      --  "System.Xml"
+    }
 	filter "configurations:Debug"
 		optimize "Off"
 		symbols "Default"

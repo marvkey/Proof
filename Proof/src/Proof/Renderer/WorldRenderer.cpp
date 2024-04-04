@@ -2324,7 +2324,7 @@ namespace Proof
 
 			//PreConvolutePass();
 			//SSRPass();
-			NewSSRPass();
+			//NewSSRPass();
 			//HizSSRPass();
 		}
 		BloomPass();

@@ -38,12 +38,12 @@ namespace Proof
 
             return new Entity(entityID);
         }
-        public static Entity Instanciate(Prefab prefab, Vector3 location)
+        public static Entity Instanciate(Prefab prefab, Proof.Vector3 location)
         {
             Transform transform;
             transform.Location = location;
-            transform.Rotation = new Vector3(0.0f);
-            transform.Scale = new Vector3(1.0f);
+            transform.Rotation = new Proof.Vector3(0.0f);
+            transform.Scale = new Proof.Vector3(1.0f);
             ulong entityID = InternalCalls.World_Instanciate(prefab.ID.ToUInt64(), transform);
             if (entityID == 0)
                 return null;

@@ -1,6 +1,34 @@
 World:
   ID: 14363693630730396003
   Entities:
+    - Entity: 610241784759668185
+      TagComponent:
+        Tag: Sphere
+        tags: []
+      TransformComponent:
+        Location: [-31.5608501, 36.5, -270.878998]
+        Rotation: [0, -0, 0]
+        Scale: [33.9000015, 33.9000015, 33.9000015]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 51
+      SphereColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Radius: 0.5
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 2821532438848822639
       TagComponent:
         Tag: Directional Light
@@ -15,38 +43,6 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 1
-    - Entity: 9992972947132147716
-      TagComponent:
-        Tag: Sky Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0.0349065848, 0.0174532924, 0.291469991]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      SkyLightComponent:
-        TintColor: [1, 1, 1]
-        SkyBoxLod: 3.78500009
-        MapRotation: 0
-        Intensity: 0.5
-        EnvironmentState: EnvironmentTexture
-        TextureDataImage: 9157120538598532581
-        HosekWilkieTurbidity: 4
-        HosekWilkieGroundReflectance: 0.100000001
-        PreethamTurbidity: 4
-    - Entity: 11363545065085280484
-      TagComponent:
-        Tag: Head
-        tags: []
-      TransformComponent:
-        Location: [-2.20000386, -1.80000603, 2.20000672]
-        Rotation: [0, 0, 0]
-        Scale: [1.00000167, 1.00000334, 1.00000298]
-      HierarchyComponent:
-        ParentHandle: 1052531638360331730
-        Children: [1214489851032221533]
     - Entity: 1052531638360331730
       TagComponent:
         Tag: TestPlayer
@@ -109,29 +105,38 @@ World:
           - InputBindingContextHandler: ""
             InputBindingID: 8021289418374761399
             Active: true
-    - Entity: 7650398584490394614
+    - Entity: 11363545065085280484
       TagComponent:
-        Tag: Cone
+        Tag: Head
         tags: []
       TransformComponent:
-        Location: [0, 9.60000038, 0]
+        Location: [-2.20000386, -1.80000603, 2.20000672]
         Rotation: [0, 0, 0]
+        Scale: [1.00000167, 1.00000334, 1.00000298]
+      HierarchyComponent:
+        ParentHandle: 1052531638360331730
+        Children: [1214489851032221533]
+    - Entity: 9992972947132147716
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.0174532924, 0.291469991]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
-      MeshComponent:
-        MeshAssetPointerID: 54
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 3.78500009
+        MapRotation: 0
+        Intensity: 0.5
+        EnvironmentState: EnvironmentTexture
+        TextureDataImage: 9157120538598532581
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
     - Entity: 18423083987907514745
       TagComponent:
         Tag: Plane
@@ -160,40 +165,19 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 1214489851032221533
+    - Entity: 7650398584490394614
       TagComponent:
-        Tag: Camera
+        Tag: Cone
         tags: []
       TransformComponent:
-        Location: [2.20000029, 3.79999352, -2.20000029]
+        Location: [0, 9.60000038, 0]
         Rotation: [0, 0, 0]
-        Scale: [0.999987066, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 11363545065085280484
-        Children: []
-      CameraComponent:
-        NearPlane: 0.300000012
-        FarPlane: 100
-        FOV: 60
-        UseLocalRotation: false
-    - Entity: 610241784759668185
-      TagComponent:
-        Tag: Sphere
-        tags: []
-      TransformComponent:
-        Location: [-31.5608501, 36.5, -270.878998]
-        Rotation: [0, -0, 0]
-        Scale: [33.9000015, 33.9000015, 33.9000015]
+        Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
       MeshComponent:
-        MeshAssetPointerID: 51
-      SphereColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Radius: 0.5
-        PhysicsMaterialPointerID: 0
+        MeshAssetPointerID: 54
       RigidBodyComponent:
         Mass: 1
         LinearDrag: 0.00999999978
@@ -204,3 +188,19 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 1214489851032221533
+      TagComponent:
+        Tag: Camera
+        tags: []
+      TransformComponent:
+        Location: [2.20000029, 3.79999352, 6.30000019]
+        Rotation: [0, 0, 0]
+        Scale: [0.999987066, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 11363545065085280484
+        Children: []
+      CameraComponent:
+        NearPlane: 0.300000012
+        FarPlane: 100
+        FOV: 60
+        UseLocalRotation: false

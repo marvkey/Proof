@@ -57,18 +57,18 @@ namespace Proof
     [RegisterCoreClassStruct]
     public class BoxCollider : Collider
     {
-        public Vector3 Size { get; protected set; }
-        public Vector3 Center { get; protected set; }
+        public Proof.Vector3 Size { get; protected set; }
+        public Proof.Vector3 Center { get; protected set; }
 
         internal BoxCollider()
         {
             EntityID = 0;
             IsTrigger = false;
-            Size = Vector3.Zero;
-            Center = Vector3.Zero;
+            Size = Proof.Vector3.Zero;
+            Center = Proof.Vector3.Zero;
         }
 
-        internal BoxCollider(ulong entityID, bool isTrigger, Vector3 size, Vector3 center)
+        internal BoxCollider(ulong entityID, bool isTrigger, Proof.Vector3 size, Proof.Vector3 center)
         {
             EntityID = entityID;
             IsTrigger = isTrigger;
@@ -80,7 +80,7 @@ namespace Proof
     public class SphereCollider : Collider
     {
         public float Radius { get; protected set; }
-        public Vector3 Center { get; protected set; }
+        public Proof.Vector3 Center { get; protected set; }
 
         internal SphereCollider()
         {
@@ -101,7 +101,7 @@ namespace Proof
     {
         public float Radius { get; protected set; }
         public float Height { get; protected set; }
-        public Vector3 Center { get; protected set; }
+        public Proof.Vector3 Center { get; protected set; }
 
         internal CapsuleCollider()
         {

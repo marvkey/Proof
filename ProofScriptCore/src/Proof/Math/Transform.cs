@@ -12,13 +12,13 @@ namespace Proof
     [StructLayout(LayoutKind.Sequential)]
     public struct Transform
     {
-        public static Transform Zero => new Transform(new Vector3(0.0f),new Vector3( 0.0f),new Vector3(1.0f));
+        public static Transform Zero => new Transform(new Proof.Vector3(0.0f),new Proof.Vector3( 0.0f),new Proof.Vector3(1.0f));
 
-        public Vector3 Location;
-        public Vector3 Rotation;
-        public Vector3 Scale;
+        public Proof.Vector3 Location;
+        public Proof.Vector3 Rotation;
+        public Proof.Vector3 Scale;
 
-        public Transform(Vector3 location, Vector3 rotation, Vector3 scale)
+        public Transform(Proof.Vector3 location, Proof.Vector3 rotation, Proof.Vector3 scale)
         {
             Location = location; Rotation = rotation; Scale = scale;
         }

@@ -30,7 +30,7 @@ namespace Proof
 		Bool, Char,String,
 		Int8, Int16, Int32, Int64,
 		UInt8, UInt16, UInt32, UInt64,
-		Vector2, Vector3, Vector4, Vector2Bool, Vector3Bool, Vector4Bool,
+		Vector2, Vector3, Vector4, bVector2, bVector3, bVector4,
 		Entity,
 		//everything after entity should be an asset Type
 		Prefab,Texture2D, AssetID,Mesh,DynamicMesh,Material,PhysicsMaterial,InputAction,InputBindingContext//asset
@@ -112,9 +112,9 @@ namespace Proof
 			case ScriptFieldType::Vector2: return sizeof(glm::vec2);
 			case ScriptFieldType::Vector3: return sizeof(glm::vec3);
 			case ScriptFieldType::Vector4: return sizeof(glm::vec4);
-			case ScriptFieldType::Vector2Bool: return sizeof(glm::bvec2);
-			case ScriptFieldType::Vector3Bool: return sizeof(glm::bvec3);
-			case ScriptFieldType::Vector4Bool: return sizeof(glm::bvec4);
+			case ScriptFieldType::bVector2: return sizeof(glm::bvec2);
+			case ScriptFieldType::bVector3: return sizeof(glm::bvec3);
+			case ScriptFieldType::bVector4: return sizeof(glm::bvec4);
 			case ScriptFieldType::AssetID:
 			case ScriptFieldType::Entity:
 			case ScriptFieldType::Prefab:
@@ -151,9 +151,9 @@ namespace Proof
 			case ScriptFieldType::Vector2:
 			case ScriptFieldType::Vector3:
 			case ScriptFieldType::Vector4:
-			case ScriptFieldType::Vector2Bool: 
-			case ScriptFieldType::Vector3Bool: 
-			case ScriptFieldType::Vector4Bool: 
+			case ScriptFieldType::bVector2: 
+			case ScriptFieldType::bVector3:
+			case ScriptFieldType::bVector4:
 				return true;
 		}
 

@@ -2,30 +2,30 @@ Assets:
   - Asset: 14363693630730396003
     Type: World
     Path: Scenes\TestSceme.ProofWorld
-  - Asset: 10608357681865028400
-    Type: InputAction
-    Path: Input\Actions\Rotate.InputAction.ProofAsset
-  - Asset: 1939643375930245746
-    Type: InputAction
-    Path: Input\Actions\Move.InputAction.ProofAsset
   - Asset: 3676627569175275034
     Type: Material
     Path: Materials\Red.Material.ProofAsset
-  - Asset: 12508729347451298576
-    Type: ScriptFile
-    Path: Scripts\PlayerMovement.cs
+  - Asset: 1939643375930245746
+    Type: InputAction
+    Path: Input\Actions\Move.InputAction.ProofAsset
+  - Asset: 10608357681865028400
+    Type: InputAction
+    Path: Input\Actions\Rotate.InputAction.ProofAsset
   - Asset: 8021289418374761399
     Type: InputBindingContext
     Path: Input\PlayerMoveInputContext.InputBindingContext.ProofAsset
+  - Asset: 12508729347451298576
+    Type: ScriptFile
+    Path: Scripts\PlayerMovement.cs
   - Asset: 1529300951506462583
     Type: TextureSourceFile
     Path: HdrMaps\MegaSun4k.hdr
-  - Asset: 7618370798246356819
-    Type: TextureSourceFile
-    Path: HdrMaps\Arches_E_PineTree_3k.hdr
   - Asset: 16380327643227884766
     Type: Texture
     Path: HdrMaps\Arches_E_PineTree_3k.Texture.ProofAsset
+  - Asset: 7618370798246356819
+    Type: TextureSourceFile
+    Path: HdrMaps\Arches_E_PineTree_3k.hdr
   - Asset: 2504069315839882535
     Type: TextureSourceFile
     Path: HdrMaps\syferfontein_18d_clear_puresky_4k.hdr

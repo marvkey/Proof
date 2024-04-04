@@ -90,8 +90,8 @@ namespace Proof
 			{
 				auto multiTap = inputInteraction.As<InputInteractionMultiTap>();
 				multiTap->TapCount = inInteraction["TapCount"].as<uint32_t>(multiTap->TapCount);
-				multiTap->TapSpacing = inInteraction["TapSpacing"].as<uint32_t>(multiTap->TapSpacing);
-				multiTap->TapTime = inInteraction["TapTime"].as<uint32_t>(multiTap->TapTime);
+				multiTap->TapSpacing = inInteraction["TapSpacing"].as<float>(multiTap->TapSpacing);
+				multiTap->TapTime = inInteraction["TapTime"].as<float>(multiTap->TapTime);
 			}
 			break;
 			default:

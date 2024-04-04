@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Proof;
 
 namespace Proof
 {
@@ -24,14 +25,14 @@ namespace Proof
             return InternalCalls.Random_RandomInt32(min, max);
         }
 
-        public static Vector3 Vector3(float min, float max)
+        public static Proof.Vector3 Vectortor(float min, float max)
         {
-            Vector3 vec ;
-            vec.X=Float(min,max);
-            vec.Y=Float(min,max);
-            vec.Z = Float(min,max);
+            Proof.Vector3 Vectortor ;
+            Vectortor.x=Float(min,max);
+            Vectortor.y=Float(min,max);
+            Vectortor.z = Float(min,max);
 
-            return vec;
+            return Vectortor;
         }
         public static bool Bool(){
             return InternalCalls.Random_RandomBool();

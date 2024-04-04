@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -43,13 +44,13 @@ namespace Proof
         public static int Abs(int value) => Math.Abs(value);
 
 
-        public static Vector3 Abs(Vector3 value)
+        public static Proof.Vector3 Abs(Proof.Vector3 value)
         {
-            return new Vector3(Math.Abs(value.X), Math.Abs(value.Y), Math.Abs(value.Z));
+            return new Proof.Vector3(Math.Abs(value.x), Math.Abs(value.y), Math.Abs(value.z));
         }
 
        // public static float Lerp(float p1, float p2, float t) => Interpolate.Linear(p1, p2, t);
-       // public static Vector3 Lerp(Vector3 p1, Vector3 p2, float t) => Interpolate.Linear(p1, p2, t);
+       // public static Proof.Vector3 Lerp(Proof.Vector3 p1, Proof.Vector3 p2, float t) => Interpolate.Linear(p1, p2, t);
 
         public static float Floor(float value) => (float)Math.Floor(value);
 
