@@ -14,7 +14,7 @@ namespace Proof.Swizzle
 {
     
     /// <summary>
-    /// Temporary Vectortor of type Complex with 4 components, used for implementing swizzling for cVector4.
+    /// Temporary Vector of type Complex with 4 components, used for implementing swizzling for cVector4.
     /// </summary>
     /// 
 

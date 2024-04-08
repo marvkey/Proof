@@ -14,7 +14,7 @@ namespace Proof
 {
     
     /// <summary>
-    /// A Vectortor of type float with 2 components.
+    /// A Vector of type float with 2 components.
     /// </summary>
     [RegisterCoreClassStruct]
     
@@ -60,7 +60,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor
+        /// from-Vector constructor
         /// </summary>
         public Vector2(Vector2 v)
         {
@@ -69,7 +69,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor (additional fields are truncated)
+        /// from-Vector constructor (additional fields are truncated)
         /// </summary>
         public Vector2(Vector3 v)
         {
@@ -78,7 +78,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor (additional fields are truncated)
+        /// from-Vector constructor (additional fields are truncated)
         /// </summary>
         public Vector2(Vector4 v)
         {
@@ -397,22 +397,22 @@ namespace Proof
         public int Count => 2;
         
         /// <summary>
-        /// Returns the minimal component of this Vectortor.
+        /// Returns the minimal component of this Vector.
         /// </summary>
         public float MinElement => Math.Min(x, y);
         
         /// <summary>
-        /// Returns the maximal component of this Vectortor.
+        /// Returns the maximal component of this Vector.
         /// </summary>
         public float MaxElement => Math.Max(x, y);
         
         /// <summary>
-        /// Returns the euclidean length of this Vectortor.
+        /// Returns the euclidean length of this Vector.
         /// </summary>
         public float Length => (float)Math.Sqrt((x*x + y*y));
         
         /// <summary>
-        /// Returns the squared euclidean length of this Vectortor.
+        /// Returns the squared euclidean length of this Vector.
         /// </summary>
         public float LengthSqr => (x*x + y*y);
         
@@ -422,37 +422,37 @@ namespace Proof
         public float Sum => (x + y);
         
         /// <summary>
-        /// Returns the euclidean norm of this Vectortor.
+        /// Returns the euclidean norm of this Vector.
         /// </summary>
         public float Norm => (float)Math.Sqrt((x*x + y*y));
         
         /// <summary>
-        /// Returns the one-norm of this Vectortor.
+        /// Returns the one-norm of this Vector.
         /// </summary>
         public float Norm1 => (Math.Abs(x) + Math.Abs(y));
         
         /// <summary>
-        /// Returns the two-norm (euclidean length) of this Vectortor.
+        /// Returns the two-norm (euclidean length) of this Vector.
         /// </summary>
         public float Norm2 => (float)Math.Sqrt((x*x + y*y));
         
         /// <summary>
-        /// Returns the max-norm of this Vectortor.
+        /// Returns the max-norm of this Vector.
         /// </summary>
         public float NormMax => Math.Max(Math.Abs(x), Math.Abs(y));
         
         /// <summary>
-        /// Returns a copy of this Vectortor with length one (undefined if this has zero length).
+        /// Returns a copy of this Vector with length one (undefined if this has zero length).
         /// </summary>
         public Vector2 Normalized => this / (float)Length;
         
         /// <summary>
-        /// Returns a copy of this Vectortor with length one (returns zero if length is zero).
+        /// Returns a copy of this Vector with length one (returns zero if length is zero).
         /// </summary>
         public Vector2 NormalizedSafe => this == Zero ? Zero : this / (float)Length;
         
         /// <summary>
-        /// Returns the Vectortor angle (atan2(y, x)) in radians.
+        /// Returns the Vector angle (atan2(y, x)) in radians.
         /// </summary>
         public double Angle => Math.Atan2((double)y, (double)x);
 
@@ -462,52 +462,52 @@ namespace Proof
         #region Static Properties
         
         /// <summary>
-        /// Predefined all-zero Vectortor
+        /// Predefined all-zero Vector
         /// </summary>
         public static Vector2 Zero { get; } = new Vector2(0f, 0f);
         
         /// <summary>
-        /// Predefined all-ones Vectortor
+        /// Predefined all-ones Vector
         /// </summary>
         public static Vector2 Ones { get; } = new Vector2(1f, 1f);
         
         /// <summary>
-        /// Predefined unit-X Vectortor
+        /// Predefined unit-X Vector
         /// </summary>
         public static Vector2 UnitX { get; } = new Vector2(1f, 0f);
         
         /// <summary>
-        /// Predefined unit-Y Vectortor
+        /// Predefined unit-Y Vector
         /// </summary>
         public static Vector2 UnitY { get; } = new Vector2(0f, 1f);
         
         /// <summary>
-        /// Predefined all-MaxValue Vectortor
+        /// Predefined all-MaxValue Vector
         /// </summary>
         public static Vector2 MaxValue { get; } = new Vector2(float.MaxValue, float.MaxValue);
         
         /// <summary>
-        /// Predefined all-MinValue Vectortor
+        /// Predefined all-MinValue Vector
         /// </summary>
         public static Vector2 MinValue { get; } = new Vector2(float.MinValue, float.MinValue);
         
         /// <summary>
-        /// Predefined all-Epsilon Vectortor
+        /// Predefined all-Epsilon Vector
         /// </summary>
         public static Vector2 Epsilon { get; } = new Vector2(float.Epsilon, float.Epsilon);
         
         /// <summary>
-        /// Predefined all-NaN Vectortor
+        /// Predefined all-NaN Vector
         /// </summary>
         public static Vector2 NaN { get; } = new Vector2(float.NaN, float.NaN);
         
         /// <summary>
-        /// Predefined all-NegativeInfinity Vectortor
+        /// Predefined all-NegativeInfinity Vector
         /// </summary>
         public static Vector2 NegativeInfinity { get; } = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
         
         /// <summary>
-        /// Predefined all-PositiveInfinity Vectortor
+        /// Predefined all-PositiveInfinity Vector
         /// </summary>
         public static Vector2 PositiveInfinity { get; } = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
 
@@ -546,27 +546,27 @@ namespace Proof
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using ', ' as a seperator.
+        /// Returns a string representation of this Vector using ', ' as a seperator.
         /// </summary>
         public override string ToString() => ToString(", ");
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator.
+        /// Returns a string representation of this Vector using a provided seperator.
         /// </summary>
         public string ToString(string sep) => (x + sep + y);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix provider for each component.
         /// </summary>
         public string ToString(string sep, IFormatProvider provider) => (x.ToString(provider) + sep + y.ToString(provider));
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix for each component.
         /// </summary>
         public string ToString(string sep, string forMatrix) => (x.ToString(forMatrix) + sep + y.ToString(forMatrix));
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix and forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix and forMatrix provider for each component.
         /// </summary>
         public string ToString(string sep, string forMatrix, IFormatProvider provider) => (x.ToString(forMatrix, provider) + sep + y.ToString(forMatrix, provider));
         
@@ -596,12 +596,12 @@ namespace Proof
         }
         
         /// <summary>
-        /// Returns the p-norm of this Vectortor.
+        /// Returns the p-norm of this Vector.
         /// </summary>
         public double NormP(double p) => Math.Pow((Math.Pow((double)Math.Abs(x), p) + Math.Pow((double)Math.Abs(y), p)), 1 / p);
         
         /// <summary>
-        /// Returns a 2D Vectortor that was rotated by a given angle in radians (CAUTION: result is casted and may be truncated).
+        /// Returns a 2D Vector that was rotated by a given angle in radians (CAUTION: result is casted and may be truncated).
         /// </summary>
         public Vector2 Rotated(double angleInRad) => (Vector2)(dVector2.FromAngle(Angle + angleInRad) * (double)Length);
 
@@ -611,12 +611,12 @@ namespace Proof
         #region Static Functions
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using ', ' as a separator).
+        /// Converts the string representation of the Vector into a Vector representation (using ', ' as a separator).
         /// </summary>
         public static Vector2 Parse(string s) => Parse(s, ", ");
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using a designated separator).
+        /// Converts the string representation of the Vector into a Vector representation (using a designated separator).
         /// </summary>
         public static Vector2 Parse(string s, string sep)
         {
@@ -626,7 +626,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using a designated separator and a type provider).
+        /// Converts the string representation of the Vector into a Vector representation (using a designated separator and a type provider).
         /// </summary>
         public static Vector2 Parse(string s, string sep, IFormatProvider provider)
         {
@@ -636,7 +636,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using a designated separator and a number style).
+        /// Converts the string representation of the Vector into a Vector representation (using a designated separator and a number style).
         /// </summary>
         public static Vector2 Parse(string s, string sep, NumberStyles style)
         {
@@ -646,7 +646,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using a designated separator and a number style and a forMatrix provider).
+        /// Converts the string representation of the Vector into a Vector representation (using a designated separator and a number style and a forMatrix provider).
         /// </summary>
         public static Vector2 Parse(string s, string sep, NumberStyles style, IFormatProvider provider)
         {
@@ -656,12 +656,12 @@ namespace Proof
         }
         
         /// <summary>
-        /// Tries to convert the string representation of the Vectortor into a Vectortor representation (using ', ' as a separator), returns false if string was invalid.
+        /// Tries to convert the string representation of the Vector into a Vector representation (using ', ' as a separator), returns false if string was invalid.
         /// </summary>
         public static bool TryParse(string s, out Vector2 result) => TryParse(s, ", ", out result);
         
         /// <summary>
-        /// Tries to convert the string representation of the Vectortor into a Vectortor representation (using a designated separator), returns false if string was invalid.
+        /// Tries to convert the string representation of the Vector into a Vector representation (using a designated separator), returns false if string was invalid.
         /// </summary>
         public static bool TryParse(string s, string sep, out Vector2 result)
         {
@@ -676,7 +676,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Tries to convert the string representation of the Vectortor into a Vectortor representation (using a designated separator and a number style and a forMatrix provider), returns false if string was invalid.
+        /// Tries to convert the string representation of the Vector into a Vector representation (using a designated separator and a number style and a forMatrix provider), returns false if string was invalid.
         /// </summary>
         public static bool TryParse(string s, string sep, NumberStyles style, IFormatProvider provider, out Vector2 result)
         {
@@ -696,57 +696,57 @@ namespace Proof
         public static bool ApproxEqual(Vector2 lhs, Vector2 rhs, float eps = 0.1f) => Distance(lhs, rhs) <= eps;
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static Matrix2 OuterProduct(Vector2 c, Vector2 r) => new Matrix2(c.x * r.x, c.y * r.x, c.x * r.y, c.y * r.y);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static Matrix2x3 OuterProduct(Vector3 c, Vector2 r) => new Matrix2x3(c.x * r.x, c.y * r.x, c.z * r.x, c.x * r.y, c.y * r.y, c.z * r.y);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static Matrix3x2 OuterProduct(Vector2 c, Vector3 r) => new Matrix3x2(c.x * r.x, c.y * r.x, c.x * r.y, c.y * r.y, c.x * r.z, c.y * r.z);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static Matrix2x4 OuterProduct(Vector4 c, Vector2 r) => new Matrix2x4(c.x * r.x, c.y * r.x, c.z * r.x, c.w * r.x, c.x * r.y, c.y * r.y, c.z * r.y, c.w * r.y);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static Matrix4x2 OuterProduct(Vector2 c, Vector4 r) => new Matrix4x2(c.x * r.x, c.y * r.x, c.x * r.y, c.y * r.y, c.x * r.z, c.y * r.z, c.x * r.w, c.y * r.w);
         
         /// <summary>
-        /// Returns a unit 2D Vectortor with a given angle in radians (CAUTION: result may be truncated for integer types).
+        /// Returns a unit 2D Vector with a given angle in radians (CAUTION: result may be truncated for integer types).
         /// </summary>
         public static Vector2 FromAngle(double angleInRad) => new Vector2((float)Math.Cos(angleInRad), (float)Math.Sin(angleInRad));
         
         /// <summary>
-        /// Returns the inner product (dot product, scalar product) of the two Vectortors.
+        /// Returns the inner product (dot product, scalar product) of the two Vectors.
         /// </summary>
         public static float Dot(Vector2 lhs, Vector2 rhs) => (lhs.x * rhs.x + lhs.y * rhs.y);
         
         /// <summary>
-        /// Returns the euclidean distance between the two Vectortors.
+        /// Returns the euclidean distance between the two Vectors.
         /// </summary>
         public static float Distance(Vector2 lhs, Vector2 rhs) => (lhs - rhs).Length;
         
         /// <summary>
-        /// Returns the squared euclidean distance between the two Vectortors.
+        /// Returns the squared euclidean distance between the two Vectors.
         /// </summary>
         public static float DistanceSqr(Vector2 lhs, Vector2 rhs) => (lhs - rhs).LengthSqr;
         
         /// <summary>
-        /// Calculate the reflection direction for an incident Vectortor (N should be normalized in order to achieve the desired result).
+        /// Calculate the reflection direction for an incident Vector (N should be normalized in order to achieve the desired result).
         /// </summary>
         public static Vector2 Reflect(Vector2 I, Vector2 N) => I - 2 * Dot(N, I) * N;
         
         /// <summary>
-        /// Calculate the refraction direction for an incident Vectortor (The input parameters I and N should be normalized in order to achieve the desired result).
+        /// Calculate the refraction direction for an incident Vector (The input parameters I and N should be normalized in order to achieve the desired result).
         /// </summary>
         public static Vector2 Refract(Vector2 I, Vector2 N, float eta)
         {
@@ -757,12 +757,12 @@ namespace Proof
         }
         
         /// <summary>
-        /// Returns a Vectortor pointing in the same direction as another (faceforward orients a Vectortor to point away from a surface as defined by its normal. If dot(Nref, I) is negative faceforward returns N, otherwise it returns -N).
+        /// Returns a Vector pointing in the same direction as another (faceforward orients a Vector to point away from a surface as defined by its normal. If dot(Nref, I) is negative faceforward returns N, otherwise it returns -N).
         /// </summary>
         public static Vector2 FaceForward(Vector2 N, Vector2 I, Vector2 Nref) => Dot(Nref, I) < 0 ? N : -N;
         
         /// <summary>
-        /// Returns the length of the outer product (cross product, Vectortor product) of the two Vectortors.
+        /// Returns the length of the outer product (cross product, Vector product) of the two Vectors.
         /// </summary>
         public static float Cross(Vector2 l, Vector2 r) => l.x * r.y - l.y * r.x;
         
@@ -962,7 +962,7 @@ namespace Proof
         public static Vector2 Abs(Vector2 v) => new Vector2(Math.Abs(v.x), Math.Abs(v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Abs (Math.Abs(v)).
+        /// Returns a Vector from the application of Abs (Math.Abs(v)).
         /// </summary>
         public static Vector2 Abs(float v) => new Vector2(Math.Abs(v));
         
@@ -972,7 +972,7 @@ namespace Proof
         public static Vector2 HermiteInterpolationOrder3(Vector2 v) => new Vector2((3 - 2 * v.x) * v.x * v.x, (3 - 2 * v.y) * v.y * v.y);
         
         /// <summary>
-        /// Returns a Vectortor from the application of HermiteInterpolationOrder3 ((3 - 2 * v) * v * v).
+        /// Returns a Vector from the application of HermiteInterpolationOrder3 ((3 - 2 * v) * v * v).
         /// </summary>
         public static Vector2 HermiteInterpolationOrder3(float v) => new Vector2((3 - 2 * v) * v * v);
         
@@ -982,7 +982,7 @@ namespace Proof
         public static Vector2 HermiteInterpolationOrder5(Vector2 v) => new Vector2(((6 * v.x - 15) * v.x + 10) * v.x * v.x * v.x, ((6 * v.y - 15) * v.y + 10) * v.y * v.y * v.y);
         
         /// <summary>
-        /// Returns a Vectortor from the application of HermiteInterpolationOrder5 (((6 * v - 15) * v + 10) * v * v * v).
+        /// Returns a Vector from the application of HermiteInterpolationOrder5 (((6 * v - 15) * v + 10) * v * v * v).
         /// </summary>
         public static Vector2 HermiteInterpolationOrder5(float v) => new Vector2(((6 * v - 15) * v + 10) * v * v * v);
         
@@ -992,7 +992,7 @@ namespace Proof
         public static Vector2 Sqr(Vector2 v) => new Vector2(v.x * v.x, v.y * v.y);
         
         /// <summary>
-        /// Returns a Vectortor from the application of Sqr (v * v).
+        /// Returns a Vector from the application of Sqr (v * v).
         /// </summary>
         public static Vector2 Sqr(float v) => new Vector2(v * v);
         
@@ -1002,7 +1002,7 @@ namespace Proof
         public static Vector2 Pow2(Vector2 v) => new Vector2(v.x * v.x, v.y * v.y);
         
         /// <summary>
-        /// Returns a Vectortor from the application of Pow2 (v * v).
+        /// Returns a Vector from the application of Pow2 (v * v).
         /// </summary>
         public static Vector2 Pow2(float v) => new Vector2(v * v);
         
@@ -1012,7 +1012,7 @@ namespace Proof
         public static Vector2 Pow3(Vector2 v) => new Vector2(v.x * v.x * v.x, v.y * v.y * v.y);
         
         /// <summary>
-        /// Returns a Vectortor from the application of Pow3 (v * v * v).
+        /// Returns a Vector from the application of Pow3 (v * v * v).
         /// </summary>
         public static Vector2 Pow3(float v) => new Vector2(v * v * v);
         
@@ -1022,7 +1022,7 @@ namespace Proof
         public static Vector2 Step(Vector2 v) => new Vector2(v.x >= 0f ? 1f : 0f, v.y >= 0f ? 1f : 0f);
         
         /// <summary>
-        /// Returns a Vectortor from the application of Step (v &gt;= 0f ? 1f : 0f).
+        /// Returns a Vector from the application of Step (v &gt;= 0f ? 1f : 0f).
         /// </summary>
         public static Vector2 Step(float v) => new Vector2(v >= 0f ? 1f : 0f);
         
@@ -1032,7 +1032,7 @@ namespace Proof
         public static Vector2 Sqrt(Vector2 v) => new Vector2((float)Math.Sqrt((double)v.x), (float)Math.Sqrt((double)v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Sqrt ((float)Math.Sqrt((double)v)).
+        /// Returns a Vector from the application of Sqrt ((float)Math.Sqrt((double)v)).
         /// </summary>
         public static Vector2 Sqrt(float v) => new Vector2((float)Math.Sqrt((double)v));
         
@@ -1042,7 +1042,7 @@ namespace Proof
         public static Vector2 InverseSqrt(Vector2 v) => new Vector2((float)(1.0 / Math.Sqrt((double)v.x)), (float)(1.0 / Math.Sqrt((double)v.y)));
         
         /// <summary>
-        /// Returns a Vectortor from the application of InverseSqrt ((float)(1.0 / Math.Sqrt((double)v))).
+        /// Returns a Vector from the application of InverseSqrt ((float)(1.0 / Math.Sqrt((double)v))).
         /// </summary>
         public static Vector2 InverseSqrt(float v) => new Vector2((float)(1.0 / Math.Sqrt((double)v)));
         
@@ -1072,7 +1072,7 @@ namespace Proof
         public static Vector2 Max(float lhs, Vector2 rhs) => new Vector2(Math.Max(lhs, rhs.x), Math.Max(lhs, rhs.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Max (Math.Max(lhs, rhs)).
+        /// Returns a Vector from the application of Max (Math.Max(lhs, rhs)).
         /// </summary>
         public static Vector2 Max(float lhs, float rhs) => new Vector2(Math.Max(lhs, rhs));
         
@@ -1092,7 +1092,7 @@ namespace Proof
         public static Vector2 Min(float lhs, Vector2 rhs) => new Vector2(Math.Min(lhs, rhs.x), Math.Min(lhs, rhs.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Min (Math.Min(lhs, rhs)).
+        /// Returns a Vector from the application of Min (Math.Min(lhs, rhs)).
         /// </summary>
         public static Vector2 Min(float lhs, float rhs) => new Vector2(Math.Min(lhs, rhs));
         
@@ -1112,7 +1112,7 @@ namespace Proof
         public static Vector2 Pow(float lhs, Vector2 rhs) => new Vector2((float)Math.Pow((double)lhs, (double)rhs.x), (float)Math.Pow((double)lhs, (double)rhs.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Pow ((float)Math.Pow((double)lhs, (double)rhs)).
+        /// Returns a Vector from the application of Pow ((float)Math.Pow((double)lhs, (double)rhs)).
         /// </summary>
         public static Vector2 Pow(float lhs, float rhs) => new Vector2((float)Math.Pow((double)lhs, (double)rhs));
         
@@ -1132,7 +1132,7 @@ namespace Proof
         public static Vector2 Log(float lhs, Vector2 rhs) => new Vector2((float)Math.Log((double)lhs, (double)rhs.x), (float)Math.Log((double)lhs, (double)rhs.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Log ((float)Math.Log((double)lhs, (double)rhs)).
+        /// Returns a Vector from the application of Log ((float)Math.Log((double)lhs, (double)rhs)).
         /// </summary>
         public static Vector2 Log(float lhs, float rhs) => new Vector2((float)Math.Log((double)lhs, (double)rhs));
         
@@ -1172,7 +1172,7 @@ namespace Proof
         public static Vector2 Clamp(float v, float min, Vector2 max) => new Vector2(Math.Min(Math.Max(v, min), max.x), Math.Min(Math.Max(v, min), max.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Clamp (Math.Min(Math.Max(v, min), max)).
+        /// Returns a Vector from the application of Clamp (Math.Min(Math.Max(v, min), max)).
         /// </summary>
         public static Vector2 Clamp(float v, float min, float max) => new Vector2(Math.Min(Math.Max(v, min), max));
         
@@ -1212,7 +1212,7 @@ namespace Proof
         public static Vector2 Mix(float min, float max, Vector2 a) => new Vector2(min * (1-a.x) + max * a.x, min * (1-a.y) + max * a.y);
         
         /// <summary>
-        /// Returns a Vectortor from the application of Mix (min * (1-a) + max * a).
+        /// Returns a Vector from the application of Mix (min * (1-a) + max * a).
         /// </summary>
         public static Vector2 Mix(float min, float max, float a) => new Vector2(min * (1-a) + max * a);
         
@@ -1252,7 +1252,7 @@ namespace Proof
         public static Vector2 Lerp(float min, float max, Vector2 a) => new Vector2(min * (1-a.x) + max * a.x, min * (1-a.y) + max * a.y);
         
         /// <summary>
-        /// Returns a Vectortor from the application of Lerp (min * (1-a) + max * a).
+        /// Returns a Vector from the application of Lerp (min * (1-a) + max * a).
         /// </summary>
         public static Vector2 Lerp(float min, float max, float a) => new Vector2(min * (1-a) + max * a);
         
@@ -1292,7 +1292,7 @@ namespace Proof
         public static Vector2 Smoothstep(float edge0, float edge1, Vector2 v) => new Vector2(((v.x - edge0) / (edge1 - edge0)).Clamp().HermiteInterpolationOrder3(), ((v.y - edge0) / (edge1 - edge0)).Clamp().HermiteInterpolationOrder3());
         
         /// <summary>
-        /// Returns a Vectortor from the application of Smoothstep (((v - edge0) / (edge1 - edge0)).Clamp().HermiteInterpolationOrder3()).
+        /// Returns a Vector from the application of Smoothstep (((v - edge0) / (edge1 - edge0)).Clamp().HermiteInterpolationOrder3()).
         /// </summary>
         public static Vector2 Smoothstep(float edge0, float edge1, float v) => new Vector2(((v - edge0) / (edge1 - edge0)).Clamp().HermiteInterpolationOrder3());
         
@@ -1332,7 +1332,7 @@ namespace Proof
         public static Vector2 Smootherstep(float edge0, float edge1, Vector2 v) => new Vector2(((v.x - edge0) / (edge1 - edge0)).Clamp().HermiteInterpolationOrder5(), ((v.y - edge0) / (edge1 - edge0)).Clamp().HermiteInterpolationOrder5());
         
         /// <summary>
-        /// Returns a Vectortor from the application of Smootherstep (((v - edge0) / (edge1 - edge0)).Clamp().HermiteInterpolationOrder5()).
+        /// Returns a Vector from the application of Smootherstep (((v - edge0) / (edge1 - edge0)).Clamp().HermiteInterpolationOrder5()).
         /// </summary>
         public static Vector2 Smootherstep(float edge0, float edge1, float v) => new Vector2(((v - edge0) / (edge1 - edge0)).Clamp().HermiteInterpolationOrder5());
         
@@ -1372,7 +1372,7 @@ namespace Proof
         public static Vector2 Fma(float a, float b, Vector2 c) => new Vector2(a * b + c.x, a * b + c.y);
         
         /// <summary>
-        /// Returns a Vectortor from the application of Fma (a * b + c).
+        /// Returns a Vector from the application of Fma (a * b + c).
         /// </summary>
         public static Vector2 Fma(float a, float b, float c) => new Vector2(a * b + c);
         
@@ -1392,7 +1392,7 @@ namespace Proof
         public static Vector2 Add(float lhs, Vector2 rhs) => new Vector2(lhs + rhs.x, lhs + rhs.y);
         
         /// <summary>
-        /// Returns a Vectortor from the application of Add (lhs + rhs).
+        /// Returns a Vector from the application of Add (lhs + rhs).
         /// </summary>
         public static Vector2 Add(float lhs, float rhs) => new Vector2(lhs + rhs);
         
@@ -1412,7 +1412,7 @@ namespace Proof
         public static Vector2 Sub(float lhs, Vector2 rhs) => new Vector2(lhs - rhs.x, lhs - rhs.y);
         
         /// <summary>
-        /// Returns a Vectortor from the application of Sub (lhs - rhs).
+        /// Returns a Vector from the application of Sub (lhs - rhs).
         /// </summary>
         public static Vector2 Sub(float lhs, float rhs) => new Vector2(lhs - rhs);
         
@@ -1432,7 +1432,7 @@ namespace Proof
         public static Vector2 Mul(float lhs, Vector2 rhs) => new Vector2(lhs * rhs.x, lhs * rhs.y);
         
         /// <summary>
-        /// Returns a Vectortor from the application of Mul (lhs * rhs).
+        /// Returns a Vector from the application of Mul (lhs * rhs).
         /// </summary>
         public static Vector2 Mul(float lhs, float rhs) => new Vector2(lhs * rhs);
         
@@ -1452,7 +1452,7 @@ namespace Proof
         public static Vector2 Div(float lhs, Vector2 rhs) => new Vector2(lhs / rhs.x, lhs / rhs.y);
         
         /// <summary>
-        /// Returns a Vectortor from the application of Div (lhs / rhs).
+        /// Returns a Vector from the application of Div (lhs / rhs).
         /// </summary>
         public static Vector2 Div(float lhs, float rhs) => new Vector2(lhs / rhs);
         
@@ -1472,7 +1472,7 @@ namespace Proof
         public static Vector2 Modulo(float lhs, Vector2 rhs) => new Vector2(lhs % rhs.x, lhs % rhs.y);
         
         /// <summary>
-        /// Returns a Vectortor from the application of Modulo (lhs % rhs).
+        /// Returns a Vector from the application of Modulo (lhs % rhs).
         /// </summary>
         public static Vector2 Modulo(float lhs, float rhs) => new Vector2(lhs % rhs);
         
@@ -1482,7 +1482,7 @@ namespace Proof
         public static Vector2 Degrees(Vector2 v) => new Vector2((float)(v.x * 57.295779513082320876798154814105170332405472466564321f), (float)(v.y * 57.295779513082320876798154814105170332405472466564321f));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Degrees (Radians-To-Degrees Conversion).
+        /// Returns a Vector from the application of Degrees (Radians-To-Degrees Conversion).
         /// </summary>
         public static Vector2 Degrees(float v) => new Vector2((float)(v * 57.295779513082320876798154814105170332405472466564321f));
         
@@ -1492,7 +1492,7 @@ namespace Proof
         public static Vector2 Radians(Vector2 v) => new Vector2((float)(v.x * 0.0174532925199432957692369076848861271344287188854172f), (float)(v.y * 0.0174532925199432957692369076848861271344287188854172f));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Radians (Degrees-To-Radians Conversion).
+        /// Returns a Vector from the application of Radians (Degrees-To-Radians Conversion).
         /// </summary>
         public static Vector2 Radians(float v) => new Vector2((float)(v * 0.0174532925199432957692369076848861271344287188854172f));
         
@@ -1502,7 +1502,7 @@ namespace Proof
         public static Vector2 Acos(Vector2 v) => new Vector2((float)Math.Acos((double)v.x), (float)Math.Acos((double)v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Acos ((float)Math.Acos((double)v)).
+        /// Returns a Vector from the application of Acos ((float)Math.Acos((double)v)).
         /// </summary>
         public static Vector2 Acos(float v) => new Vector2((float)Math.Acos((double)v));
         
@@ -1512,7 +1512,7 @@ namespace Proof
         public static Vector2 Asin(Vector2 v) => new Vector2((float)Math.Asin((double)v.x), (float)Math.Asin((double)v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Asin ((float)Math.Asin((double)v)).
+        /// Returns a Vector from the application of Asin ((float)Math.Asin((double)v)).
         /// </summary>
         public static Vector2 Asin(float v) => new Vector2((float)Math.Asin((double)v));
         
@@ -1522,7 +1522,7 @@ namespace Proof
         public static Vector2 Atan(Vector2 v) => new Vector2((float)Math.Atan((double)v.x), (float)Math.Atan((double)v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Atan ((float)Math.Atan((double)v)).
+        /// Returns a Vector from the application of Atan ((float)Math.Atan((double)v)).
         /// </summary>
         public static Vector2 Atan(float v) => new Vector2((float)Math.Atan((double)v));
         
@@ -1532,7 +1532,7 @@ namespace Proof
         public static Vector2 Cos(Vector2 v) => new Vector2((float)Math.Cos((double)v.x), (float)Math.Cos((double)v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Cos ((float)Math.Cos((double)v)).
+        /// Returns a Vector from the application of Cos ((float)Math.Cos((double)v)).
         /// </summary>
         public static Vector2 Cos(float v) => new Vector2((float)Math.Cos((double)v));
         
@@ -1542,7 +1542,7 @@ namespace Proof
         public static Vector2 Cosh(Vector2 v) => new Vector2((float)Math.Cosh((double)v.x), (float)Math.Cosh((double)v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Cosh ((float)Math.Cosh((double)v)).
+        /// Returns a Vector from the application of Cosh ((float)Math.Cosh((double)v)).
         /// </summary>
         public static Vector2 Cosh(float v) => new Vector2((float)Math.Cosh((double)v));
         
@@ -1552,7 +1552,7 @@ namespace Proof
         public static Vector2 Exp(Vector2 v) => new Vector2((float)Math.Exp((double)v.x), (float)Math.Exp((double)v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Exp ((float)Math.Exp((double)v)).
+        /// Returns a Vector from the application of Exp ((float)Math.Exp((double)v)).
         /// </summary>
         public static Vector2 Exp(float v) => new Vector2((float)Math.Exp((double)v));
         
@@ -1562,7 +1562,7 @@ namespace Proof
         public static Vector2 Log(Vector2 v) => new Vector2((float)Math.Log((double)v.x), (float)Math.Log((double)v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Log ((float)Math.Log((double)v)).
+        /// Returns a Vector from the application of Log ((float)Math.Log((double)v)).
         /// </summary>
         public static Vector2 Log(float v) => new Vector2((float)Math.Log((double)v));
         
@@ -1572,7 +1572,7 @@ namespace Proof
         public static Vector2 Log2(Vector2 v) => new Vector2((float)Math.Log((double)v.x, 2), (float)Math.Log((double)v.y, 2));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Log2 ((float)Math.Log((double)v, 2)).
+        /// Returns a Vector from the application of Log2 ((float)Math.Log((double)v, 2)).
         /// </summary>
         public static Vector2 Log2(float v) => new Vector2((float)Math.Log((double)v, 2));
         
@@ -1582,7 +1582,7 @@ namespace Proof
         public static Vector2 Log10(Vector2 v) => new Vector2((float)Math.Log10((double)v.x), (float)Math.Log10((double)v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Log10 ((float)Math.Log10((double)v)).
+        /// Returns a Vector from the application of Log10 ((float)Math.Log10((double)v)).
         /// </summary>
         public static Vector2 Log10(float v) => new Vector2((float)Math.Log10((double)v));
         
@@ -1592,7 +1592,7 @@ namespace Proof
         public static Vector2 Floor(Vector2 v) => new Vector2((float)Math.Floor(v.x), (float)Math.Floor(v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Floor ((float)Math.Floor(v)).
+        /// Returns a Vector from the application of Floor ((float)Math.Floor(v)).
         /// </summary>
         public static Vector2 Floor(float v) => new Vector2((float)Math.Floor(v));
         
@@ -1602,7 +1602,7 @@ namespace Proof
         public static Vector2 Ceiling(Vector2 v) => new Vector2((float)Math.Ceiling(v.x), (float)Math.Ceiling(v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Ceiling ((float)Math.Ceiling(v)).
+        /// Returns a Vector from the application of Ceiling ((float)Math.Ceiling(v)).
         /// </summary>
         public static Vector2 Ceiling(float v) => new Vector2((float)Math.Ceiling(v));
         
@@ -1612,7 +1612,7 @@ namespace Proof
         public static Vector2 Round(Vector2 v) => new Vector2((float)Math.Round(v.x), (float)Math.Round(v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Round ((float)Math.Round(v)).
+        /// Returns a Vector from the application of Round ((float)Math.Round(v)).
         /// </summary>
         public static Vector2 Round(float v) => new Vector2((float)Math.Round(v));
         
@@ -1622,7 +1622,7 @@ namespace Proof
         public static Vector2 Sin(Vector2 v) => new Vector2((float)Math.Sin((double)v.x), (float)Math.Sin((double)v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Sin ((float)Math.Sin((double)v)).
+        /// Returns a Vector from the application of Sin ((float)Math.Sin((double)v)).
         /// </summary>
         public static Vector2 Sin(float v) => new Vector2((float)Math.Sin((double)v));
         
@@ -1632,7 +1632,7 @@ namespace Proof
         public static Vector2 Sinh(Vector2 v) => new Vector2((float)Math.Sinh((double)v.x), (float)Math.Sinh((double)v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Sinh ((float)Math.Sinh((double)v)).
+        /// Returns a Vector from the application of Sinh ((float)Math.Sinh((double)v)).
         /// </summary>
         public static Vector2 Sinh(float v) => new Vector2((float)Math.Sinh((double)v));
         
@@ -1642,7 +1642,7 @@ namespace Proof
         public static Vector2 Tan(Vector2 v) => new Vector2((float)Math.Tan((double)v.x), (float)Math.Tan((double)v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Tan ((float)Math.Tan((double)v)).
+        /// Returns a Vector from the application of Tan ((float)Math.Tan((double)v)).
         /// </summary>
         public static Vector2 Tan(float v) => new Vector2((float)Math.Tan((double)v));
         
@@ -1652,7 +1652,7 @@ namespace Proof
         public static Vector2 Tanh(Vector2 v) => new Vector2((float)Math.Tanh((double)v.x), (float)Math.Tanh((double)v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Tanh ((float)Math.Tanh((double)v)).
+        /// Returns a Vector from the application of Tanh ((float)Math.Tanh((double)v)).
         /// </summary>
         public static Vector2 Tanh(float v) => new Vector2((float)Math.Tanh((double)v));
         
@@ -1662,7 +1662,7 @@ namespace Proof
         public static Vector2 Truncate(Vector2 v) => new Vector2((float)Math.Truncate((double)v.x), (float)Math.Truncate((double)v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Truncate ((float)Math.Truncate((double)v)).
+        /// Returns a Vector from the application of Truncate ((float)Math.Truncate((double)v)).
         /// </summary>
         public static Vector2 Truncate(float v) => new Vector2((float)Math.Truncate((double)v));
         
@@ -1672,7 +1672,7 @@ namespace Proof
         public static Vector2 Fract(Vector2 v) => new Vector2((float)(v.x - Math.Floor(v.x)), (float)(v.y - Math.Floor(v.y)));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Fract ((float)(v - Math.Floor(v))).
+        /// Returns a Vector from the application of Fract ((float)(v - Math.Floor(v))).
         /// </summary>
         public static Vector2 Fract(float v) => new Vector2((float)(v - Math.Floor(v)));
         
@@ -1682,7 +1682,7 @@ namespace Proof
         public static Vector2 Trunc(Vector2 v) => new Vector2((long)(v.x), (long)(v.y));
         
         /// <summary>
-        /// Returns a Vectortor from the application of Trunc ((long)(v)).
+        /// Returns a Vector from the application of Trunc ((long)(v)).
         /// </summary>
         public static Vector2 Trunc(float v) => new Vector2((long)(v));
         

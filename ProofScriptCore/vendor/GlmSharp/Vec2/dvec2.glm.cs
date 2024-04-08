@@ -34,27 +34,27 @@ namespace Proof
         public static IEnumerator<double> GetEnumerator(dVector2 v) => v.GetEnumerator();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using ', ' as a seperator.
+        /// Returns a string representation of this Vector using ', ' as a seperator.
         /// </summary>
         public static string ToString(dVector2 v) => v.ToString();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator.
+        /// Returns a string representation of this Vector using a provided seperator.
         /// </summary>
         public static string ToString(dVector2 v, string sep) => v.ToString(sep);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix provider for each component.
         /// </summary>
         public static string ToString(dVector2 v, string sep, IFormatProvider provider) => v.ToString(sep, provider);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix for each component.
         /// </summary>
         public static string ToString(dVector2 v, string sep, string forMatrix) => v.ToString(sep, forMatrix);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix and forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix and forMatrix provider for each component.
         /// </summary>
         public static string ToString(dVector2 v, string sep, string forMatrix, IFormatProvider provider) => v.ToString(sep, forMatrix, provider);
         
@@ -239,17 +239,17 @@ namespace Proof
         public static dVector2 Fma(dVector2 a, dVector2 b, dVector2 c) => dVector2.Fma(a, b, c);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static dMatrix2 OuterProduct(dVector2 c, dVector2 r) => dVector2.OuterProduct(c, r);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static dMatrix3x2 OuterProduct(dVector2 c, dVector3 r) => dVector2.OuterProduct(c, r);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static dMatrix4x2 OuterProduct(dVector2 c, dVector4 r) => dVector2.OuterProduct(c, r);
         
@@ -384,22 +384,22 @@ namespace Proof
         public static dVector2 Trunc(dVector2 v) => dVector2.Trunc(v);
         
         /// <summary>
-        /// Returns the minimal component of this Vectortor.
+        /// Returns the minimal component of this Vector.
         /// </summary>
         public static double MinElement(dVector2 v) => v.MinElement;
         
         /// <summary>
-        /// Returns the maximal component of this Vectortor.
+        /// Returns the maximal component of this Vector.
         /// </summary>
         public static double MaxElement(dVector2 v) => v.MaxElement;
         
         /// <summary>
-        /// Returns the euclidean length of this Vectortor.
+        /// Returns the euclidean length of this Vector.
         /// </summary>
         public static double Length(dVector2 v) => v.Length;
         
         /// <summary>
-        /// Returns the squared euclidean length of this Vectortor.
+        /// Returns the squared euclidean length of this Vector.
         /// </summary>
         public static double LengthSqr(dVector2 v) => v.LengthSqr;
         
@@ -409,82 +409,82 @@ namespace Proof
         public static double Sum(dVector2 v) => v.Sum;
         
         /// <summary>
-        /// Returns the euclidean norm of this Vectortor.
+        /// Returns the euclidean norm of this Vector.
         /// </summary>
         public static double Norm(dVector2 v) => v.Norm;
         
         /// <summary>
-        /// Returns the one-norm of this Vectortor.
+        /// Returns the one-norm of this Vector.
         /// </summary>
         public static double Norm1(dVector2 v) => v.Norm1;
         
         /// <summary>
-        /// Returns the two-norm (euclidean length) of this Vectortor.
+        /// Returns the two-norm (euclidean length) of this Vector.
         /// </summary>
         public static double Norm2(dVector2 v) => v.Norm2;
         
         /// <summary>
-        /// Returns the max-norm of this Vectortor.
+        /// Returns the max-norm of this Vector.
         /// </summary>
         public static double NormMax(dVector2 v) => v.NormMax;
         
         /// <summary>
-        /// Returns the p-norm of this Vectortor.
+        /// Returns the p-norm of this Vector.
         /// </summary>
         public static double NormP(dVector2 v, double p) => v.NormP(p);
         
         /// <summary>
-        /// Returns a copy of this Vectortor with length one (undefined if this has zero length).
+        /// Returns a copy of this Vector with length one (undefined if this has zero length).
         /// </summary>
         public static dVector2 Normalized(dVector2 v) => v.Normalized;
         
         /// <summary>
-        /// Returns a copy of this Vectortor with length one (returns zero if length is zero).
+        /// Returns a copy of this Vector with length one (returns zero if length is zero).
         /// </summary>
         public static dVector2 NormalizedSafe(dVector2 v) => v.NormalizedSafe;
         
         /// <summary>
-        /// Returns the Vectortor angle (atan2(y, x)) in radians.
+        /// Returns the Vector angle (atan2(y, x)) in radians.
         /// </summary>
         public static double Angle(dVector2 v) => v.Angle;
         
         /// <summary>
-        /// Returns a 2D Vectortor that was rotated by a given angle in radians (CAUTION: result is casted and may be truncated).
+        /// Returns a 2D Vector that was rotated by a given angle in radians (CAUTION: result is casted and may be truncated).
         /// </summary>
         public static dVector2 Rotated(dVector2 v, double angleInRad) => v.Rotated(angleInRad);
         
         /// <summary>
-        /// Returns the inner product (dot product, scalar product) of the two Vectortors.
+        /// Returns the inner product (dot product, scalar product) of the two Vectors.
         /// </summary>
         public static double Dot(dVector2 lhs, dVector2 rhs) => dVector2.Dot(lhs, rhs);
         
         /// <summary>
-        /// Returns the euclidean distance between the two Vectortors.
+        /// Returns the euclidean distance between the two Vectors.
         /// </summary>
         public static double Distance(dVector2 lhs, dVector2 rhs) => dVector2.Distance(lhs, rhs);
         
         /// <summary>
-        /// Returns the squared euclidean distance between the two Vectortors.
+        /// Returns the squared euclidean distance between the two Vectors.
         /// </summary>
         public static double DistanceSqr(dVector2 lhs, dVector2 rhs) => dVector2.DistanceSqr(lhs, rhs);
         
         /// <summary>
-        /// Calculate the reflection direction for an incident Vectortor (N should be normalized in order to achieve the desired result).
+        /// Calculate the reflection direction for an incident Vector (N should be normalized in order to achieve the desired result).
         /// </summary>
         public static dVector2 Reflect(dVector2 I, dVector2 N) => dVector2.Reflect(I, N);
         
         /// <summary>
-        /// Calculate the refraction direction for an incident Vectortor (The input parameters I and N should be normalized in order to achieve the desired result).
+        /// Calculate the refraction direction for an incident Vector (The input parameters I and N should be normalized in order to achieve the desired result).
         /// </summary>
         public static dVector2 Refract(dVector2 I, dVector2 N, double eta) => dVector2.Refract(I, N, eta);
         
         /// <summary>
-        /// Returns a Vectortor pointing in the same direction as another (faceforward orients a Vectortor to point away from a surface as defined by its normal. If dot(Nref, I) is negative faceforward returns N, otherwise it returns -N).
+        /// Returns a Vector pointing in the same direction as another (faceforward orients a Vector to point away from a surface as defined by its normal. If dot(Nref, I) is negative faceforward returns N, otherwise it returns -N).
         /// </summary>
         public static dVector2 FaceForward(dVector2 N, dVector2 I, dVector2 Nref) => dVector2.FaceForward(N, I, Nref);
         
         /// <summary>
-        /// Returns the length of the outer product (cross product, Vectortor product) of the two Vectortors.
+        /// Returns the length of the outer product (cross product, Vector product) of the two Vectors.
         /// </summary>
         public static double Cross(dVector2 l, dVector2 r) => dVector2.Cross(l, r);
         

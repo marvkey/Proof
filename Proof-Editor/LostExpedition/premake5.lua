@@ -34,7 +34,6 @@ project "ProofScriptCore"
 
 	targetdir ("%{ProofRoootDirectory}/Proof-Editor/Resources/Scripts/Binaries/ScriptCore")
 	objdir ("%{ProofRoootDirectory}/Proof-Editor/Resources/Scripts/Intermediates/ScriptCore")
-
 	files
 	{
 		"%{ProofRoootDirectory}/ProofScriptCore/Src/**.cs",
@@ -43,15 +42,15 @@ project "ProofScriptCore"
 	}
 	links
     {
-      --  "System",
-      --  "System.Core",
-      --  "System.Numerics",
-      --  "System.Runtime.Serialization",
-      --  "System.Xml.Linq",
-      --  "System.Data.DataSetExtensions",
-      --  "Microsoft.CSharp",
-      --  "System.Data",
-      --  "System.Xml"
+        --"System",
+        --"System.Core",
+        --"System.Numerics",
+        --"System.Runtime.Serialization",
+        --"System.Xml.Linq",
+        --"System.Data.DataSetExtensions",
+        --"Microsoft.CSharp",
+        --"System.Data",
+        --"System.Xml"
     }
 	filter "configurations:Debug"
 		optimize "Off"
@@ -99,3 +98,4 @@ project "LostExpedition"
 	filter "configurations:Dist"
 		optimize "Full"
 		symbols "Off"
+

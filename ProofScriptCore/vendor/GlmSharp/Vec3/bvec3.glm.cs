@@ -34,17 +34,17 @@ namespace Proof
         public static IEnumerator<bool> GetEnumerator(bVector3 v) => v.GetEnumerator();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using ', ' as a seperator.
+        /// Returns a string representation of this Vector using ', ' as a seperator.
         /// </summary>
         public static string ToString(bVector3 v) => v.ToString();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator.
+        /// Returns a string representation of this Vector using a provided seperator.
         /// </summary>
         public static string ToString(bVector3 v, string sep) => v.ToString(sep);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix provider for each component.
         /// </summary>
         public static string ToString(bVector3 v, string sep, IFormatProvider provider) => v.ToString(sep, provider);
         
@@ -159,12 +159,12 @@ namespace Proof
         public static bool Xnor(bool lhs, bool rhs) => lhs == rhs;
         
         /// <summary>
-        /// Returns the minimal component of this Vectortor.
+        /// Returns the minimal component of this Vector.
         /// </summary>
         public static bool MinElement(bVector3 v) => v.MinElement;
         
         /// <summary>
-        /// Returns the maximal component of this Vectortor.
+        /// Returns the maximal component of this Vector.
         /// </summary>
         public static bool MaxElement(bVector3 v) => v.MaxElement;
         

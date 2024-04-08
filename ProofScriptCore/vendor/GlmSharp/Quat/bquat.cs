@@ -86,7 +86,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Vectortor-and-scalar constructor (CAUTION: not angle-axis, use FromAngleAxis instead)
+        /// Vector-and-scalar constructor (CAUTION: not angle-axis, use FromAngleAxis instead)
         /// </summary>
         public bQuaternion(bVector3 v, bool s)
         {

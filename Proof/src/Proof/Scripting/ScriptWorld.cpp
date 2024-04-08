@@ -495,6 +495,89 @@ namespace Proof
         }
     }
 
+    void ScriptWorld::PostDuplicateScriptInstance(Entity srcEntity, Entity dstEntity, std::unordered_map<UUID, UUID>& entitySwapID)
+    {
+        PF_PROFILE_FUNC();
+        Count<ScriptWorld> srcScriptWorld = srcEntity.GetCurrentWorld()->GetScriptWorld();
+
+        if (!srcScriptWorld->IsEntityScriptInstantiated(srcEntity))
+            return;
+
+        if (!IsEntityScriptInstantiated(dstEntity))return;
+
+        ScriptClassesContainerMetaData* srcClassesMetaData = srcScriptWorld->GetEntityClassesContainer(srcEntity);
+        if (!srcClassesMetaData)
+            return;
+
+        ScriptClassesContainerMetaData* dstClassesMetaData = GetEntityClassesContainer(dstEntity);
+
+        for (auto& [className, classMetaData] : srcClassesMetaData->Classes)
+        {
+            for (auto& [fieldName, fieldStorage] : classMetaData.Fields)
+            {
+                if (!fieldStorage)
+                    continue;
+
+                if (fieldStorage->GetFieldInfo()->IsArray())
+                {
+                    Count<ArrayFieldStorage> arrayStorage = fieldStorage.As<ArrayFieldStorage>();
+
+                    ScriptFieldType nativeType = arrayStorage->GetFieldInfo()->Type;
+
+                    if (nativeType == ScriptFieldType::Entity)
+                    {
+                        uintptr_t length = arrayStorage->GetLength();
+
+                        for (uint32_t i = 0; i < (uint32_t)length; i++)
+                        {
+                            UUID uuid = arrayStorage->GetValue<uint64_t>(i);
+
+                            Entity fieldEntity = srcEntity.GetCurrentWorld()->TryGetEntityWithUUID(uuid);
+
+                            if (!fieldEntity)
+                                continue;
+
+                            if (srcEntity == fieldEntity || srcEntity.IsAncestorOf(fieldEntity) || srcEntity.IsDescendantOf(fieldEntity))
+                            {
+                                if (entitySwapID.contains(uuid))
+                                {
+                                    dstClassesMetaData->GetClassMetaData(className)->Fields.at(fieldName).As<ArrayFieldStorage>()->
+                                        SetValue<uint64_t>(i, entitySwapID[uuid].Get());
+                                }
+                            }
+                        }
+                    }
+                    
+                }
+                // just  a normal storage
+                else if(fieldStorage->GetFieldInfo()->IsEnum() == false)
+                {
+                    Count<FieldStorage> storage = fieldStorage.As<FieldStorage>();
+
+                    if (storage->GetFieldInfo()->Type == ScriptFieldType::Entity)
+                    {
+                        UUID uuid = storage->GetValue<uint64_t>();
+
+                        Entity fieldEntity = srcEntity.GetCurrentWorld()->TryGetEntityWithUUID(uuid);
+
+                        if (!fieldEntity)
+                            continue;
+
+                        if (srcEntity == fieldEntity || srcEntity.IsAncestorOf(fieldEntity) || srcEntity.IsDescendantOf(fieldEntity))
+                        {
+                            if (entitySwapID.contains(uuid))
+                            {
+                                dstClassesMetaData->GetClassMetaData(className)->Fields.at(fieldName).As<FieldStorage>()->
+                                    SetValue<uint64_t>(entitySwapID[uuid].Get());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+
     void ScriptWorld::BeginRuntime()
     {
         PF_PROFILE_FUNC();

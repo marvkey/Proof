@@ -228,7 +228,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Constructs this Matrix from a series of column Vectortors. Non-overwritten fields are from an Identity Matrix.
+        /// Constructs this Matrix from a series of column Vectors. Non-overwritten fields are from an Identity Matrix.
         /// </summary>
         public decMatrix4x2(decVector2 c0, decVector2 c1)
         {
@@ -243,7 +243,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Constructs this Matrix from a series of column Vectortors. Non-overwritten fields are from an Identity Matrix.
+        /// Constructs this Matrix from a series of column Vectors. Non-overwritten fields are from an Identity Matrix.
         /// </summary>
         public decMatrix4x2(decVector2 c0, decVector2 c1, decVector2 c2)
         {
@@ -258,7 +258,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Constructs this Matrix from a series of column Vectortors. Non-overwritten fields are from an Identity Matrix.
+        /// Constructs this Matrix from a series of column Vectors. Non-overwritten fields are from an Identity Matrix.
         /// </summary>
         public decMatrix4x2(decVector2 c0, decVector2 c1, decVector2 c2, decVector2 c3)
         {
@@ -628,7 +628,7 @@ namespace Proof
         public static decMatrix4x2 operator*(decMatrix4x2 lhs, decMatrix4 rhs) => new decMatrix4x2(((lhs.m00 * rhs.m00 + lhs.m10 * rhs.m01) + (lhs.m20 * rhs.m02 + lhs.m30 * rhs.m03)), ((lhs.m01 * rhs.m00 + lhs.m11 * rhs.m01) + (lhs.m21 * rhs.m02 + lhs.m31 * rhs.m03)), ((lhs.m00 * rhs.m10 + lhs.m10 * rhs.m11) + (lhs.m20 * rhs.m12 + lhs.m30 * rhs.m13)), ((lhs.m01 * rhs.m10 + lhs.m11 * rhs.m11) + (lhs.m21 * rhs.m12 + lhs.m31 * rhs.m13)), ((lhs.m00 * rhs.m20 + lhs.m10 * rhs.m21) + (lhs.m20 * rhs.m22 + lhs.m30 * rhs.m23)), ((lhs.m01 * rhs.m20 + lhs.m11 * rhs.m21) + (lhs.m21 * rhs.m22 + lhs.m31 * rhs.m23)), ((lhs.m00 * rhs.m30 + lhs.m10 * rhs.m31) + (lhs.m20 * rhs.m32 + lhs.m30 * rhs.m33)), ((lhs.m01 * rhs.m30 + lhs.m11 * rhs.m31) + (lhs.m21 * rhs.m32 + lhs.m31 * rhs.m33)));
         
         /// <summary>
-        /// Executes a Matrix-Vectortor-multiplication.
+        /// Executes a Matrix-Vector-multiplication.
         /// </summary>
         public static decVector2 operator*(decMatrix4x2 m, decVector4 v) => new decVector2(((m.m00 * v.x + m.m10 * v.y) + (m.m20 * v.z + m.m30 * v.w)), ((m.m01 * v.x + m.m11 * v.y) + (m.m21 * v.z + m.m31 * v.w)));
         

@@ -14,7 +14,7 @@ namespace Proof
 {
     
     /// <summary>
-    /// A Vectortor of type Half with 2 components.
+    /// A Vector of type Half with 2 components.
     /// </summary>
     [RegisterCoreClassStruct]
     
@@ -60,7 +60,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor
+        /// from-Vector constructor
         /// </summary>
         public hVector2(hVector2 v)
         {
@@ -69,7 +69,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor (additional fields are truncated)
+        /// from-Vector constructor (additional fields are truncated)
         /// </summary>
         public hVector2(hVector3 v)
         {
@@ -78,7 +78,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor (additional fields are truncated)
+        /// from-Vector constructor (additional fields are truncated)
         /// </summary>
         public hVector2(hVector4 v)
         {
@@ -397,22 +397,22 @@ namespace Proof
         public int Count => 2;
         
         /// <summary>
-        /// Returns the minimal component of this Vectortor.
+        /// Returns the minimal component of this Vector.
         /// </summary>
         public Half MinElement => Half.Min(x, y);
         
         /// <summary>
-        /// Returns the maximal component of this Vectortor.
+        /// Returns the maximal component of this Vector.
         /// </summary>
         public Half MaxElement => Half.Max(x, y);
         
         /// <summary>
-        /// Returns the euclidean length of this Vectortor.
+        /// Returns the euclidean length of this Vector.
         /// </summary>
         public float Length => (float)Math.Sqrt((x*x + y*y));
         
         /// <summary>
-        /// Returns the squared euclidean length of this Vectortor.
+        /// Returns the squared euclidean length of this Vector.
         /// </summary>
         public float LengthSqr => (x*x + y*y);
         
@@ -422,37 +422,37 @@ namespace Proof
         public Half Sum => (x + y);
         
         /// <summary>
-        /// Returns the euclidean norm of this Vectortor.
+        /// Returns the euclidean norm of this Vector.
         /// </summary>
         public float Norm => (float)Math.Sqrt((x*x + y*y));
         
         /// <summary>
-        /// Returns the one-norm of this Vectortor.
+        /// Returns the one-norm of this Vector.
         /// </summary>
         public float Norm1 => (Half.Abs(x) + Half.Abs(y));
         
         /// <summary>
-        /// Returns the two-norm (euclidean length) of this Vectortor.
+        /// Returns the two-norm (euclidean length) of this Vector.
         /// </summary>
         public float Norm2 => (float)Math.Sqrt((x*x + y*y));
         
         /// <summary>
-        /// Returns the max-norm of this Vectortor.
+        /// Returns the max-norm of this Vector.
         /// </summary>
         public float NormMax => Half.Max(Half.Abs(x), Half.Abs(y));
         
         /// <summary>
-        /// Returns a copy of this Vectortor with length one (undefined if this has zero length).
+        /// Returns a copy of this Vector with length one (undefined if this has zero length).
         /// </summary>
         public hVector2 Normalized => this / (Half)Length;
         
         /// <summary>
-        /// Returns a copy of this Vectortor with length one (returns zero if length is zero).
+        /// Returns a copy of this Vector with length one (returns zero if length is zero).
         /// </summary>
         public hVector2 NormalizedSafe => this == Zero ? Zero : this / (Half)Length;
         
         /// <summary>
-        /// Returns the Vectortor angle (atan2(y, x)) in radians.
+        /// Returns the Vector angle (atan2(y, x)) in radians.
         /// </summary>
         public double Angle => Math.Atan2((double)y, (double)x);
 
@@ -462,52 +462,52 @@ namespace Proof
         #region Static Properties
         
         /// <summary>
-        /// Predefined all-zero Vectortor
+        /// Predefined all-zero Vector
         /// </summary>
         public static hVector2 Zero { get; } = new hVector2(Half.Zero, Half.Zero);
         
         /// <summary>
-        /// Predefined all-ones Vectortor
+        /// Predefined all-ones Vector
         /// </summary>
         public static hVector2 Ones { get; } = new hVector2(Half.One, Half.One);
         
         /// <summary>
-        /// Predefined unit-X Vectortor
+        /// Predefined unit-X Vector
         /// </summary>
         public static hVector2 UnitX { get; } = new hVector2(Half.One, Half.Zero);
         
         /// <summary>
-        /// Predefined unit-Y Vectortor
+        /// Predefined unit-Y Vector
         /// </summary>
         public static hVector2 UnitY { get; } = new hVector2(Half.Zero, Half.One);
         
         /// <summary>
-        /// Predefined all-MaxValue Vectortor
+        /// Predefined all-MaxValue Vector
         /// </summary>
         public static hVector2 MaxValue { get; } = new hVector2(Half.MaxValue, Half.MaxValue);
         
         /// <summary>
-        /// Predefined all-MinValue Vectortor
+        /// Predefined all-MinValue Vector
         /// </summary>
         public static hVector2 MinValue { get; } = new hVector2(Half.MinValue, Half.MinValue);
         
         /// <summary>
-        /// Predefined all-Epsilon Vectortor
+        /// Predefined all-Epsilon Vector
         /// </summary>
         public static hVector2 Epsilon { get; } = new hVector2(Half.Epsilon, Half.Epsilon);
         
         /// <summary>
-        /// Predefined all-NaN Vectortor
+        /// Predefined all-NaN Vector
         /// </summary>
         public static hVector2 NaN { get; } = new hVector2(Half.NaN, Half.NaN);
         
         /// <summary>
-        /// Predefined all-NegativeInfinity Vectortor
+        /// Predefined all-NegativeInfinity Vector
         /// </summary>
         public static hVector2 NegativeInfinity { get; } = new hVector2(Half.NegativeInfinity, Half.NegativeInfinity);
         
         /// <summary>
-        /// Predefined all-PositiveInfinity Vectortor
+        /// Predefined all-PositiveInfinity Vector
         /// </summary>
         public static hVector2 PositiveInfinity { get; } = new hVector2(Half.PositiveInfinity, Half.PositiveInfinity);
 
@@ -546,27 +546,27 @@ namespace Proof
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using ', ' as a seperator.
+        /// Returns a string representation of this Vector using ', ' as a seperator.
         /// </summary>
         public override string ToString() => ToString(", ");
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator.
+        /// Returns a string representation of this Vector using a provided seperator.
         /// </summary>
         public string ToString(string sep) => (x + sep + y);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix provider for each component.
         /// </summary>
         public string ToString(string sep, IFormatProvider provider) => (x.ToString(provider) + sep + y.ToString(provider));
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix for each component.
         /// </summary>
         public string ToString(string sep, string forMatrix) => (x.ToString(forMatrix) + sep + y.ToString(forMatrix));
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix and forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix and forMatrix provider for each component.
         /// </summary>
         public string ToString(string sep, string forMatrix, IFormatProvider provider) => (x.ToString(forMatrix, provider) + sep + y.ToString(forMatrix, provider));
         
@@ -596,12 +596,12 @@ namespace Proof
         }
         
         /// <summary>
-        /// Returns the p-norm of this Vectortor.
+        /// Returns the p-norm of this Vector.
         /// </summary>
         public double NormP(double p) => Math.Pow((Math.Pow((double)Half.Abs(x), p) + Math.Pow((double)Half.Abs(y), p)), 1 / p);
         
         /// <summary>
-        /// Returns a 2D Vectortor that was rotated by a given angle in radians (CAUTION: result is casted and may be truncated).
+        /// Returns a 2D Vector that was rotated by a given angle in radians (CAUTION: result is casted and may be truncated).
         /// </summary>
         public hVector2 Rotated(double angleInRad) => (hVector2)(dVector2.FromAngle(Angle + angleInRad) * (double)Length);
 
@@ -611,12 +611,12 @@ namespace Proof
         #region Static Functions
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using ', ' as a separator).
+        /// Converts the string representation of the Vector into a Vector representation (using ', ' as a separator).
         /// </summary>
         public static hVector2 Parse(string s) => Parse(s, ", ");
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using a designated separator).
+        /// Converts the string representation of the Vector into a Vector representation (using a designated separator).
         /// </summary>
         public static hVector2 Parse(string s, string sep)
         {
@@ -626,7 +626,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using a designated separator and a type provider).
+        /// Converts the string representation of the Vector into a Vector representation (using a designated separator and a type provider).
         /// </summary>
         public static hVector2 Parse(string s, string sep, IFormatProvider provider)
         {
@@ -636,7 +636,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using a designated separator and a number style).
+        /// Converts the string representation of the Vector into a Vector representation (using a designated separator and a number style).
         /// </summary>
         public static hVector2 Parse(string s, string sep, NumberStyles style)
         {
@@ -646,7 +646,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using a designated separator and a number style and a forMatrix provider).
+        /// Converts the string representation of the Vector into a Vector representation (using a designated separator and a number style and a forMatrix provider).
         /// </summary>
         public static hVector2 Parse(string s, string sep, NumberStyles style, IFormatProvider provider)
         {
@@ -656,12 +656,12 @@ namespace Proof
         }
         
         /// <summary>
-        /// Tries to convert the string representation of the Vectortor into a Vectortor representation (using ', ' as a separator), returns false if string was invalid.
+        /// Tries to convert the string representation of the Vector into a Vector representation (using ', ' as a separator), returns false if string was invalid.
         /// </summary>
         public static bool TryParse(string s, out hVector2 result) => TryParse(s, ", ", out result);
         
         /// <summary>
-        /// Tries to convert the string representation of the Vectortor into a Vectortor representation (using a designated separator), returns false if string was invalid.
+        /// Tries to convert the string representation of the Vector into a Vector representation (using a designated separator), returns false if string was invalid.
         /// </summary>
         public static bool TryParse(string s, string sep, out hVector2 result)
         {
@@ -676,7 +676,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Tries to convert the string representation of the Vectortor into a Vectortor representation (using a designated separator and a number style and a forMatrix provider), returns false if string was invalid.
+        /// Tries to convert the string representation of the Vector into a Vector representation (using a designated separator and a number style and a forMatrix provider), returns false if string was invalid.
         /// </summary>
         public static bool TryParse(string s, string sep, NumberStyles style, IFormatProvider provider, out hVector2 result)
         {
@@ -696,57 +696,57 @@ namespace Proof
         public static bool ApproxEqual(hVector2 lhs, hVector2 rhs, float eps = 0.1f) => Distance(lhs, rhs) <= eps;
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static hMatrix2 OuterProduct(hVector2 c, hVector2 r) => new hMatrix2(c.x * r.x, c.y * r.x, c.x * r.y, c.y * r.y);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static hMatrix2x3 OuterProduct(hVector3 c, hVector2 r) => new hMatrix2x3(c.x * r.x, c.y * r.x, c.z * r.x, c.x * r.y, c.y * r.y, c.z * r.y);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static hMatrix3x2 OuterProduct(hVector2 c, hVector3 r) => new hMatrix3x2(c.x * r.x, c.y * r.x, c.x * r.y, c.y * r.y, c.x * r.z, c.y * r.z);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static hMatrix2x4 OuterProduct(hVector4 c, hVector2 r) => new hMatrix2x4(c.x * r.x, c.y * r.x, c.z * r.x, c.w * r.x, c.x * r.y, c.y * r.y, c.z * r.y, c.w * r.y);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static hMatrix4x2 OuterProduct(hVector2 c, hVector4 r) => new hMatrix4x2(c.x * r.x, c.y * r.x, c.x * r.y, c.y * r.y, c.x * r.z, c.y * r.z, c.x * r.w, c.y * r.w);
         
         /// <summary>
-        /// Returns a unit 2D Vectortor with a given angle in radians (CAUTION: result may be truncated for integer types).
+        /// Returns a unit 2D Vector with a given angle in radians (CAUTION: result may be truncated for integer types).
         /// </summary>
         public static hVector2 FromAngle(double angleInRad) => new hVector2((Half)Math.Cos(angleInRad), (Half)Math.Sin(angleInRad));
         
         /// <summary>
-        /// Returns the inner product (dot product, scalar product) of the two Vectortors.
+        /// Returns the inner product (dot product, scalar product) of the two Vectors.
         /// </summary>
         public static Half Dot(hVector2 lhs, hVector2 rhs) => (lhs.x * rhs.x + lhs.y * rhs.y);
         
         /// <summary>
-        /// Returns the euclidean distance between the two Vectortors.
+        /// Returns the euclidean distance between the two Vectors.
         /// </summary>
         public static float Distance(hVector2 lhs, hVector2 rhs) => (lhs - rhs).Length;
         
         /// <summary>
-        /// Returns the squared euclidean distance between the two Vectortors.
+        /// Returns the squared euclidean distance between the two Vectors.
         /// </summary>
         public static float DistanceSqr(hVector2 lhs, hVector2 rhs) => (lhs - rhs).LengthSqr;
         
         /// <summary>
-        /// Calculate the reflection direction for an incident Vectortor (N should be normalized in order to achieve the desired result).
+        /// Calculate the reflection direction for an incident Vector (N should be normalized in order to achieve the desired result).
         /// </summary>
         public static hVector2 Reflect(hVector2 I, hVector2 N) => I - 2 * Dot(N, I) * N;
         
         /// <summary>
-        /// Calculate the refraction direction for an incident Vectortor (The input parameters I and N should be normalized in order to achieve the desired result).
+        /// Calculate the refraction direction for an incident Vector (The input parameters I and N should be normalized in order to achieve the desired result).
         /// </summary>
         public static hVector2 Refract(hVector2 I, hVector2 N, Half eta)
         {
@@ -757,12 +757,12 @@ namespace Proof
         }
         
         /// <summary>
-        /// Returns a Vectortor pointing in the same direction as another (faceforward orients a Vectortor to point away from a surface as defined by its normal. If dot(Nref, I) is negative faceforward returns N, otherwise it returns -N).
+        /// Returns a Vector pointing in the same direction as another (faceforward orients a Vector to point away from a surface as defined by its normal. If dot(Nref, I) is negative faceforward returns N, otherwise it returns -N).
         /// </summary>
         public static hVector2 FaceForward(hVector2 N, hVector2 I, hVector2 Nref) => Dot(Nref, I) < 0 ? N : -N;
         
         /// <summary>
-        /// Returns the length of the outer product (cross product, Vectortor product) of the two Vectortors.
+        /// Returns the length of the outer product (cross product, Vector product) of the two Vectors.
         /// </summary>
         public static Half Cross(hVector2 l, hVector2 r) => l.x * r.y - l.y * r.x;
         

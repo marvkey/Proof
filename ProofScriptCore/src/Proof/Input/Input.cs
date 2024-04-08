@@ -20,9 +20,9 @@ namespace Proof
 		public static MouseCursorMode GetCursorMode() => InternalCalls.Mouse_GetCursorMode();
 		public static Proof.Vector2 GetPositon()
 		{
-			Proof.Vector2 Vectortor = new Proof.Vector2();
-			InternalCalls.Mouse_GetPosition(out Vectortor);
-			return Vectortor;
+			Proof.Vector2 Vector = new Proof.Vector2();
+			InternalCalls.Mouse_GetPosition(out Vector);
+			return Vector;
 		}
     }
     public static class Input
@@ -80,8 +80,8 @@ namespace Proof
     {
         Bool,
 		Float,
-		Vectortor2D,
-		Vectortor3D
+		Vector2D,
+		Vector3D
     };
 
     [RegisterCoreClassStruct]
@@ -106,13 +106,13 @@ namespace Proof
         public InputActionOutput(Proof.Vector2 inValue)
         {
             m_Output = new Proof.Vector3(inValue.x, inValue.y, 0f);
-            m_OutputType = InputActionOutputType.Vectortor2D;
+            m_OutputType = InputActionOutputType.Vector2D;
         }
 
         public InputActionOutput(Proof.Vector3 inValue)
         {
             m_Output = inValue;
-            m_OutputType = InputActionOutputType.Vectortor3D;
+            m_OutputType = InputActionOutputType.Vector3D;
         }
 
         public InputActionOutput(InputActionOutputType inValueType, Proof.Vector3 value)
@@ -126,7 +126,7 @@ namespace Proof
                 m_Output.y = 0f;
                 m_Output.z = 0f;
             }
-            else if (m_OutputType == InputActionOutputType.Vectortor2D)
+            else if (m_OutputType == InputActionOutputType.Vector2D)
             {
                 m_Output.z = 0f;
             }
@@ -154,12 +154,12 @@ namespace Proof
                     return (T)(object)m_Output.x;
 
                 case Type Vector2Type when Vector2Type == typeof(Proof.Vector2):
-                    if (m_OutputType != InputActionOutputType.Vectortor2D)
+                    if (m_OutputType != InputActionOutputType.Vector2D)
                         Log.Warn("Input Action is not a Proof.Vector2 Value ");
                     return (T)(object)new Proof.Vector2(m_Output.x, m_Output.y);
 
-                case Type Vectortor3Type when Vectortor3Type== typeof(Proof.Vector3):
-                    if (m_OutputType != InputActionOutputType.Vectortor3D)
+                case Type Vector3Type when Vector3Type== typeof(Proof.Vector3):
+                    if (m_OutputType != InputActionOutputType.Vector3D)
                         Log.Warn("Input Action is not a Proof.Vector3 Value ");
                     return (T)(object)new Proof.Vector3(m_Output.x, m_Output.y, m_Output.z);
 
@@ -186,9 +186,9 @@ namespace Proof
                 case InputActionOutputType.Bool:
                 case InputActionOutputType.Float:
                     return m_Output.x * m_Output.x;
-                case InputActionOutputType.Vectortor2D:
+                case InputActionOutputType.Vector2D:
                     return m_Output.x * m_Output.x + m_Output.y * m_Output.y;
-                case InputActionOutputType.Vectortor3D:
+                case InputActionOutputType.Vector3D:
                     return m_Output.x * m_Output.x + m_Output.x * m_Output.x + m_Output.x * m_Output.x;
                 default:
                     return 0f;

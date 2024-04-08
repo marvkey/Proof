@@ -159,6 +159,14 @@ namespace Proof {
 		//void BuildMeshBoneEntityIds(Entity entity, Entity rootEntity);
 		//void BuildAnimationBoneEntityIds(Entity entity, Entity rootEntity);
 
+
+		// same funciton just use the entity swap Ids
+		// mainly for script components
+		// first id is the dstEntity, second is srcEntity
+		void PrefabCopyEntityReal(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity, std::unordered_map<UUID, UUID>& entitySwapID,bool includeChildren = true);
+		// first id is the dstEntity, second is srcEntity
+		class Entity CreateEntityFromOtherReal(Entity entity, std::unordered_map<UUID, UUID>& entitySwapID,bool includeChildren = true);
+
 	private:
 		std::unordered_set< UUID> m_EntityDeleteQueue;
 		Count<class ScriptWorld> m_ScriptWorld;

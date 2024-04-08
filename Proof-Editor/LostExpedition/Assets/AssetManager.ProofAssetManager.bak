@@ -1,0 +1,13 @@
+Assets:
+  - Asset: 6008892438028944133
+    Type: Material
+    Path: Material\Red.Material.ProofAsset
+  - Asset: 115254331577300070
+    Type: World
+    Path: Scenes\TestScne.ProofWorld
+  - Asset: 10191089239069135583
+    Type: ScriptFile
+    Path: Scripts\PlayerMovement.cs
+  - Asset: 13408334471060563469
+    Type: InputBindingContext
+    Path: ""

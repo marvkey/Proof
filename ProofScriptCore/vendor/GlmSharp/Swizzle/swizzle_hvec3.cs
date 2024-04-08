@@ -14,7 +14,7 @@ namespace Proof.Swizzle
 {
     
     /// <summary>
-    /// Temporary Vectortor of type Half with 3 components, used for implementing swizzling for hVector3.
+    /// Temporary Vector of type Half with 3 components, used for implementing swizzling for hVector3.
     /// </summary>
     [RegisterCoreClassStruct]
    

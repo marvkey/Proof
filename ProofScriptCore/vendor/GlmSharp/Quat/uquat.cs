@@ -87,7 +87,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Vectortor-and-scalar constructor (CAUTION: not angle-axis, use FromAngleAxis instead)
+        /// Vector-and-scalar constructor (CAUTION: not angle-axis, use FromAngleAxis instead)
         /// </summary>
         public uQuaternion(uVector3 v, uint s)
         {
@@ -322,7 +322,7 @@ namespace Proof
         public static uQuaternion operator*(uQuaternion p, uQuaternion q) => new uQuaternion(p.w * q.x + p.x * q.w + p.y * q.z - p.z * q.y, p.w * q.y + p.y * q.w + p.z * q.x - p.x * q.z, p.w * q.z + p.z * q.w + p.x * q.y - p.y * q.x, p.w * q.w - p.x * q.x - p.y * q.y - p.z * q.z);
         
         /// <summary>
-        /// Returns a Vectortor rotated by the Quaternionernion.
+        /// Returns a Vector rotated by the Quaternionernion.
         /// </summary>
         public static uVector3 operator*(uQuaternion q, uVector3 v)
         {
@@ -333,7 +333,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Returns a Vectortor rotated by the Quaternionernion (preserves v.w).
+        /// Returns a Vector rotated by the Quaternionernion (preserves v.w).
         /// </summary>
         public static uVector4 operator*(uQuaternion q, uVector4 v) => new uVector4(q * new uVector3(v), v.w);
 

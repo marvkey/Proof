@@ -376,7 +376,8 @@ namespace Proof
 
 				if (ImGui::BeginDragDropTarget())
 				{
-					auto data = ImGui::AcceptDragDropPayload("scene_entity_hierarchy");
+					/*
+					auto data = ImGui::AcceptDragDropPayload("SceneEntity");
 					if (data)
 					{
 						size_t count = data->DataSize / sizeof(UUID);
@@ -395,6 +396,15 @@ namespace Proof
 							Count<Prefab> prefab = CreateAsset<Prefab>(entity.GetName());
 							prefab->SetEntity(entity);
 						}
+					}
+					*/
+					auto payload = ImGui::AcceptDragDropPayload("SceneEntity");
+					if (payload)
+					{
+						Entity entity = *(const Entity*)payload->Data;
+
+						Count<Prefab> prefab = CreateAsset<Prefab>(entity.GetName());
+						prefab->SetEntity(entity);
 					}
 					ImGui::EndDragDropTarget();
 				}

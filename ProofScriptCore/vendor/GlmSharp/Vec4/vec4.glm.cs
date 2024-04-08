@@ -34,27 +34,27 @@ namespace Proof
         public static IEnumerator<float> GetEnumerator(Vector4 v) => v.GetEnumerator();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using ', ' as a seperator.
+        /// Returns a string representation of this Vector using ', ' as a seperator.
         /// </summary>
         public static string ToString(Vector4 v) => v.ToString();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator.
+        /// Returns a string representation of this Vector using a provided seperator.
         /// </summary>
         public static string ToString(Vector4 v, string sep) => v.ToString(sep);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix provider for each component.
         /// </summary>
         public static string ToString(Vector4 v, string sep, IFormatProvider provider) => v.ToString(sep, provider);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix for each component.
         /// </summary>
         public static string ToString(Vector4 v, string sep, string forMatrix) => v.ToString(sep, forMatrix);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix and forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix and forMatrix provider for each component.
         /// </summary>
         public static string ToString(Vector4 v, string sep, string forMatrix, IFormatProvider provider) => v.ToString(sep, forMatrix, provider);
         
@@ -239,17 +239,17 @@ namespace Proof
         public static Vector4 Fma(Vector4 a, Vector4 b, Vector4 c) => Vector4.Fma(a, b, c);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static Matrix2x4 OuterProduct(Vector4 c, Vector2 r) => Vector4.OuterProduct(c, r);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static Matrix3x4 OuterProduct(Vector4 c, Vector3 r) => Vector4.OuterProduct(c, r);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static Matrix4 OuterProduct(Vector4 c, Vector4 r) => Vector4.OuterProduct(c, r);
         
@@ -384,22 +384,22 @@ namespace Proof
         public static Vector4 Trunc(Vector4 v) => Vector4.Trunc(v);
         
         /// <summary>
-        /// Returns the minimal component of this Vectortor.
+        /// Returns the minimal component of this Vector.
         /// </summary>
         public static float MinElement(Vector4 v) => v.MinElement;
         
         /// <summary>
-        /// Returns the maximal component of this Vectortor.
+        /// Returns the maximal component of this Vector.
         /// </summary>
         public static float MaxElement(Vector4 v) => v.MaxElement;
         
         /// <summary>
-        /// Returns the euclidean length of this Vectortor.
+        /// Returns the euclidean length of this Vector.
         /// </summary>
         public static float Length(Vector4 v) => v.Length;
         
         /// <summary>
-        /// Returns the squared euclidean length of this Vectortor.
+        /// Returns the squared euclidean length of this Vector.
         /// </summary>
         public static float LengthSqr(Vector4 v) => v.LengthSqr;
         
@@ -409,67 +409,67 @@ namespace Proof
         public static float Sum(Vector4 v) => v.Sum;
         
         /// <summary>
-        /// Returns the euclidean norm of this Vectortor.
+        /// Returns the euclidean norm of this Vector.
         /// </summary>
         public static float Norm(Vector4 v) => v.Norm;
         
         /// <summary>
-        /// Returns the one-norm of this Vectortor.
+        /// Returns the one-norm of this Vector.
         /// </summary>
         public static float Norm1(Vector4 v) => v.Norm1;
         
         /// <summary>
-        /// Returns the two-norm (euclidean length) of this Vectortor.
+        /// Returns the two-norm (euclidean length) of this Vector.
         /// </summary>
         public static float Norm2(Vector4 v) => v.Norm2;
         
         /// <summary>
-        /// Returns the max-norm of this Vectortor.
+        /// Returns the max-norm of this Vector.
         /// </summary>
         public static float NormMax(Vector4 v) => v.NormMax;
         
         /// <summary>
-        /// Returns the p-norm of this Vectortor.
+        /// Returns the p-norm of this Vector.
         /// </summary>
         public static double NormP(Vector4 v, double p) => v.NormP(p);
         
         /// <summary>
-        /// Returns a copy of this Vectortor with length one (undefined if this has zero length).
+        /// Returns a copy of this Vector with length one (undefined if this has zero length).
         /// </summary>
         public static Vector4 Normalized(Vector4 v) => v.Normalized;
         
         /// <summary>
-        /// Returns a copy of this Vectortor with length one (returns zero if length is zero).
+        /// Returns a copy of this Vector with length one (returns zero if length is zero).
         /// </summary>
         public static Vector4 NormalizedSafe(Vector4 v) => v.NormalizedSafe;
         
         /// <summary>
-        /// Returns the inner product (dot product, scalar product) of the two Vectortors.
+        /// Returns the inner product (dot product, scalar product) of the two Vectors.
         /// </summary>
         public static float Dot(Vector4 lhs, Vector4 rhs) => Vector4.Dot(lhs, rhs);
         
         /// <summary>
-        /// Returns the euclidean distance between the two Vectortors.
+        /// Returns the euclidean distance between the two Vectors.
         /// </summary>
         public static float Distance(Vector4 lhs, Vector4 rhs) => Vector4.Distance(lhs, rhs);
         
         /// <summary>
-        /// Returns the squared euclidean distance between the two Vectortors.
+        /// Returns the squared euclidean distance between the two Vectors.
         /// </summary>
         public static float DistanceSqr(Vector4 lhs, Vector4 rhs) => Vector4.DistanceSqr(lhs, rhs);
         
         /// <summary>
-        /// Calculate the reflection direction for an incident Vectortor (N should be normalized in order to achieve the desired result).
+        /// Calculate the reflection direction for an incident Vector (N should be normalized in order to achieve the desired result).
         /// </summary>
         public static Vector4 Reflect(Vector4 I, Vector4 N) => Vector4.Reflect(I, N);
         
         /// <summary>
-        /// Calculate the refraction direction for an incident Vectortor (The input parameters I and N should be normalized in order to achieve the desired result).
+        /// Calculate the refraction direction for an incident Vector (The input parameters I and N should be normalized in order to achieve the desired result).
         /// </summary>
         public static Vector4 Refract(Vector4 I, Vector4 N, float eta) => Vector4.Refract(I, N, eta);
         
         /// <summary>
-        /// Returns a Vectortor pointing in the same direction as another (faceforward orients a Vectortor to point away from a surface as defined by its normal. If dot(Nref, I) is negative faceforward returns N, otherwise it returns -N).
+        /// Returns a Vector pointing in the same direction as another (faceforward orients a Vector to point away from a surface as defined by its normal. If dot(Nref, I) is negative faceforward returns N, otherwise it returns -N).
         /// </summary>
         public static Vector4 FaceForward(Vector4 N, Vector4 I, Vector4 Nref) => Vector4.FaceForward(N, I, Nref);
         

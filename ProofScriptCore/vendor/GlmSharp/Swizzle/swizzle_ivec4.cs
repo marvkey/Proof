@@ -14,7 +14,7 @@ namespace Proof.Swizzle
 {
     
     /// <summary>
-    /// Temporary Vectortor of type int with 4 components, used for implementing swizzling for iVector4.
+    /// Temporary Vector of type int with 4 components, used for implementing swizzling for iVector4.
     /// </summary>
     [RegisterCoreClassStruct]
    

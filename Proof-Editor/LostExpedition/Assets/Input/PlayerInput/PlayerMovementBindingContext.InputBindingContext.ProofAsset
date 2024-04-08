@@ -1,0 +1,54 @@
+AssetType: InputBindingContext
+ID: 2752931872386719743
+InputBindings:
+  - InputActionID: 79562978522739842
+    KeyBindings:
+      - InputKeyBindingType: Bundle
+        InputKeyBindingBundleName: WSAD
+        InputKeyBundleKeys:
+          - InputKeyBindingBundleType: PositiveX
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: D
+          - InputKeyBindingBundleType: NegativeX
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: A
+          - InputKeyBindingBundleType: PositiveY
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: W
+          - InputKeyBindingBundleType: NegativeY
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: S
+          - InputKeyBindingBundleType: PositiveZ
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: Invalid
+          - InputKeyBindingBundleType: NegativeZ
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: Invalid
+  - InputActionID: 16418331729819770218
+    KeyBindings:
+      - InputKeyBindingType: Key
+        InputKeyName: MouseMoveAxisXY
+  - InputActionID: 6796162255588270144
+    KeyBindings:
+      - InputKeyBindingType: Key
+        InputKeyName: Shift
+    InputInteractions:
+      - InputInteractionType: MultiTap
+        InteractionThreshold: 0.5
+        TapCount: 2
+        TapSpacing: 0.75
+        TapTime: 0.200000003
+  - InputActionID: 4210104826145374856
+    KeyBindings:
+      - InputKeyBindingType: Key
+        InputKeyName: SpaceBar
+    InputInteractions:
+      - InputInteractionType: ClickRelease
+        InteractionThreshold: 0.5
+        Mode: Click

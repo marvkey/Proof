@@ -1,115 +1,125 @@
 
 using System;
-using System.Threading;
 using Proof;
 
 namespace LostExpedition
 {
-	public class PlayerMovement : Entity
+    public enum MoveState
+    {
+        Walking,
+        Running
+    }
+    public class PlayerMovement : Entity
 	{
-
-		public float WalkSpeed = 10.0f;
-		public float RunSpeed = 20.0f;
-		public Entity Head;
-
+		public float WalkSpeed = 25.0f;
+		public float RunSpeed = 50.0f;
+		public float JumpForce = 16.0f;
 		RigidBodyComponent m_RigidBody;
 		PlayerInputComponent m_PlayerInput;
+		
+		[ShowInEditorAttribute("MovingState",true)]
+		MoveState m_MovingState = MoveState.Walking;
 
 		public InputAction MoveAction;
-		public InputAction RotateAction;
-		public InputAction MoveFastAction; 
-
-		public Vector3 Test;
-        enum MoveState
+		public InputAction LookAction;
+		public InputAction TriggerFastMove;
+		public InputAction JumpAction;
+		public Entity Head;
+		// OnCreate is called once when the Entity that this script is attached to
+		// is instantiated in the world at runtime
+		void OnCreate()
 		{
-			Walking,
-			Running
-		}
-        MoveState m_MoveState = MoveState.Walking;
-        // OnCreate is called once when the Entity that this script is attached to
-        // is instantiated in the world at runtime
-        void OnCreate()
-		{
-            m_RigidBody = GetComponent<RigidBodyComponent>();
+			m_RigidBody = GetComponent<RigidBodyComponent>();
 			m_PlayerInput = GetComponent<PlayerInputComponent>();
 
-			m_PlayerInput.BindAction(MoveAction, InteractionEvent.Triggered, Move);
-            m_PlayerInput.BindAction(RotateAction, InteractionEvent.Triggered, Rotate);
-            m_PlayerInput.BindAction(MoveFastAction, InteractionEvent.Completed, MoveFast);
+			if (m_RigidBody == null || m_PlayerInput == null)
+				return;
+			if (MoveAction != null)
+				m_PlayerInput.BindAction(MoveAction, InteractionEvent.Triggered, Move);
 
-            Mouse.SetCursorMode(MouseCursorMode.Locked);
+			if(TriggerFastMove != null)
+				m_PlayerInput.BindAction(TriggerFastMove, InteractionEvent.Triggered, EnableRunning);
+
+			if(LookAction != null)
+				m_PlayerInput.BindAction(LookAction, InteractionEvent.Triggered, Look);
+
+			if(JumpAction != null) m_PlayerInput.BindAction(JumpAction, InteractionEvent.Triggered, Jump);
+
+			Mouse.SetCursorMode(MouseCursorMode.Locked);
         }
 
-		// OnUpdate is called once every frame while this script is active in the world
-		void OnUpdate(float deltaTime)
+        // OnUpdate is called once every frame while this script is active in the world
+        void OnUpdate(float deltaTime)
 		{
 			if (m_RigidBody == null)
 			{
-				Log.Error("PlayerMovement No RigidBodyComponent");
+				Log.Error($"PlayerMovementScript {this.Name} needs a RigidBody Attached");
 				return;
 			}
-			if (Input.IsKeyClicked(KeyBoardKey.Space))
+			if (m_PlayerInput == null)
 			{
-				Mouse.SetCursorMode(MouseCursorMode.Normal);
+                Log.Error($"PlayerMovementScript {this.Name} needs a PlayerInput Attached");
+				return;
+            }
+
+			if (Input.IsKeyClicked(KeyBoardKey.M)) // this is for debug purposes 
+				Mouse.SetCursorMode(MouseCursorMode.Normal); 
+		}
+
+		void Move(InputActionOutput actionOutput)
+		{
+			float moveSpeed = m_MovingState == MoveState.Walking ? WalkSpeed : RunSpeed;
+
+			Vector2 axisData = actionOutput.Get<Vector2>();
+			
+			Vector3 movement = Transform.Forward * axisData.y * moveSpeed * World.GetDeltaTime();
+			Transform.Location += movement;
+
+			movement = Transform.Right * axisData.x * moveSpeed * World.GetDeltaTime();
+			Transform.Location += movement;
+        }
+
+		void Look(InputActionOutput actionOutput)
+		{
+            Vector2 axisData = actionOutput.Get<Vector2>();
+
+			float rotateSpeed = 2.0f;
+
+			Transform.Rotation = new Vector3(Transform.Rotation.x, Transform.Rotation.y + World.GetDeltaTime() * -axisData.x * rotateSpeed, Transform.Rotation.z);
+
+			Vector3 e = Head.Transform.Rotation;
+
+			e.x += axisData.y * World.GetDeltaTime() * rotateSpeed;
+			e.x = RestrictAngle(e.x, -85, 85);
+			Head.Transform.Rotation = e;
+
+        }
+
+        void EnableRunning(InputActionOutput actionOutput)
+		{
+			if(m_MovingState == MoveState.Running)
+				m_MovingState = MoveState.Walking;
+			else
+				m_MovingState = MoveState.Running;
+		}
+
+		bool IsGrounded()
+		{
+			bool val = Physics.Raycast(Location * new Vector3(0.0f, -1.0f, 1.0f) * 0.25f, new Vector3(0.0f, -1.0f, 1.0f), 1.0f, out RaycastHit hitInfo);
+			//if (val)
+			//	Log.Info($"Entity grounded touching {hitInfo.Entity.Name}");
+
+			return val;
+		}
+		void Jump(InputActionOutput actionOutput)
+		{
+			if(IsGrounded())
+			{
+				m_RigidBody.AddForce(new Vector3(0, 1.0f, 0).Normalized * JumpForce, ForceMode.Impulse);
 			}
 		}
 
-		void Move(InputActionOutput outPut)
-		{
-			float moveSpeed;
-			if (m_MoveState == MoveState.Walking)
-				moveSpeed = WalkSpeed;
-			else
-				moveSpeed = RunSpeed;
-
-			Vector2 axisData = outPut.Get<Vector2>();
-
-			if (outPut.Get<Vector2>().y != 0)
-			{
-				Vector3 movement = Transform.Forward * outPut.Get<Vector2>().y * moveSpeed * World.GetDeltaTime();
-				Transform.Location += movement;
-			}
-			if (outPut.Get<Vector2>().x != 0)
-			{
-                Vector3 movement = Transform.Right * outPut.Get<Vector2>().x * moveSpeed * World.GetDeltaTime();
-                Transform.Location += movement;
-			}
-
-
-        }
-		void Rotate(InputActionOutput outPut)
-		{
-			Vector2 axisData = outPut.Get<Vector2>();
-
-			float rotateSpeed = 100.5f;
-
-
-			if(axisData.x != 0)
-			{
-				//Transform.Rotation.Y += World.GetDeltaTime() * axisData.X;
-				Transform.Rotation = new Vector3(Transform.Rotation.x, Transform.Rotation.y + World.GetDeltaTime() * -axisData.x, Transform.Rotation.z);
-
-
-              //Transform.Rotate(Vector3.Up * -axisData.X );   // Adjust the multiplier for different rotation speed
-            }
-            if(axisData.y != 0)
-			{
-                Vector3 e = Head.Transform.Rotation;
-				e.x += axisData.y * World.GetDeltaTime();
-				e.x = RestrictAngle(e.x, -85, 85);
-                Head.Transform.Rotation = e;
-			}
-
-        }
-        void MoveFast(InputActionOutput outPut)
-		{
-            if (m_MoveState == MoveState.Walking)
-				m_MoveState = MoveState.Running;
-			else
-				m_MoveState = MoveState.Walking;
-        } 
-
-        public static float RestrictAngle(float angle, float angleMin, float angleMax)
+		public static float RestrictAngle(float angle, float angleMin, float angleMax)
 		{
 			if (angle > 180)
 				angle -= 360;
@@ -119,11 +129,11 @@ namespace LostExpedition
 			if (angle > angleMax)
 				angle = angleMax;
 
-			if(angle <angleMin)
+			if(angle < angleMin)
 				angle = angleMin;
 
 			return angle;
 		}
 
-    }
+	}
 }

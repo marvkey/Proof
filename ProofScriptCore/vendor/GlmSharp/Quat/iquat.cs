@@ -87,7 +87,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Vectortor-and-scalar constructor (CAUTION: not angle-axis, use FromAngleAxis instead)
+        /// Vector-and-scalar constructor (CAUTION: not angle-axis, use FromAngleAxis instead)
         /// </summary>
         public iQuaternion(iVector3 v, int s)
         {
@@ -332,7 +332,7 @@ namespace Proof
         public static iQuaternion operator*(iQuaternion p, iQuaternion q) => new iQuaternion(p.w * q.x + p.x * q.w + p.y * q.z - p.z * q.y, p.w * q.y + p.y * q.w + p.z * q.x - p.x * q.z, p.w * q.z + p.z * q.w + p.x * q.y - p.y * q.x, p.w * q.w - p.x * q.x - p.y * q.y - p.z * q.z);
         
         /// <summary>
-        /// Returns a Vectortor rotated by the Quaternionernion.
+        /// Returns a Vector rotated by the Quaternionernion.
         /// </summary>
         public static iVector3 operator*(iQuaternion q, iVector3 v)
         {
@@ -343,17 +343,17 @@ namespace Proof
         }
         
         /// <summary>
-        /// Returns a Vectortor rotated by the Quaternionernion (preserves v.w).
+        /// Returns a Vector rotated by the Quaternionernion (preserves v.w).
         /// </summary>
         public static iVector4 operator*(iQuaternion q, iVector4 v) => new iVector4(q * new iVector3(v), v.w);
         
         /// <summary>
-        /// Returns a Vectortor rotated by the inverted Quaternionernion.
+        /// Returns a Vector rotated by the inverted Quaternionernion.
         /// </summary>
         public static iVector3 operator*(iVector3 v, iQuaternion q) => q.Inverse * v;
         
         /// <summary>
-        /// Returns a Vectortor rotated by the inverted Quaternionernion (preserves v.w).
+        /// Returns a Vector rotated by the inverted Quaternionernion (preserves v.w).
         /// </summary>
         public static iVector4 operator*(iVector4 v, iQuaternion q) => q.Inverse * v;
 

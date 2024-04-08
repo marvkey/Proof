@@ -228,7 +228,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Constructs this Matrix from a series of column Vectortors. Non-overwritten fields are from an Identity Matrix.
+        /// Constructs this Matrix from a series of column Vectors. Non-overwritten fields are from an Identity Matrix.
         /// </summary>
         public iMatrix2x4(iVector2 c0, iVector2 c1)
         {
@@ -243,7 +243,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Constructs this Matrix from a series of column Vectortors. Non-overwritten fields are from an Identity Matrix.
+        /// Constructs this Matrix from a series of column Vectors. Non-overwritten fields are from an Identity Matrix.
         /// </summary>
         public iMatrix2x4(iVector3 c0, iVector3 c1)
         {
@@ -258,7 +258,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Constructs this Matrix from a series of column Vectortors. Non-overwritten fields are from an Identity Matrix.
+        /// Constructs this Matrix from a series of column Vectors. Non-overwritten fields are from an Identity Matrix.
         /// </summary>
         public iMatrix2x4(iVector4 c0, iVector4 c1)
         {
@@ -618,7 +618,7 @@ namespace Proof
         public static iMatrix4 operator*(iMatrix2x4 lhs, iMatrix4x2 rhs) => new iMatrix4((lhs.m00 * rhs.m00 + lhs.m10 * rhs.m01), (lhs.m01 * rhs.m00 + lhs.m11 * rhs.m01), (lhs.m02 * rhs.m00 + lhs.m12 * rhs.m01), (lhs.m03 * rhs.m00 + lhs.m13 * rhs.m01), (lhs.m00 * rhs.m10 + lhs.m10 * rhs.m11), (lhs.m01 * rhs.m10 + lhs.m11 * rhs.m11), (lhs.m02 * rhs.m10 + lhs.m12 * rhs.m11), (lhs.m03 * rhs.m10 + lhs.m13 * rhs.m11), (lhs.m00 * rhs.m20 + lhs.m10 * rhs.m21), (lhs.m01 * rhs.m20 + lhs.m11 * rhs.m21), (lhs.m02 * rhs.m20 + lhs.m12 * rhs.m21), (lhs.m03 * rhs.m20 + lhs.m13 * rhs.m21), (lhs.m00 * rhs.m30 + lhs.m10 * rhs.m31), (lhs.m01 * rhs.m30 + lhs.m11 * rhs.m31), (lhs.m02 * rhs.m30 + lhs.m12 * rhs.m31), (lhs.m03 * rhs.m30 + lhs.m13 * rhs.m31));
         
         /// <summary>
-        /// Executes a Matrix-Vectortor-multiplication.
+        /// Executes a Matrix-Vector-multiplication.
         /// </summary>
         public static iVector4 operator*(iMatrix2x4 m, iVector2 v) => new iVector4((m.m00 * v.x + m.m10 * v.y), (m.m01 * v.x + m.m11 * v.y), (m.m02 * v.x + m.m12 * v.y), (m.m03 * v.x + m.m13 * v.y));
         

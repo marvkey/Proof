@@ -164,7 +164,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Constructs this Matrix from a series of column Vectortors. Non-overwritten fields are from an Identity Matrix.
+        /// Constructs this Matrix from a series of column Vectors. Non-overwritten fields are from an Identity Matrix.
         /// </summary>
         public decMatrix2(decVector2 c0, decVector2 c1)
         {
@@ -497,7 +497,7 @@ namespace Proof
         public static decMatrix4x2 operator*(decMatrix2 lhs, decMatrix4x2 rhs) => new decMatrix4x2((lhs.m00 * rhs.m00 + lhs.m10 * rhs.m01), (lhs.m01 * rhs.m00 + lhs.m11 * rhs.m01), (lhs.m00 * rhs.m10 + lhs.m10 * rhs.m11), (lhs.m01 * rhs.m10 + lhs.m11 * rhs.m11), (lhs.m00 * rhs.m20 + lhs.m10 * rhs.m21), (lhs.m01 * rhs.m20 + lhs.m11 * rhs.m21), (lhs.m00 * rhs.m30 + lhs.m10 * rhs.m31), (lhs.m01 * rhs.m30 + lhs.m11 * rhs.m31));
         
         /// <summary>
-        /// Executes a Matrix-Vectortor-multiplication.
+        /// Executes a Matrix-Vector-multiplication.
         /// </summary>
         public static decVector2 operator*(decMatrix2 m, decVector2 v) => new decVector2((m.m00 * v.x + m.m10 * v.y), (m.m01 * v.x + m.m11 * v.y));
         

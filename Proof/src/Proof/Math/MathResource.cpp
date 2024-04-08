@@ -51,7 +51,7 @@ namespace Proof::MathResource
 		// At this point, the matrix (in rows[]) is orthonormal.
 		// Check for a coordinate system flip.  If the determinant
 		// is -1, then negate the matrix and the scaling factors.
-		#if 0
+	#if 0
 		Pdum3 = cross(Row[1], Row[2]); // v3Cross(row[1], row[2], Pdum3);
 		if (dot(Row[0], Pdum3) < 0)
 		{
@@ -60,8 +60,8 @@ namespace Proof::MathResource
 				scale[i] *= static_cast<T>(-1);
 				Row[i] *= static_cast<T>(-1);
 			}
-	}
-		#endif
+		}
+	#endif
 
 		rotation.y = asin(-Row[0][2]);
 		if (cos(rotation.y) != 0)
@@ -83,9 +83,6 @@ namespace Proof::MathResource
 	{
 		return v * desiredLength / length(v);
 	}
-
-//////////////////////////////////////////////////////////////////////////
-// DecomposeTransform with a quaternion.
 
 	bool DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::quat& rotation, glm::vec3& scale)
 	{
@@ -195,7 +192,7 @@ namespace Proof::MathResource
 			// Check for a coordinate system flip.  If the determinant
 			// is -1, then negate the matrix and the scaling factors.
 		vec3 Pdum3 = cross(Row[1], Row[2]); // v3Cross(row[1], row[2], Pdum3);
-		ANT_CORE_ASSERT(dot(Row[0], Pdum3) >= static_cast<T>(0));
+		X2_CORE_ASSERT(dot(Row[0], Pdum3) >= static_cast<T>(0));
 	#endif
 		//if (dot(Row[0], Pdum3) < 0)
 		//{

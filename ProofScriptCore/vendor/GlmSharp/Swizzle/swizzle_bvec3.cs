@@ -14,7 +14,7 @@ namespace Proof.Swizzle
 {
     
     /// <summary>
-    /// Temporary Vectortor of type bool with 3 components, used for implementing swizzling for bVector3.
+    /// Temporary Vector of type bool with 3 components, used for implementing swizzling for bVector3.
     /// </summary>
     [RegisterCoreClassStruct]
    

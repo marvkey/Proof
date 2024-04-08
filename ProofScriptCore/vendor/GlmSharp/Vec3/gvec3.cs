@@ -14,7 +14,7 @@ namespace Proof
 {
     
     /// <summary>
-    /// A Vectortor of type T with 3 components.
+    /// A Vector of type T with 3 components.
     /// </summary>
     [RegisterCoreClassStruct]
     
@@ -68,7 +68,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor (empty fields are zero/false)
+        /// from-Vector constructor (empty fields are zero/false)
         /// </summary>
         public gVector3(gVector2<T> v)
         {
@@ -78,7 +78,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor-and-value constructor
+        /// from-Vector-and-value constructor
         /// </summary>
         public gVector3(gVector2<T> v, T z)
         {
@@ -88,7 +88,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor
+        /// from-Vector constructor
         /// </summary>
         public gVector3(gVector3<T> v)
         {
@@ -98,7 +98,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor (additional fields are truncated)
+        /// from-Vector constructor (additional fields are truncated)
         /// </summary>
         public gVector3(gVector4<T> v)
         {
@@ -417,7 +417,7 @@ namespace Proof
         #region Static Properties
         
         /// <summary>
-        /// Predefined all-zero Vectortor
+        /// Predefined all-zero Vector
         /// </summary>
         public static gVector3<T> Zero { get; } = new gVector3<T>(default(T), default(T), default(T));
 
@@ -457,12 +457,12 @@ namespace Proof
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using ', ' as a seperator.
+        /// Returns a string representation of this Vector using ', ' as a seperator.
         /// </summary>
         public override string ToString() => ToString(", ");
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator.
+        /// Returns a string representation of this Vector using a provided seperator.
         /// </summary>
         public string ToString(string sep) => ((x + sep + y) + sep + z);
         

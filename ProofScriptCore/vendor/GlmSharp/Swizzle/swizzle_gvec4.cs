@@ -14,7 +14,7 @@ namespace Proof.Swizzle
 {
     
     /// <summary>
-    /// Temporary Vectortor of type T with 4 components, used for implementing swizzling for gVector4.
+    /// Temporary Vector of type T with 4 components, used for implementing swizzling for gVector4.
     /// </summary>
     [RegisterCoreClassStruct]
    

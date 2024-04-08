@@ -262,8 +262,13 @@ namespace Proof
 		static const ElevatedInputKey RightControl;
 		static const ElevatedInputKey LeftAlt;
 		static const ElevatedInputKey RightAlt;
-		static const ElevatedInputKey LeftCommand;
-		static const ElevatedInputKey RightCommand;
+		static const ElevatedInputKey LeftSuper;
+		static const ElevatedInputKey RightSuper;
+
+		static const ElevatedInputKey Shift;
+		static const ElevatedInputKey Control;
+		static const ElevatedInputKey Alt;
+		static const ElevatedInputKey Super;
 
 		static const ElevatedInputKey Semicolon;
 		static const ElevatedInputKey Equals;

@@ -118,8 +118,14 @@ namespace Proof
 	const ElevatedInputKey ElevatedInputKeys::RightControl(ElevatedInputKeyDeviceType::KeyBoard, "RightControl", ElevatedInputKeyFlags::ModifierKey);
 	const ElevatedInputKey ElevatedInputKeys::LeftAlt(ElevatedInputKeyDeviceType::KeyBoard, "LeftAlt", ElevatedInputKeyFlags::ModifierKey);
 	const ElevatedInputKey ElevatedInputKeys::RightAlt(ElevatedInputKeyDeviceType::KeyBoard, "RightAlt", ElevatedInputKeyFlags::ModifierKey);
-	const ElevatedInputKey ElevatedInputKeys::LeftCommand(ElevatedInputKeyDeviceType::KeyBoard, "LeftCommand", ElevatedInputKeyFlags::ModifierKey);
-	const ElevatedInputKey ElevatedInputKeys::RightCommand(ElevatedInputKeyDeviceType::KeyBoard, "RightCommand", ElevatedInputKeyFlags::ModifierKey);
+	const ElevatedInputKey ElevatedInputKeys::LeftSuper(ElevatedInputKeyDeviceType::KeyBoard, "LeftSuper", ElevatedInputKeyFlags::ModifierKey);
+	const ElevatedInputKey ElevatedInputKeys::RightSuper(ElevatedInputKeyDeviceType::KeyBoard, "RightSuper", ElevatedInputKeyFlags::ModifierKey);
+
+
+	const ElevatedInputKey ElevatedInputKeys::Shift(ElevatedInputKeyDeviceType::KeyBoard, "Shift", ElevatedInputKeyFlags::ModifierKey);
+	const ElevatedInputKey ElevatedInputKeys::Control(ElevatedInputKeyDeviceType::KeyBoard, "Control", ElevatedInputKeyFlags::ModifierKey);
+	const ElevatedInputKey ElevatedInputKeys::Alt(ElevatedInputKeyDeviceType::KeyBoard, "Alt", ElevatedInputKeyFlags::ModifierKey);
+	const ElevatedInputKey ElevatedInputKeys::Super(ElevatedInputKeyDeviceType::KeyBoard, "Super", ElevatedInputKeyFlags::ModifierKey);
 
 	const ElevatedInputKey ElevatedInputKeys::Semicolon(ElevatedInputKeyDeviceType::KeyBoard, ";");
 	const ElevatedInputKey ElevatedInputKeys::Equals(ElevatedInputKeyDeviceType::KeyBoard, "=");
@@ -391,8 +397,13 @@ namespace Proof
 		AddKeyBoardKey(KeyBoardKey::RightControl, &RightControl);
 		AddKeyBoardKey(KeyBoardKey::LeftAlt, &LeftAlt);
 		AddKeyBoardKey(KeyBoardKey::RightAlt, &RightAlt);
-		AddKeyBoardKey(KeyBoardKey::LeftSuper, &LeftCommand);
-		AddKeyBoardKey(KeyBoardKey::RightSuper, &RightCommand);
+		AddKeyBoardKey(KeyBoardKey::LeftSuper, &LeftSuper);
+		AddKeyBoardKey(KeyBoardKey::RightSuper, &RightSuper);
+
+		AddKey(&Shift);
+		AddKey(&Control);
+		AddKey(&Alt);
+		AddKey(&Super);
 
 		AddKeyBoardKey(KeyBoardKey::Semicolon, &Semicolon);
 		AddKeyBoardKey(KeyBoardKey::Equal, &Equals);

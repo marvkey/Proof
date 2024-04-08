@@ -14,7 +14,7 @@ namespace Proof
 {
     
     /// <summary>
-    /// A Vectortor of type bool with 4 components.
+    /// A Vector of type bool with 4 components.
     /// </summary>
     [RegisterCoreClassStruct]
     
@@ -76,7 +76,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor (empty fields are zero/false)
+        /// from-Vector constructor (empty fields are zero/false)
         /// </summary>
         public bVector4(bVector2 v)
         {
@@ -87,7 +87,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor-and-value constructor (empty fields are zero/false)
+        /// from-Vector-and-value constructor (empty fields are zero/false)
         /// </summary>
         public bVector4(bVector2 v, bool z)
         {
@@ -98,7 +98,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor-and-value constructor
+        /// from-Vector-and-value constructor
         /// </summary>
         public bVector4(bVector2 v, bool z, bool w)
         {
@@ -109,7 +109,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor (empty fields are zero/false)
+        /// from-Vector constructor (empty fields are zero/false)
         /// </summary>
         public bVector4(bVector3 v)
         {
@@ -120,7 +120,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor-and-value constructor
+        /// from-Vector-and-value constructor
         /// </summary>
         public bVector4(bVector3 v, bool w)
         {
@@ -131,7 +131,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor
+        /// from-Vector constructor
         /// </summary>
         public bVector4(bVector4 v)
         {
@@ -821,12 +821,12 @@ namespace Proof
         public int Count => 4;
         
         /// <summary>
-        /// Returns the minimal component of this Vectortor.
+        /// Returns the minimal component of this Vector.
         /// </summary>
         public bool MinElement => ((x && y) && (z && w));
         
         /// <summary>
-        /// Returns the maximal component of this Vectortor.
+        /// Returns the maximal component of this Vector.
         /// </summary>
         public bool MaxElement => ((x || y) || (z || w));
         
@@ -846,32 +846,32 @@ namespace Proof
         #region Static Properties
         
         /// <summary>
-        /// Predefined all-zero Vectortor
+        /// Predefined all-zero Vector
         /// </summary>
         public static bVector4 Zero { get; } = new bVector4(false, false, false, false);
         
         /// <summary>
-        /// Predefined all-ones Vectortor
+        /// Predefined all-ones Vector
         /// </summary>
         public static bVector4 Ones { get; } = new bVector4(true, true, true, true);
         
         /// <summary>
-        /// Predefined unit-X Vectortor
+        /// Predefined unit-X Vector
         /// </summary>
         public static bVector4 UnitX { get; } = new bVector4(true, false, false, false);
         
         /// <summary>
-        /// Predefined unit-Y Vectortor
+        /// Predefined unit-Y Vector
         /// </summary>
         public static bVector4 UnitY { get; } = new bVector4(false, true, false, false);
         
         /// <summary>
-        /// Predefined unit-Z Vectortor
+        /// Predefined unit-Z Vector
         /// </summary>
         public static bVector4 UnitZ { get; } = new bVector4(false, false, true, false);
         
         /// <summary>
-        /// Predefined unit-W Vectortor
+        /// Predefined unit-W Vector
         /// </summary>
         public static bVector4 UnitW { get; } = new bVector4(false, false, false, true);
 
@@ -912,17 +912,17 @@ namespace Proof
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using ', ' as a seperator.
+        /// Returns a string representation of this Vector using ', ' as a seperator.
         /// </summary>
         public override string ToString() => ToString(", ");
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator.
+        /// Returns a string representation of this Vector using a provided seperator.
         /// </summary>
         public string ToString(string sep) => ((x + sep + y) + sep + (z + sep + w));
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix provider for each component.
         /// </summary>
         public string ToString(string sep, IFormatProvider provider) => ((x.ToString(provider) + sep + y.ToString(provider)) + sep + (z.ToString(provider) + sep + w.ToString(provider)));
         
@@ -957,12 +957,12 @@ namespace Proof
         #region Static Functions
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using ', ' as a separator).
+        /// Converts the string representation of the Vector into a Vector representation (using ', ' as a separator).
         /// </summary>
         public static bVector4 Parse(string s) => Parse(s, ", ");
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using a designated separator).
+        /// Converts the string representation of the Vector into a Vector representation (using a designated separator).
         /// </summary>
         public static bVector4 Parse(string s, string sep)
         {
@@ -972,12 +972,12 @@ namespace Proof
         }
         
         /// <summary>
-        /// Tries to convert the string representation of the Vectortor into a Vectortor representation (using ', ' as a separator), returns false if string was invalid.
+        /// Tries to convert the string representation of the Vector into a Vector representation (using ', ' as a separator), returns false if string was invalid.
         /// </summary>
         public static bool TryParse(string s, out bVector4 result) => TryParse(s, ", ", out result);
         
         /// <summary>
-        /// Tries to convert the string representation of the Vectortor into a Vectortor representation (using a designated separator), returns false if string was invalid.
+        /// Tries to convert the string representation of the Vector into a Vector representation (using a designated separator), returns false if string was invalid.
         /// </summary>
         public static bool TryParse(string s, string sep, out bVector4 result)
         {

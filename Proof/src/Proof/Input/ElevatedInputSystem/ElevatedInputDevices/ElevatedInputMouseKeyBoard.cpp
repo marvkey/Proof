@@ -3,6 +3,7 @@
 #include "Proof/Events/MouseEvent.h"
 #include "Proof/Input/Mouse.h"
 #include "Proof/Events/KeyEvent.h"
+#include "Proof/Input/Input.h"
 namespace Proof
 {
 	
@@ -64,6 +65,18 @@ namespace Proof
 			m_MousePosSetToRelease = true;
 		}
 
+	}
+
+	ElevatedInputDeviceMouseKeyboard::ElevatedInputDeviceMouseKeyboard()
+	{
+		m_ModifierKeyStates[ElevatedInputKeys::LeftShift] = Input::IsKeyPressed(KeyBoardKey::LeftShift);
+		m_ModifierKeyStates[ElevatedInputKeys::RightShift] = Input::IsKeyPressed(KeyBoardKey::RightShift);
+		m_ModifierKeyStates[ElevatedInputKeys::LeftControl] = Input::IsKeyPressed(KeyBoardKey::LeftControl);
+		m_ModifierKeyStates[ElevatedInputKeys::RightControl] = Input::IsKeyPressed(KeyBoardKey::RightControl);
+		m_ModifierKeyStates[ElevatedInputKeys::LeftAlt] = Input::IsKeyPressed(KeyBoardKey::LeftAlt);
+		m_ModifierKeyStates[ElevatedInputKeys::RightAlt] = Input::IsKeyPressed(KeyBoardKey::RightAlt);
+		m_ModifierKeyStates[ElevatedInputKeys::RightSuper] = Input::IsKeyPressed(KeyBoardKey::RightSuper);
+		m_ModifierKeyStates[ElevatedInputKeys::LeftSuper] = Input::IsKeyPressed(KeyBoardKey::LeftSuper);
 	}
 
 	void ElevatedInputDeviceMouseKeyboard::OnEvent(Event& e)
@@ -162,18 +175,154 @@ namespace Proof
 		dispatcher.Dispatch<KeyClickedEvent>([&](KeyClickedEvent& keyClicked)
 			{
 				ElevatedInputKey inputKey = ElevatedInputKeys::GetKeyBoardKey(keyClicked.GetKey());
-				ElevatedInputKeyParams params{ inputKey,ElevatedKeyEventType::Clicked, inputDevice,1.0,inputKey.IsAnalog() ? 1u : 0u};
 
-				return InvokeStep(params);
+				bool outValue = false;
+				{
+					ElevatedInputKeyParams params{ inputKey,ElevatedKeyEventType::Clicked, inputDevice,1.0,inputKey.IsAnalog() ? 1u : 0u };
+					outValue|= InvokeStep(params);
+				}
+
+				if (m_ModifierKeyStates.contains(inputKey))
+					m_ModifierKeyStates.at(inputKey) = true; // down
+
+				switch (keyClicked.GetKey())
+				{
+					case KeyBoardKey::LeftShift:
+					case KeyBoardKey::RightShift:
+					{
+						// if any one of them is not up
+						// then yes send a key clicked
+						// because we are in a clicked event so one is actually clicked
+						if (m_ModifierKeyStates.at(ElevatedInputKeys::LeftShift) == false || m_ModifierKeyStates.at(ElevatedInputKeys::RightShift) == false)
+						{
+
+							ElevatedInputKeyParams params{ ElevatedInputKeys::Shift,ElevatedKeyEventType::Clicked, inputDevice,1.0,inputKey.IsAnalog() ? 1u : 0u };
+							outValue |= InvokeStep(params);
+						}
+					}
+					break;
+					case KeyBoardKey::LeftControl:
+					case KeyBoardKey::RightControl:
+					{
+						// if any one of them is not up
+						// then yes send a key clicked
+						// because we are in a clicked event so one is actually clicked
+						if (m_ModifierKeyStates.at(ElevatedInputKeys::LeftControl) == false || m_ModifierKeyStates.at(ElevatedInputKeys::RightControl) == false)
+						{
+
+							ElevatedInputKeyParams params{ ElevatedInputKeys::Control,ElevatedKeyEventType::Clicked, inputDevice,1.0,inputKey.IsAnalog() ? 1u : 0u };
+							outValue |= InvokeStep(params);
+						}
+					}
+					break;
+
+					case KeyBoardKey::LeftAlt:
+					case KeyBoardKey::RightAlt:
+					{
+						// if any one of them is not up
+						// then yes send a key clicked
+						// because we are in a clicked event so one is actually clicked
+						if (m_ModifierKeyStates.at(ElevatedInputKeys::LeftAlt) == false || m_ModifierKeyStates.at(ElevatedInputKeys::RightAlt) == false)
+						{
+
+							ElevatedInputKeyParams params{ ElevatedInputKeys::Alt,ElevatedKeyEventType::Clicked, inputDevice,1.0,inputKey.IsAnalog() ? 1u : 0u };
+							outValue |= InvokeStep(params);
+						}
+					}
+					break;
+
+					case KeyBoardKey::LeftSuper:
+					case KeyBoardKey::RightSuper:
+					{
+						// if any one of them is not up
+						// then yes send a key clicked
+						// because we are in a clicked event so one is actually clicked
+						if (m_ModifierKeyStates.at(ElevatedInputKeys::LeftSuper) == false || m_ModifierKeyStates.at(ElevatedInputKeys::RightSuper) == false)
+						{
+
+							ElevatedInputKeyParams params{ ElevatedInputKeys::Super,ElevatedKeyEventType::Clicked, inputDevice,1.0,inputKey.IsAnalog() ? 1u : 0u };
+							outValue |= InvokeStep(params);
+						}
+					}
+					break;
+					default:
+						break;
+				}
+
+				return outValue;
 			});
 
 		dispatcher.Dispatch<KeyReleasedEvent>([&](KeyReleasedEvent& keyReleased)
 			{
+				bool outValue = false;
 				ElevatedInputKey inputKey = ElevatedInputKeys::GetKeyBoardKey(keyReleased.GetKey());
 
-				ElevatedInputKeyParams params{ inputKey,ElevatedKeyEventType::Released, inputDevice,0.0,inputKey.IsAnalog() ? 1u : 0u };
+				{
+					ElevatedInputKeyParams params{ inputKey,ElevatedKeyEventType::Released, inputDevice,0.0,inputKey.IsAnalog() ? 1u : 0u };
 
-				return InvokeStep(params);
+					outValue |= InvokeStep(params);
+				}
+
+				if (m_ModifierKeyStates.contains(inputKey))
+					m_ModifierKeyStates.at(inputKey) = false; // released
+
+				switch (keyReleased.GetKey())
+				{
+					case KeyBoardKey::LeftShift:
+					case KeyBoardKey::RightShift:
+					{
+						// if both are release then we send a release event
+						if (m_ModifierKeyStates.at(ElevatedInputKeys::LeftShift) == false && m_ModifierKeyStates.at(ElevatedInputKeys::RightShift) == false)
+						{
+
+							ElevatedInputKeyParams params{ ElevatedInputKeys::Shift,ElevatedKeyEventType::Released, inputDevice,0.0,inputKey.IsAnalog() ? 1u : 0u };
+							outValue |= InvokeStep(params);
+						}
+					}
+					break;
+					case KeyBoardKey::LeftControl:
+					case KeyBoardKey::RightControl:
+					{
+						// if both are release then we send a release event
+						if (m_ModifierKeyStates.at(ElevatedInputKeys::LeftControl) == false && m_ModifierKeyStates.at(ElevatedInputKeys::RightControl) == false)
+						{
+
+							ElevatedInputKeyParams params{ ElevatedInputKeys::Control,ElevatedKeyEventType::Released, inputDevice,0.0,inputKey.IsAnalog() ? 1u : 0u };
+							outValue |= InvokeStep(params);
+						}
+					}
+					break;
+
+					case KeyBoardKey::LeftAlt:
+					case KeyBoardKey::RightAlt:
+					{
+						// if both are release then we send a release event
+						if (m_ModifierKeyStates.at(ElevatedInputKeys::LeftAlt) == false && m_ModifierKeyStates.at(ElevatedInputKeys::RightAlt) == false)
+						{
+
+							ElevatedInputKeyParams params{ ElevatedInputKeys::Alt,ElevatedKeyEventType::Released, inputDevice,0.0,inputKey.IsAnalog() ? 1u : 0u };
+							outValue |= InvokeStep(params);
+						}
+					}
+					break;
+
+					case KeyBoardKey::LeftSuper:
+					case KeyBoardKey::RightSuper:
+					{
+						// if both are release then we send a release event
+						if (m_ModifierKeyStates.at(ElevatedInputKeys::LeftSuper) == false && m_ModifierKeyStates.at(ElevatedInputKeys::RightSuper) == false)
+						{
+
+							ElevatedInputKeyParams params{ ElevatedInputKeys::Super,ElevatedKeyEventType::Released, inputDevice,0.0,inputKey.IsAnalog() ? 1u : 0u };
+							outValue |= InvokeStep(params);
+						}
+					}
+					break;
+					default:
+						break;
+				}
+
+				return outValue;
 			});
 
 		/*

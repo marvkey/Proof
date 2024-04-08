@@ -93,6 +93,12 @@ namespace Proof
 		Count<FieldStorageBase> GetEntityClassField(Entity entity, const std::string& classFullName, const std::string& fieldName);
 
 		void DuplicateScriptInstance(Entity srcEntity, Entity dstEntity);
+		// for things like prefabs or creating from another entity
+		// if for example the base entity has a entity field
+		// that points to a camera of a sub entity
+		// we check it here and update the field accordinly
+		// first entity swap is srcEntity, // second is dstEntity
+		void PostDuplicateScriptInstance(Entity srcEntity, Entity dstEntity, std::unordered_map<UUID, UUID>& entitySwapID);
 
 		Count <class World> GetWorld()const { return m_World; }
 

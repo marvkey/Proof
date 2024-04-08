@@ -1,6 +1,0 @@
-C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\LostExpedition\Binaries\ScriptCore\ProofScriptCore.dll
-C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\LostExpedition\Binaries\ScriptCore\ProofScriptCore.pdb
-C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\LostExpedition\Intermediates\ScriptCore\Debug\ProofScriptCore.csproj.AssemblyReference.cache
-C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\LostExpedition\Intermediates\ScriptCore\Debug\ProofScriptCore.csproj.CoreCompileInputs.cache
-C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\LostExpedition\Intermediates\ScriptCore\Debug\ProofScriptCore.dll
-C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\LostExpedition\Intermediates\ScriptCore\Debug\ProofScriptCore.pdb

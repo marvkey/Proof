@@ -1,49 +1,25 @@
 Assets:
-  - Asset: 14363693630730396003
-    Type: World
-    Path: Scenes\TestSceme.ProofWorld
-  - Asset: 3676627569175275034
+  - Asset: 6008892438028944133
     Type: Material
-    Path: Materials\Red.Material.ProofAsset
-  - Asset: 1939643375930245746
+    Path: Material\Red.Material.ProofAsset
+  - Asset: 115254331577300070
+    Type: World
+    Path: Scenes\TestScene.ProofWorld
+  - Asset: 79562978522739842
     Type: InputAction
-    Path: Input\Actions\Move.InputAction.ProofAsset
-  - Asset: 10608357681865028400
-    Type: InputAction
-    Path: Input\Actions\Rotate.InputAction.ProofAsset
-  - Asset: 8021289418374761399
-    Type: InputBindingContext
-    Path: Input\PlayerMoveInputContext.InputBindingContext.ProofAsset
-  - Asset: 12508729347451298576
+    Path: Input\PlayerInput\Actions\Move.InputAction.ProofAsset
+  - Asset: 10191089239069135583
     Type: ScriptFile
     Path: Scripts\PlayerMovement.cs
-  - Asset: 1529300951506462583
-    Type: TextureSourceFile
-    Path: HdrMaps\MegaSun4k.hdr
-  - Asset: 16380327643227884766
-    Type: Texture
-    Path: HdrMaps\Arches_E_PineTree_3k.Texture.ProofAsset
-  - Asset: 7618370798246356819
-    Type: TextureSourceFile
-    Path: HdrMaps\Arches_E_PineTree_3k.hdr
-  - Asset: 2504069315839882535
-    Type: TextureSourceFile
-    Path: HdrMaps\syferfontein_18d_clear_puresky_4k.hdr
-  - Asset: 17418161691759136348
-    Type: TextureSourceFile
-    Path: HdrMaps\DayInTheClouds4k.hdr
-  - Asset: 16873915643725682364
-    Type: TextureSourceFile
-    Path: HdrMaps\qwantani_puresky_4k.hdr
-  - Asset: 15294434163743374770
-    Type: TextureSourceFile
-    Path: HdrMaps\Arches_E_PineTree_3k.hdr
-  - Asset: 9157120538598532581
-    Type: Texture
-    Path: HdrMaps\MegaSun4k.Texture.ProofAsset
-  - Asset: 2929260123255034122
-    Type: Texture
-    Path: HdrMaps\qwantani_puresky_4k.Texture.ProofAsset
-  - Asset: 11310292435774158517
+  - Asset: 2752931872386719743
+    Type: InputBindingContext
+    Path: Input\PlayerInput\PlayerMovementBindingContext.InputBindingContext.ProofAsset
+  - Asset: 16418331729819770218
     Type: InputAction
-    Path: Input\Actions\MoveFast.InputAction.ProofAsset
+    Path: Input\PlayerInput\Actions\Look.InputAction.ProofAsset
+  - Asset: 6796162255588270144
+    Type: InputAction
+    Path: Input\PlayerInput\Actions\TriggerFastMove.InputAction.ProofAsset
+  - Asset: 4210104826145374856
+    Type: InputAction
+    Path: Input\PlayerInput\Actions\Jump.InputAction.ProofAsset

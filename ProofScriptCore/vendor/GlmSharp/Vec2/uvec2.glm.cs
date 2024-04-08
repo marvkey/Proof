@@ -34,27 +34,27 @@ namespace Proof
         public static IEnumerator<uint> GetEnumerator(uVector2 v) => v.GetEnumerator();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using ', ' as a seperator.
+        /// Returns a string representation of this Vector using ', ' as a seperator.
         /// </summary>
         public static string ToString(uVector2 v) => v.ToString();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator.
+        /// Returns a string representation of this Vector using a provided seperator.
         /// </summary>
         public static string ToString(uVector2 v, string sep) => v.ToString(sep);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix provider for each component.
         /// </summary>
         public static string ToString(uVector2 v, string sep, IFormatProvider provider) => v.ToString(sep, provider);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix for each component.
         /// </summary>
         public static string ToString(uVector2 v, string sep, string forMatrix) => v.ToString(sep, forMatrix);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix and forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix and forMatrix provider for each component.
         /// </summary>
         public static string ToString(uVector2 v, string sep, string forMatrix, IFormatProvider provider) => v.ToString(sep, forMatrix, provider);
         
@@ -209,17 +209,17 @@ namespace Proof
         public static uVector2 Fma(uVector2 a, uVector2 b, uVector2 c) => uVector2.Fma(a, b, c);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static uMatrix2 OuterProduct(uVector2 c, uVector2 r) => uVector2.OuterProduct(c, r);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static uMatrix3x2 OuterProduct(uVector2 c, uVector3 r) => uVector2.OuterProduct(c, r);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static uMatrix4x2 OuterProduct(uVector2 c, uVector4 r) => uVector2.OuterProduct(c, r);
         
@@ -269,22 +269,22 @@ namespace Proof
         public static uVector2 RightShift(uVector2 lhs, iVector2 rhs) => uVector2.RightShift(lhs, rhs);
         
         /// <summary>
-        /// Returns the minimal component of this Vectortor.
+        /// Returns the minimal component of this Vector.
         /// </summary>
         public static uint MinElement(uVector2 v) => v.MinElement;
         
         /// <summary>
-        /// Returns the maximal component of this Vectortor.
+        /// Returns the maximal component of this Vector.
         /// </summary>
         public static uint MaxElement(uVector2 v) => v.MaxElement;
         
         /// <summary>
-        /// Returns the euclidean length of this Vectortor.
+        /// Returns the euclidean length of this Vector.
         /// </summary>
         public static float Length(uVector2 v) => v.Length;
         
         /// <summary>
-        /// Returns the squared euclidean length of this Vectortor.
+        /// Returns the squared euclidean length of this Vector.
         /// </summary>
         public static float LengthSqr(uVector2 v) => v.LengthSqr;
         
@@ -294,47 +294,47 @@ namespace Proof
         public static uint Sum(uVector2 v) => v.Sum;
         
         /// <summary>
-        /// Returns the euclidean norm of this Vectortor.
+        /// Returns the euclidean norm of this Vector.
         /// </summary>
         public static float Norm(uVector2 v) => v.Norm;
         
         /// <summary>
-        /// Returns the one-norm of this Vectortor.
+        /// Returns the one-norm of this Vector.
         /// </summary>
         public static float Norm1(uVector2 v) => v.Norm1;
         
         /// <summary>
-        /// Returns the two-norm (euclidean length) of this Vectortor.
+        /// Returns the two-norm (euclidean length) of this Vector.
         /// </summary>
         public static float Norm2(uVector2 v) => v.Norm2;
         
         /// <summary>
-        /// Returns the max-norm of this Vectortor.
+        /// Returns the max-norm of this Vector.
         /// </summary>
         public static float NormMax(uVector2 v) => v.NormMax;
         
         /// <summary>
-        /// Returns the p-norm of this Vectortor.
+        /// Returns the p-norm of this Vector.
         /// </summary>
         public static double NormP(uVector2 v, double p) => v.NormP(p);
         
         /// <summary>
-        /// Returns the inner product (dot product, scalar product) of the two Vectortors.
+        /// Returns the inner product (dot product, scalar product) of the two Vectors.
         /// </summary>
         public static uint Dot(uVector2 lhs, uVector2 rhs) => uVector2.Dot(lhs, rhs);
         
         /// <summary>
-        /// Returns the euclidean distance between the two Vectortors.
+        /// Returns the euclidean distance between the two Vectors.
         /// </summary>
         public static float Distance(uVector2 lhs, uVector2 rhs) => uVector2.Distance(lhs, rhs);
         
         /// <summary>
-        /// Returns the squared euclidean distance between the two Vectortors.
+        /// Returns the squared euclidean distance between the two Vectors.
         /// </summary>
         public static float DistanceSqr(uVector2 lhs, uVector2 rhs) => uVector2.DistanceSqr(lhs, rhs);
         
         /// <summary>
-        /// Returns the length of the outer product (cross product, Vectortor product) of the two Vectortors.
+        /// Returns the length of the outer product (cross product, Vector product) of the two Vectors.
         /// </summary>
         public static uint Cross(uVector2 l, uVector2 r) => uVector2.Cross(l, r);
         

@@ -2,10 +2,10 @@ Project:
   Name: LostExpedition
   AssetDirectory: Assets
   AssetManager: Assets/AssetManager.ProofAssetManager
-  StartWorld: 7107588826582919816
+  StartWorld: 0
   ScriptModuleDirectory: Binaries/ScriptApp
   OnCloseStartWorldEditLastOpen: true
-  StartWorldEdit: 14363693630730396003
+  StartWorldEdit: 115254331577300070
   Input:
     ActionMapping:
       []

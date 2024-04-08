@@ -87,7 +87,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Vectortor-and-scalar constructor (CAUTION: not angle-axis, use FromAngleAxis instead)
+        /// Vector-and-scalar constructor (CAUTION: not angle-axis, use FromAngleAxis instead)
         /// </summary>
         public gQuaternion(gVector3<T> v, T s)
         {

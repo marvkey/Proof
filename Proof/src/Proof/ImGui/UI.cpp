@@ -1370,8 +1370,12 @@ namespace Proof::UI
                 selectionIndex = 0;
                 result = true;
             }
-            auto [changed, outIndex, outSelectionString] = UI::Combo(fieldName, options,managedEnumClass->EnumFields[selectionIndex].Name);
 
+            if (field->HasFlag(FieldFlag::ReadOnly))
+                UI::PushItemDisabled();
+            auto [changed, outIndex, outSelectionString] = UI::Combo(fieldName, options,managedEnumClass->EnumFields[selectionIndex].Name);
+            if (field->HasFlag(FieldFlag::ReadOnly))
+                UI::PopItemDisabled();
             if (changed)
             {
                 const auto& enumMetaData = managedEnumClass->EnumFields[outIndex];

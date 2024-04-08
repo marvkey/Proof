@@ -35,27 +35,27 @@ namespace Proof
         public static IEnumerator<Complex> GetEnumerator(cVector3 v) => v.GetEnumerator();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using ', ' as a seperator.
+        /// Returns a string representation of this Vector using ', ' as a seperator.
         /// </summary>
         public static string ToString(cVector3 v) => v.ToString();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator.
+        /// Returns a string representation of this Vector using a provided seperator.
         /// </summary>
         public static string ToString(cVector3 v, string sep) => v.ToString(sep);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix provider for each component.
         /// </summary>
         public static string ToString(cVector3 v, string sep, IFormatProvider provider) => v.ToString(sep, provider);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix for each component.
         /// </summary>
         public static string ToString(cVector3 v, string sep, string forMatrix) => v.ToString(sep, forMatrix);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix and forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix and forMatrix provider for each component.
         /// </summary>
         public static string ToString(cVector3 v, string sep, string forMatrix, IFormatProvider provider) => v.ToString(sep, forMatrix, provider);
         
@@ -375,17 +375,17 @@ namespace Proof
         public static Complex Fma(Complex a, Complex b, Complex c) => a * b + c;
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static cMatrix2x3 OuterProduct(cVector3 c, cVector2 r) => cVector3.OuterProduct(c, r);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static cMatrix3 OuterProduct(cVector3 c, cVector3 r) => cVector3.OuterProduct(c, r);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static cMatrix4x3 OuterProduct(cVector3 c, cVector4 r) => cVector3.OuterProduct(c, r);
         
@@ -430,12 +430,12 @@ namespace Proof
         public static Complex Div(Complex lhs, Complex rhs) => lhs / rhs;
         
         /// <summary>
-        /// Returns the euclidean length of this Vectortor.
+        /// Returns the euclidean length of this Vector.
         /// </summary>
         public static double Length(cVector3 v) => v.Length;
         
         /// <summary>
-        /// Returns the squared euclidean length of this Vectortor.
+        /// Returns the squared euclidean length of this Vector.
         /// </summary>
         public static double LengthSqr(cVector3 v) => v.LengthSqr;
         
@@ -445,82 +445,82 @@ namespace Proof
         public static Complex Sum(cVector3 v) => v.Sum;
         
         /// <summary>
-        /// Returns the euclidean norm of this Vectortor.
+        /// Returns the euclidean norm of this Vector.
         /// </summary>
         public static double Norm(cVector3 v) => v.Norm;
         
         /// <summary>
-        /// Returns the one-norm of this Vectortor.
+        /// Returns the one-norm of this Vector.
         /// </summary>
         public static double Norm1(cVector3 v) => v.Norm1;
         
         /// <summary>
-        /// Returns the two-norm (euclidean length) of this Vectortor.
+        /// Returns the two-norm (euclidean length) of this Vector.
         /// </summary>
         public static double Norm2(cVector3 v) => v.Norm2;
         
         /// <summary>
-        /// Returns the max-norm of this Vectortor.
+        /// Returns the max-norm of this Vector.
         /// </summary>
         public static double NormMax(cVector3 v) => v.NormMax;
         
         /// <summary>
-        /// Returns the p-norm of this Vectortor.
+        /// Returns the p-norm of this Vector.
         /// </summary>
         public static double NormP(cVector3 v, double p) => v.NormP(p);
         
         /// <summary>
-        /// Returns a copy of this Vectortor with length one (undefined if this has zero length).
+        /// Returns a copy of this Vector with length one (undefined if this has zero length).
         /// </summary>
         public static cVector3 Normalized(cVector3 v) => v.Normalized;
         
         /// <summary>
-        /// Returns a copy of this Vectortor with length one (returns zero if length is zero).
+        /// Returns a copy of this Vector with length one (returns zero if length is zero).
         /// </summary>
         public static cVector3 NormalizedSafe(cVector3 v) => v.NormalizedSafe;
         
         /// <summary>
-        /// Returns a Vectortor containing component-wise magnitudes.
+        /// Returns a Vector containing component-wise magnitudes.
         /// </summary>
         public static dVector3 Magnitude(cVector3 v) => v.Magnitude;
         
         /// <summary>
-        /// Returns a Vectortor containing component-wise phases.
+        /// Returns a Vector containing component-wise phases.
         /// </summary>
         public static dVector3 Phase(cVector3 v) => v.Phase;
         
         /// <summary>
-        /// Returns a Vectortor containing component-wise imaginary parts.
+        /// Returns a Vector containing component-wise imaginary parts.
         /// </summary>
         public static dVector3 Imaginary(cVector3 v) => v.Imaginary;
         
         /// <summary>
-        /// Returns a Vectortor containing component-wise real parts.
+        /// Returns a Vector containing component-wise real parts.
         /// </summary>
         public static dVector3 Real(cVector3 v) => v.Real;
         
         /// <summary>
-        /// Returns the inner product (dot product, scalar product) of the two Vectortors.
+        /// Returns the inner product (dot product, scalar product) of the two Vectors.
         /// </summary>
         public static Complex Dot(cVector3 lhs, cVector3 rhs) => cVector3.Dot(lhs, rhs);
         
         /// <summary>
-        /// Returns the euclidean distance between the two Vectortors.
+        /// Returns the euclidean distance between the two Vectors.
         /// </summary>
         public static double Distance(cVector3 lhs, cVector3 rhs) => cVector3.Distance(lhs, rhs);
         
         /// <summary>
-        /// Returns the squared euclidean distance between the two Vectortors.
+        /// Returns the squared euclidean distance between the two Vectors.
         /// </summary>
         public static double DistanceSqr(cVector3 lhs, cVector3 rhs) => cVector3.DistanceSqr(lhs, rhs);
         
         /// <summary>
-        /// Calculate the reflection direction for an incident Vectortor (N should be normalized in order to achieve the desired result).
+        /// Calculate the reflection direction for an incident Vector (N should be normalized in order to achieve the desired result).
         /// </summary>
         public static cVector3 Reflect(cVector3 I, cVector3 N) => cVector3.Reflect(I, N);
         
         /// <summary>
-        /// Returns the outer product (cross product, Vectortor product) of the two Vectortors.
+        /// Returns the outer product (cross product, Vector product) of the two Vectors.
         /// </summary>
         public static cVector3 Cross(cVector3 l, cVector3 r) => cVector3.Cross(l, r);
 

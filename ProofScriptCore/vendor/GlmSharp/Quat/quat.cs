@@ -87,7 +87,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Vectortor-and-scalar constructor (CAUTION: not angle-axis, use FromAngleAxis instead)
+        /// Vector-and-scalar constructor (CAUTION: not angle-axis, use FromAngleAxis instead)
         /// </summary>
         public Quaternion(Vector3 v, float s)
         {
@@ -98,7 +98,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Create a Quaternionernion from two normalized axis (http://lolengine.net/blog/2013/09/18/beautiful-Matrixhs-Quaternionernion-from-Vectortors)
+        /// Create a Quaternionernion from two normalized axis (http://lolengine.net/blog/2013/09/18/beautiful-Matrixhs-Quaternionernion-from-Vectors)
         /// </summary>
         public Quaternion(Vector3 u, Vector3 v)
         {
@@ -112,7 +112,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Create a Quaternionernion from two normalized axis (http://lolengine.net/blog/2013/09/18/beautiful-Matrixhs-Quaternionernion-from-Vectortors)
+        /// Create a Quaternionernion from two normalized axis (http://lolengine.net/blog/2013/09/18/beautiful-Matrixhs-Quaternionernion-from-Vectors)
         /// </summary>
         public Quaternion(Vector3 eulerAngle)
         {
@@ -464,7 +464,7 @@ namespace Proof
         public static Quaternion operator*(Quaternion p, Quaternion q) => new Quaternion(p.w * q.x + p.x * q.w + p.y * q.z - p.z * q.y, p.w * q.y + p.y * q.w + p.z * q.x - p.x * q.z, p.w * q.z + p.z * q.w + p.x * q.y - p.y * q.x, p.w * q.w - p.x * q.x - p.y * q.y - p.z * q.z);
         
         /// <summary>
-        /// Returns a Vectortor rotated by the Quaternionernion.
+        /// Returns a Vector rotated by the Quaternionernion.
         /// </summary>
         public static Vector3 operator*(Quaternion q, Vector3 v)
         {
@@ -475,17 +475,17 @@ namespace Proof
         }
         
         /// <summary>
-        /// Returns a Vectortor rotated by the Quaternionernion (preserves v.w).
+        /// Returns a Vector rotated by the Quaternionernion (preserves v.w).
         /// </summary>
         public static Vector4 operator*(Quaternion q, Vector4 v) => new Vector4(q * new Vector3(v), v.w);
         
         /// <summary>
-        /// Returns a Vectortor rotated by the inverted Quaternionernion.
+        /// Returns a Vector rotated by the inverted Quaternionernion.
         /// </summary>
         public static Vector3 operator*(Vector3 v, Quaternion q) => q.Inverse * v;
         
         /// <summary>
-        /// Returns a Vectortor rotated by the inverted Quaternionernion (preserves v.w).
+        /// Returns a Vector rotated by the inverted Quaternionernion (preserves v.w).
         /// </summary>
         public static Vector4 operator*(Vector4 v, Quaternion q) => q.Inverse * v;
 

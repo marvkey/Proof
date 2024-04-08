@@ -25,14 +25,14 @@ namespace Proof
             return InternalCalls.Random_RandomInt32(min, max);
         }
 
-        public static Proof.Vector3 Vectortor(float min, float max)
+        public static Proof.Vector3 Vector(float min, float max)
         {
-            Proof.Vector3 Vectortor ;
-            Vectortor.x=Float(min,max);
-            Vectortor.y=Float(min,max);
-            Vectortor.z = Float(min,max);
+            Proof.Vector3 Vector ;
+            Vector.x=Float(min,max);
+            Vector.y=Float(min,max);
+            Vector.z = Float(min,max);
 
-            return Vectortor;
+            return Vector;
         }
         public static bool Bool(){
             return InternalCalls.Random_RandomBool();

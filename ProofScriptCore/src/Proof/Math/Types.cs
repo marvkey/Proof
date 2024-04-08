@@ -19,14 +19,14 @@ using Proof.Vector3 = Proof.Vector3;
 using DProof.Vector3 = Proof.dVector3;
 using DecProof.Vector3 = Proof.decVector3; //Decimal
 
-using BVectortor4 = Proof.bVector4;
-    using IVectortor4 = Proof.iVector4;
-    using I64Vectortor4 = Proof.lVector4;
-    using UI16Vectortor4 = Proof.hVector4;
-    using UIVectortor4 = Proof.uVector4;
-    using Vectortor4 = Proof.Vector4;
-    using DVectortor4 = Proof.dVector4;
-    using DecVectortor4 = Proof.decVector4; //Decimal
+using BVector4 = Proof.bVector4;
+    using IVector4 = Proof.iVector4;
+    using I64Vector4 = Proof.lVector4;
+    using UI16Vector4 = Proof.hVector4;
+    using UIVector4 = Proof.uVector4;
+    using Vector4 = Proof.Vector4;
+    using DVector4 = Proof.dVector4;
+    using DecVector4 = Proof.decVector4; //Decimal
 
     using BQuat = Proof.bQuaternion;
     using IQuat = Proof.iQuaternion;

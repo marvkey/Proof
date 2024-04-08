@@ -14,7 +14,7 @@ namespace Proof
 {
     
     /// <summary>
-    /// A Vectortor of type long with 4 components.
+    /// A Vector of type long with 4 components.
     /// </summary>
     [RegisterCoreClassStruct]
     
@@ -76,7 +76,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor (empty fields are zero/false)
+        /// from-Vector constructor (empty fields are zero/false)
         /// </summary>
         public lVector4(lVector2 v)
         {
@@ -87,7 +87,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor-and-value constructor (empty fields are zero/false)
+        /// from-Vector-and-value constructor (empty fields are zero/false)
         /// </summary>
         public lVector4(lVector2 v, long z)
         {
@@ -98,7 +98,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor-and-value constructor
+        /// from-Vector-and-value constructor
         /// </summary>
         public lVector4(lVector2 v, long z, long w)
         {
@@ -109,7 +109,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor (empty fields are zero/false)
+        /// from-Vector constructor (empty fields are zero/false)
         /// </summary>
         public lVector4(lVector3 v)
         {
@@ -120,7 +120,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor-and-value constructor
+        /// from-Vector-and-value constructor
         /// </summary>
         public lVector4(lVector3 v, long w)
         {
@@ -131,7 +131,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor
+        /// from-Vector constructor
         /// </summary>
         public lVector4(lVector4 v)
         {
@@ -826,22 +826,22 @@ namespace Proof
         public int Count => 4;
         
         /// <summary>
-        /// Returns the minimal component of this Vectortor.
+        /// Returns the minimal component of this Vector.
         /// </summary>
         public long MinElement => Math.Min(Math.Min(x, y), Math.Min(z, w));
         
         /// <summary>
-        /// Returns the maximal component of this Vectortor.
+        /// Returns the maximal component of this Vector.
         /// </summary>
         public long MaxElement => Math.Max(Math.Max(x, y), Math.Max(z, w));
         
         /// <summary>
-        /// Returns the euclidean length of this Vectortor.
+        /// Returns the euclidean length of this Vector.
         /// </summary>
         public double Length => (double)Math.Sqrt(((x*x + y*y) + (z*z + w*w)));
         
         /// <summary>
-        /// Returns the squared euclidean length of this Vectortor.
+        /// Returns the squared euclidean length of this Vector.
         /// </summary>
         public double LengthSqr => ((x*x + y*y) + (z*z + w*w));
         
@@ -851,22 +851,22 @@ namespace Proof
         public long Sum => ((x + y) + (z + w));
         
         /// <summary>
-        /// Returns the euclidean norm of this Vectortor.
+        /// Returns the euclidean norm of this Vector.
         /// </summary>
         public double Norm => (double)Math.Sqrt(((x*x + y*y) + (z*z + w*w)));
         
         /// <summary>
-        /// Returns the one-norm of this Vectortor.
+        /// Returns the one-norm of this Vector.
         /// </summary>
         public double Norm1 => ((Math.Abs(x) + Math.Abs(y)) + (Math.Abs(z) + Math.Abs(w)));
         
         /// <summary>
-        /// Returns the two-norm (euclidean length) of this Vectortor.
+        /// Returns the two-norm (euclidean length) of this Vector.
         /// </summary>
         public double Norm2 => (double)Math.Sqrt(((x*x + y*y) + (z*z + w*w)));
         
         /// <summary>
-        /// Returns the max-norm of this Vectortor.
+        /// Returns the max-norm of this Vector.
         /// </summary>
         public double NormMax => Math.Max(Math.Max(Math.Abs(x), Math.Abs(y)), Math.Max(Math.Abs(z), Math.Abs(w)));
 
@@ -876,42 +876,42 @@ namespace Proof
         #region Static Properties
         
         /// <summary>
-        /// Predefined all-zero Vectortor
+        /// Predefined all-zero Vector
         /// </summary>
         public static lVector4 Zero { get; } = new lVector4(0, 0, 0, 0);
         
         /// <summary>
-        /// Predefined all-ones Vectortor
+        /// Predefined all-ones Vector
         /// </summary>
         public static lVector4 Ones { get; } = new lVector4(1, 1, 1, 1);
         
         /// <summary>
-        /// Predefined unit-X Vectortor
+        /// Predefined unit-X Vector
         /// </summary>
         public static lVector4 UnitX { get; } = new lVector4(1, 0, 0, 0);
         
         /// <summary>
-        /// Predefined unit-Y Vectortor
+        /// Predefined unit-Y Vector
         /// </summary>
         public static lVector4 UnitY { get; } = new lVector4(0, 1, 0, 0);
         
         /// <summary>
-        /// Predefined unit-Z Vectortor
+        /// Predefined unit-Z Vector
         /// </summary>
         public static lVector4 UnitZ { get; } = new lVector4(0, 0, 1, 0);
         
         /// <summary>
-        /// Predefined unit-W Vectortor
+        /// Predefined unit-W Vector
         /// </summary>
         public static lVector4 UnitW { get; } = new lVector4(0, 0, 0, 1);
         
         /// <summary>
-        /// Predefined all-MaxValue Vectortor
+        /// Predefined all-MaxValue Vector
         /// </summary>
         public static lVector4 MaxValue { get; } = new lVector4(long.MaxValue, long.MaxValue, long.MaxValue, long.MaxValue);
         
         /// <summary>
-        /// Predefined all-MinValue Vectortor
+        /// Predefined all-MinValue Vector
         /// </summary>
         public static lVector4 MinValue { get; } = new lVector4(long.MinValue, long.MinValue, long.MinValue, long.MinValue);
 
@@ -952,27 +952,27 @@ namespace Proof
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using ', ' as a seperator.
+        /// Returns a string representation of this Vector using ', ' as a seperator.
         /// </summary>
         public override string ToString() => ToString(", ");
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator.
+        /// Returns a string representation of this Vector using a provided seperator.
         /// </summary>
         public string ToString(string sep) => ((x + sep + y) + sep + (z + sep + w));
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix provider for each component.
         /// </summary>
         public string ToString(string sep, IFormatProvider provider) => ((x.ToString(provider) + sep + y.ToString(provider)) + sep + (z.ToString(provider) + sep + w.ToString(provider)));
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix for each component.
         /// </summary>
         public string ToString(string sep, string forMatrix) => ((x.ToString(forMatrix) + sep + y.ToString(forMatrix)) + sep + (z.ToString(forMatrix) + sep + w.ToString(forMatrix)));
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix and forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix and forMatrix provider for each component.
         /// </summary>
         public string ToString(string sep, string forMatrix, IFormatProvider provider) => ((x.ToString(forMatrix, provider) + sep + y.ToString(forMatrix, provider)) + sep + (z.ToString(forMatrix, provider) + sep + w.ToString(forMatrix, provider)));
         
@@ -1002,7 +1002,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Returns the p-norm of this Vectortor.
+        /// Returns the p-norm of this Vector.
         /// </summary>
         public double NormP(double p) => Math.Pow(((Math.Pow((double)Math.Abs(x), p) + Math.Pow((double)Math.Abs(y), p)) + (Math.Pow((double)Math.Abs(z), p) + Math.Pow((double)Math.Abs(w), p))), 1 / p);
 
@@ -1012,12 +1012,12 @@ namespace Proof
         #region Static Functions
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using ', ' as a separator).
+        /// Converts the string representation of the Vector into a Vector representation (using ', ' as a separator).
         /// </summary>
         public static lVector4 Parse(string s) => Parse(s, ", ");
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using a designated separator).
+        /// Converts the string representation of the Vector into a Vector representation (using a designated separator).
         /// </summary>
         public static lVector4 Parse(string s, string sep)
         {
@@ -1027,7 +1027,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using a designated separator and a type provider).
+        /// Converts the string representation of the Vector into a Vector representation (using a designated separator and a type provider).
         /// </summary>
         public static lVector4 Parse(string s, string sep, IFormatProvider provider)
         {
@@ -1037,7 +1037,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using a designated separator and a number style).
+        /// Converts the string representation of the Vector into a Vector representation (using a designated separator and a number style).
         /// </summary>
         public static lVector4 Parse(string s, string sep, NumberStyles style)
         {
@@ -1047,7 +1047,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using a designated separator and a number style and a forMatrix provider).
+        /// Converts the string representation of the Vector into a Vector representation (using a designated separator and a number style and a forMatrix provider).
         /// </summary>
         public static lVector4 Parse(string s, string sep, NumberStyles style, IFormatProvider provider)
         {
@@ -1057,12 +1057,12 @@ namespace Proof
         }
         
         /// <summary>
-        /// Tries to convert the string representation of the Vectortor into a Vectortor representation (using ', ' as a separator), returns false if string was invalid.
+        /// Tries to convert the string representation of the Vector into a Vector representation (using ', ' as a separator), returns false if string was invalid.
         /// </summary>
         public static bool TryParse(string s, out lVector4 result) => TryParse(s, ", ", out result);
         
         /// <summary>
-        /// Tries to convert the string representation of the Vectortor into a Vectortor representation (using a designated separator), returns false if string was invalid.
+        /// Tries to convert the string representation of the Vector into a Vector representation (using a designated separator), returns false if string was invalid.
         /// </summary>
         public static bool TryParse(string s, string sep, out lVector4 result)
         {
@@ -1077,7 +1077,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Tries to convert the string representation of the Vectortor into a Vectortor representation (using a designated separator and a number style and a forMatrix provider), returns false if string was invalid.
+        /// Tries to convert the string representation of the Vector into a Vector representation (using a designated separator and a number style and a forMatrix provider), returns false if string was invalid.
         /// </summary>
         public static bool TryParse(string s, string sep, NumberStyles style, IFormatProvider provider, out lVector4 result)
         {
@@ -1092,52 +1092,52 @@ namespace Proof
         }
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static lMatrix4x2 OuterProduct(lVector2 c, lVector4 r) => new lMatrix4x2(c.x * r.x, c.y * r.x, c.x * r.y, c.y * r.y, c.x * r.z, c.y * r.z, c.x * r.w, c.y * r.w);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static lMatrix2x4 OuterProduct(lVector4 c, lVector2 r) => new lMatrix2x4(c.x * r.x, c.y * r.x, c.z * r.x, c.w * r.x, c.x * r.y, c.y * r.y, c.z * r.y, c.w * r.y);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static lMatrix4x3 OuterProduct(lVector3 c, lVector4 r) => new lMatrix4x3(c.x * r.x, c.y * r.x, c.z * r.x, c.x * r.y, c.y * r.y, c.z * r.y, c.x * r.z, c.y * r.z, c.z * r.z, c.x * r.w, c.y * r.w, c.z * r.w);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static lMatrix3x4 OuterProduct(lVector4 c, lVector3 r) => new lMatrix3x4(c.x * r.x, c.y * r.x, c.z * r.x, c.w * r.x, c.x * r.y, c.y * r.y, c.z * r.y, c.w * r.y, c.x * r.z, c.y * r.z, c.z * r.z, c.w * r.z);
         
         /// <summary>
-        /// OuterProduct treats the first parameter c as a column Vectortor (Matrix with one column) and the second parameter r as a row Vectortor (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
+        /// OuterProduct treats the first parameter c as a column Vector (Matrix with one column) and the second parameter r as a row Vector (Matrix with one row) and does a linear algebraic Matrix multiply c * r, yielding a Matrix whose number of rows is the number of components in c and whose number of columns is the number of components in r.
         /// </summary>
         public static lMatrix4 OuterProduct(lVector4 c, lVector4 r) => new lMatrix4(c.x * r.x, c.y * r.x, c.z * r.x, c.w * r.x, c.x * r.y, c.y * r.y, c.z * r.y, c.w * r.y, c.x * r.z, c.y * r.z, c.z * r.z, c.w * r.z, c.x * r.w, c.y * r.w, c.z * r.w, c.w * r.w);
         
         /// <summary>
-        /// Returns the inner product (dot product, scalar product) of the two Vectortors.
+        /// Returns the inner product (dot product, scalar product) of the two Vectors.
         /// </summary>
         public static long Dot(lVector4 lhs, lVector4 rhs) => ((lhs.x * rhs.x + lhs.y * rhs.y) + (lhs.z * rhs.z + lhs.w * rhs.w));
         
         /// <summary>
-        /// Returns the euclidean distance between the two Vectortors.
+        /// Returns the euclidean distance between the two Vectors.
         /// </summary>
         public static double Distance(lVector4 lhs, lVector4 rhs) => (lhs - rhs).Length;
         
         /// <summary>
-        /// Returns the squared euclidean distance between the two Vectortors.
+        /// Returns the squared euclidean distance between the two Vectors.
         /// </summary>
         public static double DistanceSqr(lVector4 lhs, lVector4 rhs) => (lhs - rhs).LengthSqr;
         
         /// <summary>
-        /// Calculate the reflection direction for an incident Vectortor (N should be normalized in order to achieve the desired result).
+        /// Calculate the reflection direction for an incident Vector (N should be normalized in order to achieve the desired result).
         /// </summary>
         public static lVector4 Reflect(lVector4 I, lVector4 N) => I - 2 * Dot(N, I) * N;
         
         /// <summary>
-        /// Calculate the refraction direction for an incident Vectortor (The input parameters I and N should be normalized in order to achieve the desired result).
+        /// Calculate the refraction direction for an incident Vector (The input parameters I and N should be normalized in order to achieve the desired result).
         /// </summary>
         public static lVector4 Refract(lVector4 I, lVector4 N, long eta)
         {
@@ -1148,7 +1148,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// Returns a Vectortor pointing in the same direction as another (faceforward orients a Vectortor to point away from a surface as defined by its normal. If dot(Nref, I) is negative faceforward returns N, otherwise it returns -N).
+        /// Returns a Vector pointing in the same direction as another (faceforward orients a Vector to point away from a surface as defined by its normal. If dot(Nref, I) is negative faceforward returns N, otherwise it returns -N).
         /// </summary>
         public static lVector4 FaceForward(lVector4 N, lVector4 I, lVector4 Nref) => Dot(Nref, I) < 0 ? N : -N;
         

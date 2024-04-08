@@ -14,7 +14,7 @@ namespace Proof.Swizzle
 {
     
     /// <summary>
-    /// Temporary Vectortor of type decimal with 2 components, used for implementing swizzling for decVector2.
+    /// Temporary Vector of type decimal with 2 components, used for implementing swizzling for decVector2.
     /// </summary>
     [RegisterCoreClassStruct]
    

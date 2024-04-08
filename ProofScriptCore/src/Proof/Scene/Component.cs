@@ -78,7 +78,7 @@ namespace Proof
 			get
 			{
 
-                InternalCalls.TransformComponent_GetForwardVectortor(Entity.ID, out Proof.Vector3 foward);
+                InternalCalls.TransformComponent_GetForwardVector(Entity.ID, out Proof.Vector3 foward);
                 return foward;
             }
 		}
@@ -88,7 +88,7 @@ namespace Proof
             get
             {
 
-                InternalCalls.TransformComponent_GetRightVectortor(Entity.ID, out Proof.Vector3 foward);
+                InternalCalls.TransformComponent_GetRightVector(Entity.ID, out Proof.Vector3 foward);
                 return foward;
             }
         }
@@ -98,13 +98,13 @@ namespace Proof
             get
             {
 
-                InternalCalls.TransformComponent_GetUpVectortor(Entity.ID, out Proof.Vector3 foward);
+                InternalCalls.TransformComponent_GetUpVector(Entity.ID, out Proof.Vector3 foward);
                 return foward;
             }
         }
-        public void Translate(Proof.Vector3 Vectortor)
+        public void Translate(Proof.Vector3 Vector)
 		{
-			Location += Vectortor;
+			Location += Vector;
 		}
 
         /// <summary>

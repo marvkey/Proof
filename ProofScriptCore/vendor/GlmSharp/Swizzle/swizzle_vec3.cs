@@ -14,7 +14,7 @@ namespace Proof.Swizzle
 {
     
     /// <summary>
-    /// Temporary Vectortor of type float with 3 components, used for implementing swizzling for Vector3.
+    /// Temporary Vector of type float with 3 components, used for implementing swizzling for Vector3.
     /// </summary>
     [RegisterCoreClassStruct]
    

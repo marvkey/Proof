@@ -895,8 +895,9 @@ namespace Proof
 
 			float snapValues[3] = { snapValue,snapValue,snapValue };
 
+			auto worldTransform = m_WorldContext->GetWorldSpaceTransform(selectedEntity);
 			ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-				(ImGuizmo::OPERATION)m_GizmoType, (ImGuizmo::MODE)m_GizmoMode, glm::value_ptr(selectedEntitytransform),
+				(ImGuizmo::OPERATION)m_GizmoType, (ImGuizmo::MODE)m_GizmoMode, glm::value_ptr(worldTransform),
 				nullptr, snap ? snapValues : nullptr);
 			if (ImGuizmo::IsUsing())
 			{
@@ -906,14 +907,51 @@ namespace Proof
 				{
 					glm::mat4 parentTransform = m_WorldContext->GetWorldSpaceTransform(parent);
 					selectedEntitytransform = glm::inverse(parentTransform) * selectedEntitytransform;
-					glm::vec3 translation, rotation, scale;
+					glm::vec3 translation, scale; glm::quat rotation;
 					MathResource::DecomposeTransform(selectedEntitytransform, translation, rotation, scale);
-
+					/*
 					glm::vec3 deltaRotation = rotation - selectedentityTc.GetRotationEuler();
 					selectedentityTc.Location = translation;
 					selectedentityTc.SetRotation(selectedentityTc.GetRotationEuler() += deltaRotation);
 					selectedentityTc.Scale = scale;
+					*/
 
+					switch (m_GizmoType) // checks bit fields
+					{
+						case ImGuizmo::TRANSLATE:
+						{
+							selectedentityTc.Location= translation;
+							break;
+						}
+						case ImGuizmo::ROTATE:
+						{
+							// Do this in Euler in an attempt to preserve any full revolutions (> 360)
+							glm::vec3 originalRotationEuler = selectedentityTc.GetRotationEuler();
+
+							// Map original rotation to range [-180, 180] which is what ImGuizmo gives us
+							originalRotationEuler.x = fmodf(originalRotationEuler.x + glm::pi<float>(), glm::two_pi<float>()) - glm::pi<float>();
+							originalRotationEuler.y = fmodf(originalRotationEuler.y + glm::pi<float>(), glm::two_pi<float>()) - glm::pi<float>();
+							originalRotationEuler.z = fmodf(originalRotationEuler.z + glm::pi<float>(), glm::two_pi<float>()) - glm::pi<float>();
+
+							glm::vec3 deltaRotationEuler = glm::eulerAngles(rotation) - originalRotationEuler;
+
+							// Try to avoid drift due numeric precision
+							if (fabs(deltaRotationEuler.x) < 0.001) deltaRotationEuler.x = 0.0f;
+							if (fabs(deltaRotationEuler.y) < 0.001) deltaRotationEuler.y = 0.0f;
+							if (fabs(deltaRotationEuler.z) < 0.001) deltaRotationEuler.z = 0.0f;
+
+							selectedentityTc.SetRotationEuler(selectedentityTc.GetRotationEuler() += deltaRotationEuler);
+							break;
+						}
+						case ImGuizmo::SCALE:
+						{
+							selectedentityTc.Scale = scale;
+							break;
+						}
+
+						default:
+							break;
+					}
 				}
 				else
 				{

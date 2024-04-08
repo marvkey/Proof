@@ -34,12 +34,12 @@ namespace Proof
         public static IEnumerator<T> GetEnumerator<T>(gVector2<T> v) => v.GetEnumerator();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using ', ' as a seperator.
+        /// Returns a string representation of this Vector using ', ' as a seperator.
         /// </summary>
         public static string ToString<T>(gVector2<T> v) => v.ToString();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator.
+        /// Returns a string representation of this Vector using a provided seperator.
         /// </summary>
         public static string ToString<T>(gVector2<T> v, string sep) => v.ToString(sep);
         

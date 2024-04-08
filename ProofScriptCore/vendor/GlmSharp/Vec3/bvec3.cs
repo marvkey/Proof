@@ -14,7 +14,7 @@ namespace Proof
 {
     
     /// <summary>
-    /// A Vectortor of type bool with 3 components.
+    /// A Vector of type bool with 3 components.
     /// </summary>
     [RegisterCoreClassStruct]
     
@@ -68,7 +68,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor (empty fields are zero/false)
+        /// from-Vector constructor (empty fields are zero/false)
         /// </summary>
         public bVector3(bVector2 v)
         {
@@ -78,7 +78,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor-and-value constructor
+        /// from-Vector-and-value constructor
         /// </summary>
         public bVector3(bVector2 v, bool z)
         {
@@ -88,7 +88,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor
+        /// from-Vector constructor
         /// </summary>
         public bVector3(bVector3 v)
         {
@@ -98,7 +98,7 @@ namespace Proof
         }
         
         /// <summary>
-        /// from-Vectortor constructor (additional fields are truncated)
+        /// from-Vector constructor (additional fields are truncated)
         /// </summary>
         public bVector3(bVector4 v)
         {
@@ -532,12 +532,12 @@ namespace Proof
         public int Count => 3;
         
         /// <summary>
-        /// Returns the minimal component of this Vectortor.
+        /// Returns the minimal component of this Vector.
         /// </summary>
         public bool MinElement => ((x && y) && z);
         
         /// <summary>
-        /// Returns the maximal component of this Vectortor.
+        /// Returns the maximal component of this Vector.
         /// </summary>
         public bool MaxElement => ((x || y) || z);
         
@@ -557,27 +557,27 @@ namespace Proof
         #region Static Properties
         
         /// <summary>
-        /// Predefined all-zero Vectortor
+        /// Predefined all-zero Vector
         /// </summary>
         public static bVector3 Zero { get; } = new bVector3(false, false, false);
         
         /// <summary>
-        /// Predefined all-ones Vectortor
+        /// Predefined all-ones Vector
         /// </summary>
         public static bVector3 Ones { get; } = new bVector3(true, true, true);
         
         /// <summary>
-        /// Predefined unit-X Vectortor
+        /// Predefined unit-X Vector
         /// </summary>
         public static bVector3 UnitX { get; } = new bVector3(true, false, false);
         
         /// <summary>
-        /// Predefined unit-Y Vectortor
+        /// Predefined unit-Y Vector
         /// </summary>
         public static bVector3 UnitY { get; } = new bVector3(false, true, false);
         
         /// <summary>
-        /// Predefined unit-Z Vectortor
+        /// Predefined unit-Z Vector
         /// </summary>
         public static bVector3 UnitZ { get; } = new bVector3(false, false, true);
 
@@ -617,17 +617,17 @@ namespace Proof
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using ', ' as a seperator.
+        /// Returns a string representation of this Vector using ', ' as a seperator.
         /// </summary>
         public override string ToString() => ToString(", ");
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator.
+        /// Returns a string representation of this Vector using a provided seperator.
         /// </summary>
         public string ToString(string sep) => ((x + sep + y) + sep + z);
         
         /// <summary>
-        /// Returns a string representation of this Vectortor using a provided seperator and a forMatrix provider for each component.
+        /// Returns a string representation of this Vector using a provided seperator and a forMatrix provider for each component.
         /// </summary>
         public string ToString(string sep, IFormatProvider provider) => ((x.ToString(provider) + sep + y.ToString(provider)) + sep + z.ToString(provider));
         
@@ -662,12 +662,12 @@ namespace Proof
         #region Static Functions
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using ', ' as a separator).
+        /// Converts the string representation of the Vector into a Vector representation (using ', ' as a separator).
         /// </summary>
         public static bVector3 Parse(string s) => Parse(s, ", ");
         
         /// <summary>
-        /// Converts the string representation of the Vectortor into a Vectortor representation (using a designated separator).
+        /// Converts the string representation of the Vector into a Vector representation (using a designated separator).
         /// </summary>
         public static bVector3 Parse(string s, string sep)
         {
@@ -677,12 +677,12 @@ namespace Proof
         }
         
         /// <summary>
-        /// Tries to convert the string representation of the Vectortor into a Vectortor representation (using ', ' as a separator), returns false if string was invalid.
+        /// Tries to convert the string representation of the Vector into a Vector representation (using ', ' as a separator), returns false if string was invalid.
         /// </summary>
         public static bool TryParse(string s, out bVector3 result) => TryParse(s, ", ", out result);
         
         /// <summary>
-        /// Tries to convert the string representation of the Vectortor into a Vectortor representation (using a designated separator), returns false if string was invalid.
+        /// Tries to convert the string representation of the Vector into a Vector representation (using a designated separator), returns false if string was invalid.
         /// </summary>
         public static bool TryParse(string s, string sep, out bVector3 result)
         {

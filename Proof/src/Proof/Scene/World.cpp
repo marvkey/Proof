@@ -666,6 +666,7 @@ namespace Proof {
 		for (uint32_t child : node.Children)
 			BuildDynamicMeshEntityHierarchy(nodeEntity, mesh, nodes[child], generateColliders);
 	}
+	
 	void World::OnUpdateRuntime(FrameTime DeltaTime) 
 	{
 		PF_PROFILE_FUNC();
@@ -965,38 +966,67 @@ namespace Proof {
 		return returnValue;
 	}
 
-	//src entity is used as childenitty in resurio
 	void World::PrefabCopyEntity(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity,bool includeChildren)
+	{
+		// first id is the src, second is dstEntity
+		std::unordered_map<UUID, UUID> entitySwapIDs;
+		PrefabCopyEntityReal(prefab, srcEntity, parentEntity, entitySwapIDs, includeChildren);
+	}
+	//src entity is used as childenitty 
+	void World::PrefabCopyEntityReal(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity, std::unordered_map<UUID, UUID>& entitySwapID, bool includeChildren)
 	{
 		// first function call for base has to be null
 		// handle it
 
+		// id of each swap id of entity
+		entitySwapID[srcEntity.GetUUID()] = { parentEntity.GetUUID() };
 		CopyComponentIfExistsEntity(AllComponents{}, parentEntity, srcEntity, true);
 
-		if (includeChildren )
+		if (includeChildren)
 		{
 			srcEntity.EachChild([&](Entity childEntity)
-			{
-				Entity newEntity;
-				newEntity = prefab->m_World->CreateEntity();
-				newEntity.SetParent(parentEntity);
-				//Entity newChild = prefab->m_World->CreateEntity(childEntity, true);
-				PrefabCopyEntity(prefab, childEntity, newEntity,true);
-			});
+				{
+					Entity newEntity;
+					newEntity = prefab->m_World->CreateEntity();
+					newEntity.SetParent(parentEntity);
+					//Entity newChild = prefab->m_World->CreateEntity(childEntity, true);
+					PrefabCopyEntityReal(prefab, childEntity, newEntity, entitySwapID,true);
+				});
 		}
+
+		m_ScriptWorld->PostDuplicateScriptInstance(srcEntity, parentEntity, entitySwapID);
 	}
 
+
+
 	Entity World::CreateEntity(Entity entity, bool includeChildren) {
+		// first id is the src, second is dstEntity
+		std::unordered_map<UUID, UUID> entitySwapIDs;
+		return CreateEntityFromOtherReal(entity,entitySwapIDs, includeChildren);
+	}
+	Entity World::CreateEntityFromOtherReal(Entity entity, std::unordered_map<UUID, UUID>& entitySwapID,bool includeChildren)
+	{
 		Entity newEntity = CreateEntity(entity.GetName());
-		CopyComponentIfExistsEntity (AllComponents{},newEntity,entity);
+		if (entity.HasParent())
+		{
+			newEntity.SetParent(entity.GetParent());
+		}
+		CopyComponentIfExistsEntity(AllComponents{}, newEntity, entity);
+
+		// first id is the src, second is dstEntity
+		entitySwapID[entity.GetUUID()] = newEntity.GetUUID();
 
 		if (includeChildren == true)
 		{
 			entity.EachChild([&](Entity childEntity) {
 				Entity newChild = CreateEntity(childEntity, true);
 				newEntity.AddChild(newChild);
-			});
+				entitySwapID[childEntity.GetUUID()] = newChild.GetUUID();
+				});
 		}
+
+		m_ScriptWorld->PostDuplicateScriptInstance(entity, newEntity, entitySwapID);
+
 		return newEntity;
 	}
 	Entity World::CreateEntity(Count<class DynamicMesh> mesh, bool generateCollider)
