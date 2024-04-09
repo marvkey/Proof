@@ -30,7 +30,9 @@ namespace Proof
 	
 	class InputBindingContext;
 	class InputAction;
-
+	class InputKeyBindingBase;
+	class InputCustomizer;
+	class InputInteraction;
 	struct InputBindingContextInstance
 	{
 		Count<InputBindingContext> InputBindingContext;
@@ -61,6 +63,15 @@ namespace Proof
 		}
 
 	};
+
+	// for multiplayer purposes
+	struct InputKeyBindingInstance
+	{
+		InputKeyBindingInstance(Count<InputKeyBindingBase> keyBindingbase);
+		Count<InputKeyBindingBase> InputKeyBindings;
+		std::vector<Count< InputInteraction>> Interactions;
+		std::vector<Count< InputCustomizer>> Customizers;
+	};
 	static inline bool operator==(const ElevatedActionKeyData& lhs, const ElevatedActionKeyData& rhs) {
 		return lhs.InputAction == rhs.InputAction &&
 			lhs.Key == rhs.Key &&
@@ -71,7 +82,7 @@ namespace Proof
 	static inline bool operator!=(const ElevatedActionKeyData& lhs, const ElevatedActionKeyData& rhs) {
 		return !(lhs == rhs);
 	}
-
+	// for multiplayer purposes
 	struct InputActionData
 	{
 		InputActionData(Count<InputAction> action);
@@ -88,7 +99,18 @@ namespace Proof
 		InputStateTracker InteractionStateTracker;
 		InputActionOutput GetActionValue() const { return InteractionEvent == InteractionEvent::Triggered ? ActionOutput : InputActionOutput(ActionOutput.GetOutputType(), glm::vec3(0)); }
 
-		Count<InputAction> m_InputAction;
+		Count<InputAction> InputAction;
+		std::vector<Count< InputInteraction>> Interactions;
+		std::vector<Count< InputCustomizer>> Customizers;
+	};
+	// for multiplayer purposes
+	struct ElevatedActionKeyBindingInstance
+	{
+		ElevatedActionKeyBindingInstance(struct ElevatedActionKeyBinding* elevatedKeyBinding);
+		Count<InputBindingContext> InputBindingContext;
+		Count<InputAction> InputAction;
+		std::vector<Count< InputInteraction>> Interactions;
+		std::vector<Count< InputCustomizer>> Customizers;
 	};
 	//https://github.com/EpicGames/UnrealEngine/blob/072300df18a94f18077ca20a14224b5d99fee872/Engine/Source/Runtime/Engine/Classes/GameFramework/PlayerInput.h
 	class ElevatedPlayer : public RefCounted
@@ -159,8 +181,10 @@ namespace Proof
 			delegate.TriggerEvent = triggerEvent;
 			delegate.Function = func;
 
-	}
+
+		}
 		InputActionData& GetActionData(Count<class InputAction> action);
+		InputKeyBindingInstance& GetKeyBindingInstance(Count<InputKeyBindingBase> keyBindingsBase);
 		bool ShouldProccessInput(const ElevatedInputKey& key);
 
 #if OLD_ELEVATE_INPUT
@@ -172,6 +196,7 @@ namespace Proof
 	private:
 		void ProccessAxisInput(ElevatedInputKey key, float rawValue);
 		bool ProccessInput(ElevatedInputKey key, const ElevatedInputKeyState& keyState);
+		ElevatedActionKeyBindingInstance* GetElevatedActionKeyBinding(struct ElevatedActionKeyBinding* elevatedKeyInstace);
 #if OLD_ELEVATE_INPUT
 
 		void ProcessActionBindingKeyEvent(InputActionValue actionValue, Count<InputBindingContext> actionBinding,ElevatedActionKeyBindingContainer& actionKeyBindingContainer, const ElevatedActionKeyBinding& keyBinding);
@@ -191,10 +216,11 @@ namespace Proof
 
 		std::vector<InputActionData> m_ActionData;
 
-		
+		std::vector< ElevatedActionKeyBindingInstance> m_ElevatedActionKeyBindingsInstance;
 
 		std::vector<ElevatedActionKeyData> m_CapableKeyBindings;
 
+		std::unordered_map<size_t, InputKeyBindingInstance> m_KeyBindingInstance;
 		uint32_t m_EventCount = 0;
 		bool m_GamePaused = false;
 		

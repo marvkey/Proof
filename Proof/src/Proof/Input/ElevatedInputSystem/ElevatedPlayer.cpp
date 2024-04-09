@@ -12,10 +12,13 @@ namespace Proof
 {
 
 	
-	InputActionData::InputActionData(Count<InputAction> action)
-		: m_InputAction(action)
+	InputActionData::InputActionData(Count<class InputAction> action)
+		: InputAction(action)
 	{
 		ActionOutput = InputActionOutput(action->OutputType, glm::vec3(0.0f));
+
+		Interactions = action->Interactions;
+		Customizers = action->Customizers;
 	}
 	void ElevatedPlayer::OnUpdate(FrameTime deltaTime)
 	{
@@ -29,7 +32,7 @@ namespace Proof
 			{
 				for (auto& inputDelegate : m_InputDelegates)
 				{
-					if (inputDelegate.InputAction == actionData.m_InputAction)
+					if (inputDelegate.InputAction == actionData.InputAction)
 					{
 						//PF_ENGINE_INFO("Number of flags {}", EnumCountFlags(inputDelegate.TriggerEvent));
 						if (EnumHasAllFlags(actionData.TriggerEvent, inputDelegate.TriggerEvent))
@@ -146,7 +149,7 @@ namespace Proof
 			{
 				for (auto& inputDelegate : m_InputDelegates)
 				{
-					if (inputDelegate.InputAction == actionData.m_InputAction)
+					if (inputDelegate.InputAction == actionData.InputAction)
 					{
 						//PF_ENGINE_INFO("Number of flags {}", EnumCountFlags(inputDelegate.TriggerEvent));
 						if (EnumReflection::HasAllFlags(actionData.InteractionEvent, inputDelegate.TriggerEvent))
@@ -165,7 +168,7 @@ namespace Proof
 			{
 				for (auto& inputDelegate : m_InputDelegates)
 				{
-					if (inputDelegate.InputAction == actionData.m_InputAction)
+					if (inputDelegate.InputAction == actionData.InputAction)
 					{
 						if (EnumHasAnyFlags(actionData.TriggerEvent,inputDelegate.TriggerEvent))
 						{
@@ -183,13 +186,14 @@ namespace Proof
 		{
 			auto inputAction = elevatedKeyBinding->InputAction;
 			auto& actionData = GetActionData(inputAction);
+			ElevatedActionKeyBindingInstance* instanceElevatedKeyBinding = GetElevatedActionKeyBinding(elevatedKeyBinding);
 
 			InteractionState triggerState = InteractionState::None;
 
 			auto rawValue = actionData.ActionOutput;
 
-			actionData.ActionOutput = ApplyCustomizer(elevatedKeyBinding->Customizers, actionData.ActionOutput, deltaTime);
-			actionData.ActionOutput = ApplyCustomizer(inputAction->Customizers, actionData.ActionOutput, deltaTime);
+			actionData.ActionOutput = ApplyCustomizer(instanceElevatedKeyBinding->Customizers, actionData.ActionOutput, deltaTime);
+			actionData.ActionOutput = ApplyCustomizer(actionData.Customizers, actionData.ActionOutput, deltaTime);
 
 			if (actionData.ActionOutput.Get<glm::vec3>() != rawValue.Get<glm::vec3>())
 			{
@@ -198,8 +202,8 @@ namespace Proof
 			actionData.InteractionStateTracker.SetStateForNoTriggers(InteractionState::Triggered );
 
 			InteractionState PrevState = actionData.InteractionStateTracker.GetState();
-			triggerState = actionData.InteractionStateTracker.EvaluateInteractions(this, elevatedKeyBinding->Interactions, actionData.ActionOutput, deltaTime);
-			triggerState = actionData.InteractionStateTracker.EvaluateInteractions(this, inputAction->Interactions, actionData.ActionOutput, deltaTime);
+			triggerState = actionData.InteractionStateTracker.EvaluateInteractions(this, instanceElevatedKeyBinding->Interactions, actionData.ActionOutput, deltaTime);
+			triggerState = actionData.InteractionStateTracker.EvaluateInteractions(this, actionData.Interactions, actionData.ActionOutput, deltaTime);
 			triggerState = actionData.InteractionStateTracker.GetBindingInteractionApplied() ? Math::Min(triggerState, PrevState) : triggerState;
 
 			if (m_GamePaused && !inputAction->TriggerWhenPaused)
@@ -221,7 +225,7 @@ namespace Proof
 			{
 				for (auto& inputDelegate : m_InputDelegates)
 				{
-					if (inputDelegate.InputAction == actionData.m_InputAction)
+					if (inputDelegate.InputAction == actionData.InputAction)
 					{
 						//PF_ENGINE_INFO("Number of flags {}", EnumCountFlags(inputDelegate.TriggerEvent));
 						if (EnumReflection::HasAllFlags(actionData.InteractionEvent, inputDelegate.TriggerEvent))
@@ -303,11 +307,20 @@ namespace Proof
 	{
 		for (auto& inputData : m_ActionData)
 		{
-			if (inputData.m_InputAction == action)
+			if (inputData.InputAction == action)
 				return inputData;
 		}
 
 		return m_ActionData.emplace_back(InputActionData{ action });
+	}
+
+	InputKeyBindingInstance& ElevatedPlayer::GetKeyBindingInstance(Count<InputKeyBindingBase> keyBindingsBase)
+	{
+		if(!m_KeyBindingInstance.contains((size_t)keyBindingsBase.Get()))
+			m_KeyBindingInstance.insert({ (size_t)keyBindingsBase.Get(),InputKeyBindingInstance{ keyBindingsBase } });
+
+		return m_KeyBindingInstance.at((size_t)keyBindingsBase.Get());
+
 	}
 
 	bool ElevatedPlayer::ShouldProccessInput(const ElevatedInputKey& key)
@@ -398,7 +411,7 @@ namespace Proof
 		}
 		for (ElevatedActionKeyBindingContainer* elevatedKeyBinding : validKeyBindings)
 		{
-			auto inputAction = elevatedKeyBinding->m_InputAction;
+			auto inputAction = elevatedKeyBinding->InputAction;
 			ElevatedActionKeyBindingContainer& actionData = *elevatedKeyBinding;
 
 			TriggerState triggerState = TriggerState::None;
@@ -437,7 +450,7 @@ namespace Proof
 			{
 				for (auto& inputDelegate : m_InputDelegates)
 				{
-					if (inputDelegate.InputAction == actionData.m_InputAction)
+					if (inputDelegate.InputAction == actionData.InputAction)
 					{
 						if (inputDelegate.TriggerEvent == actionData.m_TriggerEvent)
 						{
@@ -567,7 +580,7 @@ bool outValue = false;
 			{
 				for (auto& inputDelegate : m_InputDelegates)
 				{
-					if (inputDelegate.InputAction == actionData.m_InputAction)
+					if (inputDelegate.InputAction == actionData.InputAction)
 					{
 						if (EnumHasAnyFlags(actionData.TriggerEvent,inputDelegate.TriggerEvent))
 						{
@@ -626,7 +639,7 @@ bool outValue = false;
 			{
 				for (auto& inputDelegate : m_InputDelegates)
 				{
-					if (inputDelegate.InputAction == actionData.m_InputAction)
+					if (inputDelegate.InputAction == actionData.InputAction)
 					{
 						PF_ENGINE_INFO("Number of flags {}", EnumCountFlags(inputDelegate.TriggerEvent));
 						if (EnumHasAllFlags(actionData.TriggerEvent, inputDelegate.TriggerEvent))
@@ -664,13 +677,22 @@ bool outValue = false;
 #endif
 
 	}
+	ElevatedActionKeyBindingInstance* ElevatedPlayer::GetElevatedActionKeyBinding(ElevatedActionKeyBinding* elevatedKeyInstance)
+	{
+		for (auto& actionKeyInstance : m_ElevatedActionKeyBindingsInstance)
+		{
+			if (actionKeyInstance.InputAction == elevatedKeyInstance->InputAction && actionKeyInstance.InputBindingContext == elevatedKeyInstance->BindingContext)
+				return &actionKeyInstance;
+		}
+		return &m_ElevatedActionKeyBindingsInstance.emplace_back(ElevatedActionKeyBindingInstance{ elevatedKeyInstance });
+	}
 #if OLD_ELEVATE_INPUT
 
 	void ElevatedPlayer::ProcessActionBindingKeyEvent(InputActionOutput rawKeyValue, Count<InputBindingContext> actionBinding, ElevatedActionKeyBindingContainer& actionData, const ElevatedActionKeyBinding& keyBinding)
 	{
 		InputStateTracker triggerStateTracker;
 
-		auto inputAction = actionData.m_InputAction;
+		auto inputAction = actionData.InputAction;
 
 		bool bResetActionData = !Utils::Contains( m_ActionsWithEvents, inputAction);
 
@@ -821,5 +843,21 @@ bool outValue = false;
 	}
 	
 	
+
+	ElevatedActionKeyBindingInstance::ElevatedActionKeyBindingInstance(ElevatedActionKeyBinding* elevatedKeyBinding)
+	{
+		InputBindingContext = elevatedKeyBinding->BindingContext;
+
+		InputAction = elevatedKeyBinding->InputAction;
+		Interactions = elevatedKeyBinding->Interactions;
+		Customizers = elevatedKeyBinding->Customizers;
+	}
+
+	InputKeyBindingInstance::InputKeyBindingInstance(Count<InputKeyBindingBase> keyBindingBase)
+	{
+		InputKeyBindings = keyBindingBase;
+		Interactions = keyBindingBase->Interactions;
+		Customizers = keyBindingBase->Customizers;
+	}
 
 }

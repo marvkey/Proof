@@ -163,6 +163,7 @@ namespace Proof
 
 	struct ElevatedActionKeyBinding
 	{
+		Count<class InputBindingContext> BindingContext;
 		Count<class InputAction> InputAction;
 		std::vector<Count<class InputInteraction>> Interactions;
 		std::vector<Count<class InputCustomizer>> Customizers;

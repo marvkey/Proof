@@ -41,6 +41,10 @@ namespace Proof
 		{
 			return m_PhysXScene;
 		}
+
+		glm::vec3 GetGravity() const;
+		void SetGravity(const glm::vec3& gravity);
+
 		bool HasActor(class Entity entity);
 		Count<class PhysicsActor> CreateActor(class Entity entity);
 		Count<class PhysicsActor> GetActor(class Entity entity);

@@ -150,6 +150,14 @@ namespace Proof {
 		m_PhysXScene->getSimulationStatistics(m_SimulationStats);
 
 	}
+	glm::vec3 PhysicsWorld::GetGravity() const
+	{
+		return PhysXUtils::FromPhysXVector(m_PhysXScene->getGravity());
+	}
+	void PhysicsWorld::SetGravity(const glm::vec3& gravity)
+	{
+		m_PhysXScene->setGravity(PhysXUtils::ToPhysXVector(gravity));
+	}
 	bool PhysicsWorld::HasActor(Entity entity)
 	{
 		return m_Actors.contains(entity.GetUUID());

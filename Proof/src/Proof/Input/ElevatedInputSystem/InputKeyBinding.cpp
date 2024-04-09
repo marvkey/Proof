@@ -70,15 +70,14 @@ namespace Proof
         if (!player->ShouldProccessInput(InputKey))
             return false;
 
-        auto& actionData = player->GetActionData(action);
-
+        InputActionData& actionData = player->GetActionData(action);
+        InputKeyBindingInstance& keyBindingInstanceData = player->GetKeyBindingInstance(this);
         auto rawValue = actionValue.Get<glm::vec3>();
         InputActionOutputType ValueType = actionData.ActionOutput.GetOutputType();
-        InputActionOutput modifiedValue = player->ApplyCustomizer(Customizers, InputActionOutput(ValueType, rawValue), deltaTime);
+        InputActionOutput modifiedValue = player->ApplyCustomizer(keyBindingInstanceData.Customizers, InputActionOutput(ValueType, rawValue), deltaTime);
 
         InputStateTracker triggerStateTracker;
-        InteractionState calcedState = triggerStateTracker.EvaluateInteractions(player, Interactions, modifiedValue, deltaTime);
-
+        InteractionState calcedState = triggerStateTracker.EvaluateInteractions(player, keyBindingInstanceData.Interactions, modifiedValue, deltaTime);
 
         triggerStateTracker.SetStateForNoTriggers(modifiedValue.IsNonZero() ? InteractionState::Triggered : InteractionState::None);
 

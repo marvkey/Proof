@@ -92,6 +92,8 @@ namespace Proof {
 		if (!IsDynamic())return;
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RigidActor;
 		rigidBody->addTorque({ force.x,force.y,force.z }, Utils::ToPhysxForce(mode), autoWake);
+
+		rigidBody->setgr
 	}
 
 	void PhysicsActor::AddRadialImpulse(const glm::vec3& origin, float radius, float strength, EFalloffMode falloff, bool velocityChange)

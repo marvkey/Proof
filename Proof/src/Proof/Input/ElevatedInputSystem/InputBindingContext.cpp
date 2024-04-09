@@ -75,7 +75,7 @@ namespace Proof
 		ElevatedActionKeyBinding* actionBinding = GetActionKeyBindings(action);
 		if (actionBinding == nullptr)
 		{
-			actionBinding = &m_Bindings.emplace_back(ElevatedActionKeyBinding{ action });
+			actionBinding = &m_Bindings.emplace_back(ElevatedActionKeyBinding{ this,action });
 		}
 		auto keyBinding = Count<InputKeyBinding>::Create(inputKey);
 		//keyBinding->m_ModifierKeys.push_back(Count<InputKeyBinding>::Create(ElevatedInputKeys::LeftShift));
@@ -91,7 +91,7 @@ namespace Proof
 		ElevatedActionKeyBinding* actionBinding = GetActionKeyBindings(action);
 		if (actionBinding == nullptr)
 		{
-			actionBinding = &m_Bindings.emplace_back(ElevatedActionKeyBinding{ action });
+			actionBinding = &m_Bindings.emplace_back(ElevatedActionKeyBinding{ this,action });
 		}
 		return actionBinding;
 	}
