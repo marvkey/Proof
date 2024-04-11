@@ -44,7 +44,7 @@ namespace Proof
     public static class Physics
     {
         /*
-        public static Proof.Vector3 Gravity
+        public static Vector3 Gravity
         {
             get
             {
@@ -55,6 +55,7 @@ namespace Proof
             set => InternalCalls.Physics_SetGravity(ref value);
         }
         */
+        
 
         /// <summary>
         /// Adds a radial impulse to the scene. Any entity within the radius of the origin will be pushed/pulled according to the strength.

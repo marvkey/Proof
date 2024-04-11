@@ -15,4 +15,11 @@ namespace Proof
 		virtual void Save(const std::filesystem::path& path);
 		virtual void Load(const std::filesystem::path& path);
 	};
+
+	class ScriptImportSavedSettingSerializer : public AssetCustomDataSerializer
+	{
+	public:
+		virtual void Save(const std::filesystem::path& path);
+		virtual void Load(const std::filesystem::path& path);
+	};
 }

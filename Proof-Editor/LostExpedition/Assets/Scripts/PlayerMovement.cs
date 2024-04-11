@@ -12,7 +12,7 @@ namespace LostExpedition
     public class PlayerMovement : Entity
 	{
 		public float WalkSpeed = 25.0f;
-		public float RunSpeed = 50.0f;
+        public float RunSpeed = 50.0f;
 		public float JumpForce = 16.0f;
 		RigidBodyComponent m_RigidBody;
 		PlayerInputComponent m_PlayerInput;

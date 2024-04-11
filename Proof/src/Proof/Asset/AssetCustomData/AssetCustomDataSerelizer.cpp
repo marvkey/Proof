@@ -4,7 +4,10 @@
 #include "MeshSourceSavedSettings.h"
 #include "AssetCustomDataInfo.h"
 #include "../AssetManager.h"
-
+#include "Proof/Scripting/ScriptImportSettings.h"
+#include "Proof/Scripting/ScriptField.h"
+#include "Proof/Asset/SerializeCommon.h"
+#include "Proof/Scripting/ScriptEngine.h"
 namespace Proof
 {
 	void MeshSourceSavedSettingSerializer::Save(const std::filesystem::path& path)
@@ -123,6 +126,94 @@ namespace Proof
 			}
 		}
 		// Close the file (optional, as it will be closed when it goes out of scope)
+		file.close();
+	}
+	void ScriptImportSavedSettingSerializer::Save(const std::filesystem::path& path)
+	{
+		YAML::Emitter out;
+		out << YAML::BeginMap;//ScriptImportSettings
+		out << YAML::Key << "ScriptImportSettings";
+		out << YAML::BeginMap;//Scripts
+		out << YAML::Key << "Scripts" << YAML::Value << YAML::BeginSeq;
+		for (auto& [scriptName, scriptMetaData] : ScriptImportSettings::s_Classes)
+		{
+			out << YAML::BeginMap;// Script
+			out << YAML::Key << "Script" << YAML::Value << scriptName;
+			out << YAML::Key << "ScriptName" << YAML::Value << scriptName;
+
+			out << YAML::Key << "Fields" << YAML::Value;
+			out << YAML::BeginSeq;//Fields
+			for (const auto& [fieldName, fieldStorage] : scriptMetaData.Fields)
+			{
+				SerializeCommon::SaveScriptField(out, fieldStorage);
+			}
+			out << YAML::EndSeq; // Fields
+			out << YAML::EndMap; //Script
+		}
+		out << YAML::EndSeq;
+		out << YAML::EndMap;//Scripts
+		out << YAML::EndMap;//ScriptImportSettings
+
+
+		std::ofstream stream(Utils::GetAssetCustomDataFileSystemPath(path).string());
+
+		//creae dir
+		if (!FileSystem::Exists(Utils::GetAssetCustomDataFileSystemPath(path).string()))
+			FileSystem::CreateDirectory(Utils::GetAssetCustomDataFileSystemPath(path).parent_path().string());
+
+		stream << out.c_str();
+		stream.close();
+	}
+	void ScriptImportSavedSettingSerializer::Load(const std::filesystem::path& path)
+	{
+
+		if (!FileSystem::Exists(Utils::GetAssetCustomDataFileSystemPath(path).string()))
+			return;
+
+		// Open the YAML file for reading
+		std::ifstream file(Utils::GetAssetCustomDataFileSystemPath(path).string());
+		if (!file.is_open()) {
+			PF_CORE_ASSERT(false);
+			// Handle error: Unable to open the file
+			return;
+		}
+
+		// Load the YAML data
+		YAML::Node root = YAML::Load(file);
+
+		// Check if the root is a map
+		if (!root)
+			return; 
+		if (!root["ScriptImportSettings"])
+			return;
+
+		const YAML::Node& scriptSettingsNode = root["ScriptImportSettings"];
+
+		if (!scriptSettingsNode)
+			return;
+
+		auto scriptsMap = scriptSettingsNode["Scripts"];
+		for(auto script : scriptsMap)
+		{
+			const std::string scriptClassModule = script["ScriptName"].as<std::string>("");
+
+			if (!ScriptEngine::IsModuleValid(scriptClassModule))
+				continue;
+			
+			if (!script["Fields"])continue;
+			auto scriptFields = script["Fields"];
+
+			for (auto field : scriptFields)
+			{
+				std::string fieldNameID = field["NameID"].as<std::string>();
+
+				if (ScriptImportSettings::s_Classes[scriptClassModule].Fields.contains(fieldNameID))
+				{
+					SerializeCommon::LoadScriptField(field, ScriptImportSettings::s_Classes[scriptClassModule].Fields.at(fieldNameID));
+				}
+			}
+		}
+
 		file.close();
 	}
 }

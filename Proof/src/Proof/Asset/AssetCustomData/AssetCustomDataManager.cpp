@@ -12,6 +12,9 @@ namespace Proof
 		ScopeTimer scopeTimer(__FUNCTION__);
 		AssetCustomDataSerilizer[AssetCustomDataType::MeshSourceSavedSettings] = CreateSpecial<MeshSourceSavedSettingSerializer>();
 		AssetCustomDataSerilizerPaths[AssetCustomDataType::MeshSourceSavedSettings] = "MeshSourceSettings" + Utils::AssetCustomDataTypeMap.at(AssetCustomDataType::MeshSourceSavedSettings);
+
+		AssetCustomDataSerilizer[AssetCustomDataType::ScriptImportSettings] = CreateSpecial<ScriptImportSavedSettingSerializer>();
+		AssetCustomDataSerilizerPaths[AssetCustomDataType::ScriptImportSettings] = "ScriptImportSettings" + Utils::AssetCustomDataTypeMap.at(AssetCustomDataType::ScriptImportSettings);
 		LoadAllCustomData();
 	}
 
@@ -30,4 +33,11 @@ namespace Proof
 		for (auto& [customType, serelizier] : AssetCustomDataSerilizer)
 			serelizier->Load(AssetCustomDataSerilizerPaths.at(customType));
 	}
+	void AssetCustomDataManager::ShutDown()
+	{
+		MeshSourceSavedSettings::ShutDown();
+		AssetCustomDataSerilizer.clear();
+		AssetCustomDataSerilizerPaths.clear();
+	}
+
 }

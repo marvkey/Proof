@@ -16,6 +16,7 @@ namespace Proof
         static const std::unordered_map<AssetID, MeshSourceMetaData>& GetMeshesSourceData() { return s_MeshesSourcesMetaData; }
     private:
         static void DeleteMeshSourceData(AssetID ID);
+        static void ShutDown();
         static std::unordered_map<AssetID, MeshSourceMetaData> s_MeshesSourcesMetaData;//mesh sourceID, MeshData
         friend class MeshSourceSavedSettingSerializer;
         friend class AssetCustomDataManager;

@@ -188,6 +188,7 @@ namespace Proof
 		s_AssetManagerData->Assets.clear();
 		
 		s_AssetManagerData = nullptr;
+		AssetCustomDataManager::ShutDown();
 		PF_ENGINE_INFO("Asset Manager Shutdown {}m/s", time.ElapsedMillis());
 	}
 	void AssetManager::InternalAddAsset(AssetInfo assetInfo, Count<Asset> asset)

@@ -10,6 +10,7 @@ namespace Proof
 		static void DeleteAsset(AssetID ID);
 		static void SaveAssetCustomData();
 		static void LoadAllCustomData();
+		static void ShutDown();
 		friend class AssetManager;
 	};
 }

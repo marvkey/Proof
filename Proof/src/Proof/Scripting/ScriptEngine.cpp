@@ -30,6 +30,7 @@
 #include "mono/metadata/attrdefs.h"
 
 #include "ScriptUtils.h"
+#include "ScriptImportSettings.h"
 
 namespace Proof
 {
@@ -148,10 +149,13 @@ namespace Proof
         LoadAppAssembly();
         ScriptFunc::RegisterFunctions();
         ScriptFunc::RegisterAllComponents();
+        ScriptImportSettings::Init();
+        ScriptImportSettings::LoadAssembly();
     }
     void ScriptEngine::ShutDown()
     {
         ScopeTimer scopeTime("ScriptEngine::ShutDown");
+        ScriptImportSettings::ShutDown();
         ScriptGCManager::Shutdown();
         ScriptRegistry::ShutDown();
 
@@ -417,6 +421,8 @@ namespace Proof
         LoadAppAssembly();
         ScriptFunc::RegisterFunctions();
         ScriptFunc::RegisterAllComponents();
+        ScriptImportSettings::LoadAssembly();
+
         for (auto& [scriptWorldID, entityList] : oldFieldValues)
         {
             auto weakScriptWorld = ScriptWorld::GetScriptWorlds().at(scriptWorldID);

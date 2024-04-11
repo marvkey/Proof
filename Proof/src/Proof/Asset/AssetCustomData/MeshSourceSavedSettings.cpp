@@ -17,4 +17,9 @@ namespace Proof
             s_MeshesSourcesMetaData.erase(ID);
     }
 
+    void MeshSourceSavedSettings::ShutDown()
+    {
+        s_MeshesSourcesMetaData.clear();
+    }
+
 }

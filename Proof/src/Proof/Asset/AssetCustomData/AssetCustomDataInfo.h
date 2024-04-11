@@ -8,13 +8,15 @@ namespace Proof
 	{
 		None = 0,
 		MeshSourceSavedSettings = 1,
+		ScriptImportSettings = 2,
 	};
 	namespace Utils
 	{
 		static inline const std::unordered_map<AssetCustomDataType, std::string> AssetCustomDataTypeMap =
 		{
 				{AssetCustomDataType::None, ""},
-				{AssetCustomDataType::MeshSourceSavedSettings, ".MeshSourceCustom.ProofCustomAssetData"}
+				{AssetCustomDataType::MeshSourceSavedSettings, ".MeshSourceCustom.ProofCustomAssetData"},
+				{AssetCustomDataType::ScriptImportSettings, ".ScriptImportSettings.ProofCustomAssetData"},
 		};
 
 		std::string GetAssetCustomDataExtensionString(AssetCustomDataType type);
