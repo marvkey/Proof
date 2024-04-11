@@ -18,6 +18,8 @@ namespace Proof
 		static std::unordered_map<std::string, ScriptImportClassMetaData> s_Classes;
 		friend class ScriptEngine;
 		friend class ScriptImportSavedSettingSerializer;
+		friend class ScriptSettingsPanelPanel;
+
 		static void LoadAssembly();
 		static void Init();
 		// if we swap project it may still hold current project data and that could affect new project fields

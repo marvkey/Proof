@@ -44,6 +44,7 @@
 #include "Proof/ImGui/Editors/Panels/WorldRendererPanel.h"
 #include "Proof/ImGui/Editors/Panels/PhysicsPanelStats.h"
 #include "Proof/ImGui/Editors/Panels/ProjectSettingsPanel.h"
+#include "Proof/ImGui/Editors/Panels/ScriptImportSettingsPanel.h"
 #include "Proof/ImGui/Editors/AssetEditors/AssetEditor.h"
 #include "Proof/ImGui/SelectionManager.h"
 #include "Proof/ImGui/Editors/EditorWorkspace/EditorWorkspace.h"
@@ -64,6 +65,7 @@
 #define WORLD_RENDERER_PANEL_ID "WorldRendererPanel"
 #define PHYSICS_DEBUG_PANEL_ID "PhysicsDebugPanel"
 #define PROJECT_DEBUG_PANEL_ID "ProjectSettings"
+#define SCRIPTENGINE_IMPORT_PANEL_ID "ScriptSettingsPanel"
 namespace Proof
 {
 	// you can do this
@@ -535,6 +537,7 @@ namespace Proof
 		s_EditorData->PanelManager->AddPanel<InputPanel>(INPUT_PANEL_ID, "Input Panel", false);
 		s_EditorData->PanelManager->AddPanel<WorldRendererPanel>(WORLD_RENDERER_PANEL_ID, "Renderer Panel", true);
 		s_EditorData->PanelManager->AddPanel<ProjectSettingsPanel>(PROJECT_DEBUG_PANEL_ID, "Project Settings", false);
+		s_EditorData->PanelManager->AddPanel<ScriptSettingsPanelPanel>(SCRIPTENGINE_IMPORT_PANEL_ID, "Script Settings", false);
 
 		Count< ContentBrowserPanel> contentBrowser = s_EditorData->PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID, "Content Browser", true);
 		s_EditorData->PanelManager->SetWorldContext(m_EditorWorld);
@@ -771,7 +774,7 @@ namespace Proof
 					if (control)
 					{
 
-						Math::ChangeBool(s_EditorData->ShowRendererStats);
+						Math::ChangeBool(s_EditorData->PanelManager->GetPanelData(SCRIPTENGINE_IMPORT_PANEL_ID)->IsOpen);
 						return true;
 					}
 				// no right button pressed that means that we are using the editor camera

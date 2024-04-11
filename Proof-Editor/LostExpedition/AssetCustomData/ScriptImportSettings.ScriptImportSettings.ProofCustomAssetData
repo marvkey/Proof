@@ -1,0 +1,17 @@
+ScriptImportSettings:
+  Scripts:
+    - Script: LostExpedition.PlayerMovement
+      ScriptName: LostExpedition.PlayerMovement
+      Fields:
+        - NameID: LostExpedition.PlayerMovement.TriggerFastMove
+          Type: InputAction
+          Data: 6796162255588270144
+        - NameID: LostExpedition.PlayerMovement.MoveAction
+          Type: InputAction
+          Data: 79562978522739842
+        - NameID: LostExpedition.PlayerMovement.LookAction
+          Type: InputAction
+          Data: 16418331729819770218
+        - NameID: LostExpedition.PlayerMovement.JumpAction
+          Type: InputAction
+          Data: 4210104826145374856

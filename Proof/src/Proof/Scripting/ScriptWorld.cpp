@@ -5,6 +5,8 @@
 #include "ScriptEngine.h"
 #include "ScriptFile.h"
 #include "ScriptField.h"
+#include "ScriptImportSettings.h"
+#include "ScriptUtils.h"
 namespace Proof
 {
     static std::map<UUID, WeakCount<ScriptWorld>> s_ScriptWorldReferences;
@@ -185,7 +187,15 @@ namespace Proof
                 scriptEngineData.Fields[fieldName] = Count<FieldStorage>::Create(scriptField);
                
             }
+            if (ScriptImportSettings::HasClass(scriptEngineData.className))
+            {
+                const ScriptImportClassMetaData& classMetaData = ScriptImportSettings::GetClassMetaData(scriptEngineData.className);
 
+                if (classMetaData.Fields.contains(fieldName))
+                {
+                    scriptEngineData.Fields[fieldName]->SetValueBuffer(classMetaData.Fields.at(fieldName)->GetValueBuffer());
+                }
+            }
             // in case we want to view in editor
             if (m_IsRuntime)
             {
@@ -230,8 +240,10 @@ namespace Proof
         scriptEngineData.ClassName = classFullName;
         scriptEngineData.ScriptHandle = instanceHandle;
 
+        bool alreadyExist = false;
         if (m_EntityClassesStorage.contains(entity.GetUUID()))
         {
+            alreadyExist = true;
             ScriptClassMetaData* classMetaData =  m_EntityClassesStorage.at(entity.GetUUID()).GetClassMetaData(classFullName);
             if (classMetaData)
             {
@@ -244,12 +256,30 @@ namespace Proof
                 }
             }
         }
+        
         if (!scriptComponent.HasScript(classFullName))
             scriptComponent.ScriptMetadates.emplace_back(ScriptComponentsClassesData{ classFullName,instanceHandle });
         else
         {
             auto index = scriptComponent.GetScriptIndex(classFullName);
             scriptComponent.ScriptMetadates[index].Instance = instanceHandle;
+        }
+
+        if (!alreadyExist)
+        {
+            if (ScriptImportSettings::HasClass(classFullName))
+            {
+                const ScriptImportClassMetaData& classMetaData = ScriptImportSettings::GetClassMetaData(classFullName);
+
+                for (auto& [fieldName, field] : classMetaData.Fields)
+                {
+                    auto field = classMetaData.Fields.at(fieldName);
+                    // we do a check because we dont want to have to create script fields
+                    // for the object
+                    // since we are in runtime save as much memory as possible
+                    ScriptUtils::SetFieldValue(runtimeInstance, field->GetFieldInfo(), field->GetValueBuffer().Data);
+                }
+            }
         }
         ScriptEngine::CallMethod(instanceHandle, "OnCreate");
 

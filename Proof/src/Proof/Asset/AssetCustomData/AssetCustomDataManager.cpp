@@ -28,6 +28,14 @@ namespace Proof
 		for (auto& [customType, serelizier] : AssetCustomDataSerilizer)
 			serelizier->Save(AssetCustomDataSerilizerPaths.at(customType));
 	}
+
+	void AssetCustomDataManager::SaveAssetCustomData(AssetCustomDataType type)
+	{
+		if (AssetCustomDataSerilizer.contains(type))
+		{
+			AssetCustomDataSerilizer.at(type)->Save(AssetCustomDataSerilizerPaths.at(type));
+		}
+	}
 	void AssetCustomDataManager::LoadAllCustomData()
 	{
 		for (auto& [customType, serelizier] : AssetCustomDataSerilizer)
