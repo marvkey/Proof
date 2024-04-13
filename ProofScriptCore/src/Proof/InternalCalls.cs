@@ -411,6 +411,23 @@ namespace Proof
         #endregion
 
         #region PlayerInputComponent
+
+        
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static PlayerInputBindingContextInstanceRaw PlayerInputComponent_GetInputBindingContextInstance(ulong entityID, AssetID inputContextID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static int PlayerInputComponent_GetInputBindingContextPriority(ulong entityID, AssetID inputContextID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PlayerInputComponent_RemoveInputBindingContextByPriority(ulong entityID,uint priority);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PlayerInputComponent_RemoveInputBindingContext(ulong entityID, AssetID inputBindingContextID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PlayerInputComponent_SetInputBindingContextActive(ulong entityID, AssetID inputBindingContextID, bool active);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PlayerInputComponent_AddInputBinding(ulong entityID, AssetID inputBindingID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PlayerInputComponent_AddInputBindingByPriority(ulong entityID, AssetID inputBindingID,uint priority);   
+
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         //internal extern static void PlayerInputComponent_SetAction(ulong entityID,string className,string ActionName,int state,Action func);
         internal extern static void PlayerInputComponent_SetAction(ulong entityID,string className,string ActionName,int state,string funcName);

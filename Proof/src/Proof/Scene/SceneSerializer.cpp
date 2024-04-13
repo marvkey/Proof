@@ -1085,8 +1085,8 @@ namespace Proof
 						{
 							pic.Player->AddInputBinding(AssetManager::GetAsset<InputBindingContext>(id));
 
-							InputBindingContextInstance* instnace = pic.Player->GetInputBindingContextInstance(AssetManager::GetAsset<InputBindingContext>(id));
-							instnace->Active = active;
+							const InputBindingContextInstance* instnace = pic.Player->GetInputBindingContextInstance(AssetManager::GetAsset<InputBindingContext>(id));
+							pic.Player->SetInputBindingActive(instnace->InputBindingContext, active);
 						}
 					}
 				}

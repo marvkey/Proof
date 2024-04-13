@@ -117,11 +117,17 @@ namespace Proof
 	{
 	public:
 
-		InputBindingContextInstance* GetInputBindingContextInstance(Count<InputBindingContext> Binding);
+		const InputBindingContextInstance* GetInputBindingContextInstance(Count<InputBindingContext> Binding)const;
+		void SetInputBindingActive(Count<InputBindingContext> binding,bool active);
 		const std::vector<InputBindingContextInstance>& GetInputBindingContextList()const;
 
 		void AddInputBinding(Count<InputBindingContext> Binding);
-		void RemoveInputBinding(size_t index);
+		void AddInputBinding(Count<InputBindingContext> Binding, uint32_t priority);
+		uint32_t GetInputBindingSize() { return m_InputBindingContext.size(); };
+		void RemoveInputBinding(Count<InputBindingContext> binding);
+		void RemoveInputBindingByPriority(size_t index);
+		// returns -1 if binding is not found
+		int GetInputBindingPriority(Count<InputBindingContext> binding);
 
 		bool InputKey(const ElevatedInputKeyParams& params);
 
@@ -183,10 +189,11 @@ namespace Proof
 
 
 		}
-		InputActionData& GetActionData(Count<class InputAction> action);
+		const InputActionData& GetActionData(Count<class InputAction> action);
 		InputKeyBindingInstance& GetKeyBindingInstance(Count<InputKeyBindingBase> keyBindingsBase);
 		bool ShouldProccessInput(const ElevatedInputKey& key);
 
+		void ProcessKeyInput(Count<InputAction> action, const InputActionOutput& modifiedValue,const InputStateTracker& triggerStateTracker, bool interactionApply);
 #if OLD_ELEVATE_INPUT
 		InputActionValue ApplyModifiers(const std::vector<Count< class InputModifier>>& modifiers, InputActionValue actionValue, float deltaTime);
 #else
@@ -194,6 +201,8 @@ namespace Proof
 #endif
 
 	private:
+		InputActionData& GetActionDataRef(Count<class InputAction> action);
+
 		void ProccessAxisInput(ElevatedInputKey key, float rawValue);
 		bool ProccessInput(ElevatedInputKey key, const ElevatedInputKeyState& keyState);
 		ElevatedActionKeyBindingInstance* GetElevatedActionKeyBinding(struct ElevatedActionKeyBinding* elevatedKeyInstace);
@@ -207,20 +216,20 @@ namespace Proof
 	private:
 		int m_Player = -1; // none, player starts counting from 0
 
-		std::unordered_map<ElevatedInputKey, ElevatedInputKeyState> m_KeyStates;
-		std::unordered_map<ElevatedInputKey, ElevatedInputKeyState> m_KeyWithEvents;
-		std::vector<InputBindingContextInstance> m_InputBindingContext;
-		std::vector<Count<InputAction>> m_ActionsWithEvents;
-
-		std::vector< ElevatedPlayerInputDelegate> m_InputDelegates;
-
-		std::vector<InputActionData> m_ActionData;
-
-		std::vector< ElevatedActionKeyBindingInstance> m_ElevatedActionKeyBindingsInstance;
-
+		void ResetActionData(Count<InputAction> action);
 		std::vector<ElevatedActionKeyData> m_CapableKeyBindings;
 
+		std::vector< ElevatedPlayerInputDelegate> m_InputDelegates;
+		std::unordered_map<ElevatedInputKey, ElevatedInputKeyState> m_KeyStates;
+		std::vector<Count<InputAction>> m_ActionsWithEvents;
+
+		// these are for multiplayer purposes
+		//----------------------------------------------------------------------------------------
+		std::vector<InputBindingContextInstance> m_InputBindingContext;
+		std::vector<InputActionData> m_ActionData;
+		std::vector< ElevatedActionKeyBindingInstance> m_ElevatedActionKeyBindingsInstance;
 		std::unordered_map<size_t, InputKeyBindingInstance> m_KeyBindingInstance;
+		//----------------------------------------------------------------------------------------
 		uint32_t m_EventCount = 0;
 		bool m_GamePaused = false;
 		

@@ -65,12 +65,10 @@ namespace Proof
     {
         if (!InputKeyBindingBase::ProcessInputData(player, actionValue, action, key, m_IsModifierKey))
             return false;
-
-
         if (!player->ShouldProccessInput(InputKey))
             return false;
 
-        InputActionData& actionData = player->GetActionData(action);
+        const InputActionData& actionData = player->GetActionData(action);
         InputKeyBindingInstance& keyBindingInstanceData = player->GetKeyBindingInstance(this);
         auto rawValue = actionValue.Get<glm::vec3>();
         InputActionOutputType ValueType = actionData.ActionOutput.GetOutputType();
@@ -82,43 +80,12 @@ namespace Proof
         triggerStateTracker.SetStateForNoTriggers(modifiedValue.IsNonZero() ? InteractionState::Triggered : InteractionState::None);
 
         // modifeeir key must be triggerd to be able to procces input data
-
         if (m_IsModifierKey)
         {
             return triggerStateTracker.GetState() == InteractionState::Triggered;
         }
-
         bool interactionsApplied = (Interactions.size()) > 0;
-        const InputActionOutputValueBehavior accumulationBehavior = action->OutputValueBehavior;
-        if (modifiedValue.GetMagnitudeSq())
-        {
-            const int NumComponents = glm::max(1, int(ValueType));
-            glm::vec3 modified = modifiedValue.Get<glm::vec3>();
-            glm::vec3 merged = actionData.ActionOutput.Get<glm::vec3>();
-            for (int component = 0; component < NumComponents; ++component)
-            {
-                if (accumulationBehavior == InputActionOutputValueBehavior::Aggregate)
-                {
-                    merged[component] += modified[component];
-                }
-                else // Maximum absolute
-                {
-                    // going to use > just to ensure teh existing value is kept
-                    // because it could be a negative 
-                    
-                    //if (glm::abs(modified[component]) >= glm::abs(merged[component]))
-                    if (glm::abs(modified[component]) > glm::abs(merged[component]))
-                    {
-                        merged[component] = modified[component];
-                    }
-                }
-            }
-            actionData.ActionOutput = InputActionOutput(ValueType, merged);
-
-        }
-
-        actionData.InteractionStateTracker = actionData.InteractionStateTracker > triggerStateTracker ? actionData.InteractionStateTracker : triggerStateTracker;
-        actionData.InteractionStateTracker.SetBindingInteractionApplied(interactionsApplied);
+        player->ProcessKeyInput(action, modifiedValue, triggerStateTracker, interactionsApplied);
 
     }
     InputKeyBindingBundle::InputKeyBindingBundle()

@@ -168,6 +168,15 @@ namespace Proof
 		VelocityChange,
 		Acceleration
 	};
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct PlayerInputBindingContextInstanceRaw
+    {
+        public ulong ID; //InputBindingContextID
+        public uint Priority;
+        public bool Active;
+    };
+
     [RegisterCoreClassStruct]
     public class PlayerInputComponent : Component
 	{
@@ -178,6 +187,57 @@ namespace Proof
             if (callback == null) return;
             InternalCalls.PlayerInputComponent_BindAction(Entity.ID, action.ID, interactionEvent, callback.Target, callback.Method.Name);
         }
+
+		
+		public InputBindingData GetBindingData(InputBindingContext BindingContext)
+		{
+            PlayerInputBindingContextInstanceRaw rawData = InternalCalls.PlayerInputComponent_GetInputBindingContextInstance(this.Entity.ID, BindingContext.ID);
+
+            return new InputBindingData(this, rawData.Priority,rawData.Active, new AssetID(rawData.ID));
+        }
+
+		void AddInputBinding(InputBindingContext bindingContext)
+		{
+			InternalCalls.PlayerInputComponent_AddInputBinding(Entity.ID, bindingContext.ID);
+        }
+
+        void AddInputBindingPriority(InputBindingContext bindingContext,uint priority)
+        {
+            InternalCalls.PlayerInputComponent_AddInputBindingByPriority(Entity.ID, bindingContext.ID,priority);
+        }
+    }
+
+	public struct InputBindingData
+	{
+		public InputBindingData(PlayerInputComponent input, uint priority, bool active, AssetID id)
+		{
+			m_PlayerInput = input;
+			BindingContext = new InputBindingContext(id);
+		}
+
+		public InputBindingContext BindingContext;
+		public int Priority
+		{
+			get
+			{
+				return InternalCalls.PlayerInputComponent_GetInputBindingContextPriority(m_PlayerInput.Entity.ID,BindingContext.ID);
+			}
+		}
+		public bool Active
+		{
+
+            get
+            {
+                return InternalCalls.PlayerInputComponent_GetInputBindingContextInstance(m_PlayerInput.Entity.ID,BindingContext.ID).Active;
+            }
+
+            set
+            {
+				InternalCalls.PlayerInputComponent_SetInputBindingContextActive(m_PlayerInput.Entity.ID, BindingContext.ID, value);
+            }
+        }
+
+        private PlayerInputComponent m_PlayerInput;
     }
     [RegisterCoreClassStruct]
     public class MeshComponent : Component

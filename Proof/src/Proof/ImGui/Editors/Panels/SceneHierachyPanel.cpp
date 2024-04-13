@@ -1747,12 +1747,16 @@ namespace Proof
 
 				if (UI::AttributeTreeNode(fmt::format("Index {}", i).c_str(), true, 6, 2.0f))
 				{
-					InputBindingContextInstance* elevatedInstance = player.Player->GetInputBindingContextInstance(player.Player->GetInputBindingContextList().at(i).InputBindingContext);
-					UI::AttributeBool("Active", elevatedInstance->Active);
+					const InputBindingContextInstance* elevatedInstance = player.Player->GetInputBindingContextInstance(player.Player->GetInputBindingContextList().at(i).InputBindingContext);
+					bool active = elevatedInstance->Active;
+					if (UI::AttributeBool("Active", active))
+						player.Player->SetInputBindingActive(elevatedInstance->InputBindingContext, active);
 					AssetID Id = elevatedInstance->InputBindingContext->GetID();
 					if (UI::AttributeAssetReference("InputBindingContext", AssetType::InputBindingContext, Id))
 					{
-						elevatedInstance->InputBindingContext = AssetManager::GetAsset<InputBindingContext>(Id);
+						int index = player.Player->GetInputBindingPriority(elevatedInstance->InputBindingContext);
+						player.Player->RemoveInputBindingByPriority(index);
+						player.Player->AddInputBinding(AssetManager::GetAsset<InputBindingContext>(Id), index);
 					}
 					UI::EndTreeNode();
 				}

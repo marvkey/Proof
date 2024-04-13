@@ -21,6 +21,7 @@
 #include "Proof/Physics/PhysicsMaterial.h"
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
 #include "Proof/Input/ElevatedInputSystem/InputAction.h"
+#include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 
 #include "Proof/Scene/Mesh.h"
 
@@ -34,8 +35,69 @@
 * 
 * basic types liek ints, floats,enume can be returned do not include vectors as return take as pointers
 */
+
+
 namespace Proof
 {
+
+#define SCRIPT_FUNC_GET_NAME Utils::String::ReplaceUnderscoresWithPeriod(std::string(__FUNCTION__)) 
+
+#define SCRIPT_FUNC_ENTITY_CHECK_BASE(errorAction)\
+	Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID); \
+	if (!entity)\
+	{\
+		PF_ERROR("{} - entity is invalid",SCRIPT_FUNC_GET_NAME);\
+		errorAction;\
+	}
+
+#define SCRIPT_FUNC_ENTITY_CHECK_VOID()\
+	SCRIPT_FUNC_ENTITY_CHECK_BASE(return)
+	
+#define SCRIPT_FUNC_ENTITY_CHECK(returnValue)\
+	SCRIPT_FUNC_ENTITY_CHECK_BASE(return returnValue)
+
+#define SCRIPT_FUNC_COMPONENT_CHECK_BASE(Component,errorActionOutput)\
+	if (!entity.HasComponent<Component>())\
+	{\
+		PF_ERROR("{} - entity {} does not have {}",SCRIPT_FUNC_GET_NAME,entity.GetName(),#Component);\
+		errorActionOutput;\
+	}
+
+#define SCRIPT_FUNC_COMPONENT_CHECK_VOID(Component)\
+	SCRIPT_FUNC_COMPONENT_CHECK_BASE(Component, return);
+
+
+#define SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)\
+	SCRIPT_FUNC_COMPONENT_CHECK_BASE(Component, return returnValue);
+
+#define SCRIPT_FUNC_FUNCTION_CHECK_VOID(Component)\
+SCRIPT_FUNC_ENTITY_CHECK_VOID();\
+SCRIPT_FUNC_COMPONENT_CHECK_VOID(Component)
+
+#define SCRIPT_FUNC_FUNCTION_CHECK(Component,returnValue)\
+SCRIPT_FUNC_ENTITY_CHECK(returnValue);\
+SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
+
+#define SCRIPT_FUNC_ENTITY_CHECK_ASSET_BASE(assetID,assetType,Component,errorActionOutput)\
+	if (AssetManager::HasAsset(assetID))\
+	{\
+		if(AssetManager::GetAssetInfo(assetID).Type != assetType)\
+		{\
+			PF_ERROR("{} - entity {} {} AssetID is valid but does not match the type {}", SCRIPT_FUNC_GET_NAME, entity.GetName(),#Component,EnumReflection::EnumString(assetType));\
+			errorActionOutput;\
+		}\
+	}\
+	else\
+	{\
+		PF_ERROR("{} - entity {} {} {} invalid", SCRIPT_FUNC_GET_NAME, entity.GetName(), #Component, EnumReflection::EnumString(assetType)); \
+		errorActionOutput;\
+	}
+#define SCRIPT_FUNC_ENTITY_CHECK_ASSET_VOID(assetID,assetType,Component)\
+	SCRIPT_FUNC_ENTITY_CHECK_ASSET_BASE(assetID,assetType,Component,return);
+ 
+#define SCRIPT_FUNC_ENTITY_CHECK_ASSET(assetID,assetType,Component,returnValue)\
+	SCRIPT_FUNC_ENTITY_CHECK_ASSET_BASE(assetID,assetType,Component,return returnValue);
+
 	struct Transform
 	{
 		glm::vec3 Location;
@@ -2133,7 +2195,19 @@ namespace Proof
 
 		return success;
 	}
+	void Physics_GetGravity(glm::vec3* gravity)
+	{
+		Count<World> scene = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(scene, "Physics.SetGravity No active World!");
+		*gravity = scene->GetPhysicsWorld()->GetGravity();
+	}
 
+	void Physics_SetGravity(glm::vec3* gravity)
+	{
+		Count<World> scene = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(scene, "Physics.SetGravity No active World!");
+		scene->GetPhysicsWorld()->SetGravity(*gravity);
+	}
 	void Physics_AddRadialImpulse(glm::vec3* inOrigin, float radius, float strength, EFalloffMode falloff, bool velocityChange)
 	{
 		Count<World> scene = ScriptEngine::GetWorldContext();
@@ -2516,20 +2590,93 @@ namespace Proof
 #pragma endregion
 	#pragma region PlayerInputComponent
 
+	struct PlayerInputBindingContextInstance
+	{
+		uint64_t ID = 0;
+		int Priority = -1;
+		bool Active = false;
+	};
+	static PlayerInputBindingContextInstance PlayerInputComponent_GetInputBindingContextInstance(uint64_t entityID, AssetID inputBindingContextID)
+	{
 
+		SCRIPT_FUNC_FUNCTION_CHECK(PlayerInputComponent, PlayerInputBindingContextInstance());
+		SCRIPT_FUNC_ENTITY_CHECK_ASSET(inputBindingContextID, AssetType::InputBindingContext, PlayerInputComponent, PlayerInputBindingContextInstance());
+
+
+		Count<ElevatedPlayer> playerInput = entity.GetComponent<PlayerInputComponent>().Player;
+		auto instnace = playerInput->GetInputBindingContextInstance(AssetManager::GetAsset<InputBindingContext>(inputBindingContextID));
+		if (instnace == nullptr)
+			return PlayerInputBindingContextInstance();
+
+		return PlayerInputBindingContextInstance(instnace->InputBindingContext->GetID(), playerInput->GetInputBindingPriority(instnace->InputBindingContext), instnace->Active);
+	}
+
+	static int PlayerInputComponent_GetInputBindingContextPriority(uint64_t entityID, AssetID inputBindingContextID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(PlayerInputComponent,-1);
+		SCRIPT_FUNC_ENTITY_CHECK_ASSET(inputBindingContextID, AssetType::InputBindingContext, PlayerInputComponent, -1);
+
+		Count<ElevatedPlayer> playerInput = entity.GetComponent<PlayerInputComponent>().Player;
+		return playerInput->GetInputBindingPriority(AssetManager::GetAsset<InputBindingContext>(inputBindingContextID));
+	}
+	static void PlayerInputComponent_RemoveInputBindingContextByPriority(uint64_t entityID, uint32_t priority)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerInputComponent);
+
+		Count<ElevatedPlayer> playerInput = entity.GetComponent<PlayerInputComponent>().Player;
+		playerInput->RemoveInputBindingByPriority(priority);
+	}
+	static void PlayerInputComponent_RemoveInputBindingContext(uint64_t entityID, AssetID inputBindingContextID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerInputComponent);
+		SCRIPT_FUNC_ENTITY_CHECK_ASSET_VOID(inputBindingContextID, AssetType::InputBindingContext, PlayerInputComponent);
+
+		Count<ElevatedPlayer> playerInput = entity.GetComponent<PlayerInputComponent>().Player;
+		playerInput->RemoveInputBinding(AssetManager::GetAsset<InputBindingContext>(inputBindingContextID));
+	}
+
+	static void PlayerInputComponent_SetInputBindingContextActive(uint64_t entityID, AssetID inputBindingContextID, bool active)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerInputComponent);
+		SCRIPT_FUNC_ENTITY_CHECK_ASSET_VOID(inputBindingContextID, AssetType::InputBindingContext, PlayerInputComponent);
+		
+		Count<ElevatedPlayer> playerInput = entity.GetComponent<PlayerInputComponent>().Player;
+		playerInput->SetInputBindingActive(AssetManager::GetAsset<InputBindingContext>(inputBindingContextID),active);
+	}
+	static void PlayerInputComponent_AddInputBinding(uint64_t entityID, AssetID inputBindingContextID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerInputComponent);
+		SCRIPT_FUNC_ENTITY_CHECK_ASSET_VOID(inputBindingContextID, AssetType::InputBindingContext, PlayerInputComponent);
+
+		entity.GetComponent<PlayerInputComponent>().
+			Player->AddInputBinding(AssetManager::GetAsset<InputBindingContext>(inputBindingContextID));
+	}
+
+	static void PlayerInputComponent_AddInputBindingByPriority(uint64_t entityID, AssetID inputBindingContextID, uint32_t priority)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerInputComponent);
+		SCRIPT_FUNC_ENTITY_CHECK_ASSET_VOID(inputBindingContextID, AssetType::InputBindingContext, PlayerInputComponent);
+
+		entity.GetComponent<PlayerInputComponent>().
+			Player->AddInputBinding(AssetManager::GetAsset<InputBindingContext>(inputBindingContextID),priority);
+
+	}
 	static void PlayerInputComponent_BindAction(uint64_t entityID, AssetID actionID, InteractionEvent interactionEvent, MonoObject* managedObject, MonoString* meathodName)
 	{
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-			if (!entity)
-			{
-				PF_ERROR("PlayerInputComponent.BindAction - entity is invalid or Does not have rigidBody");
-				return;
-			}
-		#endif
+	#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_ERROR("PlayerInputComponent.BindAction - entity is invalid");
+			return;
+		}
+	#endif
 
 		if (!entity.HasComponent<PlayerInputComponent>())
+		{
+			PF_ERROR("PlayerInputComponent.BindAction - entity {} does not have playerInput", entity.GetName());
 			return;
+		}
 
 
 		if (AssetManager::HasAsset(actionID) && AssetManager::GetAssetInfo(actionID).Type == AssetType::InputAction)
@@ -2559,7 +2706,10 @@ namespace Proof
 		#endif
 
 		if (!entity.HasComponent<PlayerInputComponent>())
+		{
+			PF_ERROR("PlayerInputComponent.BindAction - entity {} does not have playerInput", entity.GetName());
 			return;
+		}
 		#if 0
 		PlayerInputComponent& playerInput = entity.GetComponent <PlayerInputComponent>();
 		
@@ -2592,7 +2742,10 @@ namespace Proof
 		#endif
 
 		if (!entity.HasComponent<PlayerInputComponent>())
+		{
+			PF_ERROR("PlayerInputComponent.BindAction - entity {} does not have playerInput", entity.GetName());
 			return;
+		}
 
 		PlayerInputComponent& playerInput = entity.GetComponent <PlayerInputComponent>();
 		#if 0
@@ -2624,7 +2777,10 @@ namespace Proof
 		#endif
 
 		if (!entity.HasComponent<PlayerInputComponent>())
+		{
+			PF_ERROR("PlayerInputComponent.BindAction - entity {} does not have playerInput", entity.GetName());
 			return;
+		}
 
 		PlayerInputComponent& playerInput = entity.GetComponent <PlayerInputComponent>();
 		InputManagerMeathods::SetPlayerInput((uint32_t)playerInput.InputPlayer, (PlayerInputState)inputState);
@@ -3478,8 +3634,8 @@ namespace Proof
 			//PF_ADD_INTERNAL_CALL(Physics_OverlapBoxNonAlloc);
 			//PF_ADD_INTERNAL_CALL(Physics_OverlapCapsuleNonAlloc);
 			//PF_ADD_INTERNAL_CALL(Physics_OverlapSphereNonAlloc);
-			//PF_ADD_INTERNAL_CALL(Physics_GetGravity);
-			//PF_ADD_INTERNAL_CALL(Physics_SetGravity);
+			PF_ADD_INTERNAL_CALL(Physics_GetGravity);
+			PF_ADD_INTERNAL_CALL(Physics_SetGravity);
 			PF_ADD_INTERNAL_CALL(Physics_AddRadialImpulse);
 		}
 
@@ -3621,6 +3777,13 @@ namespace Proof
 
 		//Player InputComponent
 		{
+			PF_ADD_INTERNAL_CALL(PlayerInputComponent_GetInputBindingContextInstance);
+			PF_ADD_INTERNAL_CALL(PlayerInputComponent_GetInputBindingContextPriority);
+			PF_ADD_INTERNAL_CALL(PlayerInputComponent_RemoveInputBindingContextByPriority);
+			PF_ADD_INTERNAL_CALL(PlayerInputComponent_RemoveInputBindingContext);
+			PF_ADD_INTERNAL_CALL(PlayerInputComponent_SetInputBindingContextActive);
+			PF_ADD_INTERNAL_CALL(PlayerInputComponent_AddInputBinding);
+			PF_ADD_INTERNAL_CALL(PlayerInputComponent_AddInputBindingByPriority);
 			PF_ADD_INTERNAL_CALL(PlayerInputComponent_SetAction);
 			PF_ADD_INTERNAL_CALL(PlayerInputComponent_SetMotion);
 			PF_ADD_INTERNAL_CALL(PlayerInputComponent_SetInputState);

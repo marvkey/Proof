@@ -36,6 +36,12 @@ namespace Proof::Utils::String
 		std::replace(result.begin(), result.end(), '_', ' ');
 		return result;
 	}
+
+	static inline std::string ReplaceUnderscoresWithPeriod(const std::string& str) {
+		std::string result = str;
+		std::replace(result.begin(), result.end(), '_', '.');
+		return result;
+	}
 	std::string ToLower(const std::string_view& string);
 	std::string ToUpper(const std::string_view& string);
 	std::string SubStr(const std::string& string, size_t offset, size_t count = std::string::npos);

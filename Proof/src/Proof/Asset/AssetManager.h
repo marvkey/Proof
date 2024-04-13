@@ -177,6 +177,22 @@ namespace Proof
 		 * @param path we are going to check
 		 * @return true if an asset does have that path
 		*/
+		static bool HasAssetAndAssetType(AssetID id, AssetType type)
+		{
+			if (HasAsset(id))
+				return GetAssetInfo(id).Type == type;
+
+			return false;
+		}
+
+		static bool HasAssetAndAssetType(const std::filesystem::path& path, AssetType type)
+		{
+			if (HasAsset(path))
+				return GetAssetInfo(path).Type == type;
+
+			return false;
+		}
+
 		static bool HasAsset(const std::filesystem::path& path);
 		static bool HasAsset(const Count< Asset>& asset) {
 			if (asset)

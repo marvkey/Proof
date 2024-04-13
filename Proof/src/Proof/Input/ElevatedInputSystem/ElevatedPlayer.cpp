@@ -10,8 +10,6 @@
 
 namespace Proof
 {
-
-	
 	InputActionData::InputActionData(Count<class InputAction> action)
 		: InputAction(action)
 	{
@@ -63,14 +61,18 @@ namespace Proof
 				actionData.TriggerEvent = TriggerEvent::None;
 		}
 		*/
-		std::vector<ElevatedActionKeyBinding*> validKeyBindings;
+		std::vector<std::pair<ElevatedInputKey, ElevatedActionKeyBinding*>> validKeyBindings;
 		std::vector<ElevatedActionKeyBinding*> blockedByModifiers;
+
+		// these keys will be blocked from the next one
+		//these are only on modifier keys
+		std::unordered_set<ElevatedInputKey> usedKeys;
 		for (uint32_t i = 0; i<m_CapableKeyBindings.size(); i++)
 		{
 			
 			ElevatedActionKeyData data = m_CapableKeyBindings[i];
 			// basicaly we are makign sure int he input map was not changed during the tick
-			InputBindingContextInstance* inputBindingContextInstance = GetInputBindingContextInstance(data.InputBindingContext);
+			const InputBindingContextInstance* inputBindingContextInstance = GetInputBindingContextInstance(data.InputBindingContext);
 			if (!inputBindingContextInstance || !inputBindingContextInstance->Active)
 			{
 				m_CapableKeyBindings.erase(m_CapableKeyBindings.begin() + i);
@@ -101,7 +103,7 @@ namespace Proof
 				// so technically this key shoudl be able to proccess input  ShouldProccessInput (function) 
 				// since its modifiers make a part of its input system
 				if (ProcessActionBindingKeyEvent(InputActionOutput(rawKeyValue), data.InputAction, elevatedKey, data.Key, deltaTime))
-					validKeyBindings.emplace_back(actionKeyBinding);
+					validKeyBindings.emplace_back(std::make_pair(data.Key, actionKeyBinding));
 				else
 				{
 					blockedByModifiers.emplace_back(actionKeyBinding);
@@ -138,7 +140,7 @@ namespace Proof
 
 		for (ElevatedActionKeyBinding* blockedMofierBinding : blockedByModifiers)
 		{
-			auto& actionData = GetActionData(blockedMofierBinding->InputAction);
+			auto& actionData = GetActionDataRef(blockedMofierBinding->InputAction);
 
 			actionData.InteractionEvent = GetInteractionStateChangeEvent(actionData.LastInteractionState, InteractionState::None);
 			actionData.LastInteractionState = InteractionState::None;
@@ -182,10 +184,10 @@ namespace Proof
 		}
 		blockedByModifiers.clear();
 
-		for (ElevatedActionKeyBinding* elevatedKeyBinding : validKeyBindings)
+		for (auto& [inputKey, elevatedKeyBinding] : validKeyBindings)
 		{
 			auto inputAction = elevatedKeyBinding->InputAction;
-			auto& actionData = GetActionData(inputAction);
+			auto& actionData = GetActionDataRef(inputAction);
 			ElevatedActionKeyBindingInstance* instanceElevatedKeyBinding = GetElevatedActionKeyBinding(elevatedKeyBinding);
 
 			InteractionState triggerState = InteractionState::None;
@@ -221,7 +223,7 @@ namespace Proof
 			{
 				actionData.LastTriggeredWorldTime = FrameTime::GetTime();
 			}
-			if (!EnumReflection::HasAnyFlags(actionData.InteractionEvent, InteractionEvent::None))
+			if (!EnumReflection::HasAnyFlags(actionData.InteractionEvent, InteractionEvent::None) && !usedKeys.contains(inputKey))
 			{
 				for (auto& inputDelegate : m_InputDelegates)
 				{
@@ -232,9 +234,11 @@ namespace Proof
 						{
 							//if (inputDelegate.Function.IsBound())
 							//	inputDelegate.Function.Invoke(actionData.ActionOutput);
-
+							usedKeys.insert(inputKey);
 							if (inputDelegate.Function != nullptr)
+							{
 								inputDelegate.Function(actionData.ActionOutput);
+							}
 						}
 					}
 				}
@@ -263,6 +267,18 @@ namespace Proof
 		{
 			keyState.DownPrevious = keyState.Down;
 		}
+	}
+
+
+	InputActionData& ElevatedPlayer::GetActionDataRef(Count<class InputAction> action)
+	{
+		for (auto& inputData : m_ActionData)
+		{
+			if (inputData.InputAction == action)
+				return inputData;
+		}
+
+		return m_ActionData.emplace_back(InputActionData{ action });
 	}
 
 	void ElevatedPlayer::ProccessAxisInput(ElevatedInputKey key, float rawValue)
@@ -303,7 +319,7 @@ namespace Proof
 		return ProccessInput(params.Key, keyState);
 	}
 
-	InputActionData& ElevatedPlayer::GetActionData(Count<class InputAction> action)
+	const InputActionData& ElevatedPlayer::GetActionData(Count<class InputAction> action)
 	{
 		for (auto& inputData : m_ActionData)
 		{
@@ -346,6 +362,43 @@ namespace Proof
 		else
 			proccesActionBinding = false;
 		return proccesActionBinding;
+	}
+
+	void ElevatedPlayer::ProcessKeyInput(Count<InputAction> action, const InputActionOutput& modifiedValue,const InputStateTracker& triggerStateTracker, bool interactionsApplied)
+	{
+		auto& actionData = GetActionDataRef(action);
+		InputActionOutputType ValueType = actionData.ActionOutput.GetOutputType();
+
+		const InputActionOutputValueBehavior accumulationBehavior = action->OutputValueBehavior;
+		if (modifiedValue.GetMagnitudeSq())
+		{
+			const int NumComponents = glm::max(1, int(ValueType));
+			glm::vec3 modified = modifiedValue.Get<glm::vec3>();
+			glm::vec3 merged = actionData.ActionOutput.Get<glm::vec3>();
+			for (int component = 0; component < NumComponents; ++component)
+			{
+				if (accumulationBehavior == InputActionOutputValueBehavior::Aggregate)
+				{
+					merged[component] += modified[component];
+				}
+				else // Maximum absolute
+				{
+					// going to use > just to ensure teh existing value is kept
+					// because it could be a negative 
+
+					//if (glm::abs(modified[component]) >= glm::abs(merged[component]))
+					if (glm::abs(modified[component]) > glm::abs(merged[component]))
+					{
+						merged[component] = modified[component];
+					}
+				}
+			}
+			actionData.ActionOutput = InputActionOutput(ValueType, merged);
+
+		}
+
+		actionData.InteractionStateTracker = actionData.InteractionStateTracker > triggerStateTracker ? actionData.InteractionStateTracker : triggerStateTracker;
+		actionData.InteractionStateTracker.SetBindingInteractionApplied(interactionsApplied);
 	}
 
 	bool ElevatedPlayer::ProccessInput(ElevatedInputKey key, const ElevatedInputKeyState& keyState)
@@ -752,7 +805,7 @@ bool outValue = false;
 	{
 		InputStateTracker triggerStateTracker;
 
-		auto& actionData = GetActionData(inputAction);
+		auto& actionData = GetActionDataRef(inputAction);
 
 		bool bResetActionData = !Utils::Contains(m_ActionsWithEvents, inputAction);
 
@@ -771,6 +824,11 @@ bool outValue = false;
 		}
 		bool val  = keyBinding->ProcessInputData(this, ActionOutput, inputAction, key, deltaTime);
 		return val;
+	}
+	void ElevatedPlayer::ResetActionData(Count<InputAction> action)
+	{
+		InputActionData& actionData = GetActionDataRef(action);
+		actionData = InputActionData(action);
 	}
 #endif
 
@@ -810,7 +868,7 @@ bool outValue = false;
 #endif
 
 
-	InputBindingContextInstance* ElevatedPlayer::GetInputBindingContextInstance(Count<InputBindingContext> Binding)
+	const InputBindingContextInstance* ElevatedPlayer::GetInputBindingContextInstance(Count<InputBindingContext> Binding)const
 	{
 		for (auto& inputBindingContext : m_InputBindingContext)
 		{
@@ -818,6 +876,33 @@ bool outValue = false;
 				return &inputBindingContext;
 		}
 		return nullptr;
+	}
+
+	void ElevatedPlayer::SetInputBindingActive(Count<InputBindingContext> binding, bool active)
+	{
+		for (auto& inputBindingContext : m_InputBindingContext)
+		{
+			if (inputBindingContext.InputBindingContext == binding)
+			{
+				if (inputBindingContext.Active == active)
+					return;
+				inputBindingContext.Active = active;
+
+				if (active == false)
+				{
+					for (size_t i =0; i < m_CapableKeyBindings.size(); i++)
+					{
+						auto& capableBindings = m_CapableKeyBindings[i];
+						if (capableBindings.InputBindingContext = binding)
+						{
+							ResetActionData(capableBindings.InputAction);
+							m_CapableKeyBindings.erase(m_CapableKeyBindings.begin() + i);
+						}
+					}
+				}
+				return;
+			}
+		}
 	}
 
 	const std::vector<InputBindingContextInstance>& ElevatedPlayer::GetInputBindingContextList() const
@@ -836,13 +921,64 @@ bool outValue = false;
 		m_InputBindingContext.emplace_back(InputBindingContextInstance{ Binding,true });
 	}
 
-	void ElevatedPlayer::RemoveInputBinding(size_t index)
+	void ElevatedPlayer::AddInputBinding(Count<InputBindingContext> Binding, uint32_t priority)
+	{
+		for (auto& binding : m_InputBindingContext)
+		{
+			if (binding.InputBindingContext == Binding)
+				return;
+		}
+		if (priority >= m_InputBindingContext.size())
+			m_InputBindingContext.push_back(InputBindingContextInstance{ Binding,true });
+		else
+			m_InputBindingContext.insert(m_InputBindingContext.begin()+ priority, InputBindingContextInstance{ Binding,true });
+
+	}
+
+	void ElevatedPlayer::RemoveInputBinding(Count<InputBindingContext> binding)
+	{
+		int index = GetInputBindingPriority(binding);
+		if (index == -1)
+			return;
+
+		for (size_t i = 0; i < m_CapableKeyBindings.size(); i++)
+		{
+			auto& capableBindings = m_CapableKeyBindings[i];
+			if (capableBindings.InputBindingContext = m_InputBindingContext[index].InputBindingContext)
+			{
+				ResetActionData(capableBindings.InputAction);
+				m_CapableKeyBindings.erase(m_CapableKeyBindings.begin() + i);
+			}
+		}
+		m_InputBindingContext.erase(m_InputBindingContext.begin() + index);
+	}
+
+	void ElevatedPlayer::RemoveInputBindingByPriority(size_t index)
 	{
 		if (m_InputBindingContext.size() > index)
+		{
+			for (size_t i = 0; i < m_CapableKeyBindings.size(); i++)
+			{
+				auto& capableBindings = m_CapableKeyBindings[i];
+				if (capableBindings.InputBindingContext = m_InputBindingContext[index].InputBindingContext)
+				{
+					ResetActionData(capableBindings.InputAction);
+					m_CapableKeyBindings.erase(m_CapableKeyBindings.begin() + i);
+				}
+			}
 			m_InputBindingContext.erase(m_InputBindingContext.begin() + index);
+		}
 	}
-	
-	
+
+	int ElevatedPlayer::GetInputBindingPriority(Count<InputBindingContext> binding)
+	{
+		for (size_t i = 0; i < m_InputBindingContext.size(); i++)
+		{
+			if (m_InputBindingContext[i].InputBindingContext == binding)
+				return i;
+		}
+		return -1;
+	}
 
 	ElevatedActionKeyBindingInstance::ElevatedActionKeyBindingInstance(ElevatedActionKeyBinding* elevatedKeyBinding)
 	{

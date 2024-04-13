@@ -32,8 +32,8 @@ namespace LostExpedition
 			m_RigidBody = GetComponent<RigidBodyComponent>();
 			m_PlayerInput = GetComponent<PlayerInputComponent>();
 
-			if (m_RigidBody == null || m_PlayerInput == null)
-				return;
+			//if (m_RigidBody == null || m_PlayerInput == null)
+			//	return;
 			if (MoveAction != null)
 				m_PlayerInput.BindAction(MoveAction, InteractionEvent.Triggered, Move);
 
