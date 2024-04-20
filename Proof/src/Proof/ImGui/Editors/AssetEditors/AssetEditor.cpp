@@ -267,7 +267,10 @@ namespace Proof
 			switch (asset->GetAssetType())
 			{
 				case Proof::AssetType::Mesh:
-					//s_Editors[asset->GetAssetType()][asset->GetID()] = Count<MeshEditorPanel>::Create();
+					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<MeshEditorPanel>::Create();
+					break;
+				case Proof::AssetType::DynamicMesh:
+					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<MeshEditorPanel>::Create();
 					break;
 				case Proof::AssetType::Texture:
 					break;

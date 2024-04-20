@@ -491,6 +491,16 @@ namespace Proof
 		return m_Image->CreateOrGetImageMip(mip,layer);
 	}
 
+	Buffer VulkanTexture2D::GetStoredDataAsBuffer()
+	{
+		if (m_ImageData.GetSize() != 0)
+			return Buffer::Copy(m_ImageData);
+	
+
+		return m_Image.As<VulkanImage2D>()->GetStoredDataAsBuffer();
+
+	}
+
 	void VulkanTexture2D::Release()
 	{
 		m_ImageData.Release();

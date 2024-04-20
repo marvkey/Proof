@@ -1,0 +1,12 @@
+AssetType: MeshCollider
+ID: 7651284040765721506
+ColliderMesh: 0
+EnableVertexWelding: true
+VertexWeldTolerance: 0.100000001
+PreviewScale: [1, 1, 1]
+FlipNormals: false
+CheckZeroAreaTriangles: true
+AreaTestEpsilon: 0.0599999987
+ShiftVerticesToOrigin: false
+AlwaysShareShape: false
+CollisionComplexity: Default

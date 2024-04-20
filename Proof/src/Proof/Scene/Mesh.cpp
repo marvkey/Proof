@@ -87,8 +87,18 @@ namespace Proof
     {
         m_Name = name;
         m_SubMeshes = submeshes;
-        m_VertexBuffer = VertexBuffer::Create(vertices.data(), (uint32_t)(vertices.size() * sizeof(Vertex)));
-        m_IndexBuffer = IndexBuffer::Create(indices.data(), (uint32_t)(indices.size() * sizeof(Index)));
+        m_VertexBuffer = VertexBuffer::Create(vertices.data(),(vertices.size() * sizeof(Vertex)));
+        m_IndexBuffer = IndexBuffer::Create(indices.data(), (indices.size() * sizeof(Index)));
+
+        m_Vertices = vertices;
+        m_Indices = indices;
+
+        Count<MeshSource> instance = this;
+        Renderer::Submit([instance]() mutable
+            {
+                instance->m_Vertices.clear();
+                instance->m_Indices.clear();
+            });
     }
     void MeshSource::Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices)
     {
@@ -104,9 +114,19 @@ namespace Proof
 
         m_SubMeshes = {};
         m_SubMeshes.emplace_back(subMesh);
+
         m_VertexBuffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(Vertex));
         m_IndexBuffer = IndexBuffer::Create(indices.data(), indices.size() * sizeof(Index));
 
+        m_Vertices = vertices;
+        m_Indices = indices;
+
+        Count<MeshSource> instance = this;
+        Renderer::Submit([instance]() mutable
+            {
+                instance->m_Vertices.clear();
+                instance->m_Indices.clear();
+            });
         m_Materials = Count<MaterialTable>::Create();
 
         MeshNode node;
@@ -168,6 +188,9 @@ namespace Proof
         if(m_VertexBuffer ==nullptr)
             return std::vector<Vertex>();
 
+
+        if (!m_Vertices.empty())
+            return m_Vertices;
         return m_VertexBuffer->GetDataAs<Vertex>();
     }
 
@@ -176,6 +199,8 @@ namespace Proof
         if(m_IndexBuffer ==nullptr)
             return std::vector<Index>();
 
+        if (!m_Indices.empty())
+            return m_Indices;
         return m_IndexBuffer->GetDataAs<Index>();
     }
 

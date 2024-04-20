@@ -27,7 +27,8 @@ namespace Proof
 
 	bool FileSystem::CreateDirectory(const std::filesystem::path& directory)
 	{
-		return std::filesystem::create_directories(directory);
+		std::error_code code;
+		return std::filesystem::create_directories(directory, code);
 	}
 
 	bool FileSystem::CreateDirectory(const std::string& directory)

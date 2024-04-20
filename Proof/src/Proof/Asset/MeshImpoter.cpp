@@ -51,9 +51,23 @@ namespace Proof
 	{
 		auto actualPath = FileSystem::GenerateUniqueFileName(fullpath);
 
-		if (!FileSystem::Exists(fullpath.parent_path()))
+		if (!FileSystem::Exists(actualPath.parent_path()))
 		{
-			FileSystem::CreateDirectory(fullpath.parent_path());
+			bool invalid = !FileSystem::CreateDirectory(actualPath.parent_path());
+			
+			if (invalid)
+			{
+				auto dir = AssetManager::GetDirectory() /= "ModelErrorTextures";
+				if (!FileSystem::Exists(dir))
+					FileSystem::CreateDirectory(dir);
+
+				dir += "/" + actualPath.filename().string() + ".png";
+
+				dir = AssetManager::GetAssetFileSystemPath(dir);
+				dir= FileSystem::GenerateUniqueFileName(dir);
+
+				actualPath = dir;
+			}
 		}
 
 		return { stbi_write_png(actualPath.string().c_str(),width,heihgt,channels,data,strideBytes), actualPath };
@@ -191,6 +205,8 @@ namespace Proof
 			meshSourceBoundingBox.Max = { -FLT_MAX, -FLT_MAX, -FLT_MAX };
 
 			subMeshes.reserve(scene->mNumMeshes);
+			PF_ENGINE_INFO("---- SubMeshes -----");
+
 			for (unsigned m = 0; m < scene->mNumMeshes; m++)
 			{
 				aiMesh* mesh = scene->mMeshes[m];
@@ -248,6 +264,8 @@ namespace Proof
 
 					//meshSource->m_TriangleCache[m].emplace_back(meshSource->m_Vertices[index.V1 + submesh.BaseVertex], meshSource->m_Vertices[index.V2 + submesh.BaseVertex], meshSource->m_Vertices[index.V3 + submesh.BaseVertex]);
 				}
+				PF_ENGINE_TRACE("	SubMesh Name: {} Index: {} MaterialIndex: {} VertexCount: {} IndexCount: {}", submesh.Name, m, submesh.MaterialIndex, submesh.VertexCount
+					, submesh.IndexCount);
 			}
 
 			//#if MESH_DEBUG_LOG
@@ -274,7 +292,7 @@ namespace Proof
 
 		}
 		Count<Texture2D> whiteTexture = Renderer::GetWhiteTexture();
-		const std::filesystem::path currentMeshDir = FileSystem::GenerateUniqueFileName( meshResourcesDir / m_Path.parent_path().filename());
+		const std::filesystem::path currentMeshDir = FileSystem::GenerateUniqueFileName( meshResourcesDir / (m_Path.filename()));
 
 		const std::filesystem::path currentTextureDir = currentMeshDir / "Textures";
 		if (scene->HasMaterials() && importMaterialAndTextures)
@@ -287,9 +305,15 @@ namespace Proof
 				if (aiMaterialName.length == 0)
 					aiMaterialName.Set(fmt::format("{} UnnamedMaterial",FileSystem::GetFileName(m_Path)));
 				const auto materialPath = FileSystem::GenerateUniqueFileName(currentMeshDir / (aiMaterialName.C_Str()  + Utils::GetAssetExtensionString(AssetType::Material)));
+			#if 1
+				Count<Material> mi = Count<Material>::Create(materialPath.filename().string());
+				{
+					AssetManager::CreateRuntimeAsset(AssetManager::CreateID(), mi, aiMaterialName.data);
+				}
+			#else
 
-				Count<Material> mi = CreateAssetImporter<Material>(materialPath,materialPath.filename().string());
-
+				Count<Material> mi = CreateAssetImporter<Material>(materialPath, materialPath.filename().string());
+			#endif
 				PF_ENGINE_INFO("  {0} (Index = {1})", aiMaterialName.data, i);
 				aiString aiTexPath;
 				uint32_t textureCount = aiMaterial->GetTextureCount(aiTextureType_DIFFUSE);
@@ -330,13 +354,15 @@ namespace Proof
 					spec.DebugName = aiTexPath.C_Str();
 					if (auto aiTexEmbedded = scene->GetEmbeddedTexture(aiTexPath.C_Str()))
 					{
-						/*
+					#if 1
+
 						spec.Format = ImageFormat::RGBA;
 						spec.Width = aiTexEmbedded->mWidth;
 						spec.Height = aiTexEmbedded->mHeight;
 						
 						textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(aiTexPath.C_Str()), spec,Buffer(aiTexEmbedded->pcData, 1))->GetID();
-						*/
+					#else
+
 						uint32_t width = aiTexEmbedded->mWidth;
 						uint32_t height = aiTexEmbedded->mHeight;
 						uint32_t channels = 4;
@@ -354,23 +380,19 @@ namespace Proof
 							textureHandle = AssetManager::GetAsset<Texture2D>(assetTexturePath)->GetID();
 						else
 							textureHandle = CreateRenderAssetImporter<Texture2D>(assetTexturePath, spec, textureActualPath)->GetID();
+
+					#endif
 					}
 					else
 					{
-						// TODO: Temp - this should be handled by filesystem
-						/*
+					#if 1
 						auto parentPath = m_Path.parent_path();
 						parentPath /= std::string(aiTexPath.data);
 						std::string texturePath = parentPath.string();
-						//texturePath = FileSystem::GetFileFullNameWithoutExtension(texturePath);
-						//texturePath += ".Texture.ProofAsset";
 						
 						PF_ENGINE_TRACE("    Albedo map path = {0}", texturePath);
-						//textureHandle = AssetManager::CreateMemoryOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(texturePath), spec, std::filesystem::path(texturePath))->GetID();
-						//textureHandle = AssetManager::GetAsset<Texture2D>(texturePath)->GetID();
 						textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(texturePath), spec, std::filesystem::path(texturePath))->GetID();
-						*/
-
+					#else 
 						auto parentPath = m_Path.parent_path();
 						parentPath /= std::string(aiTexPath.data);
 						std::string texturePath = parentPath.string();
@@ -382,6 +404,8 @@ namespace Proof
 							textureHandle = AssetManager::GetAsset<Texture2D>(assetPath)->GetID();
 						else
 							textureHandle = CreateRenderAssetImporter<Texture2D>(assetPath, spec, texturePath)->GetID();
+
+					#endif
 					}
 
 					Count<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
@@ -414,12 +438,15 @@ namespace Proof
 					spec.DebugName = aiTexPath.C_Str();
 					if (auto aiTexEmbedded = scene->GetEmbeddedTexture(aiTexPath.C_Str()))
 					{
-						/*
+					#if 1
+
 						spec.Format = ImageFormat::RGB;
 						spec.Width = aiTexEmbedded->mWidth;
 						spec.Height = aiTexEmbedded->mHeight;
 						textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(aiTexPath.C_Str()), spec, Buffer(aiTexEmbedded->pcData, 1))->GetID();
-						*/
+						
+					#else
+
 						uint32_t width = aiTexEmbedded->mWidth;
 						uint32_t height = aiTexEmbedded->mHeight;
 						uint32_t channels = 4;
@@ -436,18 +463,23 @@ namespace Proof
 							textureHandle = AssetManager::GetAsset<Texture2D>(assetTexturePath)->GetID();
 						else
 							textureHandle = CreateRenderAssetImporter<Texture2D>(assetTexturePath, spec, textureActualPath)->GetID();
+
+					#endif
+
 					}
 					else
 					{
+					#if 1
 
 						// TODO: Temp - this should be handled by Proof filesystem
-						/*
 						auto parentPath = m_Path.parent_path();
 						parentPath /= std::string(aiTexPath.data);
 						std::string texturePath = parentPath.string();
 						PF_ENGINE_TRACE("    Normal map path = {0}", texturePath);
 						textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(texturePath), spec, texturePath)->GetID();
-						*/
+						
+					#else
+
 						auto parentPath = m_Path.parent_path();
 						parentPath /= std::string(aiTexPath.data);
 						std::string texturePath = parentPath.string();
@@ -459,7 +491,7 @@ namespace Proof
 							textureHandle = AssetManager::GetAsset<Texture2D>(assetPath)->GetID();
 						else
 							textureHandle = CreateRenderAssetImporter<Texture2D>(assetPath, spec, texturePath)->GetID();
-
+					#endif
 					}
 
 					Count<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
@@ -492,12 +524,14 @@ namespace Proof
 					spec.DebugName = aiTexPath.C_Str();
 					if (auto aiTexEmbedded = scene->GetEmbeddedTexture(aiTexPath.C_Str()))
 					{
-						/*
+					#if 1
+
 						spec.Format = ImageFormat::RGB;
 						spec.Width = aiTexEmbedded->mWidth;
 						spec.Height = aiTexEmbedded->mHeight;
 						textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(aiTexPath.C_Str()), spec, Buffer(aiTexEmbedded->pcData, 1))->GetID();
-						*/
+						
+					#else
 
 						uint32_t width = aiTexEmbedded->mWidth;
 						uint32_t height = aiTexEmbedded->mHeight;
@@ -515,17 +549,20 @@ namespace Proof
 							textureHandle = AssetManager::GetAsset<Texture2D>(assetTexturePath)->GetID();
 						else
 							textureHandle = CreateRenderAssetImporter<Texture2D>(assetTexturePath, spec, textureActualPath)->GetID();
+					#endif
 					}
 					else
 					{
-						/*
+					#if 1
+
 						// TODO: Temp - this should be handled by Proof filesystem
 						auto parentPath = m_Path.parent_path();
 						parentPath /= std::string(aiTexPath.data);
 						std::string texturePath = parentPath.string();
 						PF_ENGINE_TRACE("    Roughness map path = {0}", texturePath);
 						textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(texturePath), spec, texturePath)->GetID();
-						*/
+						
+					#else
 
 						auto parentPath = m_Path.parent_path();
 						parentPath /= std::string(aiTexPath.data);
@@ -535,6 +572,8 @@ namespace Proof
 						PF_ENGINE_TRACE("    Roughness map path = {0}", texturePath);
 						auto assetPath = currentTextureDir / (FileSystem::GetFileName(parentPath) + Utils::GetAssetExtensionString(AssetType::Texture));
 						textureHandle = CreateRenderAssetImporter<Texture2D>(assetPath, spec, texturePath)->GetID();
+
+					#endif
 					}
 
 					Count<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
@@ -573,12 +612,15 @@ namespace Proof
 							spec.DebugName = str;
 							if (auto aiTexEmbedded = scene->GetEmbeddedTexture(str.data()))
 							{
-								/*
+							#if 1
+
 								spec.Format = ImageFormat::RGB;
 								spec.Width = aiTexEmbedded->mWidth;
 								spec.Height = aiTexEmbedded->mHeight;
 								textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(aiTexPath.C_Str()), spec, Buffer(aiTexEmbedded->pcData, 1))->GetID();
-								*/
+								
+							#else
+
 								uint32_t width = aiTexEmbedded->mWidth;
 								uint32_t height = aiTexEmbedded->mHeight;
 								uint32_t channels = 4;
@@ -595,17 +637,23 @@ namespace Proof
 									textureHandle = AssetManager::GetAsset<Texture2D>(assetTexturePath)->GetID();
 								else
 									textureHandle = CreateRenderAssetImporter<Texture2D>(assetTexturePath, spec, textureActualPath)->GetID();
+								
+							#endif
+
 							}
 							else
 							{
-								/*
+							#if 1
+
 								// TODO: Temp - this should be handled by Proof filesystem
 								auto parentPath = m_Path.parent_path();
 								parentPath /= str;
 								std::string texturePath = parentPath.string();
 								PF_ENGINE_TRACE("    Metalness map path = {0}", texturePath);
 								textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(texturePath), spec, texturePath)->GetID();
-								*/
+								
+							#else
+
 								auto parentPath = m_Path.parent_path();
 								parentPath /= std::string(aiTexPath.data);
 								std::string texturePath = parentPath.string();
@@ -617,6 +665,8 @@ namespace Proof
 									textureHandle = AssetManager::GetAsset<Texture2D>(assetPath)->GetID();
 								else
 									textureHandle = CreateRenderAssetImporter<Texture2D>(assetPath, spec, texturePath)->GetID();
+
+							#endif
 							}
 
 							Count<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);

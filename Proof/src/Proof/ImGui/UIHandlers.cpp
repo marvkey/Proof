@@ -4,7 +4,13 @@
 #include "Proof/Asset/AssetManager.h"
 #include "UiUtilities.h"
 #include "UIWidgets.h"
+#include "Proof/Scene/Material.h"
+#include "Proof/Renderer/RenderMaterial.h"
+#include "Proof/Renderer/Texture.h"
+#include "Proof/Platform/Vulkan/VulkanTexutre.h"
+#include "Proof/Renderer/Renderer.h"
 #include "Editors/EditorResources.h"
+#include "Proof/Project/Project.h"
 namespace Proof::UI
 {
     bool AttributeAssetReference(const std::string& label, AssetType assetType, AssetID& outHandle, const PropertyAssetReferenceSettings& settings)
@@ -375,6 +381,219 @@ namespace Proof::UI
 			ImGui::NextColumn();
 			Draw::Underline();
 		}
+
+		HandleModified(modified);
+		return modified;
+	}
+
+	struct ConvertRuntimeMaterialToDiskMaterial
+	{
+		std::string SavePath = "Materials/";
+
+	}ConvertDiskMaterial;
+
+	static Count<Texture2D> MaterialCreateTextures(const std::filesystem::path& directory, Count<Texture2D> texture)
+	{
+		if (AssetManager::HasAsset(texture))
+		{
+			if (AssetManager::GetAssetInfo(texture->GetID()).RuntimeAsset == false)
+				return texture;
+
+			if (!texture->GetPath().empty())
+			{
+				Count<Texture2D> newTexture = Texture2D::Create(texture->GetSpecification(), texture->GetPath());
+
+				std::filesystem::path savePath = directory / (texture->GetPath().filename().string() + Utils::GetAssetExtensionString(AssetType::Texture));
+				savePath = FileSystem::GenerateUniqueFileName(savePath);
+
+				{
+					auto asset = newTexture.As<Asset>();
+					AssetManager::NewAsset(asset, savePath);
+				}
+
+				return newTexture;
+			}
+			else
+			{
+				PF_EC_ERROR("Not supported when texture is an embeded texture");
+
+				Buffer buffer = texture.As<VulkanTexture2D>()->GetStoredDataAsBuffer();
+
+				Count<Texture2D> newTexture = Texture2D::Create(texture->GetSpecification(),buffer);
+				std::filesystem::path savePath = directory / ("EmbededTexture" + Utils::GetAssetExtensionString(AssetType::Texture));
+				savePath = FileSystem::GenerateUniqueFileName(savePath);
+
+				{
+					auto asset = newTexture.As<Asset>();
+					AssetManager::NewAsset(asset, savePath);
+				}
+
+				return newTexture;
+			}
+		}
+		return texture;
+	}
+	static void CreateDiskMaterialFromRuntmeMaterial(AssetID id)
+	{
+
+		if (!AssetManager::HasAssetAndAssetType(id,AssetType::Material))
+			return;
+		if (AssetManager::IsDefaultAsset(id))
+			return;
+
+
+		const auto assetInfo = AssetManager::GetAssetInfo(id);
+
+		if (assetInfo.RuntimeAsset == false)
+			return;
+
+		Count<Material> baseMaterial = AssetManager::GetAsset<Material>(id);
+
+		if (ImGui::MenuItem("CreateDiskMaterialFromRuntmeMaterial"))
+		{
+				UI::ShowMessageBox("CreateDiskMaterialFromRuntmeMaterial", [id, assetInfo,baseMaterial]()
+				{
+					ImGui::Text(Project::GetActive()->GetProjectDirectory().filename().string().c_str());
+
+					if (ConvertDiskMaterial.SavePath == "Materials/")
+						ConvertDiskMaterial.SavePath += assetInfo.GetName();
+					UI::AttributeInputText("MaterialName", ConvertDiskMaterial.SavePath);
+
+					if (ImGui::Button("Create"))
+					{
+
+						std::filesystem::path savedPath = Project::GetActive()->GetAssetDirectory() / ConvertDiskMaterial.SavePath;
+						savedPath += Utils::GetAssetExtensionString(AssetType::Material);
+
+						if (!FileSystem::Exists(savedPath.parent_path()))
+							FileSystem::CreateDirectory(savedPath.parent_path());
+
+						savedPath = FileSystem::GenerateUniqueFileName(savedPath);
+
+						Count<Material> material = Count<Material>::Create();
+						material->GetRenderMaterial()->CopyMaterialData(baseMaterial->GetRenderMaterial());
+
+						{
+							auto asset = material.As<Asset>();
+							AssetManager::NewAsset(asset, savedPath);
+						}
+
+						auto allTextures = baseMaterial->GetRenderMaterial()->GetAllTextures();
+
+
+						for (auto& [biningName, texture] : allTextures)
+						{ 
+							auto savedTexture = MaterialCreateTextures(savedPath.parent_path(), texture);
+							if(Renderer::GetWhiteTexture() != savedTexture)
+							material->GetRenderMaterial()->Set(biningName, savedTexture);
+						}
+						ConvertDiskMaterial = {};
+						ImGui::CloseCurrentPopup();
+					}
+
+				});
+		}
+	}
+	bool AttributeDrawMaterialTable(Count<class MaterialTable> materialTable, Count<class MaterialTable> sourceMaterialTable)
+	{
+		bool modified = false;
+
+		std::vector<uint32_t> clearMaterials;
+		if (UI::AttributeTreeNode("Materials"))
+		{
+
+			for (auto& [index, material] : materialTable->GetMaterials())
+			{
+				std::string label = fmt::format("[Material {0}]", index);
+				std::string id = fmt::format("{0}-{1}", label, index);
+
+				ImGui::PushID(id.c_str());
+
+				UI::PropertyAssetReferenceSettings settings;
+
+				bool sourceHasMaterial = sourceMaterialTable->HasMaterial(index);
+
+				bool mathcingMaterials = false;
+				if (sourceHasMaterial)
+				{
+					auto sourceMaterial = sourceMaterialTable->GetMaterial(index);
+					mathcingMaterials = sourceMaterial == material;
+				}
+
+				AssetID materialAssetHandle = 0;
+				materialAssetHandle = material->GetID();
+				settings.AdvanceToNextColumn = false;
+				settings.AssetMemoryTypes = UIMemoryAssetTypes::Default;
+				settings.OnRightClick = CreateDiskMaterialFromRuntmeMaterial; // not working yet
+				settings.WidthOffset = ImGui::GetStyle().ItemSpacing.x + 28.0f;
+
+				if (sourceHasMaterial && !mathcingMaterials)
+					settings.WidthOffset += 40;
+
+				if (UI::AttributeAssetReference(label, AssetType::Material, materialAssetHandle, settings))
+				{
+					modified = true;
+
+					if (materialAssetHandle == 0)
+						clearMaterials.push_back(index);
+					else
+						materialTable->SetMaterial(index, AssetManager::GetAsset<Material>(materialAssetHandle));
+
+				}
+				float prevItemHeight = ImGui::GetItemRectSize().y;
+
+				ImGui::SameLine();
+				if (material->GetAlbedoMap() != nullptr)
+				{
+
+					UI::ImageButton(material->GetAlbedoMap(), { prevItemHeight, prevItemHeight },
+						{ material->GetAlbedoColor().x,material->GetAlbedoColor().y,material->GetAlbedoColor().z,1.0 });
+				}
+				else if (material->GetNormalMap() != nullptr && material->GetNormalTextureToggle() == true)
+				{
+
+					UI::ImageButton(material->GetNormalMap(), { prevItemHeight, prevItemHeight },
+						{ material->GetAlbedoColor().x,material->GetAlbedoColor().y,material->GetAlbedoColor().z,1.0 });
+				}
+				else if (material->GetRoughnessMap() != nullptr)
+				{
+
+					UI::ImageButton(material->GetRoughnessMap(), ImVec2{ prevItemHeight, prevItemHeight },
+						{ material->GetAlbedoColor().x,material->GetAlbedoColor().y,material->GetAlbedoColor().z,1.0 });
+				}
+				else if (material->GetMetalnessMap() != nullptr)
+				{
+
+					UI::ImageButton(material->GetMetalnessMap(), ImVec2{ prevItemHeight, prevItemHeight },
+						{ material->GetAlbedoColor().x,material->GetAlbedoColor().y,material->GetAlbedoColor().z,1.0 });
+				}
+				else
+				{
+
+					UI::ImageButton(Renderer::GetWhiteTexture(), ImVec2{ prevItemHeight, prevItemHeight },
+						{ material->GetAlbedoColor().x,material->GetAlbedoColor().y,material->GetAlbedoColor().z,1.0 });
+				}
+				if(!sourceHasMaterial && mathcingMaterials)
+					ImGui::NextColumn();
+				
+				if (sourceHasMaterial && !mathcingMaterials)
+				{
+					ImGui::SameLine();
+					if (ImGui::Button(UI::GenerateLabelID("X"), ImVec2{ prevItemHeight, prevItemHeight }))
+					{
+						modified = true;
+						materialTable->SetMaterial(index, sourceMaterialTable->GetMaterial(index));
+					}
+					ImGui::NextColumn();
+				}
+
+				ImGui::PopID();
+			}
+			UI::EndTreeNode();
+		}
+
+		for (auto clear : clearMaterials)
+			sourceMaterialTable->RemoveMaterial(clear);
 
 		HandleModified(modified);
 		return modified;

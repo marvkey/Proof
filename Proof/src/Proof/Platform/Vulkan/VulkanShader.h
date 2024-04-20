@@ -46,6 +46,10 @@ namespace Proof
         const std::map<uint32_t, std::vector<VkDescriptorPoolSize>>& GetTypeCounts()const { return m_TypeCounts; };
         const std::unordered_map<std::string, VkPushConstantRange>& GetPushConstants()const { return m_PushConstants; };
         const std::unordered_map < ShaderStage, VkPipelineShaderStageCreateInfo>& GetShaderStages()const { return m_ShaderStages; };
+        const std::unordered_map<std::string, SahderInputDeclaration>& GetInputDeclaration()const {
+            return m_InputDeclaration;
+        }
+
         const SahderInputDeclaration* GetInputDeclaration(std::string name)const;
         const ShaderResourceBufferInfo* GetPushConstantInput(const std::string& storageName,const std::string& name)const;
         const ShaderResourceBufferInfo* GetStorageBufferInput(const std::string& storageName, const std::string& name)const;

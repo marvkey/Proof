@@ -89,6 +89,21 @@ namespace Proof
         std::vector<MeshNode> m_Nodes;
         Count<class VertexBuffer> m_VertexBuffer = nullptr;
         Count<class IndexBuffer> m_IndexBuffer = nullptr;
+
+        // are only valid when the vertex buffer has not been used in the render thread as soon as its been used
+        // these will be set to empty
+        // the reason is cause what if we want to gnerate colliders when we create are we goign to
+        // wait till next frame when the vertexBuffer has the data
+        // no so we save them temporarily
+        std::vector<Vertex> m_Vertices;
+
+        // are only valid when the vertex buffer has not been used in the render thread as soon as its been used
+        // these will be set to empty
+        // the reason is cause what if we want to gnerate colliders when we create are we goign to
+        // wait till next frame when the vertexBuffer has the data
+        // no so we save them temporarily
+        std::vector<Index> m_Indices;
+
         std::vector<SubMesh> m_SubMeshes;
         Count<MaterialTable> m_Materials;
         friend class MeshImporter;
@@ -102,6 +117,33 @@ namespace Proof
         virtual const std::vector<uint32_t>& GetSubMeshes()const= 0;;
         virtual void SetSubMeshes(const std::vector<uint32_t>& submeshes = {})= 0;
         virtual Count<MeshSource> GetMeshSource() = 0;
+
+        void SetTranslation(glm::vec3 translation) { m_Translation = translation; RecalculateMatrix(); }
+        void SetRotationDeg(glm::vec3 rotation) { m_RotationDeg = rotation; RecalculateMatrix(); }
+        void SetScale(float scale) { m_Scale = scale; RecalculateMatrix();}
+
+        glm::vec3 GetTranslation() { return m_Translation; }
+        glm::vec3 GetRotationDeg() { return m_RotationDeg; }
+        float GetScale() { return m_Scale; }
+
+        const glm::mat4& GetTransform()const
+        {
+            return m_MeshMatrix;
+        }
+    private:
+        float m_Scale =1;
+        glm::vec3 m_RotationDeg = { 0,0,0 };
+        glm::vec3 m_Translation = { 0,0,0 };
+
+        glm::mat4 m_MeshMatrix = glm::mat4(1.0f);
+        void RecalculateMatrix()
+        {
+            m_MeshMatrix = glm::translate(glm::mat4(1.0f), m_Translation)
+            * glm::rotate(glm::mat4(1.0f), glm::radians(m_RotationDeg.x), { 1,0,0 })
+         	* glm::rotate(glm::mat4(1.0f), glm::radians(m_RotationDeg.y), { 0,1,0 })
+         	* glm::rotate(glm::mat4(1.0f), glm::radians(m_RotationDeg.z), { 0,0,1 })
+            * glm::scale(glm::mat4(1.0f), glm::vec3(m_Scale));
+        }
     };
     class Mesh : public MeshBase
     {

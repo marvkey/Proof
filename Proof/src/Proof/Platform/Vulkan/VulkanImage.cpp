@@ -667,6 +667,64 @@ namespace Proof {
 		graphics->DeleteSampler(m_SamplerHash);
 	}
 
+	Buffer VulkanImage2D::GetStoredDataAsBuffer()
+	{
+		if (m_ImageData.Size != 0)
+			return Buffer::Copy(m_ImageData);
+
+		Buffer buffer;
+		buffer.Allocate(Utils::GetImageMemorySize(m_Specification.Format, m_Specification.Width, m_Specification.Height));
+
+		VkBufferCreateInfo bufferCreateInfo = {};
+		bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+		bufferCreateInfo.size = Utils::GetImageMemorySize(m_Specification.Format, m_Specification.Width, m_Specification.Height); 
+		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT; // Buffer is a transfer destination
+		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		VulkanBuffer stagingBuffer;
+
+
+		VulkanAllocator allocator("VulkanTexture2D::GetStoredDataAsBuffer");
+		allocator.AllocateBuffer(bufferCreateInfo, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer);
+
+		VkCommandBuffer cmdBuffer = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
+
+		{
+			VkImageSubresourceRange subresourceRange = {};
+			subresourceRange.aspectMask = Utils::IsDepthFormat(m_Specification.Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+			subresourceRange.baseMipLevel = 0;
+			subresourceRange.levelCount = m_Specification.Mips;
+			subresourceRange.baseArrayLayer = 0;
+			subresourceRange.layerCount = m_Specification.Layers;
+
+		}
+		VkBufferImageCopy region = {};
+		region.bufferOffset = 0;
+		region.bufferRowLength = 0;  // Tightly packed
+		region.bufferImageHeight = 0;
+
+		region.imageSubresource.aspectMask = Utils::IsDepthFormat(m_Specification.Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.mipLevel = 0;
+		region.imageSubresource.baseArrayLayer = 0;
+		region.imageSubresource.layerCount = m_Specification.Layers;
+
+		region.imageOffset = { 0, 0, 0 };
+		region.imageExtent = { m_Specification.Width, m_Specification.Height, 1 };
+
+		vkCmdCopyImageToBuffer(cmdBuffer, m_Info.ImageAlloc.Image, GetDescriptorInfoVulkan().imageLayout, stagingBuffer.Buffer, 1, &region);
+
+		auto* mappedData = allocator.MapMemory<uint8_t>(stagingBuffer.Allocation);
+		if (mappedData) {
+			// Copy data from mapped memory to local buffer, or directly work with mappedData
+			memcpy(buffer.Data, mappedData, static_cast<size_t>(bufferCreateInfo.size));
+			allocator.UnmapMemory(stagingBuffer.Allocation);
+		}
+
+		VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(cmdBuffer);
+
+		return buffer;
+	}
+
 	void VulkanImage2D::CopyToHost(Buffer& data)
 	{
 		/*

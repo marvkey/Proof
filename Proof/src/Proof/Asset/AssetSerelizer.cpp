@@ -215,6 +215,9 @@ namespace Proof {
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(mesh->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << mesh->GetID();
 		out << YAML::Key << "AssetSource" << YAML::Value << mesh->GetMeshSource()->GetID();
+		out << YAML::Key << "Translation" << YAML::Value << mesh->GetTranslation();
+		out << YAML::Key << "RotationDeg" << YAML::Value << mesh->GetRotationDeg();
+		out << YAML::Key << "Scale" << YAML::Value << mesh->GetScale();
 		out << YAML::Key << "SubMeshes";
 		out << YAML::Flow;
 
@@ -241,6 +244,11 @@ namespace Proof {
 		auto submeshIndices = data["SubMeshes"].as<std::vector<uint32_t>>(std::vector<uint32_t>());
 
 		Count<Mesh> mesh = Count<Mesh>::Create(AssetManager::GetAsset<MeshSource>(source), submeshIndices);
+
+		mesh->SetTranslation(data["Translation"].as<glm::vec3>(mesh->GetTranslation()));
+		mesh->SetRotationDeg(data["RotationDeg"].as<glm::vec3>(mesh->GetRotationDeg()));
+		mesh->SetScale(data["Scale"].as<float>(mesh->GetScale()));
+
 		SetID(assetData, mesh);
 		return mesh;
 	}
@@ -254,6 +262,9 @@ namespace Proof {
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(mesh->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << mesh->GetID();
 		out << YAML::Key << "AssetSource" << YAML::Value << mesh->GetMeshSource()->GetID();
+		out << YAML::Key << "Translation" << YAML::Value << mesh->GetTranslation();
+		out << YAML::Key << "RotationDeg" << YAML::Value << mesh->GetRotationDeg();
+		out << YAML::Key << "Scale" << YAML::Value << mesh->GetScale();
 		out << YAML::Key << "SubMeshes";
 		out << YAML::Flow;
 		if (mesh->GetSubMeshes().size() == mesh->GetMeshSource()->GetSubMeshes().size())
@@ -276,6 +287,10 @@ namespace Proof {
 		PF_CORE_ASSERT(AssetManager::HasAsset(source), "Trying to load mesh with meshSource that does not exist");
 		auto submeshIndices = data["SubMeshes"].as<std::vector<uint32_t>>(std::vector<uint32_t>());
 		Count<DynamicMesh> mesh = Count<DynamicMesh>::Create(AssetManager::GetAsset<MeshSource>(source), submeshIndices);
+		mesh->SetTranslation(data["Translation"].as<glm::vec3>(mesh->GetTranslation()));
+		mesh->SetRotationDeg(data["RotationDeg"].as<glm::vec3>(mesh->GetRotationDeg()));
+		mesh->SetScale(data["Scale"].as<float>(mesh->GetScale()));
+
 		SetID(assetData, mesh);
 		return mesh;
 	}
@@ -288,8 +303,9 @@ namespace Proof {
 		MeshImporter importer(AssetManager::GetAssetFileSystemPath(data.Path));
 
 		bool meshSourceContains = MeshSourceSavedSettings::HasMeshSourceMetaData(data.ID);
-		Count<MeshSource> source = importer.ImportToMeshSource(!meshSourceContains);
+		Count<MeshSource> source = importer.ImportToMeshSource();
 		SetID(data, source);
+		/*
 		if (!meshSourceContains)
 			importer.UpdateMeshSourceAssetCustomSettings(source);
 		if (meshSourceContains)
@@ -307,6 +323,7 @@ namespace Proof {
 
 			}
 		}
+		*/
 		return source;
 	}
 

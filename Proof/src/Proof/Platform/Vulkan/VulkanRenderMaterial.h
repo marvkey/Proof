@@ -49,6 +49,8 @@ namespace Proof
 		float& GetFloat(const std::string& name);
 		bool& GetBool(const std::string& name);
 		int& GetInt(const std::string& name);
+		virtual void CopyMaterialData(Count<RenderMaterial> material);
+
 		uint32_t& GetUint32(const std::string& name);
 		glm::ivec2& GetVector2I(const std::string& name) ;
 		glm::ivec3& GetVectorI(const std::string& name);
@@ -66,6 +68,7 @@ namespace Proof
 		void RT_Bind(Count < class VulkanRenderCommandBuffer > render, Count<class VulkanComputePass> pass);
 		void RT_Bind(Count < class VulkanRenderCommandBuffer > render, Count<class VulkanRenderPass> pass);
 
+		std::vector < std::pair < std::string, Count<class Texture2D >>> GetAllTextures();
 	private:
 		template<typename T>
 		void SetInternal(const std::string& name, T& value)

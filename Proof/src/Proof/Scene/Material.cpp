@@ -25,6 +25,12 @@ namespace Proof {
             m_DefaultShader = true;
         SetDefault();
     }
+    Material::Material(const Material& material)
+    {
+        Name = material.Name;
+        m_DefaultShader = material.m_DefaultShader;
+        m_RenderMaterial = Count<VulkanRenderMaterial>::CreateFrom( material.m_RenderMaterial.As<VulkanRenderMaterial>());
+    }
     Material::Material(const std::string& name, Count<class Shader> shader)
     {
         m_RenderMaterial = RenderMaterial::Create(name, shader);

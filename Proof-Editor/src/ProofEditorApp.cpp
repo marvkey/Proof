@@ -50,7 +50,7 @@ namespace Proof {
     Application* CreateApplication(int argc, char** argv) {
 
         std::string_view projectPath;
-        projectPath = "LostExpedition/LostExpedition.ProofProject";
+        //projectPath = "Driftwood/Driftwood.ProofProject";
         if (argc > 1)
             projectPath = argv[1];
         ApplicationConfiguration configuration;

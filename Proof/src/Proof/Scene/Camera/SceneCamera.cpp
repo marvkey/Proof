@@ -17,7 +17,10 @@ namespace Proof {
 
 	void SceneCamera::SetData(float degfov, float nearPlane, float farPlane, uint32_t width, uint32_t height, const glm::mat4& view)
 	{
-		glm::mat4 projection = glm::perspective(glm::radians(degfov), float(width / height), nearPlane, farPlane);
+		//https://github.com/Ant-Play/Ant/blob/2dab7c0362f017911df9090b1608ec4b81ad1f2c/Ant/src/Ant/Scene/SceneCamera.cpp
+		//https://github.com/Ant-Play/Ant/blob/2dab7c0362f017911df9090b1608ec4b81ad1f2c/Ant/src/Ant/Renderer/Camera.h#L24
+
+		glm::mat4 projection =glm::perspectiveFov(glm::radians(degfov), (float)width, (float)height, nearPlane, farPlane);
 		glm::mat4 unReversedProjectionMatrix = glm::perspectiveFov(glm::radians(degfov), (float)width, (float)height, nearPlane, farPlane);
 
 		SetProjectionMatrix(projection, view,unReversedProjectionMatrix);

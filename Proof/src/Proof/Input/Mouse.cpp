@@ -20,6 +20,7 @@ namespace Proof
 
 		if (Application::Get()->GetConfig().EnableImgui)
 			UI::SetInputEnabled(mode == CursorMode::Normal);
+
 	}
 	CursorMode Mouse::GetCursorMode()
 	{

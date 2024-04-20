@@ -1,0 +1,7 @@
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Driftwood\Binaries\ScriptApp\Driftwood.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Driftwood\Binaries\ScriptApp\Driftwood.pdb
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Driftwood\Intermediates\ScriptApp\Debug\Driftwood.csproj.AssemblyReference.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Driftwood\Intermediates\ScriptApp\Debug\Driftwood.csproj.CoreCompileInputs.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Driftwood\Intermediates\ScriptApp\Debug\Driftwood.csproj.CopyComplete
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Driftwood\Intermediates\ScriptApp\Debug\Driftwood.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\Driftwood\Intermediates\ScriptApp\Debug\Driftwood.pdb

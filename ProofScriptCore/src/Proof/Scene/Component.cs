@@ -205,6 +205,17 @@ namespace Proof
         {
             InternalCalls.PlayerInputComponent_AddInputBindingByPriority(Entity.ID, bindingContext.ID,priority);
         }
+
+		void RemoveInputBinding(InputBindingContext bindingContext)
+		{
+			InternalCalls.PlayerInputComponent_RemoveInputBindingContext(Entity.ID, bindingContext.ID);
+		}
+
+		void RemoveInputBindingByPriority(uint priority)
+		{
+            InternalCalls.PlayerInputComponent_RemoveInputBindingContextByPriority(Entity.ID, priority);
+
+        }
     }
 
 	public struct InputBindingData

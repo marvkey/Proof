@@ -188,7 +188,7 @@ World:
         tags: []
       TransformComponent:
         Location: [26.5, 6, -8.19999981]
-        Rotation: [0, 3.65122867, 0.104719758]
+        Rotation: [0, 1.22871184, 0.104719758]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
@@ -252,3 +252,21 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 54
+    - Entity: 8616929413447809998
+      TagComponent:
+        Tag: PBRGun
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 18348114341737718825
+      MeshColliderComponent:
+        ColliderID: 4045629147041952936
+        IsTrigger: false
+        UseSharedShape: false
+        PhysicsMaterialPointerID: 0

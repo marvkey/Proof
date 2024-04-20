@@ -1,5 +1,4 @@
 #pragma once
-#include "Proof/Scene/Entity.h"
 #include "Proof/Core/UUID.h"
 #include "Proof/Asset/AssetTypes.h"
 #include <unordered_map>
@@ -17,7 +16,7 @@ namespace Proof
 		static void Select(SelectionContext context, UUID selectionID);
 		static bool IsSelected(UUID selectionID);
 		static bool IsSelected(SelectionContext context, UUID selectionID);
-		static bool IsEntityOrAncestorSelected(const Entity entity);
+		static bool IsEntityOrAncestorSelected(const class Entity entity);
 		static bool IsEntityOrAncestorSelected(SelectionContext context, const Entity entity);
 		static void Deselect(UUID selectionID);
 		static void Deselect(SelectionContext context, UUID selectionID);

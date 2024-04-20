@@ -9,6 +9,7 @@
 namespace Proof
 {
 	class World;
+	class MaterialTable;
 }
 namespace Proof::UI
 {
@@ -28,7 +29,8 @@ namespace Proof::UI
 	bool AttributeMultiAssetReference(const std::string& label,std::initializer_list< AssetType> assetTypes, AssetID& id, const PropertyAssetReferenceSettings& settings = {});
 
 	bool AttributeTextureAssetReference(const std::string& label, AssetID& id, const PropertyAssetReferenceSettings& settings = {});
-	
+	bool AttributeDrawMaterialTable(Count<MaterialTable> materialTable, Count<MaterialTable> sourceMaterialTable);
+
 	enum class AttributeVectorSupportedItemTypes
 	{
 		None = 0,

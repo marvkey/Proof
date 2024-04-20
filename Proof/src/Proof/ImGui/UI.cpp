@@ -2333,6 +2333,28 @@ namespace Proof::UI
         return TreeNodeWithIcon(icon, window->GetID(label), flags, label, NULL, iconTint);
     }
 
+    bool IsInputEnabled()
+    {
+        const auto& io = ImGui::GetIO();
+        return (io.ConfigFlags & ImGuiConfigFlags_NoMouse) == 0 && (io.ConfigFlags & ImGuiConfigFlags_NavNoCaptureKeyboard) == 0;
+    }
+
+    void SetInputEnabled(bool enabled)
+    {
+        auto& io = ImGui::GetIO();
+
+        if (enabled)
+        {
+            io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+            io.ConfigFlags &= ~ImGuiConfigFlags_NavNoCaptureKeyboard;
+        }
+        else
+        {
+            io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
+            io.ConfigFlags |= ImGuiConfigFlags_NavNoCaptureKeyboard;
+        }
+    }
+
     void Image(const Count<Proof::Image>& image, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, const ImVec4& tint_col, const ImVec4& border_col)
     {
         ImGui::Image(UI::GetTextureID(image), size, uv0, uv1, tint_col, border_col);
@@ -2382,6 +2404,11 @@ namespace Proof::UI
             id = id ^ strID;
         }
         return ImGui::ImageButtonEx(id, textureID, size, uv0, uv1, ImVec2{ (float)frame_padding, (float)frame_padding }, bg_col, tint_col);
+    }
+
+    bool ImageButton(const Count<Texture2D>& texture, const ImVec2& size, const ImVec4& tint)
+    {
+        return ImageButton(texture->GetImage(), size, { 0,0 }, { 1,1 }, -1, { 0,0,0,0 },tint);
     }
 
     bool ImageButton(const Count<Texture2D>& texture, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)

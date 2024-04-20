@@ -1169,7 +1169,8 @@ namespace Proof
 					if (index == ContentBrowserItemList::InvalidItem)
 						continue;
 
-					deletedAssetMetadata.push_back(AssetManager::GetAssetInfo(handle));
+					if(AssetManager::HasAsset(handle))
+						deletedAssetMetadata.push_back(AssetManager::GetAssetInfo(handle));
 
 					m_CurrentItems[index]->Delete();
 					m_CurrentItems.erase(handle);

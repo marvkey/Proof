@@ -12,6 +12,7 @@ namespace Proof {
 	class RenderMaterial : public RefCounted
 	{
 	public:
+		virtual void CopyMaterialData(Count<RenderMaterial> material) = 0;
 		virtual void Set(std::string_view name, Count<class UniformBuffer> buffer0) = 0;
 		virtual void Set(std::string_view name, Count<class StorageBuffer> buffer) = 0;
 		virtual void Set(std::string_view name, Count<class UniformBufferSet> buffer) = 0;
@@ -53,6 +54,8 @@ namespace Proof {
 		virtual glm::mat3& GetMatrix3(const std::string& name) = 0;
 		virtual glm::mat4& GetMatrix4(const std::string& name) = 0;
 
+		// name of bidning, and texture
+		virtual std::vector<std::pair<std::string,Count<class Texture2D>>> GetAllTextures() = 0;
 		virtual Count<class Texture2D> TryGetTexture2D(std::string_view name) = 0;
 		virtual const RenderMaterialConfiguration& GetConfig()const = 0;
 		static Count<RenderMaterial> Create(const RenderMaterialConfiguration& config);

@@ -56,9 +56,9 @@ end)
 
 ProofRoootDirectory = os.getenv("PROOF_DIR")
 include (path.join(ProofRoootDirectory, "Proof-Editor", "Resources", "LUA", "Proof.lua"))
-workspace "LostExpedition"
+workspace "$PROJECT_NAME$"
 	targetdir "build"
-	startproject "LostExpedition"
+	startproject "$PROJECT_NAME$"
 	
 	configurations 
 	{ 
@@ -108,13 +108,13 @@ project "ProofScriptCore"
 
 group ""
 
-project "LostExpedition"
+project "$PROJECT_NAME$"
 	location "Source/ScriptApp"
 	kind "SharedLib"
 	language "C#"
 	dotnetframework "4.7.2"
 
-	targetname "LostExpedition"
+	targetname "$PROJECT_NAME$"
 	targetdir ("%{wks.location}/Binaries/ScriptApp")
 	objdir ("%{wks.location}/Intermediates/ScriptApp")
 

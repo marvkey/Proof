@@ -37,32 +37,35 @@ namespace Proof
 
         s_Classes.clear();
 
-        for (auto& [scriptName, script] : ScriptRegistry::GetEntityScripts())
+        if (ScriptRegistry::IsInitialized() == true)
         {
-            s_Classes[scriptName].className = scriptName;
-
-            ManagedClass* managedClass = ScriptRegistry::GetManagedClassByName(scriptName);
-
-            PF_ENGINE_INFO("ScriptImportSettings New Script: {}", scriptName);
-            for (auto& fieldName : managedClass->Fields)
+            for (auto& [scriptName, script] : ScriptRegistry::GetEntityScripts())
             {
-                ScriptField* field = ScriptRegistry::GetFieldByName(fieldName);
+                s_Classes[scriptName].className = scriptName;
 
-                if (!field->IsWritable())
-                    continue;
+                ManagedClass* managedClass = ScriptRegistry::GetManagedClassByName(scriptName);
 
-                ScriptFieldType nativeType = field->Type;
-                if (!IsScriptFieldAssetType(nativeType))
-                    continue;
-                if(field->IsArray())
+                PF_ENGINE_INFO("ScriptImportSettings New Script: {}", scriptName);
+                for (auto& fieldName : managedClass->Fields)
                 {
-                    s_Classes[scriptName].Fields[fieldName] = Count<ArrayFieldStorage>::Create(field);
+                    ScriptField* field = ScriptRegistry::GetFieldByName(fieldName);
+
+                    if (!field->IsWritable())
+                        continue;
+
+                    ScriptFieldType nativeType = field->Type;
+                    if (!IsScriptFieldAssetType(nativeType))
+                        continue;
+                    if (field->IsArray())
+                    {
+                        s_Classes[scriptName].Fields[fieldName] = Count<ArrayFieldStorage>::Create(field);
+                    }
+                    else
+                    {
+                        s_Classes[scriptName].Fields[fieldName] = Count<FieldStorage>::Create(field);
+                    }
+                    PF_ENGINE_TRACE("    Added Field: {}", fieldName);
                 }
-                else
-                {
-                    s_Classes[scriptName].Fields[fieldName] = Count<FieldStorage>::Create(field);
-                }
-                PF_ENGINE_TRACE("    Added Field: {}", fieldName);
             }
         }
 

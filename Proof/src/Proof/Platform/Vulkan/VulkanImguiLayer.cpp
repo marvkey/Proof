@@ -56,8 +56,6 @@ namespace Proof {
 		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Bold.ttf", 18.0f);
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Regular.ttf", 17.0f);
 
-		io.WantCaptureKeyboard = true;
-		io.WantCaptureMouse = true;
 		SetDarkTheme();
 
 		Count<VulkanImguiLayer> instance = this;
@@ -128,6 +126,7 @@ namespace Proof {
 				for (uint32_t i = 0; i < framesInFlight; i++)
 					s_ImGuiCommandBuffers[i] = VulkanGraphicsContext::Get()->GetDevice()->CreateSecondaryCommandBuffer("ImGuiSecondaryCoommandBuffer");
 			});
+
 	}
 	void VulkanImguiLayer::OnDetach()
 	{
@@ -151,6 +150,9 @@ namespace Proof {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 		ImGuizmo::BeginFrame();
+
+		
+
 	}
 	void VulkanImguiLayer::OnEvent(Event& e)
 	{
@@ -244,11 +246,11 @@ namespace Proof {
 		io.DisplaySize = ImVec2(app.GetWindow()->GetWidth(), app.GetWindow()->GetHeight());
 		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 		{
-			GLFWwindow* backup_current_context = glfwGetCurrentContext();
+			//GLFWwindow* backup_current_context = glfwGetCurrentContext();
 
 			ImGui::UpdatePlatformWindows();
 			ImGui::RenderPlatformWindowsDefault();
-			glfwMakeContextCurrent(backup_current_context);
+			//glfwMakeContextCurrent(backup_current_context);
 
 		}
 		

@@ -14,6 +14,8 @@ namespace Proof{
 		Material(const std::string& name);
 		Material(const std::string& name, Count<class Shader> shader);
 		Material(const std::string& name,Count<class RenderMaterial> material);
+
+		Material(const Material& material);
 		ASSET_CLASS_TYPE(Material);
 		std::string Name;
 

@@ -1,6 +1,5 @@
 #pragma once
 #include "AssetEditor.h"
-#include "Proof/Scene/Camera/EditorCamera.h"
 namespace Proof
 {
 	class MeshEditorPanel : public AssetEditor
@@ -10,11 +9,26 @@ namespace Proof
 		virtual void OnUpdate(FrameTime ts);
 		virtual void OnImGuiRender()override;
 		virtual void SetAsset(const Count<class Asset>& asset);
+		virtual void Save();
+		virtual bool IsSaved() {return !m_NeedsSaving;};
 	private:
-		bool m_IsViewportFocused = false;
-		EditorCamera m_Camera;
-		Count<class  WorldRenderer> m_WorldRenderer;
+		Count<class MeshCollider> m_MeshCollider;
 		Count<class World> m_World;
-		Count<class Mesh> m_Mesh;
+		Count<class DetailsPanel> m_DetailsPanel;
+		Special<class EditorWorkspaceManager> m_WorkSpaceManager;
+		Count<class MeshBase> m_MeshBase;
+		std::string m_ViewportPanelName;
+		std::string m_DetailsPanelName;
+		bool m_NeedsSaving = true;
+	private:
+		virtual void SetDefaultLayout();
+		virtual bool IsSubWindowsHovered();
+		virtual bool IsSubWindowsFocused();
+		void UpdatePreviewEntity();
+		void RenderSettingsPanel();
+		void RenderStaticMeshPanel();
+		void RenderDynamicMeshPanel();
+
+		void DrawMeshNode();
 	};
 }

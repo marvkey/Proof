@@ -279,8 +279,8 @@ namespace  Proof
 
 		s_CookingData->CookingSDK->setParams(cookingParams);
 
-		const auto& vertices = meshSource->GetVertices();
-		const auto& indices = meshSource->GetIndices();
+		const auto vertices = meshSource->GetVertices();
+		const auto indices = meshSource->GetIndices();
 		const auto& submeshes = meshSource->GetSubMeshes();
 
 		CookingResult cookingResult = CookingResult::Failure;
@@ -398,8 +398,8 @@ namespace  Proof
 
 		CookingResult cookingResult = CookingResult::Failure;
 
-		const auto& vertices = meshSource->GetVertices();
-		const auto& indices = meshSource->GetIndices();
+		const auto vertices = meshSource->GetVertices();
+		const auto indices = meshSource->GetIndices();
 		const auto& submeshes = meshSource->GetSubMeshes();
 
 		for (auto submeshIndex : submeshIndices)

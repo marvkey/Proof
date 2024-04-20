@@ -1,0 +1,12 @@
+ScriptImportSettings:
+  Scripts:
+    - Script: Driftwood.PlayerInput
+      ScriptName: Driftwood.PlayerInput
+      Fields:
+        - NameID: Driftwood.PlayerInput.MoveSideWaysAction
+          Type: InputAction
+          Data: 0
+    - Script: Driftwood.PlayerMovement
+      ScriptName: Driftwood.PlayerMovement
+      Fields:
+        []

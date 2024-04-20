@@ -45,6 +45,7 @@ namespace Proof
 		ImageConfiguration& GetSpecificationRef(){ return m_Specification; };
 		virtual uint32_t GetWidth() { return m_Specification.Width; };
 		virtual uint32_t GetHeight() { return m_Specification.Height; };
+		Buffer GetStoredDataAsBuffer();
 
 		// subnit to render thread when use
 		void CopyToHost(Buffer& data);

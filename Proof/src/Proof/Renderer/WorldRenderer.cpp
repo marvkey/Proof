@@ -1375,11 +1375,6 @@ namespace Proof
 		if (m_ResourcesCreatedGPU)
 			m_ResourcesCreated = true;
 
-		if (!m_ResourcesCreated)
-			return;
-
-		m_InContext = true;
-		
 		if (FrameTime::GetFrameCount() % 2 == 0)
 		{
 			m_CurTransformMap = &m_MeshTransformMap[0];
@@ -1391,6 +1386,12 @@ namespace Proof
 			m_PrevTransformMap = &m_MeshTransformMap[0];
 		}
 		m_CurTransformMap->clear();
+
+		if (!m_ResourcesCreated)
+			return;
+
+		m_InContext = true;
+		
 
 		//reset stats
 		m_Stats = {};
@@ -3423,7 +3424,7 @@ namespace Proof
 		{
 			const auto& subMesh = meshSource->GetSubMeshes().at(submeshIndex);
 
-			glm::mat4 subMeshTransform = transform * subMesh.Transform;
+			glm::mat4 subMeshTransform = transform * mesh->GetTransform() * subMesh.Transform;
 
 			uint32_t materialIndex = subMesh.MaterialIndex;
 
@@ -3470,7 +3471,7 @@ namespace Proof
 		const auto& submeshData = meshSource->GetSubMeshes();
 		const auto& subMesh = meshSource->GetSubMeshes().at(subMeshIndex);
 
-		glm::mat4 subMeshTransform = transform * subMesh.Transform;
+		glm::mat4 subMeshTransform = transform * mesh->GetTransform() * subMesh.Transform;
 
 		uint32_t materialIndex = subMesh.MaterialIndex;
 
@@ -3520,7 +3521,7 @@ namespace Proof
 		{
 			const auto& subMesh = meshSource->GetSubMeshes().at(submeshIndex);
 
-			glm::mat4 subMeshTransform = transform * subMesh.Transform;
+			glm::mat4 subMeshTransform = transform * mesh->GetTransform() * subMesh.Transform;
 
 			uint32_t materialIndex = subMesh.MaterialIndex;
 
@@ -3558,7 +3559,7 @@ namespace Proof
 		const auto& submeshData = meshSource->GetSubMesh(subMeshIndex);
 		const auto& subMesh = meshSource->GetSubMeshes().at(subMeshIndex);
 
-		glm::mat4 subMeshTransform = transform * subMesh.Transform;
+		glm::mat4 subMeshTransform = transform * mesh->GetTransform() * subMesh.Transform;
 
 		uint32_t materialIndex = subMesh.MaterialIndex;
 

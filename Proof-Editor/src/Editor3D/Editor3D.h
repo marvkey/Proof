@@ -1,11 +1,12 @@
 #pragma once
 #include "Proof/Core/Layer.h"
-#include "Proof/Scene/Entity.h"
-#include "Proof/Scene/Camera/EditorCamera.h"
-#include "Proof/Input/KeyCodes.h"
 #include "Proof/Events/KeyEvent.h"
+#include <glm/glm.hpp>
+#include "Proof/Asset/AssetTypes.h"
 namespace Proof {
 	
+	class World;
+
 	class Editore3D : public Layer 
 	{
 	public:
@@ -22,7 +23,6 @@ namespace Proof {
 		static bool IsKeyPressedEditor(KeyBoardKey Key);
 		static bool IsKeyClickedEditor(KeyBoardKey Key);
 		bool m_ViewPortFocused = false;
-		class EditorCamera m_EditorCamera;
 	private:
 		struct KeyBoardShowEvent {
 			bool ShowAll = false;
@@ -76,7 +76,6 @@ namespace Proof {
 		virtual void OnEvent(Event& e);
 		bool OnKeyClicked(KeyClickedEvent& e);
 		bool OnMouseButtonClicked(class MouseButtonClickedEvent& e);
-		Entity m_CopyEntity;
 		void Logger();
 		void ViewPort();
 		void MainToolBar();

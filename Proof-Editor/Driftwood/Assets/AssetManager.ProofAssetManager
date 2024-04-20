@@ -1,0 +1,76 @@
+Assets:
+  - Asset: 11506394429664452532
+    Type: Material
+    Path: Materials\m_Red.Material.ProofAsset
+  - Asset: 11172292077909152364
+    Type: ScriptFile
+    Path: Scripts\PlayerMovement.cs
+  - Asset: 2911217971412107006
+    Type: TextureSourceFile
+    Path: Models\Jetski\textureMaps\RGBjetski_low_lambert1_NormalOpenGL.png
+  - Asset: 599027019777975726
+    Type: World
+    Path: Scenes\TestScene.ProofWorld
+  - Asset: 16315266086624409064
+    Type: MeshSourceFile
+    Path: Models\kawasaki-310xultra-jet-ski\source\JetSki_Completed.fbx
+  - Asset: 18192193277418369640
+    Type: PhysicsMaterial
+    Path: PhysicsMaterial\pm_Slippery.PhysicsMaterial.ProofAsset
+  - Asset: 2100924155399592173
+    Type: ScriptFile
+    Path: Scripts\PlayerInput.cs
+  - Asset: 8490611581698954382
+    Type: InputAction
+    Path: Input\Actions\IA_MoveSideways.InputAction.ProofAsset
+  - Asset: 7866723575567982260
+    Type: InputBindingContext
+    Path: Input\IBC_PlayerMovement.InputBindingContext.ProofAsset
+  - Asset: 17820528860446868087
+    Type: TextureSourceFile
+    Path: Models\Jetski\textureMaps\RGBjetski_low_lambert1_Specular.png
+  - Asset: 7651284040765721506
+    Type: MeshCollider
+    Path: Mesh\NewMeshCollider.MeshCollider.ProofAsset
+  - Asset: 5884798640343320349
+    Type: TextureSourceFile
+    Path: Models\Jetski\textureMaps\jetski_low_lambert1_Metallic.png
+  - Asset: 12334189929146833081
+    Type: MeshSourceFile
+    Path: Models\Jetski\model\FINAL_jetski.obj
+  - Asset: 14540326848834260646
+    Type: TextureSourceFile
+    Path: Models\kawasaki-310xultra-jet-ski\textures\JetSki_Completed_JetSki_Material_Metallic.png
+  - Asset: 11203884012750991208
+    Type: TextureSourceFile
+    Path: Models\Jetski\textureMaps\jetski_low_lambert1_BaseColor.png
+  - Asset: 5695228672763227981
+    Type: TextureSourceFile
+    Path: Models\Jetski\textureMaps\jetski_low_lambert1_Height.png
+  - Asset: 16412955699274292519
+    Type: TextureSourceFile
+    Path: Models\Jetski\textureMaps\jetski_low_lambert1_Normal.png
+  - Asset: 10666736267838385148
+    Type: TextureSourceFile
+    Path: Models\Jetski\textureMaps\jetski_low_lambert1_Roughness.png
+  - Asset: 724146153366499646
+    Type: TextureSourceFile
+    Path: Models\kawasaki-310xultra-jet-ski\textures\JetSki_Completed_JetSki_Material_BaseColor.png
+  - Asset: 8772615644673143433
+    Type: TextureSourceFile
+    Path: Models\kawasaki-310xultra-jet-ski\textures\AO.png
+  - Asset: 15562991061849412256
+    Type: TextureSourceFile
+    Path: Models\kawasaki-310xultra-jet-ski\textures\internal_ground_ao_texture.jpeg
+  - Asset: 14177496596695681598
+    Type: TextureSourceFile
+    Path: Models\kawasaki-310xultra-jet-ski\textures\JetSki_Completed_JetSki_Material_Normal.png
+  - Asset: 14458019279825878937
+    Type: TextureSourceFile
+    Path: Models\kawasaki-310xultra-jet-ski\textures\JetSki_Completed_JetSki_Material_Roughness.png
+  - Asset: 3315318494544798172
+    Type: Mesh
+    Path: Mesh\JetskiCompleted\JetskiCompleted.Mesh.ProofAsset
+  - Asset: 2570847855970079429
+    Type: Material
+    Path: Mesh\JetskiCompleted\lambert1.Material.ProofAsset

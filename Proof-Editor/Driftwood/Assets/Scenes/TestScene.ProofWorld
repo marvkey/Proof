@@ -1,0 +1,171 @@
+World:
+  ID: 599027019777975726
+  Entities:
+    - Entity: 1347286562107836536
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [1.39626336, 0.17453292, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+    - Entity: 12991595770315008167
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0488692187, 0, 0.260054052]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 7838775671514078008
+      TagComponent:
+        Tag: Player
+        tags: []
+      TransformComponent:
+        Location: [0, 5.69999981, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [5607408554093468890]
+      MeshComponent:
+        MeshAssetPointerID: 0
+      ScriptComponent:
+        Scripts:
+          - Script: Driftwood.PlayerMovement
+            ScriptClassName: Driftwood.PlayerMovement
+            ScriptName: Driftwood.PlayerMovement
+            Fields:
+              - NameID: Driftwood.PlayerMovement.ForwardForce
+                Type: Float
+                Data: 1000
+          - Script: Driftwood.PlayerInput
+            ScriptClassName: Driftwood.PlayerInput
+            ScriptName: Driftwood.PlayerInput
+            Fields:
+              - NameID: Driftwood.PlayerInput.MoveSideWaysAction
+                Type: InputAction
+                Data: 8490611581698954382
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 1.39999998, 0]
+        Size: [21.8999996, 3.5999999, 10]
+        PhysicsMaterialPointerID: 18192193277418369640
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+      PlayerInputComponent:
+        InputPlayer: Player0
+        InputBindings:
+          - InputBindingContextHandler: ""
+            InputBindingID: 7866723575567982260
+            Active: true
+    - Entity: 15278607271457557783
+      TagComponent:
+        Tag: JetskiCompleted
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 3315318494544798172
+      MeshColliderComponent:
+        ColliderID: 7559182158962839199
+        IsTrigger: false
+        UseSharedShape: false
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 5607408554093468890
+      TagComponent:
+        Tag: Head
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, -1.57079637, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 7838775671514078008
+        Children: [4999063705094856772]
+    - Entity: 4999063705094856772
+      TagComponent:
+        Tag: Camera
+        tags: []
+      TransformComponent:
+        Location: [0, 6.5, 42.5]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 5607408554093468890
+        Children: []
+      CameraComponent:
+        NearPlane: 0.300000012
+        FarPlane: 1000
+        FOV: 45
+        UseLocalRotation: false
+    - Entity: 13245748027399500189
+      TagComponent:
+        Tag: Plane
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [251.5, 4.80000019, 1000]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 56
+      MeshColliderComponent:
+        ColliderID: 16718504730385164416
+        IsTrigger: false
+        UseSharedShape: false
+        PhysicsMaterialPointerID: 18192193277418369640
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete

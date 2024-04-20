@@ -227,6 +227,7 @@ namespace Proof
 		std::vector< VkDescriptorPool> m_FreePools;
 		std::map<uint32_t,std::vector< VkDescriptorPool>> m_UsedPools;
 		VkDescriptorPool GrabPool();
+		friend class VulkanRenderMaterial;
 		//std::map<uint32_t, std::map<uint32_t, RenderPassInput>> m_PendingInputs;
 	};
 }

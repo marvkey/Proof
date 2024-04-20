@@ -1,0 +1,4 @@
+AssetType: InputAction
+ID: 8490611581698954382
+OutputType: Float
+OutputValueBehavior: MaximumAbsolute

@@ -210,7 +210,8 @@ namespace Proof
 	}
 	void ViewPortEditorWorkspace::OnUpdate(FrameTime ts)
 	{
-		
+		m_WorldRenderer->SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+
 		switch (m_WorldContext->GetState())
 		{
 		case Proof::WorldState::Play:
@@ -222,7 +223,6 @@ namespace Proof
 
 				
 				m_Camera.SetActive(false);
-				m_WorldRenderer->SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 				m_WorldContext->OnRenderRuntime(m_WorldRenderer, ts);
 				m_WorldContext->OnUpdateRuntime(ts);
 				//OnRender2D();
@@ -233,7 +233,6 @@ namespace Proof
 				m_Camera.SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 				m_Camera.SetActive(IsFocused() || IsHovered());
 				m_Camera.OnUpdate(ts);
-				m_WorldRenderer->SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 				m_WorldContext->OnRenderEditor(m_WorldRenderer, ts, m_Camera);
 				m_WorldContext->OnUpdateEditor(ts);
 
@@ -243,7 +242,6 @@ namespace Proof
 		}
 		case Proof::WorldState::Pause:
 		{
-			m_Camera.SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 			m_Camera.SetActive(IsFocused() || IsHovered());
 			m_Camera.OnUpdate(ts);
 			m_WorldContext->OnUpdateEditor(ts);
@@ -258,7 +256,6 @@ namespace Proof
 			m_Camera.SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 			m_Camera.SetActive(IsFocused() || IsHovered());
 			m_Camera.OnUpdate(ts);
-			m_WorldRenderer->SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 			m_WorldContext->OnRenderEditor(m_WorldRenderer, ts, m_Camera);
 			m_WorldContext->OnUpdateEditor(ts);
 
@@ -726,7 +723,7 @@ namespace Proof
 		DrawIcons();
 		DrawBoundingBoxes();
 
-		if (m_ViewPortEditorData.IsWorld)
+		if (m_ViewPortEditorData.IsWorld && m_ViewPortEditorData.EnableSelection )
 		{
 			for (auto selectionID : SelectionManager::GetSelections(SelectionContext::Scene))
 			{
@@ -864,6 +861,9 @@ namespace Proof
 		//if (!IsHovered() || !IsFocused())
 		//	return;
 		if (!IsFocusedOrHovered())
+			return;
+
+		if (m_ViewPortEditorData.EnableSelection == false)
 			return;
 		Entity selectedEntity;
 		if (m_ViewPortEditorData.IsWorld)

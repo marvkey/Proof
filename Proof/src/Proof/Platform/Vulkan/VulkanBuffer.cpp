@@ -13,7 +13,7 @@ namespace Proof
 
 
 	// cpu to gpu is better for data that is updated ofen
-	// gpu only is bettter for data that is updated once
+	// gpu only is bettter for data that is updated once, and cannot access using map memmory
 	VulkanVertexBuffer::VulkanVertexBuffer(const void* data, uint64_t size): 
 		m_VertexSize(size), m_Usage (VulkanMemmoryUsage::GpuOnly)
 	{
@@ -52,8 +52,8 @@ namespace Proof
 		if(m_Usage == VulkanMemmoryUsage::CpuToGpU)
 			vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 		else
-			vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
-
+			vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+		// host VMA_ALLOCATION_CREATE_MAPPED_BIT so we can map it if the memory is GPU only
 		allocator.AllocateBuffer(vertexBufferInfo, Utils::ProofVulkanMemmoryUsageToVMAMemoryUsage(m_Usage), m_VertexBuffer);
 	}
 	void VulkanVertexBuffer::Resize(uint64_t size)
@@ -150,13 +150,52 @@ namespace Proof
 	}
 	Buffer VulkanVertexBuffer::GetDataRaw()
 	{
+		if (m_VertexBuffer.Allocation == nullptr || m_VertexBuffer.Buffer ==nullptr)
+			return Buffer(0);
 		Buffer buffer;
 		buffer.Data = pnew uint8_t[m_VertexSize];
 		buffer.Size = m_VertexSize;
-		VulkanAllocator allocator("VulkanVertexBufferGetDataRaw");
-		uint8_t* pData = allocator.MapMemory<uint8_t>(m_VertexBuffer.Allocation);
-		memcpy(buffer.Data, pData, m_VertexSize); // so we can use delte
-		allocator.UnmapMemory(m_VertexBuffer.Allocation);
+		if (m_Usage == VulkanMemmoryUsage::CpuToGpU)
+		{
+			VulkanAllocator allocator("VulkanVertexBufferGetDataRaw");
+			uint8_t* pData = allocator.MapMemory<uint8_t>(m_VertexBuffer.Allocation);
+			if (pData)
+				memcpy(buffer.Data, pData, m_VertexSize); // so we can use delte
+			allocator.UnmapMemory(m_VertexBuffer.Allocation);
+		}
+		else
+		{
+			VkBufferCreateInfo stagingBufferInfo = {};
+			stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			stagingBufferInfo.pNext = nullptr;
+			stagingBufferInfo.size = m_VertexSize;  // The size of the data to copy
+			stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;  // Used for copying data into this buffer
+
+			VulkanBuffer stagingBuffer;
+			VulkanAllocator stagingBufferAllocator("VulkanVertexBufferStagingBuffer");
+			stagingBufferAllocator.AllocateBuffer(stagingBufferInfo, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer);
+
+			// Prepare the command buffer for the copy operation
+			VkCommandBuffer cmdBuffer = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
+
+			VkBufferCopy copy;
+			copy.dstOffset = 0;  // Destination offset in the staging buffer
+			copy.srcOffset = 0;  // Source offset in the GPU buffer
+			copy.size = m_VertexSize;  // Size of the data to copy
+			vkCmdCopyBuffer(cmdBuffer, m_VertexBuffer.Buffer, stagingBuffer.Buffer, 1, &copy);
+
+			VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(cmdBuffer);
+
+			// Map the staging buffer to read the data
+			uint8_t* stagingData = stagingBufferAllocator.MapMemory<uint8_t>(stagingBuffer.Allocation);
+
+			 memcpy(buffer.Data, stagingData, m_VertexSize);
+
+			stagingBufferAllocator.UnmapMemory(stagingBuffer.Allocation);
+
+			// Clean up the staging buffer
+			stagingBufferAllocator.DestroyBuffer(stagingBuffer);
+		}
 		return buffer;
 	}
 
@@ -219,9 +258,12 @@ namespace Proof
 		if (m_Usage == VulkanMemmoryUsage::CpuToGpU)
 			indexBufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
 		else
-			indexBufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+			indexBufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-		allocator.AllocateBuffer(indexBufferInfo, Utils::ProofVulkanMemmoryUsageToVMAMemoryUsage(m_Usage), m_IndexBuffer);
+		// host VMA_ALLOCATION_CREATE_MAPPED_BIT so we can map it if the memory is GPU only
+		allocator.AllocateBuffer(indexBufferInfo, Utils::ProofVulkanMemmoryUsageToVMAMemoryUsage(m_Usage), m_IndexBuffer, 
+			m_Usage == VulkanMemmoryUsage::GpuOnly ? VMA_ALLOCATION_CREATE_MAPPED_BIT : (VmaAllocationCreateFlagBits)0);
+
 	}
 	VulkanIndexBuffer::~VulkanIndexBuffer() 
 	{
@@ -325,6 +367,8 @@ namespace Proof
 	}
 	std::vector<uint32_t> VulkanIndexBuffer::GetData()const
 	{
+		if (m_IndexBuffer.Allocation == nullptr)
+			return {};
 		void* mappedData;
 		vmaMapMemory(VulkanVertexBuffer::GetGraphicsAllocator(), m_IndexBuffer.Allocation, &mappedData);
 
@@ -343,13 +387,54 @@ namespace Proof
 
 	Buffer VulkanIndexBuffer::GetDataRaw()
 	{
+		if (m_IndexBuffer.Allocation == nullptr)
+			return {};
+
 		Buffer buffer;
 		buffer.Data = pnew uint8_t[m_Size];
 		buffer.Size = m_Size;
-		VulkanAllocator allocator("VulkanIndexBufferGetDataRaw");
-		uint8_t* pData = allocator.MapMemory<uint8_t>(m_IndexBuffer.Allocation);
-		memcpy(buffer.Data, pData, m_Size); // so we can use delte
-		allocator.UnmapMemory(m_IndexBuffer.Allocation);
+		if (m_Usage == VulkanMemmoryUsage::CpuToGpU)
+		{
+			VulkanAllocator allocator("VulkanIndexBufferGetDataRaw");
+			uint8_t* pData = allocator.MapMemory<uint8_t>(m_IndexBuffer.Allocation);
+			if (pData)
+				memcpy(buffer.Data, pData, m_Size); // so we can use delte
+			allocator.UnmapMemory(m_IndexBuffer.Allocation);
+		}
+		else
+		{
+
+			VkBufferCreateInfo stagingBufferInfo = {};
+			stagingBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+			stagingBufferInfo.pNext = nullptr;
+			stagingBufferInfo.size = m_Size;  // The size of the data to copy
+			stagingBufferInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;  // Used for copying data into this buffer
+
+			VulkanBuffer stagingBuffer;
+			VulkanAllocator stagingBufferAllocator("VulkanIndexBufferStagingBuffer");
+			stagingBufferAllocator.AllocateBuffer(stagingBufferInfo, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer);
+
+			// Prepare the command buffer for the copy operation
+			VkCommandBuffer cmdBuffer = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
+
+			VkBufferCopy copy;
+			copy.dstOffset = 0;  // Destination offset in the staging buffer
+			copy.srcOffset = 0;  // Source offset in the GPU buffer
+			copy.size = m_Size;  // Size of the data to copy
+			vkCmdCopyBuffer(cmdBuffer, m_IndexBuffer.Buffer, stagingBuffer.Buffer, 1, &copy);
+
+			VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(cmdBuffer);
+
+			// Map the staging buffer to read the data
+			uint8_t* stagingData = stagingBufferAllocator.MapMemory<uint8_t>(stagingBuffer.Allocation);
+
+			memcpy(buffer.Data, stagingData, m_Size);
+
+			stagingBufferAllocator.UnmapMemory(stagingBuffer.Allocation);
+
+			// Clean up the staging buffer
+			stagingBufferAllocator.DestroyBuffer(stagingBuffer);
+		}
 		return buffer;
 	}
 

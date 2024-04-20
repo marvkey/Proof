@@ -35,6 +35,8 @@ namespace Proof
 	VulkanDescriptorManager::VulkanDescriptorManager(const VulkanDescriptorManagerConfig& config, bool isRenderTrhead):
         m_Config(config)
 	{
+        m_DirtyDescriptorSets.resize(Renderer::GetConfig().FramesFlight, true);
+
         if (isRenderTrhead)
             RT_Build();
         else

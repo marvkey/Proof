@@ -19,6 +19,8 @@ namespace Proof {
 	VulkanRenderMaterial::VulkanRenderMaterial(const VulkanRenderMaterial& other)
 	{
 		m_Config = other.m_Config;
+		m_UniformName = other.m_UniformName;
+		m_DescritptorSetManager = Count<VulkanDescriptorManager>::CreateFrom(other.m_DescritptorSetManager);
 		Build();
 		m_UniformBufferStorage = Buffer::Copy(other.m_UniformBufferStorage);
 
@@ -202,6 +204,16 @@ namespace Proof {
 		return GetInternal<int>(name);
 	}
 
+	void VulkanRenderMaterial::CopyMaterialData(Count<RenderMaterial> material)
+	{
+		auto otherRenderMaterial = material.As<VulkanRenderMaterial>();
+		m_UniformBufferStorage = Buffer::Copy(material.As<VulkanRenderMaterial>()->m_UniformBufferStorage);
+
+		m_DescritptorSetManager->m_Inputs = otherRenderMaterial->m_DescritptorSetManager->m_Inputs;
+		m_DescritptorSetManager->m_GlobalSets = otherRenderMaterial->m_DescritptorSetManager->m_GlobalSets;
+		m_DescritptorSetManager->InvalidateDescriptors();
+	}
+
 	uint32_t& VulkanRenderMaterial::GetUint32(const std::string& name) 
 	{
 		return GetInternal<uint32_t>(name);
@@ -304,6 +316,33 @@ namespace Proof {
 				computePass->RT_PushData(pushName, m_UniformBufferStorage.Get());
 			}
 		}
+	}
+
+	std::vector < std::pair < std::string, Count<class Texture2D >>> VulkanRenderMaterial::GetAllTextures()
+	{
+		std::vector < std::pair < std::string, Count<class Texture2D >>> textures;
+		for (auto& [set,inputs] : m_DescritptorSetManager->GetInputs())
+		{
+			if (set != 0)
+				continue;
+			for (auto& [binding, input] : inputs)
+			{
+				if (input.Type == RenderPassResourceType::Texture2D)
+				{
+					std::string resourcename;
+					for (auto& [name, shaderData] : m_Config.Shader.As<VulkanShader>()->GetInputDeclaration())
+					{
+						if (shaderData.Binding == binding && shaderData.Set == 0)
+						{
+							resourcename = name;
+							break;
+						}
+					}
+					textures.push_back(std::make_pair( resourcename,input.Input[0].As<Texture2D>() ));
+				}
+			}
+		}
+		return textures;
 	}
 
 	void VulkanRenderMaterial::RT_Bind(Count<VulkanRenderCommandBuffer> commandBuffer, Count<VulkanRenderPass> renderPass)

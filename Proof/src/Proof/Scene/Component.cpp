@@ -109,7 +109,7 @@ namespace Proof
 	void DynamicMeshComponent::SetMesh(AssetID ID, bool copyMaterialTable)
 	{
 		//#ifdef PF_ENABLE_DEBUG
-		if (!AssetManager::HasAsset(ID))return;
+		if (!AssetManager::HasAssetAndAssetType(ID,AssetType::DynamicMesh))return;
 		//#endif // 
 
 		m_MeshID = ID;
@@ -151,7 +151,6 @@ namespace Proof
 	}
 	void DynamicMeshComponent::SetSubMeshIndex(uint32_t setSubMeshIndex)
 	{
-		PF_INFO("Set SUbmesh index called");
 		auto mesh = GetMesh();
 		if (mesh == nullptr)
 		{

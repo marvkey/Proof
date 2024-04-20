@@ -1,0 +1,18 @@
+ScriptImportSettings:
+  Scripts:
+    - Script: SandboxProject.ScriptSpawner
+      ScriptName: SandboxProject.ScriptSpawner
+      Fields:
+        []
+    - Script: AltoDemo.PlayerCamera
+      ScriptName: AltoDemo.PlayerCamera
+      Fields:
+        []
+    - Script: AltoDemo.PlayerControllerScript
+      ScriptName: AltoDemo.PlayerControllerScript
+      Fields:
+        []
+    - Script: AltoDemo.SceneController
+      ScriptName: AltoDemo.SceneController
+      Fields:
+        []

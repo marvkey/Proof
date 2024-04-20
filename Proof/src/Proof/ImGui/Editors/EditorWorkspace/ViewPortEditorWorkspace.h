@@ -39,7 +39,7 @@ namespace Proof
 		virtual void OnImGuiRender();
 		virtual void OnUpdate(FrameTime ts);
 		virtual void OnEvent(class Event& e);
-		Count<WorldRenderer> GetWorldRenderer() { return m_WorldRenderer;}
+		Count<class WorldRenderer> GetWorldRenderer() { return m_WorldRenderer;}
 	protected:
 		virtual void OnWindowStylePush();
 		virtual void OnWindowStylePop();

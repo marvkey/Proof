@@ -2,7 +2,9 @@
 #include "SelectionManager.h"
 #include "Proof/Core/Application.h"
 #include "Proof/Utils/ContainerUtils.h"
-namespace Proof
+#include "Proof/Scene/Entity.h"
+
+	namespace Proof
 {
 	void SelectionManager::Select(SelectionContext contextID, UUID selectionID)
 	{

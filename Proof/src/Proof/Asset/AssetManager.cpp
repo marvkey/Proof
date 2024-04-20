@@ -97,7 +97,7 @@ namespace Proof
 				else
 					assetInfo.State = AssetState::Unloaded;
 
-				if(FileSystem::Exists( AssetManager::GetAssetFileSystemPath(path)))
+				if(FileSystem::Exists( AssetManager::GetAssetFileSystemPath(path)) && !path.empty())
 					InternalAddAsset(assetInfo, nullptr);
 				//s_AssetManagerData->Assets.insert({ assetID,{assetInfo,nullptr} });// setting the asset as null as we will load it in another thread
 				//s_AssetManagerData->AssetPath.insert({ path,assetID });
@@ -273,7 +273,7 @@ namespace Proof
 		uint64_t castedId = ID;
 		return s_AssetManagerData->DefaultRuntimeAssets.contains(ID);
 	}
-
+	/*
 	bool AssetManager::ConvertRuntimeToDiskAsset(AssetID Id, const std::filesystem::path& savePath)
 	{
 		if (!AssetManager::HasAsset(Id))
@@ -298,6 +298,7 @@ namespace Proof
 		AssetManager::SaveAsset(asset->GetID());
 		return true;
 	}
+	*/
 
 	void AssetManager::NewAssetSource(const std::filesystem::path& path, AssetType type)
 	{
@@ -530,13 +531,13 @@ namespace Proof
 
 		if (it.Info.RuntimeAsset)
 			return;
-		auto path = std::filesystem::relative(newPath, AssetManager::GetDirectory());
+		auto actualPath = AssetManager::GetAssetFileSystemPathRelative(newPath);
 		// changing teh old data in assetBypath
 		s_AssetManagerData->AssetPath.erase(it.Info.Path);
 		// creating the new data
-		s_AssetManagerData->AssetPath.insert({ path.string(),it.Info.ID });
+		s_AssetManagerData->AssetPath.insert({ actualPath.string(),it.Info.ID });
 		// new assetINfo
-		it.Info.Path = path;
+		it.Info.Path = actualPath;
 
 		SaveAssetManager();
 	}

@@ -108,7 +108,7 @@ namespace Proof
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static object Entity_GetParent(ulong entityID, out ulong ownerID);
         #endregion
-
+         
         #region TagComponent
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void TagComponent_GetTag(ulong entityID, out string message);

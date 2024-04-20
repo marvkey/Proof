@@ -33,23 +33,27 @@ namespace Proof
         return s_ScriptWorldReferences;
     }
 
-    ScriptClassesContainerMetaData* ScriptWorld::GetEntityClassesContainer(Entity entity) const
+    ScriptClassesContainerMetaData* ScriptWorld::GetEntityClassesContainer(Entity entity, bool ifRuntimeGenerateFields) const
     {
         if (m_IsRuntime)
         {
             if (!m_RuntimeEntityClassStorage.contains(entity.GetUUID()))
                 return nullptr;
 
+
             if (!m_EntityClassesStorage.contains(entity.GetUUID()))
                 m_EntityClassesStorage[entity.GetUUID()] = {};
 
-            for (const auto& [className, classMetaData] : m_RuntimeEntityClassStorage[entity.GetUUID()].Classes)
+            if (ifRuntimeGenerateFields)
             {
-                if (m_EntityClassesStorage[entity.GetUUID()].Classes.contains(className))
-                    continue;
-                // call a non const in const
-                const_cast<ScriptWorld*>(this)->EditorScriptEntityPushScript(entity, classMetaData.ClassName);
-                //EditorScriptEntityPushScript(entity, AssetManager::GetAsset< ScriptFile>(classMetaData.ScriptAssetID));
+                for (const auto& [className, classMetaData] : m_RuntimeEntityClassStorage[entity.GetUUID()].Classes)
+                {
+                    if (m_EntityClassesStorage[entity.GetUUID()].Classes.contains(className))
+                        continue;
+                    // call a non const in const
+                    const_cast<ScriptWorld*>(this)->EditorScriptEntityPushScript(entity, classMetaData.ClassName);
+                    //EditorScriptEntityPushScript(entity, AssetManager::GetAsset< ScriptFile>(classMetaData.ScriptAssetID));
+                }
             }
             return &m_EntityClassesStorage[entity.GetUUID()];
         }
@@ -78,6 +82,31 @@ namespace Proof
         if (!classMetaData)return nullptr;
         if (!classMetaData->Fields.contains(fieldName))return nullptr;
         return classMetaData->Fields.at(fieldName);
+    }
+
+    ScriptGCHandle ScriptWorld::GetScriptInstance(Entity entity, const std::string& classFullName)
+    {
+        if (m_IsRuntime)
+        {
+            if (m_RuntimeEntityClassStorage.contains(entity.GetUUID()))
+            {
+                if (m_RuntimeEntityClassStorage[entity.GetUUID()].Classes.contains(classFullName))
+                {
+                    return m_RuntimeEntityClassStorage[entity.GetUUID()].Classes[classFullName].ScriptHandle;
+                }
+            }
+        }
+        else
+        {
+            if (m_EntityClassesStorage.contains(entity.GetUUID()))
+            {
+                if (m_EntityClassesStorage[entity.GetUUID()].Classes.contains(classFullName))
+                {
+                    return m_EntityClassesStorage[entity.GetUUID()].Classes[classFullName].ScriptHandle;
+                }
+            }
+        }
+        return nullptr;
     }
 
 	void ScriptWorld::InstantiateScriptEntity(Entity entity)
@@ -511,7 +540,7 @@ namespace Proof
 
         InstantiateScriptEntity(dstEntity);
         if (!IsEntityScriptInstantiated(dstEntity))return;
-        ScriptClassesContainerMetaData* srcClassesMetaData =  srcScriptWorld->GetEntityClassesContainer(srcEntity);
+        ScriptClassesContainerMetaData* srcClassesMetaData =  srcScriptWorld->GetEntityClassesContainer(srcEntity,true);
         if (!srcClassesMetaData)
             return;
 
@@ -535,11 +564,11 @@ namespace Proof
 
         if (!IsEntityScriptInstantiated(dstEntity))return;
 
-        ScriptClassesContainerMetaData* srcClassesMetaData = srcScriptWorld->GetEntityClassesContainer(srcEntity);
+        ScriptClassesContainerMetaData* srcClassesMetaData = srcScriptWorld->GetEntityClassesContainer(srcEntity,true);
         if (!srcClassesMetaData)
             return;
 
-        ScriptClassesContainerMetaData* dstClassesMetaData = GetEntityClassesContainer(dstEntity);
+        ScriptClassesContainerMetaData* dstClassesMetaData = GetEntityClassesContainer(dstEntity,true);
 
         for (auto& [className, classMetaData] : srcClassesMetaData->Classes)
         {

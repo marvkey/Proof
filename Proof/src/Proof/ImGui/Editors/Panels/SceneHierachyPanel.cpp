@@ -578,7 +578,7 @@ namespace Proof
 							FileSystem::CreateDirectory(savedPath.parent_path());
 
 						savedPath = FileSystem::GenerateUniqueFileName(savedPath);
-						AssetManager::ConvertRuntimeToDiskAsset(id, savedPath);
+						//AssetManager::ConvertRuntimeToDiskAsset(id, savedPath);
 
 						ConvertDiskMaterial = {};
 						ImGui::CloseCurrentPopup();
@@ -685,6 +685,8 @@ namespace Proof
 			UI::PropertyAssetReferenceSettings assetRefSettings;
 			assetRefSettings.AssetMemoryTypes = UI::UIMemoryAssetTypes::Default;
 			AssetID id = meshComp.m_MeshID;
+
+			auto mesh = meshComp.GetMesh();
 			if (UI::AttributeAssetReference("Mesh", AssetType::Mesh, id, assetRefSettings))
 			{
 				if (id == 0)
@@ -697,31 +699,9 @@ namespace Proof
 			ImGui::Separator();
 			UI::EndPropertyGrid();
 
-			if (UI::AttributeTreeNode("MaterialTable"))
+			if (mesh)
 			{
-				UI::BeginPropertyGrid();
-
-				for (auto& [index, material] : meshComp.MaterialTable->GetMaterials())
-				{
-					AssetID materialID = material->GetID();
-					UI::PropertyAssetReferenceSettings assetSettings;
-					assetSettings.OnRightClick = ConvertDiskMaterialFunc;
-					if (UI::AttributeAssetReference(fmt::format("Index {}", index), AssetType::Material, materialID, assetSettings))
-					{
-						if (materialID == 0)
-						{
-							auto mesh = meshComp.GetMesh();
-							if (mesh)
-							{
-								materialID = mesh->GetMeshSource()->GetMaterials()->GetMaterial(index)->GetID();
-							}
-						}
-						meshComp.MaterialTable->SetMaterial(index, AssetManager::GetAsset<Material>(materialID));
-					}
-				}
-				UI::EndPropertyGrid();
-
-				UI::EndTreeNode();
+				UI::AttributeDrawMaterialTable(meshComp.MaterialTable, mesh->GetMaterialTable());
 			}
 		});
 
@@ -777,36 +757,10 @@ namespace Proof
 			ImGui::Separator();
 			UI::EndPropertyGrid();
 
-
-			if (UI::AttributeTreeNode("MaterialTable"))
+			if (mesh)
 			{
-				UI::BeginPropertyGrid();
-
-				for (auto& [index, material] : meshComp.MaterialTable->GetMaterials())
-				{
-					AssetID materialID = material->GetID();
-					UI::ScopedStyleColor addfs(ImGuiCol_Text, ImVec4(0.0f, .8f, 0.0f, 1.0f), index == currentIndexMaterial);
-
-					UI::PropertyAssetReferenceSettings assetSettings;
-					assetSettings.OnRightClick = ConvertDiskMaterialFunc;
-					if (UI::AttributeAssetReference(fmt::format("Index {}", index), AssetType::Material, materialID, assetSettings))
-					{
-						if (materialID == 0)
-						{
-							auto mesh = meshComp.GetMesh();
-							if (mesh)
-							{
-								materialID = mesh->GetMeshSource()->GetMaterials()->GetMaterial(index)->GetID();
-							}
-						}
-						meshComp.MaterialTable->SetMaterial(index, AssetManager::GetAsset<Material>(materialID));
-					}
-				}
-				UI::EndPropertyGrid();
-
-				UI::EndTreeNode();
+				UI::AttributeDrawMaterialTable(meshComp.MaterialTable, mesh->GetMaterialTable());
 			}
-
 		});
 		DrawComponents<SpriteComponent>({ "Sprite" }, entity, [](SpriteComponent& spriteComp) {
 
@@ -1243,7 +1197,7 @@ namespace Proof
 			if (!scriptWorld->IsEntityScriptInstantiated(entity))
 				return;
 
-			auto& classFields = *scriptWorld->GetEntityClassesContainer(entity);
+			auto& classFields = *scriptWorld->GetEntityClassesContainer(entity,true);
 
 			for (auto& [className, classMetaData] : classFields.GetClassesMetaData())
 			{

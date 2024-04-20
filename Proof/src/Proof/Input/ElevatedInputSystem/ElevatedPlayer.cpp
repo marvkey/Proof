@@ -234,9 +234,9 @@ namespace Proof
 						{
 							//if (inputDelegate.Function.IsBound())
 							//	inputDelegate.Function.Invoke(actionData.ActionOutput);
-							usedKeys.insert(inputKey);
 							if (inputDelegate.Function != nullptr)
 							{
+								usedKeys.insert(inputKey);
 								inputDelegate.Function(actionData.ActionOutput);
 							}
 						}

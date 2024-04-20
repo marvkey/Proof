@@ -148,7 +148,7 @@ namespace Proof
 
 		static bool IsDefaultAsset(AssetID ID);
 
-		static bool ConvertRuntimeToDiskAsset(AssetID Id, const std::filesystem::path& savePath);
+		//static bool ConvertRuntimeToDiskAsset(AssetID Id, const std::filesystem::path& savePath);
 		/*
 		*path Pass the full path
 		*/

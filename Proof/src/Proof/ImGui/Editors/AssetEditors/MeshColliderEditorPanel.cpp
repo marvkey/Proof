@@ -246,8 +246,12 @@ namespace Proof
 
 			light.AddComponent<DirectionalLightComponent>().Intensity = 2.5;
 			light.GetComponent<TransformComponent>().SetRotationEuler(glm::radians(glm::vec3{ 0.400, 5.400, 0.100 }));
-		}
 
+			Entity skyLight = m_World->CreateEntity("SkyLight");
+			skyLight.AddComponent<SkyLightComponent>();
+		}
+		if(m_WorkSpaceManager)
+			m_WorkSpaceManager.release();
 		m_WorkSpaceManager = CreateSpecial<EditorWorkspaceManager>();
 		m_DetailsPanelName = fmt::format("Details##MeshCollider: {}", m_MeshCollider->GetID());
 		m_ViewportPanelName = fmt::format("Viewport##MeshCollider: {}", m_MeshCollider->GetID());
@@ -255,7 +259,6 @@ namespace Proof
 		editorData.EnableSelection = false;
 		auto viewport = m_WorkSpaceManager->AddWorkspace<ViewPortEditorWorkspace>(m_ViewportPanelName.c_str(), true, m_ViewportPanelName, editorData);
 		m_WorkSpaceManager->SetWorldContext(m_World);
-
 		viewport->GetWorldRenderer()->DebugOptions.PhysicsDebugOptions.ShowPhysicsColliders = WorldRendererDebugOptions::PhysicsColliderView::Normal;
 		m_DetailsPanel = Count<DetailsPanel>::Create(std::bind(&MeshColliderEditorPanel::RenderSettingsPanel,this));
 	}

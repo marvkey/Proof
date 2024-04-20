@@ -17,6 +17,7 @@ namespace Proof
 		static VmaAllocator GetVmaAllocator();
 
 		void AllocateBuffer(VkBufferCreateInfo bufferInfo, VmaMemoryUsage usage, VulkanBuffer& buffer);
+		void AllocateBuffer(VkBufferCreateInfo bufferInfo, VmaMemoryUsage usage, VulkanBuffer& buffer, VmaAllocationCreateFlagBits bits );
 		void AllocateImage(VkImageCreateInfo bufferInfo, VmaMemoryUsage usage, VulkanImageAlloc& image);
 
 		void DestroyBuffer(VulkanBuffer buffer);
@@ -27,6 +28,9 @@ namespace Proof
 		{
 			T* mappedMemory;
 			vmaMapMemory(VulkanAllocator::GetVmaAllocator(), allocation, (void**)&mappedMemory);
+
+			//if (vmaMapMemory(VulkanAllocator::GetVmaAllocator(), allocation, (void**)&mappedMemory) == VK_ERROR_MEMORY_MAP_FAILED)
+			//	return nullptr;
 			return mappedMemory;
 		}
 		static GPUMemoryStats GetStats();

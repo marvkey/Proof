@@ -22,7 +22,7 @@
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
 #include "Proof/Input/ElevatedInputSystem/InputAction.h"
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
-
+#include "Proof/Scripting/ScriptWorld.h"
 #include "Proof/Scene/Mesh.h"
 
 #include "Proof/Asset/AssetManager.h"
@@ -380,9 +380,16 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 	static MonoObject* GetScriptInstance(UUID entityID, MonoString* classFullName)
 	{
-	//	if (!ScriptEngine::EntityHasScripts(ScriptEngine::GetWorldContext()->GetEntity(entityID)))
+		SCRIPT_FUNC_ENTITY_CHECK(nullptr);
+		Count<World> world = ScriptEngine::GetWorldContext();
+		auto scriptWorld = world->GetScriptWorld();
+
+		ScriptGCHandle gcHandle = scriptWorld->GetScriptInstance(entity, ScriptUtils::MonoStringToUTF8(classFullName));
+
+		if (gcHandle == nullptr)
 			return nullptr;
-		//return ScriptEngine::GetMonoManagedObject(entityID,ScriptUtils::MonoStringToUTF8(classFullName));
+
+		return ScriptGCManager::GetReferencedObject(gcHandle);
 	}
 
 	static void Entity_GetParent(uint64_t entityID, uint64_t* owenerId)
@@ -1990,7 +1997,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 				if (!validComponentFilter)
 				{
-					PF_CONSOLE_LOG_ERROR("Physics.Raycast - {0} does not inherit from PF.Component!", mono_class_get_name(typeClass));
+					PF_ENGINE_ERROR("Physics.Raycast - {0} does not inherit from PF.Component!", mono_class_get_name(typeClass));
 					success = false;
 					break;
 				}
@@ -2126,7 +2133,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 				if (!validComponentFilter)
 				{
-					PF_CONSOLE_LOG_ERROR("Physics.Raycast - {0} does not inherit from PF.Component!", mono_class_get_name(typeClass));
+					PF_ENGINE_ERROR("Physics.Raycast - {0} does not inherit from PF.Component!", mono_class_get_name(typeClass));
 					success = false;
 					break;
 				}

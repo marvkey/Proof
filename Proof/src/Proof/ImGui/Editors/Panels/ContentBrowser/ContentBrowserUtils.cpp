@@ -403,6 +403,26 @@ namespace Proof
 		{
 			PF_ENGINE_ERROR("Couldn't rename {0} to {1}!", m_DirectoryInfo->FilePath.filename().string(), newName);
 		}
+		else
+		{
+
+			std::function<void(Count<DirectoryInfo>, const std::filesystem::path&)> renamedAssets;
+			renamedAssets = [&](Count<DirectoryInfo> info, const std::filesystem::path& destinationPath) {
+				for (auto assetID : info->Assets) {
+					if (!AssetManager::HasAsset(assetID))
+						continue;
+
+					destination /= FileSystem::GetFullFileName(AssetManager::GetAssetInfo(assetID).Path);
+					AssetManager::ChangeAssetPath(assetID, destination);
+				}
+				for (auto [subDirID, subDir] : info->SubDirectories) {
+					renamedAssets(subDir, destinationPath / subDir->FilePath.filename());
+				}
+			};
+
+			renamedAssets(m_DirectoryInfo, destination);
+		}
+
 	}
 
 
@@ -449,7 +469,10 @@ namespace Proof
 		}
 
 		for (auto asset : m_DirectoryInfo->Assets)
-			AssetManager::Remove(asset);
+		{
+			if (AssetManager::HasAsset(asset))
+				AssetManager::Remove(asset);
+		}
 	}
 
 	bool ContentBrowserDirectory::Move(const std::filesystem::path& destination)
@@ -458,6 +481,7 @@ namespace Proof
 		if (!wasMoved)
 			return false;
 
+		SelectionManager::Deselect(SelectionContext::ContentBrowser, GetID());
 		return true;
 	}
 
@@ -496,7 +520,9 @@ namespace Proof
 			return false;
 		}
 
-		AssetManager::ChangeAssetPath(m_AssetInfo.ID, destination / filepath.filename());
+		AssetManager::ChangeAssetPath(m_AssetInfo.ID, AssetManager::GetAssetFileSystemPath(destination / filepath.filename()));
+
+		SelectionManager::Deselect(SelectionContext::ContentBrowser, GetID());
 		return true;
 	}
 

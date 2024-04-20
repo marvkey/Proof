@@ -88,9 +88,10 @@ namespace Proof
 		bool IsEntityScriptInstantiated(Entity entity);
 		void DestroyEntityScript(Entity entity);
 
-		ScriptClassesContainerMetaData* GetEntityClassesContainer(Entity entity) const;
+		ScriptClassesContainerMetaData* GetEntityClassesContainer(Entity entity, bool ifRuntimeGenerateFields = false) const;
 		ScriptClassMetaData* GetEntityClass(Entity entity, const std::string& classFullName) const;
 		Count<FieldStorageBase> GetEntityClassField(Entity entity, const std::string& classFullName, const std::string& fieldName);
+		ScriptGCHandle GetScriptInstance(Entity entity, const std::string& classFullName);
 
 		void DuplicateScriptInstance(Entity srcEntity, Entity dstEntity);
 		// for things like prefabs or creating from another entity

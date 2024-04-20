@@ -9,6 +9,7 @@
 #include "Proof/Input/Mouse.h"
 #include "Proof/Asset/AssetManager.h"
 
+#include "Proof/Scene/World.h"
 #include "Proof/Project/Project.h"
 #include "Proof/Project/ProjectSerilizer.h"
 #include "Proof/Scripting/ScriptEngine.h"
@@ -18,6 +19,9 @@
 #include "Proof/Math/Ray.h"
 #include "Proof/Math/BasicCollision.h"
 
+#include "Proof/Scene/Entity.h"
+#include "Proof/Input/KeyCodes.h"
+#include "Proof/Scene/Camera/EditorCamera.h"
 #include "Proof/Scene/SceneSerializer.h"
 #include "Proof/Scene/Prefab.h"
 #include "Proof/Scene/Mesh.h"
@@ -111,6 +115,9 @@ namespace Proof
 			std::string CreateAnimationFilenameBuffer;
 			Entity TargetEntity;
 
+			glm::vec3 Translation = glm::vec3(0);
+			glm::vec3 RotationDeg = glm::vec3(0);
+			float Scale = 1;
 			CreateNewMeshPopupData()
 			{
 				MeshToCreate = nullptr;
@@ -607,7 +614,7 @@ namespace Proof
 	{
 		PF_PROFILE_FUNC();
 		Layer::OnUpdate(DeltaTime);
-		m_EditorCamera.SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+		//m_EditorCamera.SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 
 		if (m_IsViewPortResize && m_ViewPortSize.x > 0 && m_ViewPortSize.y > 0)
 		{
@@ -1421,8 +1428,8 @@ namespace Proof
 				ImGuizmo::SetRect(m_ViewportBounds[0].x, m_ViewportBounds[0].y, m_ViewportBounds[1].x - m_ViewportBounds[0].x, m_ViewportBounds[1].y - m_ViewportBounds[0].y);
 
 
-				const glm::mat4& cameraProjection = m_EditorCamera.GetProjectionMatrix();
-				glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
+				//const glm::mat4& cameraProjection = m_EditorCamera.GetProjectionMatrix();
+				//glm::mat4 cameraView = m_EditorCamera.GetViewMatrix();
 
 				auto& selectedentityTc = selectedEntity.GetComponent<TransformComponent>();
 				glm::mat4 selectedEntitytransform = selectedentityTc.GetTransform();
@@ -1435,9 +1442,9 @@ namespace Proof
 
 				float snapValues[3] = { snapValue,snapValue,snapValue };
 
-				ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
-					(ImGuizmo::OPERATION)s_EditorData->GuizmoType, ImGuizmo::LOCAL, glm::value_ptr(selectedEntitytransform),
-					nullptr, snap ? snapValues : nullptr);
+				///ImGuizmo::Manipulate(glm::value_ptr(cameraView), glm::value_ptr(cameraProjection),
+				///	(ImGuizmo::OPERATION)s_EditorData->GuizmoType, ImGuizmo::LOCAL, glm::value_ptr(selectedEntitytransform),
+				///	nullptr, snap ? snapValues : nullptr);
 
 				if (ImGuizmo::IsUsing())
 				{
@@ -2000,6 +2007,13 @@ namespace Proof
 
 				UI::AttributeBool("Dynamic", dynamicMesh);
 				UI::AttributeBool("Generate Colliders", doGenerateColliders, "Controls whether physics components (collider and rigid body) will be added to the newly created entity.");
+				if (UI::AttributeTreeNode("Transform", true, 6, 3))
+				{
+					UI::AttributeDrag("Translation", s_EditorData->CreateNewMeshPopupData.Translation);
+					UI::AttributeDrag("Rotation", s_EditorData->CreateNewMeshPopupData.RotationDeg);
+					UI::AttributeDrag("Scale", s_EditorData->CreateNewMeshPopupData.Scale);
+					UI::EndTreeNode();
+				}
 				ImGui::Separator();
 				ImGui::Text(Project::GetActive()->GetProjectDirectory().filename().string().c_str());
 				UI::AttributeInputText("MeshPath", s_EditorData->CreateNewMeshPopupData.CreateMeshFilenameBuffer);
@@ -2026,9 +2040,11 @@ namespace Proof
 
 						SelectionManager::DeselectAll(SelectionContext::Scene);
 
+						Count<MeshBase> baseMesh;
 						if (!dynamicMesh)
 						{
 							Count<Mesh> mesh = AssetManager::NewAsset<Mesh>(savedPath, s_EditorData->CreateNewMeshPopupData.MeshToCreate);
+							baseMesh = mesh;
 							auto entity = s_EditorData->CreateNewMeshPopupData.TargetEntity;
 
 							if (!entity)
@@ -2053,6 +2069,8 @@ namespace Proof
 						else
 						{
 							Count<DynamicMesh> mesh = AssetManager::NewAsset<DynamicMesh>(savedPath, s_EditorData->CreateNewMeshPopupData.MeshToCreate);
+							baseMesh = mesh;
+
 							auto entity = s_EditorData->CreateNewMeshPopupData.TargetEntity;
 							if (!entity)
 							{
@@ -2060,6 +2078,12 @@ namespace Proof
 								SelectionManager::Select(SelectionContext::Scene, entity.GetUUID());
 							}
 						}
+
+						baseMesh->SetTranslation(s_EditorData->CreateNewMeshPopupData.Translation);
+						baseMesh->SetRotationDeg(s_EditorData->CreateNewMeshPopupData.RotationDeg);
+						baseMesh->SetScale(s_EditorData->CreateNewMeshPopupData.Scale);
+
+						AssetManager::SaveAsset(baseMesh->GetID());
 					}
 
 					s_EditorData->CreateNewMeshPopupData = {};

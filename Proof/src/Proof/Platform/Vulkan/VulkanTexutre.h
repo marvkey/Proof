@@ -138,6 +138,7 @@ namespace Proof
 		virtual void SetData(Buffer buffer);
 		Count<ImageView> GetImageMip(uint32_t mip, uint32_t layer = 0);
 
+		Buffer GetStoredDataAsBuffer();
 	private:
 		void Build();
 		void RT_Build();
