@@ -189,11 +189,40 @@ namespace Proof
 	void MeshNodeHierarchy(Count<MeshBase> meshBase, const MeshNode& node, const glm::mat4& parentTransform, uint32_t level)
 	{
 		glm::mat4 transform = parentTransform * node.LocalTransform;
-		auto& nodeSubMeshIndices = node.Submeshes;
+		const std::vector<uint32_t>& nodeSubMeshIndices = node.Submeshes;
 
-		if (!nodeSubMeshIndices.empty())
+		auto meshSource = meshBase->GetMeshSource();
+		bool enableSameline = !nodeSubMeshIndices.empty() && !node.IsRoot();
+		if (!nodeSubMeshIndices.empty() && !node.IsRoot())
 		{
+			UI::PushID();
+
+			const std::vector<uint32_t>& submeshes = meshBase->GetSubMeshes();
+
+			bool nodeHasAnySubMesh = meshSource->NodeHasSubAnyMesh(node.Index, submeshes);
+			if (ImGui::Checkbox("##checkbox", &nodeHasAnySubMesh))
+			{
+				std::vector<uint32_t> subMeshCopy;
+				// doing this because if we have large amoutn dont want to be creating a copy every time
+				// memory and time expensive 
+				subMeshCopy = submeshes;
+
+
+				if (nodeHasAnySubMesh)
+					meshSource->EnableNodeSubMeshes(node.Index, subMeshCopy);
+				else
+					meshSource->DisableNodeSubMeshes(node.Index, subMeshCopy);
+
+				meshBase->SetSubMeshes(subMeshCopy);
+			}
+
+			UI::PopID();
+
+
+
+		#if 0
 			ImGui::PushID(node.Name.c_str());
+
 
 			uint32_t meshIndex = nodeSubMeshIndices.front();
 			const std::vector<uint32_t>& submeshes = meshBase->GetSubMeshes();
@@ -208,24 +237,24 @@ namespace Proof
 				// memory and time expensive 
 
 				subMeshCopy = submeshes;
-				PF_ENGINE_INFO("{}", subMeshCopy);
 
 				if (checked)
 					subMeshCopy.emplace_back(meshIndex);
 				else
-					Utils::Remove(subMeshCopy,meshIndex);
+					Utils::Remove(subMeshCopy, meshIndex);
 
 				meshBase->SetSubMeshes(subMeshCopy);
-			} 
+			}
 			ImGui::PopID();
 			ImGui::SameLine();
+		#endif
 
 		}
-		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_OpenOnDoubleClick;
-		if (node.Children.size() == 0)
-			flags |= ImGuiTreeNodeFlags_Leaf;
+		bool useTreeNodeLeaf = node.Children.size() == 0 && node.Submeshes.size() == 0;
 
-		if (UI::AttributeTreeNode(node.Name, flags))
+		if(enableSameline)
+			ImGui::SameLine();
+		if (UI::AttributeTreeNode(node.Name,true,6.0f,(node.IsRoot() ? 4: 2),false,true))
 		{
 		#if TRANSFORM_INFO
 			{
@@ -243,6 +272,34 @@ namespace Proof
 				ImGui::Text("  Scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
 			}
 		#endif
+			const std::vector<uint32_t>& submeshes = meshBase->GetSubMeshes();
+			for (uint32_t i = 0; i < nodeSubMeshIndices.size(); i++)
+			{
+				UI::PushID();
+				const SubMesh& subMesh = meshSource->GetSubMesh(nodeSubMeshIndices[i]);
+
+				//subMesh
+
+				bool value = Utils::Contains(submeshes, subMesh.SubMeshIndex);
+				if (ImGui::Checkbox(subMesh.Name.c_str(), &value))
+				{
+					std::vector<uint32_t> subMeshCopy;
+					// doing this because if we have large amoutn dont want to be creating a copy every time
+					// memory and time expensive 
+					subMeshCopy = submeshes;
+
+					if (value)
+						subMeshCopy.emplace_back(subMesh.SubMeshIndex);
+					else
+						Utils::Remove(subMeshCopy, subMesh.SubMeshIndex);
+
+					meshBase->SetSubMeshes(subMeshCopy);
+				}
+
+				UI::PopID();
+
+			}
+
 			for (uint32_t i = 0; i < node.Children.size(); i++)
 				MeshNodeHierarchy(meshBase, meshBase->GetMeshSource()->GetNodes().at(node.Children[i]), transform, level + 1);
 

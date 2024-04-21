@@ -8,7 +8,17 @@ namespace Proof::Utils
 	{
 		return  std::find(std::begin(v), std::end(v), std::forward<T>(item)) != std::end(v);
 	}
+	template<typename Vector, typename T>
+	inline bool ContainsAny(const Vector& v, const std::vector<T>& items)
+	{
+		for (const T& item : items) 
+		{
+			if (Contains(v, item))
+				return true;
+		}
+		return false;
 
+	}
 	template<typename T, typename ConditionFunction>
 	inline bool RemoveIf(std::vector<T>& vector, ConditionFunction condition)
 	{

@@ -356,6 +356,8 @@ namespace Proof::UI
         UpdateIDBuffer(label);
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
         AttributeLabel(label.c_str());
+        ImGui::SameLine();
+
         if (helpMessage.size())
         {
             ImGui::SameLine();
@@ -1971,7 +1973,7 @@ namespace Proof::UI
         HandleModified(changed);
         return changed;
     }
-    bool AttributeTreeNode(const std::string& label, bool openByDefault, float framePaddingX , float framePaddingY,bool selcted)
+    bool AttributeTreeNode(const std::string& label, bool openByDefault, float framePaddingX , float framePaddingY,bool selcted, bool useTreeNodeLeaf )
     {
         ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_Framed
             | ImGuiTreeNodeFlags_SpanAvailWidth
@@ -1981,8 +1983,8 @@ namespace Proof::UI
             treeNodeFlags |= ImGuiTreeNodeFlags_Selected;
         if (openByDefault)
             treeNodeFlags |= ImGuiTreeNodeFlags_DefaultOpen;
-
-        bool open = false;
+        if (!useTreeNodeLeaf)
+            treeNodeFlags |= ImGuiTreeNodeFlags_Leaf;
 
         UI::ScopedStyleVar headerRounding(ImGuiStyleVar_FrameRounding, 0.0f);
         UI::ScopedStyleVar headerPaddingAndHeight(ImGuiStyleVar_FramePadding, ImVec2{ framePaddingX, framePaddingY });
@@ -1992,7 +1994,7 @@ namespace Proof::UI
         ImGui::PushID(GenerateID());
 
         //open = ImGui::TreeNodeEx("##dummy_id", treeNodeFlags, Utils::String::ToUpper(label).c_str());
-        open = ImGui::TreeNodeEx("##dummy_id", treeNodeFlags, label.c_str());
+       bool open = ImGui::TreeNodeEx("##dummy_id", treeNodeFlags, label.c_str());
         ImGui::PopID();
 
         return open;

@@ -133,6 +133,7 @@ namespace Proof
 		MeshNode& node = nodes[nodeIndex];
 		node.Name = aNode->mName.C_Str();
 		node.LocalTransform = Utils::Mat4FromAIMatrix4x4(aNode->mTransformation);
+		node.Index = nodeIndex;
 
 		glm::mat4 transform = parentTransform * node.LocalTransform;
 		for (uint32_t i = 0; i < aNode->mNumMeshes; i++)
@@ -220,7 +221,8 @@ namespace Proof
 				submesh.VertexCount = mesh->mNumVertices;
 				submesh.IndexCount = mesh->mNumFaces * 3;
 				submesh.Name = mesh->mName.C_Str();
-
+				submesh.SubMeshIndex = m;
+					
 				vertexCount += mesh->mNumVertices;
 				indexCount += submesh.IndexCount;
 

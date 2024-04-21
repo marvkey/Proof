@@ -131,7 +131,7 @@ namespace Proof::UI
 	bool DrawFieldValue(Count < World > worldContext, const std::string& fieldName,Count<ArrayFieldStorage>& storage);
 
 	void AttributeLabel(const std::string& label);
-	bool AttributeTreeNode(const std::string& label, bool openByDefault = true, float framePaddingX = 6.0f, float framePaddingY = 6.0f, bool selected = false);
+	bool AttributeTreeNode(const std::string& label, bool openByDefault = true, float framePaddingX = 6.0f, float framePaddingY = 6.0f, bool selected = false,bool useTreeNodeLeaf = true);
 	bool AttributeTreeNode(const std::string& label, ImGuiTreeNodeFlags flags);
 	bool AttributeTreeNodeIcon(const std::string& label, const Count<Texture2D>& icon, const ImVec2& size, bool openByDefault = true, bool useUpercase = true);
 

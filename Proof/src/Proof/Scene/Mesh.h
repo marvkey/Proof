@@ -23,6 +23,7 @@ namespace Proof
         glm::mat4 LocalTransform;
         glm::mat4 Transform;
         AABB BoundingBox;
+        uint32_t SubMeshIndex;
         friend class Renderer3DPBR;
         friend class MeshWorkShop;
     };
@@ -30,13 +31,14 @@ namespace Proof
     struct MeshNode
     {
         uint32_t Parent = 0xffffffff;
+        uint32_t Index = 0xffffffff;
         std::vector<uint32_t> Children;
         std::vector<uint32_t> Submeshes;
 
         std::string Name;
         glm::mat4 LocalTransform;
 
-        inline bool IsRoot() const { return Parent == 0xffffffff; }
+        inline bool IsRoot() const { return Index == 0; }
 
         //static void Serialize(StreamWriter* serializer, const MeshNode& instance)
         //{
@@ -71,6 +73,10 @@ namespace Proof
 
         const SubMesh& GetSubMesh(uint32_t index)const { return m_SubMeshes.at(index); };
 
+        bool NodeHasSubMesh(uint32_t nodeIndex, uint32_t subMeshIndex);
+        bool NodeHasSubAnyMesh(uint32_t nodeIndex, const std::vector<uint32_t>& subMeshMap);
+        void DisableNodeSubMeshes(uint32_t nodeIndex, std::vector<uint32_t>& subMeshMap);
+        void EnableNodeSubMeshes(uint32_t nodeIndex,std::vector<uint32_t>& subMeshMap);
         ASSET_CLASS_TYPE(MeshSourceFile);
         Count<class VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
         Count<class IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
@@ -108,6 +114,7 @@ namespace Proof
         Count<MaterialTable> m_Materials;
         friend class MeshImporter;
         friend class MeshSourceAssetSerializer;
+        friend class MeshEditorPanel;
     };
 
     class MeshBase : public Asset

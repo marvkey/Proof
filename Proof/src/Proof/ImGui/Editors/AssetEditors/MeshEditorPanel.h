@@ -1,5 +1,6 @@
 #pragma once
 #include "AssetEditor.h"
+#include <glm/glm.hpp>
 namespace Proof
 {
 	class MeshEditorPanel : public AssetEditor
@@ -30,5 +31,6 @@ namespace Proof
 		void RenderDynamicMeshPanel();
 
 		void DrawMeshNode();
+
 	};
 }

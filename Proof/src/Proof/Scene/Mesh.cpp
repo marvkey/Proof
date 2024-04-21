@@ -15,6 +15,7 @@
 #include "Proof/Math/Vector.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/Buffer.h"
+#include "Proof/Utils/ContainerUtils.h"
 #include "Proof/Asset/AssetManager.h"
 namespace Proof
 {
@@ -109,6 +110,7 @@ namespace Proof
         subMesh.VertexCount = vertices.size();
         subMesh.MaterialIndex = 0;
         subMesh.Name = name;
+        subMesh.SubMeshIndex = 0;
         subMesh.Transform = glm::mat4(1.0f);
         subMesh.LocalTransform = glm::mat4(1.0f);
 
@@ -133,6 +135,7 @@ namespace Proof
         node.Name = "name";
         node.Submeshes.emplace_back(0);
         node.LocalTransform = glm::mat4(1.0f);
+        node.Index = 0;
         m_Nodes = {};
         m_Nodes.emplace_back(node);
 
@@ -180,6 +183,78 @@ namespace Proof
             Count<Asset> asset = material;
             const std::string materialname = material->Name.empty() ? "UnnamedMaterial" : material->Name;
             AssetManager::CreateRuntimeAsset(AssetManager::CreateID(),asset, materialname);
+        }
+    }
+
+    bool MeshSource::NodeHasSubMesh(uint32_t nodeIndex, uint32_t subMeshIndex)
+    {
+        if (m_Nodes.size() <= nodeIndex)
+            return false;
+
+        MeshNode& node = m_Nodes.at(nodeIndex);
+
+        if (Utils::Contains(node.Submeshes, subMeshIndex))
+            return true;
+
+        for (auto& childNodes : node.Children)
+        {
+            if (NodeHasSubMesh(childNodes, subMeshIndex))
+                return true;
+        }
+
+        return false;
+    }
+
+    bool MeshSource::NodeHasSubAnyMesh(uint32_t nodeIndex, const std::vector<uint32_t>& subMeshMap)
+    {
+        if (m_Nodes.size() <= nodeIndex)
+            return false;
+
+        MeshNode& node = m_Nodes.at(nodeIndex);
+
+        if (Utils::ContainsAny(node.Submeshes, subMeshMap))
+            return true;
+
+        for (auto& childNodes : node.Children)
+        {
+            if (NodeHasSubAnyMesh(childNodes, subMeshMap))
+                return true;
+        }
+
+        return false;
+    }
+
+    void MeshSource::DisableNodeSubMeshes(uint32_t nodeIndex, std::vector<uint32_t>& subMeshMap)
+    {
+        if (m_Nodes.size() <= nodeIndex)
+            return;
+        MeshNode& node = m_Nodes.at(nodeIndex);
+
+        for (auto& subMeshIndex : node.Submeshes)
+            Utils::Remove(subMeshMap, subMeshIndex);
+
+        for (auto& childNodes : node.Children)
+        {
+            DisableNodeSubMeshes(childNodes, subMeshMap);
+        }
+
+    }
+
+    void MeshSource::EnableNodeSubMeshes(uint32_t nodeIndex, std::vector<uint32_t>& subMeshMap)
+    {
+        if (m_Nodes.size() <= nodeIndex)
+            return;
+        MeshNode& node = m_Nodes.at(nodeIndex);
+
+        for (auto& subMeshIndex : node.Submeshes)
+        {
+            if (!Utils::Contains(subMeshMap, subMeshIndex))
+                subMeshMap.emplace_back(subMeshIndex);
+        }
+
+        for (auto& childNodes : node.Children)
+        {
+            EnableNodeSubMeshes(childNodes, subMeshMap);
         }
     }
 
