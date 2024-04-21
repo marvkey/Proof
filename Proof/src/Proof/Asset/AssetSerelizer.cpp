@@ -31,6 +31,7 @@ namespace Proof {
 	}
 	void TextureAssetSerializer::Save(const AssetInfo& data, const Count<class Asset>& asset) const
 	{
+		/*
 		Count<Texture2D> textureAsset = asset.As< Texture2D>();
 
 		YAML::Emitter out;
@@ -43,10 +44,12 @@ namespace Proof {
 		std::ofstream stream(AssetManager::GetAssetFileSystemPath(data.Path).string());
 		stream << out.c_str();
 		stream.close();
+		*/
 	}
 
 	Count<class Asset> TextureAssetSerializer::TryLoadAsset(const AssetInfo& assetData) const
 	{
+		/*
 		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
 
 		if (!data["AssetType"]) // if there is no scene no
@@ -58,6 +61,12 @@ namespace Proof {
 		//m_Texture = Texture2D::Create(path.string());
 
 		Count<Texture2D> asset = Texture2D::Create(TextureConfiguration(FileSystem::GetFileName(path)), path.string());
+		SetID(assetData, asset);
+		return asset;
+		*/
+
+		auto fullPath = AssetManager::GetAssetFileSystemPath(assetData.Path).string();
+		Count<Texture2D> asset = Texture2D::Create(TextureConfiguration(FileSystem::GetFileName(fullPath)), fullPath);
 		SetID(assetData, asset);
 		return asset;
 	}
@@ -607,6 +616,7 @@ namespace Proof {
 
 	void AudioAssetSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
 	{
+		/*
 		Count<Audio>audio = asset.As<Audio>();
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -624,10 +634,12 @@ namespace Proof {
 		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
 		stream << out.c_str();
 		stream.close();
+		*/
 	}
 
 	Count<class Asset> AudioAssetSerilizer::TryLoadAsset(const AssetInfo& assetData) const
 	{
+		/*
 		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
 		if (!data["AssetType"])
 			return nullptr;
@@ -647,6 +659,12 @@ namespace Proof {
 		
 		SetID(assetData, audio);
 		return audio;
+		*/
+
+		auto fullPath = AssetManager::GetAssetFileSystemPath(assetData.Path).string();
+		Count<Audio> asset = Count<Audio>::Create(fullPath);
+		SetID(assetData, asset);
+		return asset;
 	}
 
 	

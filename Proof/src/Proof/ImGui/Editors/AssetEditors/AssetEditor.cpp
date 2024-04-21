@@ -282,11 +282,7 @@ namespace Proof
 				case Proof::AssetType::PhysicsMaterial:
 					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<PhysicsMaterialEditorPanel>::Create();
 					break;
-				case Proof::AssetType::TextureSourceFile:
-					break;
 				case Proof::AssetType::Font:
-					break;
-				case Proof::AssetType::FontSourceFile:
 					break;
 				case Proof::AssetType::Prefab:
 					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<PrefabEditorPanel>::Create();

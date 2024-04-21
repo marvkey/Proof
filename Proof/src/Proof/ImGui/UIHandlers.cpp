@@ -398,7 +398,7 @@ namespace Proof::UI
 		{
 			if (AssetManager::GetAssetInfo(texture->GetID()).RuntimeAsset == false)
 				return texture;
-
+			/*
 			if (!texture->GetPath().empty())
 			{
 				Count<Texture2D> newTexture = Texture2D::Create(texture->GetSpecification(), texture->GetPath());
@@ -430,10 +430,11 @@ namespace Proof::UI
 
 				return newTexture;
 			}
+			*/
 		}
 		return texture;
 	}
-	static void CreateDiskMaterialFromRuntmeMaterial(AssetID id)
+	static void CreateDiskMaterialFromRuntimeMaterial(AssetID id)
 	{
 
 		if (!AssetManager::HasAssetAndAssetType(id,AssetType::Material))
@@ -449,15 +450,15 @@ namespace Proof::UI
 
 		Count<Material> baseMaterial = AssetManager::GetAsset<Material>(id);
 
-		if (ImGui::MenuItem("CreateDiskMaterialFromRuntmeMaterial"))
+		if (ImGui::MenuItem("CreateDiskMaterialFromRuntimeMaterial"))
 		{
-				UI::ShowMessageBox("CreateDiskMaterialFromRuntmeMaterial", [id, assetInfo,baseMaterial]()
+				UI::ShowMessageBox("CreateDiskMaterialFromRuntimeMaterial", [id, assetInfo,baseMaterial]()
 				{
 					ImGui::Text(Project::GetActive()->GetProjectDirectory().filename().string().c_str());
 
 					if (ConvertDiskMaterial.SavePath == "Materials/")
 						ConvertDiskMaterial.SavePath += assetInfo.GetName();
-					UI::AttributeInputText("MaterialName", ConvertDiskMaterial.SavePath);
+					UI::AttributeInputText("Material Path", ConvertDiskMaterial.SavePath);
 
 					if (ImGui::Button("Create"))
 					{
@@ -471,7 +472,6 @@ namespace Proof::UI
 						savedPath = FileSystem::GenerateUniqueFileName(savedPath);
 
 						Count<Material> material = Count<Material>::Create();
-						material->GetRenderMaterial()->CopyMaterialData(baseMaterial->GetRenderMaterial());
 
 						{
 							auto asset = material.As<Asset>();
@@ -484,9 +484,16 @@ namespace Proof::UI
 						for (auto& [biningName, texture] : allTextures)
 						{ 
 							auto savedTexture = MaterialCreateTextures(savedPath.parent_path(), texture);
-							if(Renderer::GetWhiteTexture() != savedTexture)
-							material->GetRenderMaterial()->Set(biningName, savedTexture);
+							if(Renderer::GetWhiteTexture() != savedTexture && savedTexture != nullptr)
+								material->GetRenderMaterial()->Set(biningName, savedTexture);
 						}
+						material->GetRenderMaterial()->CopyMaterialData(baseMaterial->GetRenderMaterial());
+						ConvertDiskMaterial = {};
+						ImGui::CloseCurrentPopup();
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Cancel"))
+					{
 						ConvertDiskMaterial = {};
 						ImGui::CloseCurrentPopup();
 					}
@@ -524,7 +531,7 @@ namespace Proof::UI
 				materialAssetHandle = material->GetID();
 				settings.AdvanceToNextColumn = false;
 				settings.AssetMemoryTypes = UIMemoryAssetTypes::Default;
-				settings.OnRightClick = CreateDiskMaterialFromRuntmeMaterial; // not working yet
+				settings.OnRightClick = CreateDiskMaterialFromRuntimeMaterial; // not working yet
 				settings.WidthOffset = ImGui::GetStyle().ItemSpacing.x + 28.0f;
 
 				if (sourceHasMaterial && !mathcingMaterials)

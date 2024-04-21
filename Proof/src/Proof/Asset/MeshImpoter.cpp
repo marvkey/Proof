@@ -393,7 +393,19 @@ namespace Proof
 						std::string texturePath = parentPath.string();
 						
 						PF_ENGINE_TRACE("    Albedo map path = {0}", texturePath);
-						textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(texturePath), spec, std::filesystem::path(texturePath))->GetID();
+						//textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(texturePath), spec, std::filesystem::path(texturePath))->GetID();
+						if (AssetManager::HasAsset(texturePath))
+							textureHandle = AssetManager::GetAsset<Texture2D>(std::filesystem::path(texturePath))->GetID();
+						else
+						{
+							auto newTexture = Texture2D::Create(spec, std::filesystem::path(texturePath));
+							{
+								auto asset = newTexture.As<Asset>();
+								AssetManager::NewAsset(asset, std::filesystem::path(texturePath));
+							}
+
+							textureHandle = newTexture->GetID();
+						}
 					#else 
 						auto parentPath = m_Path.parent_path();
 						parentPath /= std::string(aiTexPath.data);
@@ -478,7 +490,20 @@ namespace Proof
 						parentPath /= std::string(aiTexPath.data);
 						std::string texturePath = parentPath.string();
 						PF_ENGINE_TRACE("    Normal map path = {0}", texturePath);
-						textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(texturePath), spec, texturePath)->GetID();
+						//textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(texturePath), spec, texturePath)->GetID();
+
+						if (AssetManager::HasAsset(texturePath))
+							textureHandle = AssetManager::GetAsset<Texture2D>(std::filesystem::path(texturePath))->GetID();
+						else
+						{
+							auto newTexture = Texture2D::Create(spec, std::filesystem::path(texturePath));
+							{
+								auto asset = newTexture.As<Asset>();
+								AssetManager::NewAsset(asset, std::filesystem::path(texturePath));
+							}
+
+							textureHandle = newTexture->GetID();
+						}
 						
 					#else
 
@@ -562,8 +587,20 @@ namespace Proof
 						parentPath /= std::string(aiTexPath.data);
 						std::string texturePath = parentPath.string();
 						PF_ENGINE_TRACE("    Roughness map path = {0}", texturePath);
-						textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(texturePath), spec, texturePath)->GetID();
+						//textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(texturePath), spec, texturePath)->GetID();
 						
+						if (AssetManager::HasAsset(texturePath))
+							textureHandle = AssetManager::GetAsset<Texture2D>(std::filesystem::path(texturePath))->GetID();
+						else
+						{
+							auto newTexture = Texture2D::Create(spec, std::filesystem::path(texturePath));
+							{
+								auto asset = newTexture.As<Asset>();
+								AssetManager::NewAsset(asset, std::filesystem::path(texturePath));
+							}
+
+							textureHandle = newTexture->GetID();
+						}
 					#else
 
 						auto parentPath = m_Path.parent_path();
@@ -652,8 +689,20 @@ namespace Proof
 								parentPath /= str;
 								std::string texturePath = parentPath.string();
 								PF_ENGINE_TRACE("    Metalness map path = {0}", texturePath);
-								textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(texturePath), spec, texturePath)->GetID();
+								//textureHandle = AssetManager::CreateRuntimeOnlyRendererAsset<Texture2D>(FileSystem::GetFileName(texturePath), spec, texturePath)->GetID();
 								
+								if (AssetManager::HasAsset(texturePath))
+									textureHandle = AssetManager::GetAsset<Texture2D>(std::filesystem::path(texturePath))->GetID();
+								else
+								{
+									auto newTexture = Texture2D::Create(spec, std::filesystem::path(texturePath));
+									{
+										auto asset = newTexture.As<Asset>();
+										AssetManager::NewAsset(asset, std::filesystem::path(texturePath));
+									}
+
+									textureHandle = newTexture->GetID();
+								}
 							#else
 
 								auto parentPath = m_Path.parent_path();

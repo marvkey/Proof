@@ -354,7 +354,7 @@ namespace Proof
 
 		if (ImGui::MenuItem("Open Externally"))
 			actionResult.Set(ContentBrowserAction::OpenExternal, true);
-
+		/*
 		if (AssetManager::HasAsset(m_ID))
 		{
 			if (AssetManager::GetAssetInfo(m_ID).Type == AssetType::TextureSourceFile)
@@ -374,6 +374,7 @@ namespace Proof
 				}
 			}
 		}
+		*/
 
 		RenderCustomContextItems();
 	}

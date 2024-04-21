@@ -19,14 +19,14 @@ namespace Proof
 		World,				// NOT TREATED THE SAME AS OTHER ASSETS
 		MeshSourceFile, // for mesh source fiel and mesh source
 		PhysicsMaterial,
-		TextureSourceFile,
+		//TextureSourceFile,
 		Font,
-		FontSourceFile,
+		//FontSourceFile,
 		Prefab,
 		UIPanel,
 		ParticleSystem,
 		Audio,
-		AudioSourceFile,
+		//AudioSourceFile,
 		MeshCollider,
 		ScriptFile,
 		InputAction,
@@ -47,10 +47,10 @@ namespace Proof
 		{
 			switch (type)
 			{
-				case AssetType::TextureSourceFile:
+				//case AssetType::TextureSourceFile:
 				case AssetType::MeshSourceFile:
-				case AssetType::FontSourceFile:
-				case AssetType::AudioSourceFile:
+				//case AssetType::FontSourceFile:
+				//case AssetType::AudioSourceFile:
 					return true;
 			}
 			return false;
@@ -59,13 +59,13 @@ namespace Proof
 			{AssetType::None, ""},
 			{AssetType::Mesh, ".Mesh.ProofAsset"},
 			{AssetType::DynamicMesh, ".DynamicMesh.ProofAsset"},
-			{AssetType::Texture, ".Texture.ProofAsset"},
+			//{AssetType::Texture, ".Texture.ProofAsset"},
 			{AssetType::Material, ".Material.ProofAsset"},
 			{AssetType::World, ".ProofWorld"},
 			{AssetType::MeshSourceFile, ""},
 			{AssetType::PhysicsMaterial, ".PhysicsMaterial.ProofAsset"},
 			{AssetType::Prefab, ".Prefab.ProofAsset"},
-			{AssetType::TextureSourceFile, ""},
+			//{AssetType::TextureSourceFile, ""},
 			{AssetType::UIPanel, ".UIPanel.ProofAsset"},
 			{AssetType::ParticleSystem, ".ParticleSystem.ProofAsset"},
 			{AssetType::Font, ".Font.ProofAsset" },
@@ -131,9 +131,14 @@ namespace Proof
 			const std::string fileFullExtension = FileSystem::GetFullFileExtension(path);
 
 			if (MeshHasFormat(fileFullExtension))return AssetType::MeshSourceFile;
-			if (TextureHasFormat(fileFullExtension))return AssetType::TextureSourceFile;
-			if (FontHasFormat(fileFullExtension))return AssetType::FontSourceFile;
-			if (AudioHasFormat(fileFullExtension))return AssetType::AudioSourceFile;
+			//if (TextureHasFormat(fileFullExtension))return AssetType::TextureSourceFile;
+			//if (FontHasFormat(fileFullExtension))return AssetType::FontSourceFile;
+			//if (AudioHasFormat(fileFullExtension))return AssetType::AudioSourceFile;
+
+			if (TextureHasFormat(fileFullExtension))return AssetType::Texture;
+			if (FontHasFormat(fileFullExtension))return AssetType::Font;
+			if (AudioHasFormat(fileFullExtension))return AssetType::Audio;
+
 
 			// Iterate through AssetTypeMap to find a match for the file extension
 			for (const auto& pair : AssetTypeMap)

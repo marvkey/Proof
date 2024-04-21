@@ -207,11 +207,17 @@ namespace Proof {
 	void VulkanRenderMaterial::CopyMaterialData(Count<RenderMaterial> material)
 	{
 		auto otherRenderMaterial = material.As<VulkanRenderMaterial>();
-		m_UniformBufferStorage = Buffer::Copy(material.As<VulkanRenderMaterial>()->m_UniformBufferStorage);
+		Count< VulkanRenderMaterial> instance = this;
+		Renderer::Submit([otherRenderMaterial, instance]()
+			{
+				instance->m_UniformBufferStorage.SetData(otherRenderMaterial->m_UniformBufferStorage,0);
+			});
 
+		/*
 		m_DescritptorSetManager->m_Inputs = otherRenderMaterial->m_DescritptorSetManager->m_Inputs;
 		m_DescritptorSetManager->m_GlobalSets = otherRenderMaterial->m_DescritptorSetManager->m_GlobalSets;
 		m_DescritptorSetManager->InvalidateDescriptors();
+		*/
 	}
 
 	uint32_t& VulkanRenderMaterial::GetUint32(const std::string& name) 

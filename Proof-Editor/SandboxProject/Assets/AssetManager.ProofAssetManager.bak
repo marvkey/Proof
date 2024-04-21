@@ -35,9 +35,6 @@ Assets:
   - Asset: 6934225201150094691
     Type: Texture
     Path: MeshResources\glTF\Textures\7056944414013900257.Texture.ProofAsset
-  - Asset: 12902208667846413922
-    Type: MeshCollider
-    Path: MeshCollider\SponzaCollider.MeshCollider.ProofAsset
   - Asset: 9322883649519495229
     Type: Texture
     Path: HdrMaps\qwantani_puresky_4k.Texture.ProofAsset
@@ -212,6 +209,9 @@ Assets:
   - Asset: 8575277772925524622
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\15722799267630235092.Texture.ProofAsset
+  - Asset: 13091815555637216436
+    Type: PhysicsMaterial
+    Path: Scenes\Demos\Slippery.PhysicsMaterial.ProofAsset
   - Asset: 823164998827613969
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\11490520546946913238.Texture.ProofAsset
@@ -269,6 +269,9 @@ Assets:
   - Asset: 3374569578299596384
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14267839433702832875.jpg
+  - Asset: 174992091033950330
+    Type: ScriptFile
+    Path: Script\Demos\AltoAdventures\SceneController.cs
   - Asset: 5914562122218714052
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14650633544276105767.jpg
@@ -341,9 +344,6 @@ Assets:
   - Asset: 3928859883735084305
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7645212358685992005.Texture.ProofAsset
-  - Asset: 8277647489510604160
-    Type: Material
-    Path: ""
   - Asset: 5183635011300566460
     Type: DynamicMesh
     Path: Mesh\DynamicSponza.DynamicMesh.ProofAsset
@@ -455,6 +455,9 @@ Assets:
   - Asset: 10773537339369885101
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\466164707995436622.Texture.ProofAsset
+  - Asset: 8737211849402831167
+    Type: ScriptFile
+    Path: Script\Demos\AltoAdventures\PlayerCamera.cs
   - Asset: 9651208432415332991
     Type: TextureSourceFile
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\4675343432951571524.jpg
@@ -803,6 +806,9 @@ Assets:
   - Asset: 6904243976423466514
     Type: TextureSourceFile
     Path: TexturesMaps\smooth-temple-blocks-bl\smooth-temple-blocks_metallic.png
+  - Asset: 4045629147041952936
+    Type: MeshCollider
+    Path: MeshCollider\NewMeshCollider.MeshCollider.ProofAsset
   - Asset: 7942068813126966082
     Type: TextureSourceFile
     Path: TexturesMaps\smooth-temple-blocks-bl\smooth-temple-blocks_roughness.png
@@ -1100,6 +1106,9 @@ Assets:
   - Asset: 13252143450707935609
     Type: Material
     Path: MeshResources\SponzaObj\column_c.Material.ProofAsset
+  - Asset: 6372025309156190288
+    Type: Material
+    Path: Scenes\Demos\PlayerColor.Material.ProofAsset
   - Asset: 13515107201408677400
     Type: Material
     Path: MeshResources\glTF\Sponza UnnamedMaterial (25).Material.ProofAsset
@@ -1186,4 +1195,10 @@ Assets:
     Path: Materials\New Material.Material.ProofAsset
   - Asset: 5157159575650638843
     Type: ScriptFile
-    Path: Script\Demos\AltoAdventures\PlayerControllerScript.cs.cs
+    Path: Script\Demos\AltoAdventures\PlayerControllerScript.cs
+  - Asset: 4749042592490356395
+    Type: Mesh
+    Path: Mesh\sponzareal.Mesh.ProofAsset
+  - Asset: 2590303111819537873
+    Type: Mesh
+    Path: Mesh\TestSponza.Mesh.ProofAsset

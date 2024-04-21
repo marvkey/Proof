@@ -220,18 +220,19 @@ namespace Proof
             return;
         }
         Count<VulkanDescriptorManager> instance = this;
-        Renderer::Submit([instance, name, buffer]
+        std::string nameString{ name };
+        Renderer::Submit([instance, nameString, buffer]
             {
                 instance->InvalidateDescriptors();
                 auto shader = instance->m_Config.Shader;
-                const SahderInputDeclaration* decl = shader->GetInputDeclaration(name.data());
+                const SahderInputDeclaration* decl = shader->GetInputDeclaration(nameString.data());
                 if (decl)
                 {
                     instance->m_Inputs[decl->Set][decl->Binding] = RenderPassInput(buffer);
                 }
                 else
                 {
-                    PF_ENGINE_ERROR("Render pass {}, Input {} not found", instance->m_Config.DebugName, name);
+                    PF_ENGINE_ERROR("Render pass {}, Input {} not found", instance->m_Config.DebugName, nameString);
                     PF_CORE_ASSERT(false);
                 }
             });

@@ -86,16 +86,34 @@ namespace Proof
 
 				AssetID assetID = asset["Asset"].as<uint64_t>();
 				std::string path = asset["Path"].as<std::string>();
-				auto assetType = EnumReflection::StringEnum<AssetType>(asset["Type"].as<std::string>());
+
+				auto assetType = EnumReflection::StringEnum<AssetType>(asset["Type"].as<std::string>(""));
+
+				{
+					if (FileSystem::GetFullFileExtension(path) == ".Texture.ProofAsset")
+						assetType = AssetType::None;
+
+					if (Utils::TextureHasFormat(FileSystem::GetFileExtension(path)))
+						assetType = AssetType::Texture;
+
+				}
+
+				if (assetType == AssetType::None)
+					continue;
+
 				AssetInfo assetInfo;
 				assetInfo.ID = assetID;
 				assetInfo.Path = path;
 				assetInfo.Type = assetType;
+				assetInfo.State = AssetState::Unloaded;
 
+
+				/*
 				if (assetType == AssetType::TextureSourceFile)
 					assetInfo.State = AssetState::Ready;
 				else
 					assetInfo.State = AssetState::Unloaded;
+					*/
 
 				if(FileSystem::Exists( AssetManager::GetAssetFileSystemPath(path)) && !path.empty())
 					InternalAddAsset(assetInfo, nullptr);
@@ -220,8 +238,8 @@ namespace Proof
 	{
 		PF_CORE_ASSERT(HasAsset(ID), "ID does not exist");
 		auto& it = s_AssetManagerData->Assets[ID];
-		if (Utils::IsAssetSource( it.Info.Type) && it.Info.Type != AssetType::MeshSourceFile)
-			return nullptr;
+		//if (Utils::IsAssetSource( it.Info.Type) && it.Info.Type != AssetType::MeshSourceFile)
+		//	return nullptr;
 		if (it.Info.Type == AssetType::World && it.Info.State != AssetState::Ready)
 			return nullptr;
 		if (it.Info.State == AssetState::Unloaded)
@@ -317,18 +335,17 @@ namespace Proof
 			return;
 		}
 
-		if (type == AssetType::TextureSourceFile && Utils::TextureHasFormat(extension))
+		if (type == AssetType::Texture && Utils::TextureHasFormat(extension))
 		{
 			AssetInfo assetInfo;
 			assetInfo.Path = AssetManager::GetAssetFileSystemPathRelative(path);
-			assetInfo.State = AssetState::Ready;
+			assetInfo.State = AssetState::Unloaded;
 			assetInfo.ID = AssetManager::CreateID();
-			assetInfo.Type = AssetType::TextureSourceFile;
+			assetInfo.Type = AssetType::Texture;
 
 			InternalAddAsset(assetInfo, nullptr);
 			return;
 		}
-	
 	}
 	bool AssetManager::IsAssetLoaded(AssetID ID)
 	{
@@ -364,23 +381,21 @@ namespace Proof
 				continue;
 			}
 
-			if (Utils::TextureHasFormat(extension)) 
+			if (Utils::TextureHasFormat(extension))
 			{
-				NewAssetSource(it.path(), AssetType::TextureSourceFile);
-				std::string path = std::filesystem::relative(it.path().parent_path() /= FileSystem::GetFileName(it.path())).string();
-				path += ".Texture.ProofAsset";
-				Count<Asset> asset = Texture2D::Create(TextureConfiguration(FileSystem::GetFileName(it.path())), it.path());
-				AssetManager::NewAsset(asset, path);
+				NewAssetSource(it.path(), AssetType::Texture);
+				continue;
+			}
+
+			if (Utils::FontHasFormat(extension))
+			{
+				NewAssetSource(it.path(), AssetType::Font);
 				continue;
 			}
 
 			if (Utils::AudioHasFormat(extension))
 			{
-				NewAssetSource(it.path(), AssetType::AudioSourceFile);
-				std::string path = std::filesystem::relative(it.path().parent_path() /= FileSystem::GetFileName(it.path())).string();
-				Count<Asset> asset = Count<Audio>::Create(it.path());
-				path += ".Audio.ProofAsset";
-				AssetManager::NewAsset(asset, path);
+				NewAssetSource(it.path(), AssetType::Audio);
 				continue;
 			}
 		}
@@ -428,6 +443,11 @@ namespace Proof
 			 s_AssetManagerData->Assets[ID].Asset = asset;
 			 assetInfo.State = AssetState::Ready;
 		 }
+		 if(asset)
+			PF_ENGINE_TRACE("Load Asset Type: {} Path: {}", EnumReflection::EnumString(assetInfo.Type), assetInfo.Path.string());
+		 else
+			 PF_ENGINE_ERROR("Unable Load Asset Type: {} Path: {}", EnumReflection::EnumString(assetInfo.Type), assetInfo.Path.string());
+
 		return asset != nullptr;
 	}
 
