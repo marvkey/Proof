@@ -57,7 +57,7 @@
 	*1:RendererData
 	* (Lights.glslh)
 	*2:SkyBoxData
-	*3:DirectionalLightStorageBuffer 
+	*3:DirectionalLightStorageBuffer
 	* 4:PointLightBuffer
 	* 5:SpotLightBuffer
 	* 6:LightInformationBuffer
@@ -71,10 +71,10 @@ namespace Proof
 		// does not chekc if same size need to check
 		inline void GenerateSSAOSampleKernal(Count<StorageBufferSet> set, uint32_t kernalSize)
 		{
-				//https://learnopengl.com/code_viewer_gh.php?code=src/5.advanced_lighting/9.ssao/ssao.cpp
-			//https://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html
+			//https://learnopengl.com/code_viewer_gh.php?code=src/5.advanced_lighting/9.ssao/ssao.cpp
+		//https://john-chapman-graphics.blogspot.com/2013/01/ssao-tutorial.html
 
-			//Generating the Sample Kernel
+		//Generating the Sample Kernel
 			std::vector<glm::vec3> ssaoKernel;
 			ssaoKernel.resize(kernalSize);
 			for (uint32_t i = 0; i < ssaoKernel.size(); i++)
@@ -106,7 +106,7 @@ namespace Proof
 		{
 			// generating noise 
 
-			int fullNoiseSize = noiseScale * noiseScale ;
+			int fullNoiseSize = noiseScale * noiseScale;
 			std::vector<glm::vec3> noise;
 			noise.resize(fullNoiseSize);
 			for (uint32_t i = 0; i < fullNoiseSize; i++)
@@ -155,7 +155,7 @@ namespace Proof
 		glm::mat4 Transform;
 		glm::mat4 PrevTransform;
 	};
-	#define SHADOWMAP_CASCADE_COUNT  4
+#define SHADOWMAP_CASCADE_COUNT  4
 
 	glm::vec3 convertRotationToVec3(float rotation) {
 		// Convert rotation from degrees to radians
@@ -173,7 +173,7 @@ namespace Proof
 	static const uint32_t DOF_NUM_THREADS = 32;
 	static const uint32_t BLOOM_COMPUTE_WORK_GROUP_SIZE = 8;
 	static const uint32_t HBAO_WORK_GROUP_SIZE = 16u;
-	#define AO_RANDOMTEX_SIZE 4
+#define AO_RANDOMTEX_SIZE 4
 	static constexpr int HBAO_RANDOM_SIZE = AO_RANDOMTEX_SIZE;
 	static constexpr int HBAO_RANDOM_ELEMENTS = HBAO_RANDOM_SIZE * HBAO_RANDOM_SIZE;
 	static constexpr int NUM_MRT = 8;
@@ -186,12 +186,12 @@ namespace Proof
 		:
 		m_Timers(m_Stats.Timers), m_LightScene(m_Stats.LightSene),
 		DebugOptions(), ShadowSetting(PreProcessSettings.ShadowSettings),
-		AmbientOcclusionSettings(PostProcessSettings.AmbientOcclusionSettings), BloomSettings(PostProcessSettings.BloomSettings), DOFSettings(PostProcessSettings.DOFSettings), 
+		AmbientOcclusionSettings(PostProcessSettings.AmbientOcclusionSettings), BloomSettings(PostProcessSettings.BloomSettings), DOFSettings(PostProcessSettings.DOFSettings),
 		SSRSettings(PostProcessSettings.SSRSettings)
 	{
 		Init();
 	}
-	
+	Count<VertexArray> staticVertexArray;
 	void WorldRenderer::Init()
 	{
 		//AmbientOcclusion.Enabled = true;
@@ -202,7 +202,7 @@ namespace Proof
 			m_SubmeshTransformBuffers[i].Buffer = VertexBuffer::Create(sizeof(TransformVertexData) * TransformBufferCount);
 			m_SubmeshTransformBuffers[i].Data = pnew TransformVertexData[TransformBufferCount];
 		}
-		
+
 		m_GlobalInputs = Count<GlobalBufferSet>::Create();
 
 		m_UBFrameBuffer = UniformBufferSet::Create(sizeof(UBFrameData));
@@ -229,7 +229,7 @@ namespace Proof
 
 		switch (ShadowSetting.ShadowResolution)
 		{
-			
+
 			case Proof::ShadowResolution::Low:
 				m_ShadowMapResolution = 512;
 				break;
@@ -271,7 +271,7 @@ namespace Proof
 			m_GlobalInputs->SetData("u_PointSampler", SamplerFactory::GetPoint());
 
 		}
-		Count<VertexArray> staticVertexArray= VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshInstanceVertex), VertexInputRate::Instance} });
+		staticVertexArray = VertexArray::Create({ { sizeof(Vertex)}, {sizeof(MeshInstanceVertex), VertexInputRate::Instance} });
 		staticVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Position));
 		staticVertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
 		staticVertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoord));
@@ -295,7 +295,7 @@ namespace Proof
 
 		//pre depth pass
 		{
-		
+
 			FrameBufferConfig preDepthFramebufferSpec;
 			preDepthFramebufferSpec.DebugName = "PreDepth";
 			//Linear depth, reversed device depth
@@ -303,7 +303,7 @@ namespace Proof
 			preDepthFramebufferSpec.Attachments = { ImageFormat::DEPTH32F };
 			preDepthFramebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 			preDepthFramebufferSpec.DepthClearValue = 1.0f;
-			
+
 			GraphicsPipelineConfiguration pipelinelineConfig;
 			//pipelinelineConfig.Attachments = { ImageFormat::DEPTH32FSTENCIL8UI };
 			pipelinelineConfig.Attachments = { ImageFormat::DEPTH32F };
@@ -311,14 +311,14 @@ namespace Proof
 			pipelinelineConfig.Shader = Renderer::GetShader("PreDepth_Static");
 			pipelinelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
 			pipelinelineConfig.VertexArray = staticVertexArray;
-			
+
 			auto preDepthStaticPipeline = GraphicsPipeline::Create(pipelinelineConfig);
-			
+
 			RenderPassConfig renderPassConfig;
 			renderPassConfig.DebugName = "PreDepth_Static";
 			renderPassConfig.Pipeline = preDepthStaticPipeline;
 			renderPassConfig.TargetFrameBuffer = FrameBuffer::Create(preDepthFramebufferSpec);
-			
+
 			m_PreDepthPass = RenderPass::Create(renderPassConfig);
 
 			ImageConfiguration imageConfig;
@@ -432,12 +432,12 @@ namespace Proof
 				m_ShadowMapPasses[i] = renderPass;
 			}
 		}
-	
+
 		//geometry pass
 		{
 			FrameBufferConfig geoFramebufferConfig;
 			geoFramebufferConfig.DebugName = "Geometry";
-			geoFramebufferConfig.ClearDepthOnLoad = false;	
+			geoFramebufferConfig.ClearDepthOnLoad = false;
 			geoFramebufferConfig.ClearColorOnLoad = false;
 			//geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
 			geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA, ImageFormat::RG16F,ImageFormat::RGBA32F,ImageFormat::DEPTH32F }; // color, view limuncance, metallnessroughness,velocity, direct lighting(Point Light,Directional Light,Spotlight,Area Light)
@@ -465,7 +465,26 @@ namespace Proof
 
 			m_GeometryPass = RenderPass::Create(geopassConfig);
 
+			/*
+			{
 
+				GraphicsPipelineConfiguration waterPipelineConfig = pipelinelineConfig;
+				waterPipelineConfig.DebugName = "Water";
+				waterPipelineConfig.Shader = Renderer::GetShader("WaterSystem");
+				waterPipelineConfig.VertexArray = staticVertexArray;
+
+				auto waterPipeline = GraphicsPipeline::Create(waterPipelineConfig);
+
+				RenderPassConfig renderPassConfig;
+				renderPassConfig.DebugName = "Water Pass";
+				renderPassConfig.Pipeline = waterPipeline;
+				renderPassConfig.TargetFrameBuffer = m_GeometryPass->GetTargetFrameBuffer();
+				m_WaterPass = RenderPass::Create(renderPassConfig);
+
+				m_WaterPass->AddGlobalInput(m_GlobalInputs);
+
+			}
+			*/
 			m_GeometryPass->SetInput("DirectionalLightStorageBuffer", m_SBDirectionalLightsBuffer);
 			m_GeometryPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
 			m_GeometryPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
@@ -516,11 +535,11 @@ namespace Proof
 			m_SkyBoxPass->AddGlobalInput(m_GlobalInputs);
 
 		}
-		
+
 		//composite pass
 		{
 			/**
-			A composite pass, also known as a "final render pass" or "post-processing pass," is a stage in the rendering pipeline where the final image is generated by combining various elements produced in earlier stages. 
+			A composite pass, also known as a "final render pass" or "post-processing pass," is a stage in the rendering pipeline where the final image is generated by combining various elements produced in earlier stages.
 			This pass involves taking the output from previous rendering passes (such as geometry, shading, and lighting) and applying post-processing effects, color correction, tone mapping, depth of field, motion blur, and more to create the final visual result.
 			The composite pass is where all the individual elements are blended and combined to produce the image that will be presented to the user.
 			*/
@@ -566,7 +585,7 @@ namespace Proof
 					pipelineConfig.DebugName = "AO-Composite";
 					pipelineConfig.VertexArray = quadVertexArray;
 					pipelineConfig.Attachments = { ImageFormat::RGBA32F };
-					pipelineConfig.BlendMode = BlendMode::Zero_SrcColor ;
+					pipelineConfig.BlendMode = BlendMode::Zero_SrcColor;
 					pipelineConfig.Blend = true;
 					pipelineConfig.DepthTest = false;
 					pipelineConfig.Shader = Renderer::GetShader("AO-Composite");
@@ -596,7 +615,7 @@ namespace Proof
 						FrameBufferConfig deinterleavingFramebufferSpec;
 						deinterleavingFramebufferSpec.Width = 1;
 						deinterleavingFramebufferSpec.Height = 1;
-						deinterleavingFramebufferSpec.Attachments.Attachments = { 8,ImageFormat::R32F  }; // 8 images, with RED32F
+						deinterleavingFramebufferSpec.Attachments.Attachments = { 8,ImageFormat::R32F }; // 8 images, with RED32F
 						deinterleavingFramebufferSpec.ClearColor = { 1.0f, 0.0f, 0.0f, 1.0f };
 						deinterleavingFramebufferSpec.DebugName = "Deinterleaving";
 
@@ -615,21 +634,21 @@ namespace Proof
 						pipelineConfig.Attachments.Attachments = { 8,ImageFormat::R32F }; // 8 images, with RED32F
 
 						Count<GraphicsPipeline> pipeline = GraphicsPipeline::Create(pipelineConfig);
-						
+
 
 						// 2 frame buffers, 2 render passes .. 8 attachments each
 						//for (int i = 0; i < HBAO_RANDOM_ELEMENTS; i += NUM_MRT)
-						for (int i = 0; i < 2; i ++)
+						for (int i = 0; i < 2; i++)
 						{
 							deinterleavingFramebufferSpec.ExistingImageLayers.clear();
 							for (int layer = 0; layer < NUM_MRT; layer++)
-								deinterleavingFramebufferSpec.ExistingImageLayers.emplace_back( i * 8 + layer);
+								deinterleavingFramebufferSpec.ExistingImageLayers.emplace_back(i * 8 + layer);
 
 							Count<FrameBuffer> frameBuffer = FrameBuffer::Create(deinterleavingFramebufferSpec);
 
 							RenderPassConfig renderPassConfig;
 							renderPassConfig.TargetFrameBuffer = frameBuffer;
-							renderPassConfig.DebugName = fmt::format("Deinterleaving {}",i);
+							renderPassConfig.DebugName = fmt::format("Deinterleaving {}", i);
 							renderPassConfig.Pipeline = pipeline;
 
 							m_AmbientOcclusion.HBAO.DeinterleavePass[i] = RenderPass::Create(renderPassConfig);
@@ -688,7 +707,7 @@ namespace Proof
 
 						RenderPassConfig renderPassSpec;
 						renderPassSpec.Pipeline = pipeline;
-						
+
 						{
 							hbaoBlurFramebufferSpec.DebugName = "HBAOBlur0";
 							auto frameBuffer = FrameBuffer::Create(hbaoBlurFramebufferSpec);
@@ -725,7 +744,7 @@ namespace Proof
 						for (int i = 0; i < 16; i++)
 							m_HBAOData.Float2Offsets[i] = glm::vec4((float)(i % 4) + 0.5f, (float)(i / 4) + 0.5f, 0.0f, 1.f);
 
-						std::memcpy(m_HBAOData.Jitters, HBAOJitter().data(), sizeof( glm::vec4) * 16);
+						std::memcpy(m_HBAOData.Jitters, HBAOJitter().data(), sizeof(glm::vec4) * 16);
 
 						m_AmbientOcclusion.HBAO.HBAOPass = ComputePass::Create(ComputePassConfiguration{ "HBAO",
 							ComputePipeline::Create({"HBAO",Renderer::GetShader("HBAO")}) });
@@ -794,7 +813,7 @@ namespace Proof
 
 				// NEW SSR
 				{
-					
+
 					m_NewSSR.GlobalBuffer = Count<GlobalBufferSet>::Create();
 					auto ssrGlobalBuffer = m_NewSSR.GlobalBuffer;
 					ssrGlobalBuffer->SetData("SobolBuffer", Renderer::GetSPP1().SBSobolBuffer);
@@ -814,11 +833,11 @@ namespace Proof
 						//const uint32_t maxDenoiseListCount = maxRayCount / (8 * 8) + 1; // Tile run in 8x8.
 
 						//m_NewSSR.SBRayCounter = StorageBufferSet::Create(sizeof(NewSSR::RayCounterData));
-						m_NewSSR.SBRayCounter = StorageBufferSet::Create(4ull * sizeof(uint32_t) );
-						m_NewSSR.SBRayList = StorageBufferSet::Create(maxRayCount * sizeof(uint32_t) );
-						m_NewSSR.SBDenoiseList = StorageBufferSet::Create(maxRayCount * sizeof(uint32_t) );
+						m_NewSSR.SBRayCounter = StorageBufferSet::Create(4ull * sizeof(uint32_t));
+						m_NewSSR.SBRayList = StorageBufferSet::Create(maxRayCount * sizeof(uint32_t));
+						m_NewSSR.SBDenoiseList = StorageBufferSet::Create(maxRayCount * sizeof(uint32_t));
 						//m_NewSSR.SBIntersectCommand = StorageBufferSet::Create(sizeof(NewSSR::GPUDispatchIndirectCommand));
-						m_NewSSR.SBIntersectCommand = StorageBufferSet::Create(6ull * sizeof(uint32_t) );
+						m_NewSSR.SBIntersectCommand = StorageBufferSet::Create(6ull * sizeof(uint32_t));
 						//m_NewSSR.SBDenoiseCommand = StorageBufferSet::Create(sizeof(NewSSR::GPUDispatchIndirectCommand));
 						m_NewSSR.SBGlobalAtomic = StorageBufferSet::Create(1ull);
 
@@ -1071,7 +1090,7 @@ namespace Proof
 				}
 				//HZB
 				{
-					
+
 					TextureConfiguration config;
 					config.DebugName = "HierarchicalZ";
 					config.Format = ImageFormat::R32F;
@@ -1100,7 +1119,7 @@ namespace Proof
 					config.Storage = true;
 
 					m_SSR.VisibilityTexture = Texture2D::Create(config);
-					
+
 					auto computePipeline = ComputePipeline::Create({ "PreIntegration",Renderer::GetShader("PreIntegration") });
 					m_SSR.PreIntegrationPass = ComputePass::Create({ "PreIntegration",computePipeline });
 					m_SSR.PreIntegrationPass->AddGlobalInput(m_GlobalInputs);
@@ -1141,7 +1160,7 @@ namespace Proof
 					m_HizSSR.SSSRPass->AddGlobalInput(m_GlobalInputs);
 				}
 			}
-			#if 0
+		#if 0
 			// Ambient occlusion
 			{
 				//SAO
@@ -1218,9 +1237,9 @@ namespace Proof
 					m_SSAOBlurPass->SetInput("u_SSAOTexture", m_SSAOImage);
 					m_SSAOBlurPass->AddGlobalInput(m_GlobalInputs);
 				}
-				
+
 			}
-#endif
+		#endif
 			//bloom
 			{
 				m_BloomComputePass = ComputePass::Create({ "Bloom",ComputePipeline::Create({"Bloom",Renderer::GetShader("Bloom")}) });
@@ -1271,29 +1290,29 @@ namespace Proof
 		{
 			/*
 			External Composite Pass:
-			An external composite pass refers to a composite pass that is performed outside of the main rendering pipeline, often in a separate step or even in a different rendering context. This can be useful for certain scenarios, such as when you want to apply post-processing effects using a different graphics library, perform specialized image manipulation, or utilize a different shader program for the final composition. 
+			An external composite pass refers to a composite pass that is performed outside of the main rendering pipeline, often in a separate step or even in a different rendering context. This can be useful for certain scenarios, such as when you want to apply post-processing effects using a different graphics library, perform specialized image manipulation, or utilize a different shader program for the final composition.
 			An external composite pass allows for more flexibility and control over how the final image is generated and processed.
 
-			In summary, the key difference between a composite pass and an external composite pass lies in where and how the final image is generated and post-processed. 
-			The composite pass is a standard stage in the rendering pipeline where various rendering elements are combined to create the final image. An external composite pass refers to performing this final composition step outside of the main pipeline, 
+			In summary, the key difference between a composite pass and an external composite pass lies in where and how the final image is generated and post-processed.
+			The composite pass is a standard stage in the rendering pipeline where various rendering elements are combined to create the final image. An external composite pass refers to performing this final composition step outside of the main pipeline,
 			providing more flexibility in how the image is generated and processed.
 
 			User
 			so the external pass is that for basically like applying ui elements
 			ChatGPT
-			Yes, that's one common use case for an external composite pass. Applying UI elements, like user interface overlays, HUD elements, or text, on top of the rendered scene is typically done in a separate step after the main rendering pipeline. 
+			Yes, that's one common use case for an external composite pass. Applying UI elements, like user interface overlays, HUD elements, or text, on top of the rendered scene is typically done in a separate step after the main rendering pipeline.
 			This allows for greater control over the composition of UI elements with the 3D scene.
 			Here's how it might work:
-			
+
 			Main Rendering Pipeline:
 			The main rendering pipeline focuses on rendering the 3D scene, including geometry, materials, lighting, and shading. It produces the 3D scene's output in the form of color and depth buffers.
-			
+
 			External Composite Pass:
 			After the main rendering is complete, an external composite pass is performed. This pass involves taking the color buffer produced by the main pipeline and applying additional effects and UI elements.
 			UI Elements: This is where UI elements, such as buttons, menus, health bars, crosshairs, etc., are drawn on top of the rendered scene. UI elements are often 2D and can be drawn using textures, images, or text rendering techniques.
 			Post-Processing Effects: Additionally, post-processing effects like color grading, bloom, vignette, and other visual enhancements can also be applied during the external composite pass.
-			By performing the UI rendering and post-processing in a separate pass after the main rendering pipeline, developers can have better control over the order of operations and ensure that UI elements appear on top of the 3D scene. 
-			It also allows for flexibility in how UI elements are handled, especially if the UI system uses different rendering techniques or libraries than the main rendering pipeline. 
+			By performing the UI rendering and post-processing in a separate pass after the main rendering pipeline, developers can have better control over the order of operations and ensure that UI elements appear on top of the 3D scene.
+			It also allows for flexibility in how UI elements are handled, especially if the UI system uses different rendering techniques or libraries than the main rendering pipeline.
 			*/
 
 			FrameBufferConfig extCompFramebufferSpec;
@@ -1318,7 +1337,7 @@ namespace Proof
 			pipelineConfig.LineWidth = 2.0f;
 			pipelineConfig.VertexArray = staticVertexArray;
 			pipelineConfig.FillMode = PolygonFillMode::Line;
-			pipelineConfig.Shader  = Renderer::GetShader("Wireframe");
+			pipelineConfig.Shader = Renderer::GetShader("Wireframe");
 			auto geomWireframepass = GraphicsPipeline::Create(pipelineConfig);
 			m_GeometryWireFramePass = RenderPass::Create(RenderPassConfig("WireFrame", geomWireframepass, m_ExternalCompositeFrameBuffer));
 
@@ -1331,6 +1350,31 @@ namespace Proof
 				m_GeometryWireFramePassMaterialAsset = Count<Material>::Create("WireFrame", Renderer::GetShader("Wireframe"));
 				AssetManager::CreateRuntimeAsset(AssetManager::CreateID(), m_GeometryWireFramePassMaterialAsset, "worldRenderer wireFrameMaterial");
 				m_GeometryWireFramePassMaterial = m_GeometryWireFramePassMaterialAsset->GetRenderMaterial();
+			}
+
+			{
+
+				GraphicsPipelineConfiguration waterPipelineConfig;
+				waterPipelineConfig.DebugName = "Water";
+				waterPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
+				waterPipelineConfig.CullMode = CullMode::Back;
+				waterPipelineConfig.WriteDepth = false;
+				waterPipelineConfig.LineWidth = 1.0f;
+				waterPipelineConfig.VertexArray = staticVertexArray;
+				waterPipelineConfig.Shader = Renderer::GetShader("WaterSystem");
+				waterPipelineConfig.VertexArray = staticVertexArray;
+
+				auto waterPipeline = GraphicsPipeline::Create(waterPipelineConfig);
+
+				RenderPassConfig renderPassConfig;
+				renderPassConfig.DebugName = "Water Pass";
+				renderPassConfig.Pipeline = waterPipeline;
+				//renderPassConfig.TargetFrameBuffer = m_GeometryPass->GetTargetFrameBuffer();
+				renderPassConfig.TargetFrameBuffer = m_ExternalCompositeFrameBuffer;
+				m_WaterPass = RenderPass::Create(renderPassConfig);
+
+				m_WaterPass->AddGlobalInput(m_GlobalInputs);
+
 			}
 			//m_GeometryWireFramePassMaterial = RenderMaterial::Create(RenderMaterialConfiguration{ "WireFrame", Renderer::GetShader("Wireframe") });
 
@@ -1391,7 +1435,7 @@ namespace Proof
 			return;
 
 		m_InContext = true;
-		
+
 
 		//reset stats
 		m_Stats = {};
@@ -1462,7 +1506,7 @@ namespace Proof
 					const glm::vec2 hzbUVFactor = { (glm::vec2)viewportSize / (glm::vec2)hzbSize };
 					m_UBSSR.HZBUvFactor = hzbUVFactor;
 				}
-			
+
 			}
 
 			//new ssr
@@ -1473,15 +1517,15 @@ namespace Proof
 
 				for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
 				{
-					m_NewSSR.SBRayList->Resize(i,maxRayCount * sizeof(uint32_t) );
-					m_NewSSR.SBDenoiseList->Resize(i, maxRayCount * sizeof(uint32_t) );
+					m_NewSSR.SBRayList->Resize(i, maxRayCount * sizeof(uint32_t));
+					m_NewSSR.SBDenoiseList->Resize(i, maxRayCount * sizeof(uint32_t));
 				}
 				m_NewSSR.Variance->Resize(viewportSize.x, viewportSize.y);
 				m_NewSSR.PreviousVariance->Resize(viewportSize.x, viewportSize.y);
 
 				m_NewSSR.Radiance->Resize(viewportSize.x, viewportSize.y);
 				m_NewSSR.PreviousRadiance->Resize(viewportSize.x, viewportSize.y);
-			
+
 				m_NewSSR.ExtractRoughness->Resize(viewportSize.x, viewportSize.y);
 				m_NewSSR.PreviousExtractRoughness->Resize(viewportSize.x, viewportSize.y);
 
@@ -1491,7 +1535,7 @@ namespace Proof
 				m_NewSSR.ReprojectImage->Resize(viewportSize.x, viewportSize.y);
 				m_NewSSR.PreviousReprojectImage->Resize(viewportSize.x, viewportSize.y);
 
-				m_NewSSR.AverageRadiance->Resize(DivideRoundingUp(viewportSize.x,8u), DivideRoundingUp(viewportSize.y, 8u));
+				m_NewSSR.AverageRadiance->Resize(DivideRoundingUp(viewportSize.x, 8u), DivideRoundingUp(viewportSize.y, 8u));
 
 				m_NewSSR.HierarchalDepthDownSamplerTexture->Resize(viewportSize.x, viewportSize.y);
 
@@ -1500,7 +1544,7 @@ namespace Proof
 
 				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.Radiance);
 				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.PreviousRadiance);
-					
+
 				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.ExtractRoughness);
 				Renderer::ClearImage(Renderer::GetRendererCommandBuffer(), m_NewSSR.PreviousExtractRoughness);
 
@@ -1543,19 +1587,24 @@ namespace Proof
 			//geometrypass
 			m_GeometryPass->GetTargetFrameBuffer()->Resize(viewportSize);
 
+			for (auto& [shaderName, instances] : m_GeometryPassInstances)
+			{
+				instances->GetTargetFrameBuffer()->Resize(viewportSize);
+			}
+			m_WaterPass->GetTargetFrameBuffer()->Resize(viewportSize);
 			// compoiste 
 			m_CompositePass->GetTargetFrameBuffer()->Resize(viewportSize);
-			#if 0
+		#if 0
 			//AO
 			{
 				m_SSAOImage->Resize(m_UBScreenData.FullResolution.x, m_UBScreenData.FullResolution.y);
 				m_SSAOBlurPass->GetTargetFrameBuffer()->Resize(m_UBScreenData.FullResolution.x, m_UBScreenData.FullResolution.y);
 			}
-			#endif
+		#endif
 			m_ExternalCompositeFrameBuffer->Resize(viewportSize);
 		}
 
-		
+
 		switch (ShadowSetting.ShadowResolution)
 		{
 			case Proof::ShadowResolution::None:
@@ -1650,7 +1699,7 @@ namespace Proof
 		}
 
 	}
-	
+
 	void WorldRenderer::EndScene()
 	{
 		PF_PROFILE_FUNC();
@@ -1671,7 +1720,7 @@ namespace Proof
 
 //Renderer::BeginRenderPass(m_CommandBuffer,m_Dep, true);
 //		Renderer::EndRenderPass(m_GeometryPass);
-		
+
 		if (m_ResourcesCreated && m_UBScreenData.FullResolution.x > 0 && m_UBScreenData.FullResolution.y > 0)
 		{
 			Renderer::BeginCommandBuffer(m_CommandBuffer);
@@ -1715,9 +1764,11 @@ namespace Proof
 
 			m_ColliderDrawList.clear();
 			m_DynamicColliderDrawList.clear();
+			m_GeometryPassInstancesDrawList.clear();
+			m_WaterMeshDrawList.clear();
 		}
 
-		m_Timers.TotalDrawScene	= drawSceneTimer.ElapsedMillis();
+		m_Timers.TotalDrawScene = drawSceneTimer.ElapsedMillis();
 
 	}
 
@@ -1733,13 +1784,13 @@ namespace Proof
 			height = 100;
 
 		m_UBScreenData.FullResolution = { width, height };
-		m_UBScreenData.InverseFullResolution = {1/ width,  1/height };
+		m_UBScreenData.InverseFullResolution = { 1 / width,  1 / height };
 		m_UBScreenData.HalfResolution = glm::uvec2{ m_UBScreenData.FullResolution } / 2u;
-		m_UBScreenData.InverseHalfResolution = glm::uvec2{ m_UBScreenData.InverseFullResolution } * 2u;
+		m_UBScreenData.InverseHalfResolution = glm::uvec2{ m_UBScreenData.InverseFullResolution } *2u;
 		m_UBScreenData.AspectRatio = m_UBScreenData.FullResolution.x / m_UBScreenData.FullResolution.y;
 
 		Buffer buffer(&m_UBScreenData, sizeof(m_UBScreenData));
-		for (int i =0; i<Renderer::GetConfig().FramesFlight; i++)
+		for (int i = 0; i < Renderer::GetConfig().FramesFlight; i++)
 		{
 			m_UBScreenBuffer->SetData(i, buffer);
 		}
@@ -1768,7 +1819,7 @@ namespace Proof
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		//scene data
 		{
-			m_UBSceneData.CameraPosition =m_UBCameraData.Position;
+			m_UBSceneData.CameraPosition = m_UBCameraData.Position;
 			m_UBSceneData.bShowLightGrid = DebugOptions.LightDebugOptions.ShowLightGrid;
 			m_UBSceneDataBuffer->SetData(frameIndex, Buffer(&m_UBSceneData, sizeof(m_UBSceneData)));
 		}
@@ -1841,8 +1892,8 @@ namespace Proof
 					//prev model matrix
 
 					PF_CORE_ASSERT(offset <= submeshTransformSize, "Need to resize SubMeshTransforms to small");
-					if(prevTransformData.Transforms.size() > transformIndex)
-					m_SubmeshTransformBuffers[frameIndex].Data[offset] = prevTransformData.Transforms[transformIndex];
+					if (prevTransformData.Transforms.size() > transformIndex)
+						m_SubmeshTransformBuffers[frameIndex].Data[offset] = prevTransformData.Transforms[transformIndex];
 					else
 						m_SubmeshTransformBuffers[frameIndex].Data[offset] = transform;
 
@@ -2087,7 +2138,7 @@ namespace Proof
 		Timer shadowPassTimer;
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 
-		if (m_MainDirectionllLight.Intensity == 0.f  || !m_MainDirectionllLight.bCastShadows)
+		if (m_MainDirectionllLight.Intensity == 0.f || !m_MainDirectionllLight.bCastShadows)
 			return;
 		CascadeData cascades[SHADOWMAP_CASCADE_COUNT];
 		if (ShadowSetting.UseManualCascadeSplits)
@@ -2111,10 +2162,10 @@ namespace Proof
 		glm::vec4 Splits;
 		for (int i = 0; i < 4; i++)
 		{
-			projections.ViewProjection[i] = cascades[i].ViewProjection ;
+			projections.ViewProjection[i] = cascades[i].ViewProjection;
 			Splits[i] = cascades[i].SplitDepth;
 		}
-		
+
 
 		m_UBCascadeProjectionBuffer->SetData(frameIndex, Buffer(&projections, sizeof(CascadeProjection)));
 		for (uint32_t cascade = 0; cascade < SHADOWMAP_CASCADE_COUNT; cascade++)
@@ -2130,13 +2181,13 @@ namespace Proof
 			{
 				const auto& transformData = m_CurTransformMap->at(meshKey);
 				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
-				RenderMesh(m_CommandBuffer, dc.Mesh,cascadePass,m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount, Buffer(&cascade,sizeof(uint32_t)),"u_CascadeInfo");
+				RenderMesh(m_CommandBuffer, dc.Mesh, cascadePass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount, Buffer(&cascade, sizeof(uint32_t)), "u_CascadeInfo");
 			}
 			for (auto& [meshKey, dc] : m_DynamicMeshShadowDrawList)
 			{
 				const auto& transformData = m_CurTransformMap->at(meshKey);
 				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
-				RenderDynamicMesh(m_CommandBuffer, dc.Mesh, cascadePass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset,  dc.InstanceCount, Buffer(&cascade, sizeof(uint32_t)), "u_CascadeInfo");
+				RenderDynamicMesh(m_CommandBuffer, dc.Mesh, cascadePass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount, Buffer(&cascade, sizeof(uint32_t)), "u_CascadeInfo");
 			}
 			Renderer::EndRenderPass(cascadePass);
 		}
@@ -2150,12 +2201,12 @@ namespace Proof
 		//	Renderer::DrawArrays(m_CommandBuffer, 3, 1, 0, 0);
 		//	Renderer::EndRenderPass(m_ShadowDebugPass);
 		//}
-		if(ShadowSetting.RenderDebugPass)
+		if (ShadowSetting.RenderDebugPass)
 		{
 			PF_PROFILE_FUNC("ShadowPass::DebugCascade ");
 
 			Renderer::BeginRenderPass(m_CommandBuffer, m_ShadowDebugPass);
-			m_ShadowDebugPass->PushData("u_CascadeInfo",&ShadowSetting.DebugCascade);
+			m_ShadowDebugPass->PushData("u_CascadeInfo", &ShadowSetting.DebugCascade);
 			m_ShadowDebugPass->SetInput("u_ShadowMap", m_ShadowPassImage);
 			Renderer::DrawArrays(m_CommandBuffer, 3, 1, 0, 0);
 			Renderer::EndRenderPass(m_ShadowDebugPass);
@@ -2182,11 +2233,11 @@ namespace Proof
 		{
 			const auto& transformData = m_CurTransformMap->at(meshKey);
 			uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
-			RenderDynamicMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset,  dc.InstanceCount);
+			RenderDynamicMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 		}
 		Renderer::EndRenderPass(m_PreDepthPass);
 
-		
+
 		m_Stats.Timers.PreDepthPass = preDepthTimer.ElapsedMillis();
 
 	}
@@ -2194,13 +2245,13 @@ namespace Proof
 	{
 		if (m_LightScene.SpotLightCount == 0 && m_LightScene.PointLightCount == 0)
 			return;
-		#if 1
+	#if 1
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 
 		PF_PROFILE_FUNC();
 		{
 			PF_PROFILE_FUNC("CalcalateFrustrumGrid");
-			
+
 			Timer timer;
 			//Renderer::BeginComputePass(m_CommandBuffer, m_FrustrumPass);	
 			//m_FrustrumPass->PushData("u_PushData", &m_LightCullingNumThreads);
@@ -2210,7 +2261,7 @@ namespace Proof
 		}
 
 		{
-			
+
 			PF_PROFILE_FUNC("LightCulling");
 			Timer timer;
 
@@ -2219,7 +2270,7 @@ namespace Proof
 			//m_LightCullingPass->PushData("u_PushData", &m_LightCullingNumThreads);
 			m_LightCullingPass->Dispatch(m_LightCullingWorkGroups);
 
-			Renderer::Submit([commandBuffer = m_CommandBuffer ]()
+			Renderer::Submit([commandBuffer = m_CommandBuffer]()
 				{
 
 					VkMemoryBarrier barrier = {};
@@ -2240,8 +2291,8 @@ namespace Proof
 
 			m_Timers.LightCulling = timer.ElapsedMillis();
 		}
-		#endif
-		
+	#endif
+
 	}
 	void WorldRenderer::GeometryPass()
 	{
@@ -2251,7 +2302,7 @@ namespace Proof
 
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 		auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
-	//set
+		//set
 		{
 
 			//very important because its not cleared and images are recreating for the limunance
@@ -2274,13 +2325,43 @@ namespace Proof
 
 			m_Timers.GeometrySkyBoxPass = timer.ElapsedMillis();
 		}
+	#if 0
+		std::unordered_set<std::string> addedInstances;
+		for (auto& [shaderName, meshDrawList] : m_GeometryPassInstancesDrawList)
+		{
+			if (!m_GeometryPassInstances.contains(shaderName))
+			{
+				m_GeometryPassInstances[shaderName] = CreateGeometryPassInstance(shaderName);
+				addedInstances.insert({ shaderName });
+				continue;
+			}
+			if (addedInstances.contains(shaderName))
+				continue;
+			auto renderPass = m_GeometryPassInstances[shaderName];
+			renderPass->SetInput("CameraData", m_UBCameraBuffer);
 
+			Renderer::BeginRenderPass(m_CommandBuffer, renderPass);
+
+			for (auto& [meshKey, dc] : meshDrawList)
+			{
+				const auto& transformData = m_CurTransformMap->at(meshKey);
+				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+				//RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, dc.OverrideMaterial, renderPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+				RenderMesh(m_CommandBuffer, dc.Mesh, renderPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+			}
+
+			Renderer::EndRenderPass(renderPass);
+		}
+	#endif
+
+		
 		{
 			PF_PROFILE_FUNC("GeometryPass::MeshPass");
 
 			Timer timer;
-			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->GetPrefilterMap());
+			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->GetIrradianceMap());
 			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
+
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_GeometryPass);
 
 			{
@@ -2290,10 +2371,21 @@ namespace Proof
 				{
 					const auto& transformData = m_CurTransformMap->at(meshKey);
 					uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
-					RenderMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, dc.MaterialTable, m_GeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+
+					if (dc.MaterialTable)
+						RenderMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, dc.MaterialTable, m_GeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+					else if (dc.OverrideMaterial)
+						RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, dc.OverrideMaterial, m_GeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+
 				}
+
+				
 			}
+
+			
 			Renderer::EndRenderPass(m_GeometryPass);
+
+		
 			/*
 			{
 				PF_PROFILE_FUNC("GeometryPass::Dynamic");
@@ -2312,14 +2404,14 @@ namespace Proof
 
 		m_Timers.GeometryPass = geometryPassTimer.ElapsedMillis();
 	}
-	
+
 	void WorldRenderer::CompositePass()
 	{
 		PF_PROFILE_FUNC();
 
 		Timer compositeTimer;
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
-		
+
 		//AmbientOcclusionPass();
 		{
 
@@ -2354,7 +2446,7 @@ namespace Proof
 				m_CompositeMaterial->Set("u_BloomTexture", blackTexture);
 			}
 
-			if(DOFSettings.Enabled)
+			if (DOFSettings.Enabled)
 				m_CompositeMaterial->Set("u_DOFTexture", m_DOFTexture);
 			else
 				m_CompositeMaterial->Set("u_DOFTexture", blackTexture);
@@ -2395,6 +2487,24 @@ namespace Proof
 			Renderer::EndRenderPass(wireFramePass);
 			m_Timers.DrawPhysicsColliders = physicsDebugMesh.Elapsed();
 		}
+		{
+			auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
+
+			{
+				Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_WaterPass);
+
+				for (auto& [meshKey, dc] : m_WaterMeshDrawList)
+				{
+					const auto& transformData = m_CurTransformMap->at(meshKey);
+					uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+
+					RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, dc.OverrideMaterial, m_WaterPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+
+				}
+
+				Renderer::EndRenderPass(m_WaterPass);
+			}
+		}
 		m_Timers.CompositePass = compositeTimer.ElapsedMillis();
 	}
 	void WorldRenderer::AmbientOcclusionPass()
@@ -2410,10 +2520,10 @@ namespace Proof
 			m_AmbientOcclusionCompositePass->SetInput("u_InputAOTexture", m_AmbientOcclusion.HBAO.BlurPass[1]->GetOutput(0));
 		}
 
-#if 0
+	#if 0
 		if (AmbientOcclusionSettings.Type == AmbientOcclusion::AmbientOcclusionType::SSAO)
 		{
-			
+
 			auto& ssao = AmbientOcclusionSettings.SSAO;
 
 			if (m_SBSSAOSampleKernalBuffer->GetBuffer(0)->GetSize() != sizeof(glm::vec3) * ssao.KernelSize)
@@ -2432,7 +2542,7 @@ namespace Proof
 			m_SSAOMaterial->Set("u_Uniforms.KernelSize", ssao.KernelSize);
 			m_SSAOMaterial->Set("u_Uniforms.NoiseScale", ssao.NoiseSize);
 
-			Renderer::ComputePassPushRenderMaterial(m_SSAOPass,m_SSAOMaterial);
+			Renderer::ComputePassPushRenderMaterial(m_SSAOPass, m_SSAOMaterial);
 			m_SSAOPass->Dispatch({ m_UBScreenData.FullResolution.x / 16,m_UBScreenData.FullResolution.y / 16,1 });
 			Renderer::EndComputePass(m_SSAOPass);
 
@@ -2440,9 +2550,9 @@ namespace Proof
 			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_SSAOBlurPass);
 			Renderer::EndRenderPass(m_SSAOBlurPass);
 
-			
+
 		}
-#endif
+	#endif
 		{
 			PF_PROFILE_FUNC("AOComposite");
 			Renderer::BeginRenderPass(m_CommandBuffer, m_AmbientOcclusionCompositePass);
@@ -2455,7 +2565,7 @@ namespace Proof
 			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_AmbientOcclusionCompositePass);
 			Renderer::EndRenderPass(m_AmbientOcclusionCompositePass);
 		}
-		
+
 	}
 
 	void WorldRenderer::HBAOPass()
@@ -2529,7 +2639,7 @@ namespace Proof
 		{
 			PF_PROFILE_FUNC("Reinterleave");
 			auto reinterleavePass = m_AmbientOcclusion.HBAO.ReinterleavePass;
-			ClearPass(reinterleavePass,true);
+			ClearPass(reinterleavePass, true);
 			reinterleavePass->SetInput("u_TexResultsArray", m_AmbientOcclusion.HBAO.HBAOOutputImage);
 			Renderer::BeginRenderPass(m_CommandBuffer, reinterleavePass);
 			Renderer::SubmitFullScreenQuad(m_CommandBuffer, reinterleavePass);
@@ -2572,7 +2682,7 @@ namespace Proof
 				Renderer::EndRenderPass(blurPass1);
 			}
 		}
-		
+
 	}
 
 	void WorldRenderer::BloomPass()
@@ -2605,14 +2715,14 @@ namespace Proof
 
 			m_BloomComputePass->PushData("u_Uniforms", &bloomComputePushConstants);
 			m_BloomComputePass->Dispatch(workGroupsX, workGroupsY, 1);
-			Renderer::Submit([image = m_BloomComputeTextures[0].As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(),commandBuffer = m_CommandBuffer]
+			Renderer::Submit([image = m_BloomComputeTextures[0].As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(), commandBuffer = m_CommandBuffer]
 				{
 					VkImageMemoryBarrier imageMemoryBarrier = {};
 					imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 					imageMemoryBarrier.oldLayout = VK_IMAGE_LAYOUT_GENERAL;
 					imageMemoryBarrier.newLayout = VK_IMAGE_LAYOUT_GENERAL;
 					imageMemoryBarrier.image = image->Getinfo().ImageAlloc.Image;
-					imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1};
+					imageMemoryBarrier.subresourceRange = { VK_IMAGE_ASPECT_COLOR_BIT, 0, image->GetSpecification().Mips, 0, 1 };
 					imageMemoryBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
 					imageMemoryBarrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 					vkCmdPipelineBarrier(
@@ -2793,7 +2903,7 @@ namespace Proof
 		Renderer::BeginComputePass(m_CommandBuffer, m_DOFPass);
 		glm::vec2 data{ DOFSettings.FocusDistance,DOFSettings.BlurSize };
 		m_DOFPass->PushData("u_Uniforms", &data);
-		m_DOFPass->Dispatch(m_DOFTexture->GetWidth()/DOF_NUM_THREADS, m_DOFTexture->GetHeight() / DOF_NUM_THREADS, 1);
+		m_DOFPass->Dispatch(m_DOFTexture->GetWidth() / DOF_NUM_THREADS, m_DOFTexture->GetHeight() / DOF_NUM_THREADS, 1);
 
 		Renderer::Submit([image = m_DOFTexture.As<VulkanTexture2D>()->GetImage().As<VulkanImage2D>(), commandBuffer = m_CommandBuffer]
 			{
@@ -2867,7 +2977,7 @@ namespace Proof
 				{
 					case AmbientOcclusion::AmbientOcclusionType::HBAO:
 						renderPass->SetInput("u_AmbientOcclusionMap", m_AmbientOcclusion.HBAO.BlurPass[1]->GetOutput(0));
-					break;
+						break;
 				}
 			}
 
@@ -2995,7 +3105,7 @@ namespace Proof
 			glm::vec2 projectionParams = { m_UBCameraData.FarPlane, m_UBCameraData.NearPlane }; // Reversed 
 
 			auto preIntegration = m_SSR.PreIntegrationPass;
-		
+
 
 			Renderer::BeginComputePass(m_CommandBuffer, preIntegration);
 
@@ -3015,13 +3125,13 @@ namespace Proof
 				preIntegrationComputePushConstants.HZBResFactor = resFactor * SSRSettings.HZBUvFactor;
 				preIntegrationComputePushConstants.ResFactor = resFactor;
 				preIntegrationComputePushConstants.ProjectionParams = projectionParams;
-				if(i == 0)
+				if (i == 0)
 					preIntegrationComputePushConstants.PrevLod = (int)i;
 				else
 					preIntegrationComputePushConstants.PrevLod = (int)i - 1;
 
 				preIntegration->SetInput("o_VisibilityImage", imageView);
-				
+
 				preIntegration->PushData("u_Info", &preIntegrationComputePushConstants);
 				preIntegration->Dispatch(workGroupsX, workGroupsY, 1);
 
@@ -3110,7 +3220,7 @@ namespace Proof
 			.TemporalVarianceThreshold = 0.0f,
 		};
 
-		
+
 		//set up
 		{
 			auto sbRayCounter = m_NewSSR.SBRayCounter->GetBuffer(Renderer::GetCurrentFrameInFlight());
@@ -3157,11 +3267,11 @@ namespace Proof
 			Renderer::EndComputePass(m_NewSSR.BlueNoisePass);
 		}
 
-		
+
 		//Tile Classification
 		{
 			m_NewSSR.TileClassification->SetInput("u_CubeMapPrefilter", m_Environment->GetPrefilterMap());
-			m_NewSSR.TileClassification->SetInput("u_SSRVariance", m_NewSSR. Variance);
+			m_NewSSR.TileClassification->SetInput("u_SSRVariance", m_NewSSR.Variance);
 			m_NewSSR.TileClassification->SetInput("o_SSRRadiance", m_NewSSR.Radiance);
 			m_NewSSR.TileClassification->SetInput("o_SSRExtractRoughness", m_NewSSR.ExtractRoughness);
 
@@ -3270,7 +3380,7 @@ namespace Proof
 			apply->SetInput("u_ReflectionTarget", m_NewSSR.Radiance);
 			apply->SetInput("u_BaseColorAlphaTexture", m_GeometryPass->GetOutput(0));
 			apply->SetInput("u_BrdfTexture", Renderer::GetBRDFLut());
-			Renderer::BeginRenderPass(m_CommandBuffer,apply);
+			Renderer::BeginRenderPass(m_CommandBuffer, apply);
 			apply->PushData("u_PushData", &pushConst);
 			Renderer::SubmitFullScreenQuad(m_CommandBuffer, apply);
 			Renderer::EndRenderPass(apply);
@@ -3348,7 +3458,7 @@ namespace Proof
 			prefilter->DispatchIndirect(m_NewSSR.SBDenoiseCommand, 0);
 			Renderer::EndComputePass(prefilter);
 		}
-		
+
 		//Temporal
 		{
 			auto temporal = m_NewSSR.Temporal;
@@ -3368,7 +3478,7 @@ namespace Proof
 			temporal->PushData("u_PushData", &pushConst);
 			temporal->DispatchIndirect(m_NewSSR.SBDenoiseCommand, 0);
 			Renderer::EndComputePass(temporal);
-		
+
 		}
 
 		{
@@ -3393,8 +3503,8 @@ namespace Proof
 			Math::Swap(m_NewSSR.SampleCount, m_NewSSR.PreviousSampleCount);
 			Math::Swap(m_NewSSR.ReprojectImage, m_NewSSR.PreviousReprojectImage);
 
-			
-		} 
+
+		}
 	}
 	void WorldRenderer::HizSSRPass()
 	{
@@ -3429,7 +3539,7 @@ namespace Proof
 			uint32_t materialIndex = subMesh.MaterialIndex;
 
 			AssetID materialHandle = materialTable->HasMaterial(materialIndex) ? materialTable->GetMaterial(materialIndex)->GetID() : mesh->GetMaterialTable()->GetMaterial(materialIndex)->GetID();
-			PF_CORE_ASSERT(materialHandle,"Material ID cannot be zero");
+			PF_CORE_ASSERT(materialHandle, "Material ID cannot be zero");
 
 			MeshKey meshKey = { meshID, materialHandle, submeshIndex, false };
 			auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
@@ -3459,6 +3569,105 @@ namespace Proof
 			}
 		}
 	}
+	void WorldRenderer::SubmitWaterMesh(Count<Mesh> mesh, Count<RenderMaterial> renderMaterial, const glm::mat4& transform, bool CastShadowws)
+	{
+		//SubmitPhysicsDebugMesh(mesh, transform);
+		//SubmitMesh(mesh, mesh->GetMaterialTable(), transform);
+		//return;
+
+		PF_PROFILE_FUNC();
+		PF_PROFILE_TAG("{}", mesh->GetName().c_str());
+		//TODO FASTER HASH FUNCTION FOR MESHKEY
+		PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
+
+		AssetID meshID = mesh->GetID();
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		for (uint32_t submeshIndex : mesh->GetSubMeshes())
+		{
+			const auto& subMesh = meshSource->GetSubMeshes().at(submeshIndex);
+
+			glm::mat4 subMeshTransform = transform * mesh->GetTransform() * subMesh.Transform;
+
+			AssetID materialHandle = AssetID((uint64_t)renderMaterial.Get());
+			PF_CORE_ASSERT(materialHandle, "Render Material ID cannot be zero");
+
+			MeshKey meshKey = { meshID, materialHandle, submeshIndex, false };
+			auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
+			transformStorage.Transform = subMeshTransform;
+
+			if ((*m_PrevTransformMap).find(meshKey) == (*m_PrevTransformMap).end())
+			{
+				(*m_PrevTransformMap)[meshKey] = (*m_CurTransformMap)[meshKey];
+			}
+			// geo pass
+			{
+				auto& dc = m_WaterMeshDrawList[meshKey];
+				dc.MaterialTable = nullptr;
+				dc.OverrideMaterial = renderMaterial;
+				dc.Mesh = mesh;
+				dc.SubMeshIndex = submeshIndex;
+				dc.InstanceCount++;
+			}
+
+			if (CastShadowws)
+			{
+				auto& dc = m_MeshShadowDrawList[meshKey];
+				dc.MaterialTable = nullptr;
+				dc.OverrideMaterial = renderMaterial;
+				dc.Mesh = mesh;
+				dc.SubMeshIndex = submeshIndex;
+				dc.InstanceCount++;
+			}
+		}
+	}
+	void WorldRenderer::SubmitMesh(Count<Mesh> mesh, Count<RenderMaterial> renderMaterial, const glm::mat4& transform, bool CastShadowws)
+	{
+		PF_PROFILE_FUNC();
+		PF_PROFILE_TAG("{}", mesh->GetName().c_str());
+		//TODO FASTER HASH FUNCTION FOR MESHKEY
+		PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
+
+		AssetID meshID = mesh->GetID();
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		for (uint32_t submeshIndex : mesh->GetSubMeshes())
+		{
+			const auto& subMesh = meshSource->GetSubMeshes().at(submeshIndex);
+
+			glm::mat4 subMeshTransform = transform * mesh->GetTransform() * subMesh.Transform;
+
+			AssetID materialHandle = (uint64_t)renderMaterial.Get();
+			PF_CORE_ASSERT(materialHandle, "Render Material ID cannot be zero");
+
+			MeshKey meshKey = { meshID, materialHandle, submeshIndex, false };
+			auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
+			transformStorage.Transform = subMeshTransform;
+
+			if ((*m_PrevTransformMap).find(meshKey) == (*m_PrevTransformMap).end())
+			{
+				(*m_PrevTransformMap)[meshKey] = (*m_CurTransformMap)[meshKey];
+			}
+			// geo pass
+			{
+				auto& dc = m_GeometryPassInstancesDrawList[renderMaterial->GetConfig().Shader->GetName()][meshKey];
+				dc.MaterialTable = nullptr;
+				dc.OverrideMaterial = renderMaterial;
+				dc.Mesh = mesh;
+				dc.SubMeshIndex = submeshIndex;
+				dc.InstanceCount++;
+			}
+
+			if (CastShadowws)
+			{
+				auto& dc = m_MeshShadowDrawList[meshKey];
+				dc.MaterialTable = nullptr;
+				dc.OverrideMaterial = renderMaterial;
+				dc.Mesh = mesh;
+				dc.SubMeshIndex = submeshIndex;
+				dc.InstanceCount++;
+			}
+		}
+	}
+
 	void WorldRenderer::SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<MaterialTable> materialTable, uint32_t subMeshIndex, const glm::mat4& transform, bool CastShadows)
 	{
 		PF_PROFILE_FUNC();
@@ -3623,7 +3832,7 @@ namespace Proof
 
 		m_MainDirectionllLight = directionaLights.DirectionalLights[0];
 
-		Buffer buffer{(void*) directionaLights.DirectionalLights.data(), directionaLights.DirectionalLights.size() * sizeof(DirectionalLight)};
+		Buffer buffer{ (void*)directionaLights.DirectionalLights.data(), directionaLights.DirectionalLights.size() * sizeof(DirectionalLight) };
 		m_SBDirectionalLightsBuffer->Resize(frameIndex, buffer);
 
 		m_LightScene.DirectionalLightCount = directionaLights.DirectionalLights.size();
@@ -3639,12 +3848,94 @@ namespace Proof
 			return;
 		}
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
-		
+
 		Buffer buffer{ (void*)pointLights.PointLights.data(), pointLights.PointLights.size() * sizeof(PointLight) };
 		m_SBPointLightsBuffer->Resize(frameIndex, buffer);
 
 		m_LightScene.PointLightCount = pointLights.PointLights.size();
 	}
+
+	Count<RenderPass> WorldRenderer::CreateGeometryPassInstance(const std::string& shaderName)
+	{
+
+	#if 1
+		FrameBufferConfig extCompFramebufferSpec;
+		extCompFramebufferSpec.DebugName = fmt::format("FrameBuffer {}",shaderName);
+		extCompFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
+		extCompFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+		extCompFramebufferSpec.ClearColorOnLoad = false;
+		extCompFramebufferSpec.ClearDepthOnLoad = false;
+		// Use the color buffer from the final compositing pass, but the depth buffer from
+		// the actual 3D geometry pass, in case we want to composite elements behind meshes
+		// in the scene
+		extCompFramebufferSpec.Attachments.Attachments[0].ExistingImage = m_GeometryPass->GetOutput(0);
+		extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetOutput(0);
+
+		//auto frameBuffer = FrameBuffer::Create(extCompFramebufferSpec);
+
+
+		GraphicsPipelineConfiguration pipelineConfig;
+		//pipelineConfig.DebugName = shaderName;
+		//pipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
+		//pipelineConfig.DepthTest = true;
+		//pipelineConfig.WriteDepth = false;
+		//pipelineConfig.VertexArray = staticVertexArray;
+		pipelineConfig = m_GeometryPass->GetConfig().Pipeline->GetConfig();
+		pipelineConfig.Shader = Renderer::GetShader(shaderName);
+		pipelineConfig.DebugName = fmt::format("{}_static", shaderName);
+
+		Count<GraphicsPipeline> pipeline = GraphicsPipeline::Create(pipelineConfig);
+
+		RenderPassConfig geoPassConfig;
+		geoPassConfig.DebugName = fmt::format("{}Pass", shaderName);
+		geoPassConfig.Pipeline = pipeline;
+		//geoPassConfig.TargetFrameBuffer = frameBuffer;
+		geoPassConfig.TargetFrameBuffer = m_GeometryPass->GetTargetFrameBuffer();
+
+		auto geometryInstance = RenderPass::Create(geoPassConfig);
+
+		geometryInstance->AddGlobalInput(m_GlobalInputs);
+
+		return geometryInstance;
+	#else
+
+		Count<RenderPass> geometryInstance;
+		GraphicsPipelineConfiguration pipelineConfig = m_GeometryPass->GetPipeline()->GetConfig();
+		pipelineConfig.Shader = Renderer::GetShader(shaderName);
+		pipelineConfig.DebugName = fmt::format("{}_static", shaderName);
+
+		Count<GraphicsPipeline> pipeline = GraphicsPipeline::Create(pipelineConfig);
+
+		RenderPassConfig geoPassConfig;
+		geoPassConfig.DebugName = fmt::format("{}pass", shaderName);;
+		geoPassConfig.Pipeline = pipeline;
+		geoPassConfig.TargetFrameBuffer = m_GeometryPass->GetTargetFrameBuffer();
+
+		geometryInstance = RenderPass::Create(geoPassConfig);
+
+		geometryInstance->SetInput("DirectionalLightStorageBuffer", m_SBDirectionalLightsBuffer);
+		geometryInstance->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
+		geometryInstance->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
+		geometryInstance->SetInput("u_IrradianceMap", m_Environment->GetIrradianceMap());
+		geometryInstance->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
+		geometryInstance->SetInput("u_BRDFLUT", Renderer::GetBRDFLut());
+		geometryInstance->SetInput("SkyBoxData", m_UBSKyBoxBuffer);
+		geometryInstance->SetInput("u_ShadowMap", m_ShadowPassImage);
+		geometryInstance->SetInput("RendererData", m_UBRenderDataBuffer);
+		geometryInstance->SetInput("SceneData", m_UBSceneDataBuffer);
+		geometryInstance->SetInput("ShadowMapProjections", m_UBCascadeProjectionBuffer);
+
+		geometryInstance->AddGlobalInput(m_GlobalInputs);
+
+		geometryInstance->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
+
+		geometryInstance->SetInput("VisiblePointLightIndicesBuffer", m_SBVisiblePointLightIndicesBuffer);
+		geometryInstance->SetInput("VisibleSpotLightIndicesBuffer", m_SBVisibleSpotLightIndicesBuffer);
+
+		return geometryInstance;
+	#endif
+	}
+
 	void WorldRenderer::SubmitSpotLight(const SBSpotLightSceneData& spotLights)
 	{
 		PF_PROFILE_FUNC();
@@ -3655,13 +3946,14 @@ namespace Proof
 			return;
 		}
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
-		
+
 		Buffer buffer{ spotLights.SpotLights.data(), spotLights.SpotLights.size() * sizeof(SpotLight) };
 		m_SBSpotLightsBuffer->Resize(frameIndex, buffer);
 
 		m_LightScene.SpotLightCount = spotLights.SpotLights.size();
 	}
-	void WorldRenderer::RenderMesh(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset,  uint32_t instanceCount, const Buffer& pushData, const std::string& pushName)
+	
+	void WorldRenderer::RenderMesh(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount, const Buffer& pushData, const std::string& pushName)
 	{
 		PF_PROFILE_FUNC();
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
@@ -3675,7 +3967,7 @@ namespace Proof
 		const SubMesh& subMesh = meshSource->GetSubMeshes()[subMeshIndex];
 		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
 	}
-	void WorldRenderer::RenderDynamicMesh(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset,  uint32_t instanceCount, const Buffer& pushData, const std::string& pushName)
+	void WorldRenderer::RenderDynamicMesh(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount, const Buffer& pushData, const std::string& pushName)
 	{
 		PF_PROFILE_FUNC();
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
@@ -3690,7 +3982,7 @@ namespace Proof
 		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
 	}
 
-	void WorldRenderer::RenderMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer,Count<Mesh>&mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass,Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount)
+	void WorldRenderer::RenderMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount)
 	{
 		PF_PROFILE_FUNC();
 
@@ -3723,7 +4015,7 @@ namespace Proof
 	void WorldRenderer::RenderMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount)
 	{
 		PF_PROFILE_FUNC();
-		#if 0
+	#if 0
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
 		meshSource->GetVertexBuffer()->Bind(commandBuffer);
 		transformBuffer->Bind(commandBuffer, 1, transformOffset);
@@ -3738,7 +4030,7 @@ namespace Proof
 			Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
 			Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
 		}
-		#endif
+	#endif
 
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
 		meshSource->GetVertexBuffer()->Bind(commandBuffer);
@@ -3756,7 +4048,7 @@ namespace Proof
 	void WorldRenderer::RenderDynamicMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount)
 	{
 		PF_PROFILE_FUNC();
-		#if 0
+	#if 0
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
 		meshSource->GetVertexBuffer()->Bind(commandBuffer);
 		transformBuffer->Bind(commandBuffer, 1, transformOffset);
@@ -3771,7 +4063,7 @@ namespace Proof
 			Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
 			Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
 		}
-		#endif
+	#endif
 
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
 		meshSource->GetVertexBuffer()->Bind(commandBuffer);
@@ -3784,7 +4076,7 @@ namespace Proof
 		Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
 		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
 	}
-	
+
 	void WorldRenderer::ClearPass(Count<RenderPass> renderPass, bool explicitClear)
 	{
 		PF_PROFILE_FUNC();

@@ -6,19 +6,20 @@ namespace Driftwood
 {
 	public class PlayerMovement : Entity
 	{
-		public float ForwardForce = 100.0f;
-
+		public float FowardForce = 100.0f;
 		RigidBodyComponent m_RigidBody;
 		// OnCreate is called once when the Entity that this script is attached to
 		// is instantiated in the world at runtime
 		void OnCreate()
 		{
-            m_RigidBody = GetComponent<RigidBodyComponent>();
+			m_RigidBody = GetComponent<RigidBodyComponent>();
+
 			if(m_RigidBody == null)
 			{
-				Log.Error($"{Name} Requires a RigidBody for PlayerMovement Script to work");
+				Log.Error($"{Name} Requires a RigidBoyd for PlayerMovement script to work");
 				return;
-			}	
+			}
+
         }
 
 		// OnUpdate is called once every frame while this script is active in the world
@@ -26,17 +27,17 @@ namespace Driftwood
 		{
             if (m_RigidBody == null)
             {
-                Log.Error($"{Name} Requires a RigidBody for PlayerMovement Script to work");
+                Log.Error($"{Name} Requires a RigidBoyd for PlayerMovement script to work");
                 return;
             }
-			m_RigidBody.AddForce(Transform.Forward * ForwardForce * deltaTime, ForceMode.Force);
+
+			m_RigidBody.AddForce(Transform.Forward * FowardForce * deltaTime, ForceMode.Force);
         }
 
 		public void MoveSideways(float x)
 		{
+			m_RigidBody.AddForce(Transform.Right * (FowardForce * 2) * World.GetDeltaTime() * x, ForceMode.Force);	
+		}
 
-            m_RigidBody.AddForce(Transform.Right * (ForwardForce *2) * World.GetDeltaTime() * x, ForceMode.Force);
-
-        }
-    }
+	}
 }

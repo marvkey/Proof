@@ -30,7 +30,10 @@ namespace Proof
 		MeshCollider,
 		ScriptFile,
 		InputAction,
-		InputBindingContext
+		InputBindingContext,
+		Skeleton,
+		Animation,
+		AnimationController
 	};
 	enum class AssetState 
 	{
@@ -42,27 +45,29 @@ namespace Proof
 	};
 	using AssetID = UUID;
 
-	namespace Utils {
+	namespace Utils 
+	{
+		// assets that are not converted to a proof format in the editor
+		static const std::unordered_set<AssetType> SourceAssets =
+		{
+			AssetType::Texture,
+			AssetType::MeshSourceFile,
+			AssetType::Font,
+			AssetType::Audio,
+		};
+
 		inline bool IsAssetSource(AssetType type)
 		{
-			switch (type)
-			{
-				//case AssetType::TextureSourceFile:
-				case AssetType::MeshSourceFile:
-				//case AssetType::FontSourceFile:
-				//case AssetType::AudioSourceFile:
-					return true;
-			}
-			return false;
+			return SourceAssets.contains(type);
 		}
-		static inline const std::unordered_map<AssetType, std::string> AssetTypeMap = {
+		static inline const std::unordered_map<AssetType, std::string> AssetTypeMap = 
+		{
 			{AssetType::None, ""},
 			{AssetType::Mesh, ".Mesh.ProofAsset"},
 			{AssetType::DynamicMesh, ".DynamicMesh.ProofAsset"},
 			//{AssetType::Texture, ".Texture.ProofAsset"},
 			{AssetType::Material, ".Material.ProofAsset"},
 			{AssetType::World, ".ProofWorld"},
-			{AssetType::MeshSourceFile, ""},
 			{AssetType::PhysicsMaterial, ".PhysicsMaterial.ProofAsset"},
 			{AssetType::Prefab, ".Prefab.ProofAsset"},
 			//{AssetType::TextureSourceFile, ""},
@@ -74,81 +79,98 @@ namespace Proof
 			{AssetType::ScriptFile, ".cs" },
 			{AssetType::InputAction,".InputAction.ProofAsset"},
 			{AssetType::InputBindingContext,".InputBindingContext.ProofAsset"},
+			{AssetType::Skeleton,".Skeleton.ProofAsset"},
+			{AssetType::Animation,".Animation.ProofAsset"},
+			{AssetType::AnimationController,".AnimationController.ProofAsset"},
 		};
 		std::string GetAssetExtensionString(AssetType type);
 		// checks the file extension
 		
-	// more formats come in the future
-		static const std::unordered_set<std::string> MeshSourceFormats =
-		{
-			".fbx",
-			".obj",
-			".blend",
-			".gltf",
-			".glb",
-			".blend",
-		};
 
+		static const std::unordered_map<AssetType, std::unordered_set<std::string>> AssetSourceFormats =
+		{
+			{
+				AssetType::MeshSourceFile,
+				{
+					".fbx",
+					".obj",
+					".blend",
+					".gltf",
+					".glb",
+					".dae",
+				}
+			},
+
+			{
+				AssetType::Texture,
+				{
+					".jpeg",
+					".jpg",
+					".png",
+					".tga",
+					".big",
+					".hdr"
+				}
+			},
+
+			{
+				AssetType::Font,
+				{
+					".ttf",
+				}
+			},
+
+			{
+				AssetType::Audio,
+				{
+					".wav",
+					".mp3",
+					".flac"
+				}
+			},
+		};
 		inline bool MeshHasFormat(const std::string& format) 
 		{
-			return MeshSourceFormats.contains(Utils::String::ToLower(format));
-
+			return AssetSourceFormats.at(AssetType::MeshSourceFile).contains(Utils::String::ToLower(format));
 		}
-		// more formats to come in the future
-		static const std::unordered_set< std::string> TextureSourceFormats =
+		inline bool TextureHasFormat(const std::string& format) 
 		{
-			".jpeg",
-			".jpg",
-			".png",
-			".tga",
-			".big",
-			".hdr"
-		};
-
-		inline bool TextureHasFormat(const std::string& format) {
-			return TextureSourceFormats.contains(Utils::String::ToLower(format));
+			return AssetSourceFormats.at(AssetType::Texture).contains(Utils::String::ToLower(format));
 		}
-		static const std::unordered_set< std::string> FontSourceFormats =
+	
+		inline bool FontHasFormat(const std::string& format) 
 		{
-			".ttf",
-		};
-		inline bool FontHasFormat(const std::string& format) {
-			return FontSourceFormats.contains(Utils::String::ToLower(format));
+			return AssetSourceFormats.at(AssetType::Font).contains(Utils::String::ToLower(format));
 		}
-
-		static const std::unordered_set< std::string> AudioSourceFormat =
-		{
-			".wav",
-			".mp3",
-			".flac"
-		};
 		inline bool AudioHasFormat(const std::string& format) 
 		{
-			return AudioSourceFormat.contains(Utils::String::ToLower(format));
+			return AssetSourceFormats.at(AssetType::Audio).contains(Utils::String::ToLower(format));
 		}
-		inline AssetType GetAssetTypeFromPath(const std::filesystem::path& path)
+		inline AssetType GetAssetTypeFromExtension(const std::string& fileFullExtension)
 		{
-			const std::string fileFullExtension = FileSystem::GetFullFileExtension(path);
+			const std::string fileFullExtensionLower = Utils::String::ToLower(fileFullExtension);
 
-			if (MeshHasFormat(fileFullExtension))return AssetType::MeshSourceFile;
-			//if (TextureHasFormat(fileFullExtension))return AssetType::TextureSourceFile;
-			//if (FontHasFormat(fileFullExtension))return AssetType::FontSourceFile;
-			//if (AudioHasFormat(fileFullExtension))return AssetType::AudioSourceFile;
-
-			if (TextureHasFormat(fileFullExtension))return AssetType::Texture;
-			if (FontHasFormat(fileFullExtension))return AssetType::Font;
-			if (AudioHasFormat(fileFullExtension))return AssetType::Audio;
-
+			for (auto& [assetType, formats] : AssetSourceFormats)
+			{
+				if (formats.contains(fileFullExtensionLower))
+					return assetType;
+			}
 
 			// Iterate through AssetTypeMap to find a match for the file extension
 			for (const auto& pair : AssetTypeMap)
 			{
-				if (pair.second == fileFullExtension)
+				if (pair.second == fileFullExtensionLower)
 				{
 					return pair.first;
 				}
 			}
 			return AssetType::None;
+		}
+
+		inline AssetType GetAssetTypeFromPath(const std::filesystem::path& path)
+		{
+			const std::string fileFullExtension = Utils::String::ToLower(FileSystem::GetFullFileExtension(path));
+			return GetAssetTypeFromExtension(fileFullExtension);
 		}
 	}
 }

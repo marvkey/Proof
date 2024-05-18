@@ -1,7 +1,5 @@
 #include "Proofprch.h"
 #include "ECS.h"
-#include "Proof/Scene/Entity.h"
-#include "Proof/Scene/Component.h"
 /*
 namespace Proof{
     UUID ECS::Create() {

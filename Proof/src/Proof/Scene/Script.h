@@ -1,6 +1,6 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Entity.h"
+//#include "Entity.h"
 #include "Proof/Core/FrameTime.h"
 #include <memory>
 #include <unordered_map>

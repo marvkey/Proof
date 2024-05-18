@@ -5,6 +5,7 @@
 #include "ScriptField.h"
 #include "ScriptTypes.h"
 #include "Proof/Utils/StringUtils.h"
+#include<glm/gtc/type_ptr.hpp>
 
 #include "Proof/Asset/AssetManager.h"
 #include <glm/glm.hpp>

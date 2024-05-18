@@ -78,7 +78,7 @@ void main() {
 	Output.NormalizePositionCur = posProjCur;
 	Output.NormalizePositionPrev = posProjPrev;
 
-    gl_Position =  u_Camera.Projection * u_Camera.View * vec4(Output.WorldPosition, 1.0);
+   gl_Position =  u_Camera.Projection * u_Camera.View * vec4(Output.WorldPosition, 1.0);
 }
 
 #Fragment Shader
@@ -420,6 +420,7 @@ void main()
     //sky light is indirect lighitn
     out_DirectLighting = vec4(finalColor,1.0);
     out_FragColor = vec4(finalColor + iblEfeect ,1.0);
+    //  out_FragColor = vec4(1.0,0,0,1.0);
 
     out_ViewNormalsLuminance.a = clamp(shadowScale + dot(out_FragColor.rgb, vec3(0.2125f, 0.7154f, 0.0721f)), 0.0f, 1.0f);
 

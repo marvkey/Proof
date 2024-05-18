@@ -2,7 +2,6 @@
 //Reference
 //https://github.com/TheCherno/Hazel/blob/scripting/Hazel/src/Hazel/Scripting/ScriptEngine.h
 #include "Proof/Core/Core.h"
-#include "proof/Scene/Entity.h"
 #include "ScriptTypes.h"
 #include "ScriptRegistry.h"
 #include "ScriptGCManager.h"
@@ -25,7 +24,10 @@ namespace Proof
 {
 	//struct AssemblyMetadata;
 	
-	class ScriptEngine {
+	class World;
+
+	class ScriptEngine 
+	{
 	public:
 		static void Init();
 		static void ShutDown();

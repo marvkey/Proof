@@ -1,13 +1,38 @@
 World:
   ID: 1778683820784680447
   Entities:
-    - Entity: 15843063726810850337
+    - Entity: 18066146510752369576
+      TagComponent:
+        Tag: Empty Entity
+        tags: []
+      TransformComponent:
+        Location: [-0.699999988, 0, 0.200000003]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+    - Entity: 9610559220812516726
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [1.39626336, 0.17453292, 0.108210407]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 9.85000038
+    - Entity: 10879396606872807869
       TagComponent:
         Tag: Sky Light
         tags: []
       TransformComponent:
-        Location: [0, 1.12306035, -0.000125527382]
-        Rotation: [0.0558505356, 0.647517145, 0.20071286]
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.165806279, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
@@ -21,57 +46,4 @@ World:
         TextureDataImage: 0
         HosekWilkieTurbidity: 4
         HosekWilkieGroundReflectance: 0.100000001
-        PreethamTurbidity: 6.06599998
-    - Entity: 6273702841354910295
-      TagComponent:
-        Tag: PBRGun
-        tags: []
-      TransformComponent:
-        Location: [0.308068305, 0, 0.0680041611]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 18348114341737718825
-    - Entity: 6282969778614184244
-      TagComponent:
-        Tag: PBRGun
-        tags: []
-      TransformComponent:
-        Location: [0.308068305, 1.10899997, 0.0680041611]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 18348114341737718825
-    - Entity: 17936688062110553851
-      TagComponent:
-        Tag: Directional Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [1.39626336, 1.27932644, 1.14493597]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 7.05000019
-    - Entity: 5059878419859715885
-      TagComponent:
-        Tag: Cube
-        tags: []
-      TransformComponent:
-        Location: [0, -3.5999999, 0]
-        Rotation: [0, 0, 0]
-        Scale: [70.5999985, 1.5, 48.0999985]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
+        PreethamTurbidity: 4

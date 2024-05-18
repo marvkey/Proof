@@ -11,9 +11,78 @@
 #include <algorithm>
 namespace Proof
 {
+
     class Material;
     class MaterialTable;
-    struct SubMesh {
+    class SkeletonData;
+    class AnimationData;
+
+    struct BoneInfo
+    {
+        glm::mat4 SubMeshInverseTransform;
+        glm::mat4 InverseBindPose;
+        uint32_t SubMeshIndex;
+        uint32_t BoneIndex;
+
+        BoneInfo() = default;
+        BoneInfo(glm::mat4 subMeshInverseTransform, glm::mat4 inverseBindPose, uint32_t subMeshIndex, uint32_t boneIndex)
+            : SubMeshInverseTransform(subMeshInverseTransform)
+            , InverseBindPose(inverseBindPose)
+            , SubMeshIndex(subMeshIndex)
+            , BoneIndex(boneIndex)
+        {}
+    };
+    struct BoneInfluence
+    {
+        const static uint32_t BoneInfluenceCount = 4;
+
+        uint32_t BoneInfoIndices[BoneInfluenceCount] = { 0, 0, 0, 0 };
+        float Weights[BoneInfluenceCount] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+        void AddBoneData(uint32_t boneInfoIndex, float weight)
+        {
+            if (weight < 0.0f || weight > 1.0f)
+            {
+                PF_ENGINE_WARN("Vertex bone weight is out of range. We will clamp it to [0, 1] (BoneID={0}, Weight={1})", boneInfoIndex, weight);
+                weight = std::clamp(weight, 0.0f, 1.0f);
+            }
+            if (weight > 0.0f)
+            {
+                for (size_t i = 0; i < BoneInfluenceCount; i++)
+                {
+                    if (Weights[i] == 0.0f)
+                    {
+                        BoneInfoIndices[i] = boneInfoIndex;
+                        Weights[i] = weight;
+                        return;
+                    }
+                }
+
+                // Note: when importing from assimp we are passing aiProcess_LimitBoneWeights which automatically keeps only the top N (where N defaults to 4)
+                //       bone weights (and normalizes the sum to 1), which is exactly what we want.
+                //       So, we should never get here.
+                PF_ENGINE_WARN("Vertex has more than four bones affecting it, extra bone influences will be discarded (BoneID={0}, Weight={1})", boneInfoIndex, weight);
+            }
+        }
+
+        void NormalizeWeights()
+        {
+            float sumWeights = 0.0f;
+            for (size_t i = 0; i < BoneInfluenceCount; i++)
+            {
+                sumWeights += Weights[i];
+            }
+            if (sumWeights > 0.0f)
+            {
+                for (size_t i = 0; i < BoneInfluenceCount; i++)
+                {
+                    Weights[i] /= sumWeights;
+                }
+            }
+        }
+    };
+    struct SubMesh 
+    {
         std::string Name,NodeName;
         uint32_t BaseVertex;
         uint32_t BaseIndex;
@@ -24,6 +93,7 @@ namespace Proof
         glm::mat4 Transform;
         AABB BoundingBox;
         uint32_t SubMeshIndex;
+        bool IsRigged = false;
         friend class Renderer3DPBR;
         friend class MeshWorkShop;
     };
@@ -88,14 +158,34 @@ namespace Proof
 
         std::vector<Vertex> GetVertices()const;
         std::vector<Index> GetIndices()const;
+
+        bool HasSkeleton() const { return (bool)m_Skeleton; }
+        bool IsSubmeshRigged(uint32_t submeshIndex) const { return m_SubMeshes[submeshIndex].IsRigged; }
+        const SkeletonData& GetSkeleton() const { PF_CORE_ASSERT(m_Skeleton, "Attempted to access null skeleton!"); return *m_Skeleton; }
+        bool IsCompatibleSkeleton(const uint32_t animationIndex, const SkeletonData& skeleton) const;
+        uint32_t GetAnimationCount() const;
+        const AnimationData& GetAnimation(const uint32_t animationIndex, const SkeletonData& skeleton) const;
+        std::vector<BoneInfluence> GetBoneInfluences()const;
     private:
         std::string m_Name;
         AABB m_BoundingBox;
 
+        bool m_Runtime = false;
+
+        // are only valid when the vertex buffer has not been used in the render thread as soon as its been used
+        // these will be set to empty
+        // wait till next frame when the vertexBuffer has the data
+        // no so we save them temporarily
+        std::vector<BoneInfluence> m_BoneInfluences;
+
+        std::vector<BoneInfo> m_BoneInfo;
+        mutable Special<SkeletonData> m_Skeleton;
+        mutable std::vector<Special<AnimationData>> m_Animations;
+
         std::vector<MeshNode> m_Nodes;
         Count<class VertexBuffer> m_VertexBuffer = nullptr;
         Count<class IndexBuffer> m_IndexBuffer = nullptr;
-
+        Count<VertexBuffer> m_BoneInfluenceBuffer = nullptr;
         // are only valid when the vertex buffer has not been used in the render thread as soon as its been used
         // these will be set to empty
         // the reason is cause what if we want to gnerate colliders when we create are we goign to

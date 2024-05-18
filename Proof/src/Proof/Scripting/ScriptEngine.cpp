@@ -13,6 +13,7 @@
 #include "ScriptRegistry.h"
 #include "ScriptFile.h"
 #include "ScriptWorld.h"
+#include "Proof/Scene/Entity.h"
 
 #include <fstream>
 #include <sstream>

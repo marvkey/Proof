@@ -11,6 +11,10 @@
 #include "Proof/Project/Project.h"
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Asset/AssetCustomData/MeshSourceSavedSettings.h"
+#include "Proof/Animation/AnimationImporter.h"
+#include "Proof/Animation/Skeleton.h"
+#include "Proof/Animation/Animation.h"
+#include "Proof/Renderer/Buffer.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include"../vendor/stb_image_write.h"
 #include <assimp/scene.h>
@@ -177,19 +181,8 @@ namespace Proof
 			//meshSource->SetFlag(AssetFlag::Invalid);
 			return nullptr;
 		}
-		/*
-		meshSource->m_Skeleton = AnimationImporterAssimp::ImportSkeleton(scene);
-		ANT_CORE_INFO_TAG("Animation", "Skeleton {0} found in mesh file '{1}'", meshSource->HasSkeleton() ? "" : "not", m_Path.string());
-		if (meshSource->HasSkeleton())
-		{
-			const auto animationNames = AnimationImporterAssimp::GetAnimationNames(scene);
-			meshSource->m_Animations.reserve(std::size(animationNames));
-			for (const auto& animationName : animationNames)
-			{
-				meshSource->m_Animations.emplace_back(AnimationImporterAssimp::ImportAnimation(scene, animationName, *meshSource->m_Skeleton));
-			}
-		}
-		*/
+	
+
 		AABB meshSourceBoundingBox;
 		std::vector<SubMesh> subMeshes;
 		std::vector<Vertex> vertices;
@@ -756,7 +749,97 @@ namespace Proof
 			materialTable->SetMaterial(0, mi);
 		}
 
-        return Count<MeshSource>::Create(FileSystem::GetFileName(m_Path), vertices, indices, subMeshes, nodes, materialTable, meshSourceBoundingBox);
+        auto meshSource  = Count<MeshSource>::Create(FileSystem::GetFileName(m_Path), vertices, indices, subMeshes, nodes, materialTable, meshSourceBoundingBox);
+
+		meshSource->m_Skeleton = AnimationImporter::ImportSkeleton(scene);
+		PF_ENGINE_INFO("Animation Skeleton {0} found in mesh file '{1}'", meshSource->HasSkeleton() ? "" : "Not", m_Path.string());
+		if (meshSource->HasSkeleton())
+		{
+			const auto animationNames = AnimationImporter::GetAnimationNames(scene);
+			meshSource->m_Animations.reserve(std::size(animationNames));
+			for (const auto& animationName : animationNames)
+			{
+				meshSource->m_Animations.emplace_back(AnimationImporter::ImportAnimation(scene, animationName, *meshSource->m_Skeleton));
+			}
+		}
+
+		// Bones
+		if (meshSource->HasSkeleton())
+		{
+			meshSource->m_BoneInfluences.resize(meshSource->m_Vertices.size());
+			for (uint32_t m = 0; m < scene->mNumMeshes; m++)
+			{
+				aiMesh* mesh = scene->mMeshes[m];
+				SubMesh& submesh = meshSource->m_SubMeshes[m];
+
+				if (mesh->mNumBones > 0)
+				{
+					submesh.IsRigged = true;
+					for (uint32_t i = 0; i < mesh->mNumBones; i++)
+					{
+						aiBone* bone = mesh->mBones[i];
+						bool hasNonZeroWeight = false;
+						for (size_t j = 0; j < bone->mNumWeights; j++)
+						{
+							if (bone->mWeights[j].mWeight > 0.000001f)
+							{
+								hasNonZeroWeight = true;
+							}
+						}
+						if (!hasNonZeroWeight)
+							continue;
+
+						// Find bone in skeleton
+						uint32_t boneIndex = meshSource->m_Skeleton->GetBoneIndex(bone->mName.C_Str());
+						if (boneIndex == SkeletonData::NullIndex)
+						{
+							PF_ENGINE_ERROR("Animation Could not find mesh bone '{}' in skeleton!", bone->mName.C_Str());
+						}
+
+						uint32_t boneInfoIndex = ~0;
+						for (size_t j = 0; j < meshSource->m_BoneInfo.size(); ++j)
+						{
+							// note: Same bone could influence different submeshes (and each will have different transforms in the bind pose).
+							//       Hence the need to differentiate on submesh index here.
+							if ((meshSource->m_BoneInfo[j].BoneIndex == boneIndex) && (meshSource->m_BoneInfo[j].SubMeshIndex == m))
+							{
+								boneInfoIndex = static_cast<uint32_t>(j);
+								break;
+							}
+						}
+						if (boneInfoIndex == ~0)
+						{
+							boneInfoIndex = static_cast<uint32_t>(meshSource->m_BoneInfo.size());
+							meshSource->m_BoneInfo.emplace_back(glm::inverse(submesh.Transform), Utils::Mat4FromAIMatrix4x4(bone->mOffsetMatrix), m, boneIndex);
+						}
+
+						for (size_t j = 0; j < bone->mNumWeights; j++)
+						{
+							int VertexID = submesh.BaseVertex + bone->mWeights[j].mVertexId;
+							float Weight = bone->mWeights[j].mWeight;
+							meshSource->m_BoneInfluences[VertexID].AddBoneData(boneInfoIndex, Weight);
+						}
+					}
+				}
+			}
+
+			for (auto& boneInfluence : meshSource->m_BoneInfluences)
+			{
+				boneInfluence.NormalizeWeights();
+			}
+		}
+
+		if (meshSource->HasSkeleton())
+		{
+			meshSource->m_BoneInfluenceBuffer = VertexBuffer::Create(meshSource->m_BoneInfluences.data(), (uint32_t)(meshSource->m_BoneInfluences.size() * sizeof(BoneInfluence)));
+			Count<MeshSource> instance = meshSource;
+			Renderer::Submit([instance]() mutable
+				{
+					instance->m_BoneInfluences.clear();
+				});
+		}
+
+		return meshSource;
     }
 
 	void MeshImporter::UpdateMeshSourceAssetCustomSettings(Count<class MeshSource> meshSource)
@@ -780,5 +863,108 @@ namespace Proof
 		AssetManager::SaveAssetManager();
 	}
     
+	bool MeshImporter::ImportSkeleton(Special<SkeletonData>& skeleton)
+	{
+		Assimp::Importer importer;
+		importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+
+		const aiScene* scene = importer.ReadFile(m_Path.string(), s_MeshImportFlags);
+		if (!scene)
+		{
+			PF_ENGINE_ERROR("Mesh Failed to load mesh file: {0}", m_Path.string());
+			return false;
+		}
+
+		skeleton = AnimationImporter::ImportSkeleton(scene);
+		return true;
+	}
+
+	bool MeshImporter::ImportAnimations(const uint32_t animationIndex, const SkeletonData& skeleton, std::vector<Special<AnimationData>>& animations)
+	{
+		Assimp::Importer importer;
+		importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+
+		const aiScene* scene = importer.ReadFile(m_Path.string(), s_MeshImportFlags);
+		if (!scene)
+		{
+			PF_ENGINE_ERROR("Mesh Failed to load mesh file: {0}", m_Path.string());
+			return false;
+		}
+
+		const auto animationNames = AnimationImporter::GetAnimationNames(scene);
+		// m_Animations.reserve(std::size(animationNames));
+		for (const auto& animationName : animationNames)
+		{
+			animations.emplace_back(AnimationImporter::ImportAnimation(scene, animationName, skeleton));
+		}
+
+		return true;
+	}
+
+	bool MeshImporter::IsCompatibleSkeleton(const uint32_t animationIndex, const SkeletonData& skeleton)
+	{
+		Assimp::Importer importer;
+		importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+
+		const aiScene* scene = importer.ReadFile(m_Path.string(), s_MeshImportFlags);
+		if (!scene)
+		{
+			PF_ENGINE_ERROR("Mesh Failed to load mesh file: {0}", m_Path.string());
+			return false;
+		}
+
+		if (scene->mNumAnimations <= animationIndex)
+		{
+			return false;
+		}
+
+		const auto animationNames = AnimationImporter::GetAnimationNames(scene);
+		if (animationNames.empty())
+		{
+			return false;
+		}
+
+		const aiAnimation* anim = scene->mAnimations[animationIndex];
+
+		std::unordered_map<std::string_view, uint32_t> boneIndices;
+		for (uint32_t i = 0; i < skeleton.GetNumBones(); ++i)
+		{
+			boneIndices.emplace(skeleton.GetBoneName(i), i);
+		}
+
+		std::set<std::tuple<uint32_t, aiNodeAnim*>> validChannels;
+		for (uint32_t channelIndex = 0; channelIndex < anim->mNumChannels; ++channelIndex)
+		{
+			aiNodeAnim* nodeAnim = anim->mChannels[channelIndex];
+			auto it = boneIndices.find(nodeAnim->mNodeName.C_Str());
+			if (it != boneIndices.end())
+			{
+				validChannels.emplace(it->second, nodeAnim);
+			}
+		}
+
+		// Deciding whether an animation is "valid" for a given skeleton presents challenges.
+		// Some animations may lack channels for all bones, while others may have channels unrelated to bones.
+		// Therefore, counting valid channels against the total bone count isn't straightforward,
+		// nor is checking for the absence of invalid channels.
+		// As a basic criterion, we require animations to have at least one valid channel for now.
+		return validChannels.size() > 0;
+	}
+
+	uint32_t MeshImporter::GetAnimationCount()
+	{
+		Assimp::Importer importer;
+		importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
+
+		const aiScene* scene = importer.ReadFile(m_Path.string(), s_MeshImportFlags);
+		if (!scene)
+		{
+			PF_ENGINE_ERROR("Mesh Failed to load mesh file: {0}", m_Path.string());
+			return false;
+		}
+
+		return (uint32_t)scene->mNumAnimations;
+	}
+
 }
 

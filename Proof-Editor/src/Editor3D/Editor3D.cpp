@@ -1,5 +1,4 @@
 #include "Editor3D.h"
-#include "Proof/ProofCore.h"
 #include "Proof/Core/Profile.h"
 #include "Proof/Core/Application.h"
 #include "Proof/Core/Timer.h"
@@ -34,6 +33,7 @@
 #include "Proof/Utils/StringUtils.h"
 #include "Proof/Physics/MeshCollider.h"
 #include "Proof/Physics/PhysicsMeshCooker.h"
+#include "Proof/Events/MouseEvent.h"
 
 #include "Proof/ImGui/UI.h"
 #include "Proof/ImGui/UiUtilities.h"
@@ -2004,6 +2004,8 @@ namespace Proof
 			{
 				static bool dynamicMesh = false;
 				static bool doGenerateColliders = true;
+				static bool doImportSkeleton = false;
+				static bool doImportAnimations = false;
 
 				UI::AttributeBool("Dynamic", dynamicMesh);
 				UI::AttributeBool("Generate Colliders", doGenerateColliders, "Controls whether physics components (collider and rigid body) will be added to the newly created entity.");
@@ -2017,8 +2019,6 @@ namespace Proof
 				ImGui::Separator();
 				ImGui::Text(Project::GetActive()->GetProjectDirectory().filename().string().c_str());
 				UI::AttributeInputText("MeshPath", s_EditorData->CreateNewMeshPopupData.CreateMeshFilenameBuffer);
-
-				
 
 				PF_CORE_ASSERT(s_EditorData->CreateNewMeshPopupData.MeshToCreate);
 				if (ImGui::Button("Create"))

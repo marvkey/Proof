@@ -47,7 +47,7 @@ World:
       MeshComponent:
         MeshAssetPointerID: 18141853162402936448
       MeshColliderComponent:
-        ColliderID: 13700586514428299909
+        ColliderID: 17134862841721203919
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0
@@ -188,7 +188,7 @@ World:
       MeshComponent:
         MeshAssetPointerID: 18348114341737718825
       MeshColliderComponent:
-        ColliderID: 11961033050712892428
+        ColliderID: 3086604132722127563
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0
@@ -304,3 +304,14 @@ World:
           - Material: ""
             AssetID: 3416512967418026386
             Index: 0
+    - Entity: 13342883110387323728
+      TagComponent:
+        Tag: Empty Entity
+        tags: []
+      TransformComponent:
+        Location: [-4.69999981, 1.79999995, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []

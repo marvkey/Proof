@@ -5,7 +5,7 @@ ScriptImportSettings:
       Fields:
         - NameID: Driftwood.PlayerInput.MoveSideWaysAction
           Type: InputAction
-          Data: 0
+          Data: 12371603639197638862
     - Script: Driftwood.PlayerMovement
       ScriptName: Driftwood.PlayerMovement
       Fields:

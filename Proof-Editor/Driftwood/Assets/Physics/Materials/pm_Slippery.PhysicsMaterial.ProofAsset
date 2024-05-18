@@ -1,0 +1,7 @@
+AssetType: PhysicsMaterial
+ID: 16430391847963516997
+StaticFriction: 0.100000001
+DynamicFriction: 0.100000001
+Bounciness: 0
+FrictionCombineMode: Average
+BouncinessCombineMode: Average

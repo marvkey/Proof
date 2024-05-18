@@ -200,6 +200,9 @@ Assets:
   - Asset: 5183635011300566460
     Type: DynamicMesh
     Path: Mesh\DynamicSponza.DynamicMesh.ProofAsset
+  - Asset: 16875048218906842155
+    Type: Texture
+    Path: Models\vampire\textures\Vampire_specular.png
   - Asset: 15621592644097797435
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7441062115984513793.jpg
@@ -695,6 +698,9 @@ Assets:
   - Asset: 1252463621879868190
     Type: Material
     Path: MeshResources\SponzaObj\fabric_d.Material.ProofAsset
+  - Asset: 12205783108969511215
+    Type: MeshSourceFile
+    Path: Models\vampire\dancing_vampire.dae
   - Asset: 15050938010388068018
     Type: Material
     Path: MeshResources\SponzaObj\chain.Material.ProofAsset
@@ -734,6 +740,9 @@ Assets:
   - Asset: 6251865446451785011
     Type: Material
     Path: MeshResources\SponzaObj\floor.Material.ProofAsset
+  - Asset: 10375399984759617434
+    Type: Texture
+    Path: Models\vampire\textures\Vampire_normal.png
   - Asset: 12893472187013232821
     Type: Material
     Path: MeshResources\SponzaObj\roof.Material.ProofAsset
@@ -758,6 +767,9 @@ Assets:
   - Asset: 2590303111819537873
     Type: Mesh
     Path: Mesh\TestSponza.Mesh.ProofAsset
-  - Asset: 15270278629400749258
-    Type: Material
-    Path: Materials\Sponza UnnamedMaterial.Material.ProofAsset
+  - Asset: 5013333249053124386
+    Type: Texture
+    Path: Models\vampire\textures\Vampire_emission.png
+  - Asset: 17060776473028672473
+    Type: Texture
+    Path: Models\vampire\textures\Vampire_diffuse.png

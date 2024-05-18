@@ -220,6 +220,10 @@ namespace Proof{
 		template<class U>
 		inline constexpr bool Is() const;
 
+		size_t GetMemoryAddress() const
+		{
+			return size_t(Get());
+		}
 	private:
 		T* m_Ptr = nullptr;
 

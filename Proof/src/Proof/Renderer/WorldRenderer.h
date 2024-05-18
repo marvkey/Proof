@@ -107,13 +107,13 @@ namespace Proof
 		std::vector<TransformVertexData> Transforms;
 		uint32_t TransformOffset = 0;
 	};
-	
+
 	struct WorldRendererTimers
 	{
 		//set passes
 		float SetPasses = 0.0f;
 
-		float ShadowPass= 0.0f;
+		float ShadowPass = 0.0f;
 
 		float PreDepthPass = 0.0f;
 
@@ -127,7 +127,7 @@ namespace Proof
 		float LightCalculateGridFrustum = 0.0f;
 		float LightCulling = 0.0f;
 		//composite
-		float CompositePass =0.0f;
+		float CompositePass = 0.0f;
 		float DrawPhysicsColliders = 0.0f;
 
 		// totla render time
@@ -139,7 +139,7 @@ namespace Proof
 		WorldRendererTimers Timers;
 		UBLightScene LightSene;
 	};
-	
+
 
 
 	class RenderPass;
@@ -169,17 +169,19 @@ namespace Proof
 		void SubmitDirectionalLight(const SBDirectionalLightsSceneData& directionaLights);
 		void SubmitPointLight(const SBPointLightSceneData& pointLights);
 		void SubmitSpotLight(const SBSpotLightSceneData& spotLights);
+		void SubmitWaterMesh(Count<Mesh> mesh, Count<RenderMaterial> renderMaterial, const glm::mat4& transform, bool CastShadowws = true);
+		void SubmitMesh(Count<Mesh> mesh, Count<RenderMaterial> renderMaterial, const glm::mat4& transform, bool CastShadowws = true);
 		void SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws = true);
-		void SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<MaterialTable> materialTable, uint32_t subMeshIndex,const glm::mat4& transform, bool CastShadowws = true);
+		void SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<MaterialTable> materialTable, uint32_t subMeshIndex, const glm::mat4& transform, bool CastShadowws = true);
 
 		void SubmitPhysicsDebugMesh(Count<Mesh> mesh, const glm::mat4& transform);
-		void SubmitPhysicsDynamicDebugMesh(Count<DynamicMesh> mesh, uint32_t subMeshIndex,const glm::mat4& transform);
+		void SubmitPhysicsDynamicDebugMesh(Count<DynamicMesh> mesh, uint32_t subMeshIndex, const glm::mat4& transform);
 		// if the same size is passed it will not resize
 		void SetViewportSize(uint32_t width, uint32_t height);
 
 		Count<Image2D> GetFinalPassImage();
 		Count<Image2D> GetShadowPassDebugImage();
-		
+
 		//external can use this to drw to
 		Count<FrameBuffer> GetExternalCompositePassFrameBuffer() { return m_ExternalCompositeFrameBuffer; }
 		Count<class Renderer2D> GetRenderer2D() { return m_Renderer2D; }
@@ -227,7 +229,7 @@ namespace Proof
 		Count<StorageBufferSet> m_SBDirectionalLightsBuffer;
 		Count<StorageBufferSet> m_SBPointLightsBuffer;
 		Count<StorageBufferSet> m_SBSpotLightsBuffer;
-		
+
 		Count<class GlobalBufferSet> m_GlobalInputs;
 		// mesh data
 		std::vector< TransformBuffer>  m_SubmeshTransformBuffers; // vector because of frame in flight
@@ -265,12 +267,17 @@ namespace Proof
 		std::map<MeshKey, MeshDrawInfo> m_ColliderDrawList;
 		std::map<MeshKey, DynamicMeshDrawInfo> m_DynamicColliderDrawList;
 
+
+		Count<RenderPass> m_WaterPass;
+		std::map<MeshKey, MeshDrawInfo> m_WaterMeshDrawList;
+		std::unordered_map<std::string,std::map<MeshKey, MeshDrawInfo>> m_GeometryPassInstancesDrawList; // shaderName
+
 		Count<class Environment> m_Environment;
 		bool m_InContext = false;
 		uint32_t m_ShadowMapResolution;
 		// geometry pass
 		Count<RenderPass> m_GeometryPass;
-
+		std::unordered_map<std::string, Count<RenderPass>> m_GeometryPassInstances;
 		// pre pass
 		Count<RenderPass> m_PreDepthPass;
 		Count<class Image2D> m_PrevDepthImage;
@@ -296,7 +303,7 @@ namespace Proof
 		Count<StorageBufferSet> m_SBSSAOSampleKernalBuffer;
 
 		Count<RenderPass> m_AmbientOcclusionCompositePass;
-		
+
 		bool m_NeedResize = false;
 
 		DirectionalLight m_MainDirectionllLight;
@@ -382,7 +389,7 @@ namespace Proof
 			Count<Image2D> BlueNoiseImage;
 			Count<Texture2D> HierarchalDepthDownSamplerTexture;
 			Count<class GlobalBufferSet> GlobalBuffer;
-			struct RayCounterData			
+			struct RayCounterData
 			{
 				uint32_t RayCount;
 				uint32_t DenoiseTileCount;
@@ -412,10 +419,12 @@ namespace Proof
 		bool m_ResourcesCreatedGPU = false;
 		bool m_ResourcesCreated = false;
 	private:
+
+		Count<RenderPass> CreateGeometryPassInstance(const std::string& shaderName);
 		void Init();
 		void CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection);
 		void CalculateCascadesManualSplit(CascadeData* cascades, const glm::vec3& lightDirection);
-		
+
 		// set up all the passes for current render
 		void SetPasses();
 		void ShadowPass();
@@ -443,18 +452,20 @@ namespace Proof
 		// tehse are static so basically when wer are writng code we avoid errors of 
 		// writing code to a speicif world rendere class
 
-		static void RenderMesh(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset,  uint32_t instanceCount, const Buffer& pushData = Buffer(), const std::string& pushName = "");
-		static void RenderDynamicMesh(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset,  uint32_t instanceCount, const Buffer& pushData = Buffer(), const std::string& pushName ="");
+		static void RenderMesh(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount, const Buffer& pushData = Buffer(), const std::string& pushName = "");
+		static void RenderDynamicMesh(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount, const Buffer& pushData = Buffer(), const std::string& pushName = "");
 
 		static void RenderMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount);
-		static void RenderDynamicMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex,uint32_t transformOffset, uint32_t instanceCount);
-		
-		static void RenderMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer,Count<Mesh>&mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass , Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount);
+		static void RenderDynamicMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount);
+
+		static void RenderMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount);
 		static void RenderDynamicMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount);
 		friend class Editore3D;
 		friend class WorldRendererPanel;
 		friend class ViewPortEditorWorkspace;
-	};	
+	};
 }
+
+
 
 

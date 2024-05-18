@@ -17,6 +17,10 @@
 #include "Proof/Renderer/Buffer.h"
 #include "Proof/Utils/ContainerUtils.h"
 #include "Proof/Asset/AssetManager.h"
+#include "Proof/Asset/MeshImpoter.h"
+
+#include "Proof/Animation/Skeleton.h"
+#include "Proof/Animation/Animation.h"
 namespace Proof
 {
     static glm::mat4 AIMatrixToGLM(const aiMatrix4x4& aiMatrix) 
@@ -277,6 +281,73 @@ namespace Proof
         if (!m_Indices.empty())
             return m_Indices;
         return m_IndexBuffer->GetDataAs<Index>();
+    }
+    // TODO (0x): this is temporary.. and will eventually be replaced with some kind of skeleton retargeting
+    bool MeshSource::IsCompatibleSkeleton(const uint32_t animationIndex, const SkeletonData& skeleton) const
+    {
+        if (!m_Skeleton)
+        {
+            PF_CORE_ASSERT(!m_Runtime);
+            if (AssetManager::HasAsset(GetID()))
+            {
+                auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(GetID()).Path);
+                MeshImporter importer(path);
+                return importer.IsCompatibleSkeleton(animationIndex, skeleton);
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return m_Skeleton->GetBoneNames() == skeleton.GetBoneNames();
+    }
+
+    uint32_t MeshSource::GetAnimationCount() const
+    {
+        if (m_Runtime)
+            return (uint32_t)m_Animations.size();
+        if (AssetManager::HasAsset(GetID()))
+        {
+            auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(GetID()).Path);
+            MeshImporter importer(path);
+            return importer.GetAnimationCount();
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    const AnimationData& MeshSource::GetAnimation(const uint32_t animationIndex, const SkeletonData& skeleton) const
+    {
+        if (!m_Skeleton)
+        {
+            PF_CORE_ASSERT(!m_Runtime);
+            if (AssetManager::HasAsset(GetID()))
+            {
+                auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(GetID()).Path);
+                MeshImporter importer(path);
+                m_Skeleton = CreateSpecial<SkeletonData>(skeleton);
+                importer.ImportAnimations(animationIndex, *m_Skeleton, m_Animations);
+
+            }
+
+        }
+
+        PF_CORE_ASSERT(animationIndex < m_Animations.size(), "Animation index out of range!");
+        PF_CORE_ASSERT(m_Animations[animationIndex], "Attempted to access null animation!");
+        return *m_Animations[animationIndex];
+    }
+
+    std::vector<BoneInfluence> MeshSource::GetBoneInfluences() const
+    {
+        if (!m_BoneInfluences.empty())
+            return m_BoneInfluences;
+
+        if (m_BoneInfluenceBuffer == nullptr )
+            return std::vector<BoneInfluence>();
+
+        return m_BoneInfluenceBuffer->GetDataAs<BoneInfluence>();
     }
 
     Mesh::Mesh(Count<MeshSource> meshSource,const std::vector<uint32_t>& submeshes)

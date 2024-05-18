@@ -375,28 +375,11 @@ namespace Proof
 		{
 			if (AssetManager::HasAsset(it.path()))continue;
 			std::string extension = it.path().extension().string();
-			if (Utils::MeshHasFormat(extension)) 
+			
+			auto assetType = Utils::GetAssetTypeFromExtension(extension);
+			if (Utils::IsAssetSource(assetType))
 			{
-				NewAssetSource(it.path(),AssetType::MeshSourceFile);
-				continue;
-			}
-
-			if (Utils::TextureHasFormat(extension))
-			{
-				NewAssetSource(it.path(), AssetType::Texture);
-				continue;
-			}
-
-			if (Utils::FontHasFormat(extension))
-			{
-				NewAssetSource(it.path(), AssetType::Font);
-				continue;
-			}
-
-			if (Utils::AudioHasFormat(extension))
-			{
-				NewAssetSource(it.path(), AssetType::Audio);
-				continue;
+				NewAssetSource(it.path(), assetType);
 			}
 		}
 	}
@@ -424,7 +407,7 @@ namespace Proof
 
 	bool AssetManager::HasAsset(const std::filesystem::path& path)
 	{
-		auto changepath  = AssetManager::GetAssetFileSystemPathRelative(path);
+		auto changepath = AssetManager::GetAssetFileSystemPathRelative(path);
 		return s_AssetManagerData->AssetPath.contains(changepath.string());
 	}
 	

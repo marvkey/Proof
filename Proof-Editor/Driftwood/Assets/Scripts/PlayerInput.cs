@@ -13,23 +13,23 @@ namespace Driftwood
 		// is instantiated in the world at runtime
 		void OnCreate()
 		{
-            m_PlayerInputComponent = GetComponent<PlayerInputComponent>();
-            if (m_PlayerInputComponent == null)
+			m_PlayerInputComponent = GetComponent<PlayerInputComponent>();	
+			if(m_PlayerInputComponent ==null)
 			{
 				Log.Error($"{Name} PlayerInput Script needs a PlayerInputComponent");
 				return;
 			}
 
-			if(MoveSideWaysAction  != null)
+			if(MoveSideWaysAction != null)
 			{
 				m_PlayerInputComponent.BindAction(MoveSideWaysAction, InteractionEvent.Triggered, MoveSideWays);
 			}
-            m_PlayerMovement = this.As<PlayerMovement>();
 
-        }
+			m_PlayerMovement = this.As<PlayerMovement>();
+		}
 
-        // OnUpdate is called once every frame while this script is active in the world
-        void OnUpdate(float deltaTime)
+		// OnUpdate is called once every frame while this script is active in the world
+		void OnUpdate(float deltaTime)
 		{
 		}
 
@@ -41,5 +41,4 @@ namespace Driftwood
 			}
 		}
 	}
-
 }

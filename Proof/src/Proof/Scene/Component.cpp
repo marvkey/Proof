@@ -1,16 +1,12 @@
 #include "Proofprch.h"
 #include "Component.h"
 #include "Mesh.h"
-#include "Entity.h"
-#include "EntitiyComponentSystem/ECS.h"
 #include "World.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Material.h"
 #include "script.h"
 #include "Component.h"
 #include "Mesh.h"
-#include "Entity.h"
-#include "EntitiyComponentSystem/ECS.h"
 #include "World.h"
 #include "Material.h"
 #include "script.h"
@@ -22,6 +18,7 @@
 #include "Proof/Physics/PhysicsMaterial.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
+#include "Proof/Scene/WaterSystem/WaterSystem.h"
 namespace Proof
 {
 
@@ -207,6 +204,17 @@ namespace Proof
 	{
 		if (other.HudTable)
 			HudTable = Count<UITable>::Create(other.HudTable->Generate());
+	}
+
+	WaterComponent::WaterComponent()
+	{
+		WaterSystem = Count<class WaterSystem>::Create();
+	}
+
+	WaterComponent::WaterComponent(const WaterComponent& other)
+	{
+		WaterSystem = Count<class WaterSystem>::Create(other.WaterSystem);
+
 	}
 
 }

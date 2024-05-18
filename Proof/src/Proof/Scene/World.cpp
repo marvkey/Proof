@@ -30,6 +30,8 @@
 #include "Proof/Input/ElevatedInputSystem/InputAction.h"
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 
+#include "WaterSystem/WaterSystem.h"
+
 #include "Proof/Scripting/ScriptWorld.h"
 #include <glm/gtx/euler_angles.hpp>
 namespace Proof {
@@ -72,6 +74,21 @@ namespace Proof {
 							handler->Update(DeltaTime,GlmVecToProof( GetWorldSpaceLocation(wfadfas)));
 					}
 				}
+			}
+		}
+
+		{
+
+			auto group = m_Registry.group<WaterComponent>(entt::get<TransformComponent>);
+			for (auto entity : group)
+			{
+				auto [transformComponent, waterComponent] = group.get<TransformComponent, WaterComponent>(entity);
+
+
+				Entity e = Entity(entity, this);
+				glm::mat4 transform = GetWorldSpaceTransform(e);
+
+				waterComponent.WaterSystem->Update(DeltaTime);
 			}
 		}
 	}
@@ -278,6 +295,21 @@ namespace Proof {
 						worldRenderer->SubmitDynamicMesh(mesh, dynamicMeshComponent.MaterialTable, dynamicMeshComponent.GetSubMeshIndex(), transform, dynamicMeshComponent.CastShadow);
 					}
 				}
+			}
+		}
+
+		// render water
+		{
+			auto group = m_Registry.group<WaterComponent>(entt::get<TransformComponent>);
+			for (auto entity : group)
+			{
+				auto [transformComponent, waterComponent] = group.get<TransformComponent, WaterComponent>(entity);
+
+
+				Entity e = Entity(entity, this);
+				glm::mat4 transform = GetWorldSpaceTransform(e);
+
+				waterComponent.WaterSystem->Render(worldRenderer,transform);
 			}
 		}
 		RenderPhysicsDebug(worldRenderer, false);

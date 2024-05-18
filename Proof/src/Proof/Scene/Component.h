@@ -714,6 +714,13 @@ namespace Proof
 		AudioListenerComponent() = default;
 		AudioListenerComponent(const AudioListenerComponent& other) = default;
 	};
+	
+	struct WaterComponent
+	{
+		WaterComponent();
+		WaterComponent(const WaterComponent& other);
+		Count< class WaterSystem> WaterSystem;
+	};
 	template<class ... Component>
 	struct ComponentGroup {
 
@@ -722,7 +729,8 @@ namespace Proof
 		ComponentGroup<IDComponent, TagComponent, HierarchyComponent, TransformComponent, PrefabComponent,
 		MeshComponent,DynamicMeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent, CharacterControllerComponent, RigidBodyComponent,
 		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,
-		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent, AudioListenerComponent>;
+		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent, AudioListenerComponent,
+		WaterComponent>;
 	
 
 	using LightComponnet =ComponentGroup<SkyLightComponent, DirectionalLightComponent, PointLightComponent, SpotLightComponent>;

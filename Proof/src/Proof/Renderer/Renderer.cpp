@@ -184,7 +184,10 @@ namespace Proof {
 		ShaderLibrary->LoadShader("Line2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Line2D.glsl");
 		ShaderLibrary->LoadShader("Circle2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Circle2D.glsl");
 
-		
+
+		// extra
+		ShaderLibrary->LoadShader("WaterSystem", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/WaterSystem.glsl");
+
 		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
 		SamplerFactory::Init();

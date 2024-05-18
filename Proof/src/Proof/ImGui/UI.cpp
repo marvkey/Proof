@@ -11,6 +11,7 @@
 #include "Proof/Utils/StringUtils.h"
 #include "UIWidgets.h"
 #include "UIHandlers.h"
+#include "Proof/Scene/Entity.h"
 #include <misc/cpp/imgui_stdlib.h>
 //https://github.com/InCloudsBelly/X2_RenderingEngine/blob/e7c349b70bd95af3ab673556cdb56cb2cc40b48e/Engine/X2/ImGui/ImGuiUtilities.h#L285
 // have 

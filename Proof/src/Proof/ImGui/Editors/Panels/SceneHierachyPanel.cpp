@@ -13,6 +13,7 @@
 #include "Proof/Project/Project.h"
 //#include "ContentBrowserPanel.h"
 #include <vector>
+#include "Proof/Scene/WaterSystem/WaterSystem.h"
 #include "Proof/Scene/ExampleSccripts.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Scene/Script.h"
@@ -38,7 +39,6 @@
 //include those before stdlig.h
 
 #include "misc/cpp/imgui_stdlib.h"
-#include "Proof/ProofCore.h"
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scripting/ScriptWorld.h"
 #include "Proof/ImGui/UiUtilities.h"
@@ -46,12 +46,12 @@
 
 namespace Proof
 {
-	#define SET_FEILD_DEFAULT(FieldType, Type)           \
+#define SET_FEILD_DEFAULT(FieldType, Type)           \
 			case ScriptFieldType::FieldType:          \
 				scriptInstance.SetValue<Type>(entityClass->GetFieldDefaultValue<Type>(fieldName));  \
 				break
 
-	#define SET_FIELD_NUMERICAL_VALUE(FieldType, Type, name, ImguiDataType)           \
+#define SET_FIELD_NUMERICAL_VALUE(FieldType, Type, name, ImguiDataType)           \
 			case ScriptFieldType::FieldType:          \
 			{												\
 				Type data = scriptField.GetValue<Type>();	\
@@ -62,7 +62,7 @@ namespace Proof
 				break;							\
 			}
 
-	#define Set_FIELD_ENUM_NUMERICAL_VALUE(FieldType,Type) \
+#define Set_FIELD_ENUM_NUMERICAL_VALUE(FieldType,Type) \
 			case ScriptFieldType::FieldType:          \
 			{																													\
 				UI::ScopedID id(fmt::format("{}{}", field.Name.c_str(), sizeof(Type)).c_str());									\
@@ -103,7 +103,7 @@ namespace Proof
 
 
 
-	#define SET_FIELD_NUMERICAL_VALUE_RUNTIME(FieldType, Type, name, ImguiDataType)           \
+#define SET_FIELD_NUMERICAL_VALUE_RUNTIME(FieldType, Type, name, ImguiDataType)           \
 			case ScriptFieldType::FieldType:          \
 			{												\
 				Type data = instance->GetFieldValue<Type>(name);	\
@@ -114,7 +114,7 @@ namespace Proof
 				break;							\
 			}	
 
-	#define Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(FieldType, Type)                    \
+#define Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(FieldType, Type)                    \
     case ScriptFieldType::FieldType:                                              \
     {                                                                             \
         UI::ScopedID id(fmt::format("{}{}", field.Name.c_str(), sizeof(Type)).c_str()); \
@@ -152,7 +152,7 @@ namespace Proof
         instance->SetFieldValue<Type>(name, currentSelectValue);                   \
         break;                                                                    \
     }
-	#define DEFAULT_MESH_SET(Type) \
+#define DEFAULT_MESH_SET(Type) \
 		if (ImGui::MenuItem(#Type))\
 		{\
 			newEntity = m_ActiveWorld->CreateEntity(#Type);\
@@ -169,7 +169,7 @@ namespace Proof
 		}
 	};
 
-	template<class T,class UIFunction>
+	template<class T, class UIFunction>
 	static void AddComponentGuiButton(Entity entity, const std::string& name, UIFunction function) {
 		if (ImGui::MenuItem(name.c_str()))
 		{
@@ -178,11 +178,11 @@ namespace Proof
 			ImGui::CloseCurrentPopup();
 		}
 	};
-	SceneHierachyPanel::SceneHierachyPanel(bool IsWorld , UUID prefabID)
+	SceneHierachyPanel::SceneHierachyPanel(bool IsWorld, UUID prefabID)
 		:
 		m_IsWorld(IsWorld), m_PrefabID(prefabID)
 	{
-		
+
 	}
 	void SceneHierachyPanel::OnImGuiRender(const char* dsiplayName, bool& isOpen) {
 
@@ -208,24 +208,24 @@ namespace Proof
 				CreateEntityMenu();
 				ImGui::EndPopup();
 			}
-			
+
 			{
 				m_WindowHoveredorFocus = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
 
-				for (auto [id,entity] : m_ActiveWorld->GetEntities())
+				for (auto [id, entity] : m_ActiveWorld->GetEntities())
 				{
 					if (entity.HasParent() == false)
 						DrawEntityNode(entity);
 				}
 
-				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false) 
+				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false)
 				{
 					if (m_IsWorld)
 						SelectionManager::DeselectAll();
 					else
 						AssetSelectionManager::DeselectAll(AssetSelectionContext::Prefab, m_PrefabID);
 				}
-			
+
 			}
 			ImGui::EndChild();
 			if (ImGui::BeginDragDropTarget()) {
@@ -296,15 +296,15 @@ namespace Proof
 				newEntity = m_ActiveWorld->CreateEntity("Sky Light");
 				newEntity.AddComponent<SkyLightComponent>();
 				//https://github.com/TKscoot/Ivy/blob/master/projects/Ivy/source/scene/renderpasses/skymodels/HosekWilkieSkyModel.cpp#L66
-				newEntity.GetComponent<TransformComponent>().SetRotationEuler(glm::radians(glm::vec3(2, 1,0)));
+				newEntity.GetComponent<TransformComponent>().SetRotationEuler(glm::radians(glm::vec3(2, 1, 0)));
 			}
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Mesh")) 
+		if (ImGui::BeginMenu("Mesh"))
 		{
 			if (ImGui::MenuItem("Cube"))
 			{
-				newEntity = m_ActiveWorld->CreateEntity("Cube"); 
+				newEntity = m_ActiveWorld->CreateEntity("Cube");
 				newEntity.AddComponent<MeshComponent>().SetMesh(AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Cube)->GetID());
 				newEntity.AddComponent<BoxColliderComponent>();
 				newEntity.AddComponent<RigidBodyComponent>();
@@ -330,7 +330,7 @@ namespace Proof
 			DEFAULT_MESH_SET(Cone);
 			DEFAULT_MESH_SET(Torus);
 			DEFAULT_MESH_SET(Plane);
-			
+
 			if (ImGui::MenuItem("Empty Mesh"))
 			{
 				newEntity = m_ActiveWorld->CreateEntity("Mesh");
@@ -356,11 +356,11 @@ namespace Proof
 		//	entity.GetComponent<TransformComponent>().GetRotationEuler().y, entity.GetComponent<TransformComponent>().GetRotationEuler().z);
 
 		ImGui::PushID(entity.GetUUID());
-		ImGuiTreeNodeFlags flags;	
-		if(m_IsWorld)
-			flags= ((SelectionManager::IsSelected(SelectionContext::Scene, entity.GetUUID()) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow);
+		ImGuiTreeNodeFlags flags;
+		if (m_IsWorld)
+			flags = ((SelectionManager::IsSelected(SelectionContext::Scene, entity.GetUUID()) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow);
 		else
-			flags = ((AssetSelectionManager::IsSelected(AssetSelectionContext::Prefab,m_PrefabID, entity.GetUUID()) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow);
+			flags = ((AssetSelectionManager::IsSelected(AssetSelectionContext::Prefab, m_PrefabID, entity.GetUUID()) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow);
 		if (entity.GetComponent<HierarchyComponent>().Children.empty()) {
 			flags |= ImGuiTreeNodeFlags_Leaf;//makes the tree not use an arrow
 		}
@@ -381,7 +381,7 @@ namespace Proof
 			ImGui::TreeNodeEx((void*)&(entity), ImGuiTreeNodeFlags_SpanFullWidth, tc.c_str());
 			ImGui::EndDragDropSource();
 		}
-		if ( ImGui::IsItemClicked() && ImGui::IsKeyDown((ImGuiKey)KeyBoardKey::E) ==false) 
+		if (ImGui::IsItemClicked() && ImGui::IsKeyDown((ImGuiKey)KeyBoardKey::E) == false)
 		{
 			if (m_IsWorld)
 			{
@@ -396,10 +396,10 @@ namespace Proof
 			}
 		}
 		//if (ImGui::BeginPopupContextItem()) {
-		if(ImGui::BeginPopupContextItem("Entity Settings")) {
+		if (ImGui::BeginPopupContextItem("Entity Settings")) {
 			ImGui::EndPopup();
 		}
-		if (ImGui::BeginPopup("Entity Settings")) 
+		if (ImGui::BeginPopup("Entity Settings"))
 		{
 
 			if (ImGui::BeginMenu("Child Entity")) {
@@ -474,7 +474,7 @@ namespace Proof
 					else
 					{
 						AssetSelectionManager::DeselectAll(AssetSelectionContext::Prefab, m_PrefabID);
-						AssetSelectionManager::Select(AssetSelectionContext::Prefab, m_PrefabID,newEntity.GetUUID());
+						AssetSelectionManager::Select(AssetSelectionContext::Prefab, m_PrefabID, newEntity.GetUUID());
 					}
 				}
 			}
@@ -558,7 +558,7 @@ namespace Proof
 		if (assetInfo.RuntimeAsset == false)
 			return;
 
-		if(ImGui::MenuItem("ConvertToDiskMaterial"))
+		if (ImGui::MenuItem("ConvertToDiskMaterial"))
 		{
 			UI::ShowMessageBox("ConvertMaterialToDisk", [id, assetInfo]()
 				{
@@ -643,6 +643,7 @@ namespace Proof
 			AddComponentGui<ParticleSystemComponent>(entity, "Particle System");
 
 			AddComponentGui<AudioComponent>(entity, "Audio");
+			AddComponentGui<WaterComponent>(entity, "Water");
 			ImGui::EndPopup();
 		}
 		DrawComponents<TagComponent>("Tag", entity, [](TagComponent& subTag) {
@@ -669,7 +670,7 @@ namespace Proof
 
 				iterate++;
 			}
-		});
+			});
 		DrawComponents<TransformComponent>("Transform", entity, [](auto& transformComp) {
 
 			DrawVectorControl("Location", transformComp.Location);
@@ -677,99 +678,99 @@ namespace Proof
 			DrawVectorControl("Rotation", rotationdeg);
 			transformComp.SetRotationEuler(glm::radians(rotationdeg));
 			DrawVectorControl("Scale", transformComp.Scale, 1.0f);
-		});
-		DrawComponents<MeshComponent>("Mesh", entity, [](MeshComponent& meshComp) 
-		{
-			UI::BeginPropertyGrid();
-
-			UI::PropertyAssetReferenceSettings assetRefSettings;
-			assetRefSettings.AssetMemoryTypes = UI::UIMemoryAssetTypes::Default;
-			AssetID id = meshComp.m_MeshID;
-
-			auto mesh = meshComp.GetMesh();
-			if (UI::AttributeAssetReference("Mesh", AssetType::Mesh, id, assetRefSettings))
+			});
+		DrawComponents<MeshComponent>("Mesh", entity, [](MeshComponent& meshComp)
 			{
-				if (id == 0)
-					meshComp.RemoveMesh();
-				else
-					meshComp.SetMesh(id);
-			}
-			UI::AttributeBool("Visible", meshComp.Visible);
+				UI::BeginPropertyGrid();
 
-			ImGui::Separator();
-			UI::EndPropertyGrid();
+				UI::PropertyAssetReferenceSettings assetRefSettings;
+				assetRefSettings.AssetMemoryTypes = UI::UIMemoryAssetTypes::Default;
+				AssetID id = meshComp.m_MeshID;
 
-			if (mesh)
-			{
-				UI::AttributeDrawMaterialTable(meshComp.MaterialTable, mesh->GetMaterialTable());
-			}
-		});
+				auto mesh = meshComp.GetMesh();
+				if (UI::AttributeAssetReference("Mesh", AssetType::Mesh, id, assetRefSettings))
+				{
+					if (id == 0)
+						meshComp.RemoveMesh();
+					else
+						meshComp.SetMesh(id);
+				}
+				UI::AttributeBool("Visible", meshComp.Visible);
+
+				ImGui::Separator();
+				UI::EndPropertyGrid();
+
+				if (mesh)
+				{
+					UI::AttributeDrawMaterialTable(meshComp.MaterialTable, mesh->GetMaterialTable());
+				}
+			});
 
 		DrawComponents<DynamicMeshComponent>("Dynamic Mesh", entity, [](DynamicMeshComponent& meshComp)
-		{
-
-			const uint32_t currentIndexMaterial = meshComp.GetSubMeshMaterialIndex();
-			auto mesh = meshComp.GetMesh();
-		
-			AssetID id = meshComp.m_MeshID;
-			UI::BeginPropertyGrid();
-
-			if (UI::AttributeAssetReference("Dynamic Mesh", AssetType::DynamicMesh, id))
 			{
-				if (id == 0)
-					meshComp.RemoveMesh();
-				else
-					meshComp.SetMesh(id);
-			}
-			if (mesh)
-			{
-				UI::AttributeBool("SubMeshIndexUseSlider", DynamicMeshUseSlider);
-				if (DynamicMeshUseSlider)
+
+				const uint32_t currentIndexMaterial = meshComp.GetSubMeshMaterialIndex();
+				auto mesh = meshComp.GetMesh();
+
+				AssetID id = meshComp.m_MeshID;
+				UI::BeginPropertyGrid();
+
+				if (UI::AttributeAssetReference("Dynamic Mesh", AssetType::DynamicMesh, id))
 				{
-					auto submeshIndex = meshComp.GetSubMeshIndex();
-					if (UI::AttributeDrag("SubMesh Index", submeshIndex, 1,0, (uint32_t)mesh->GetMeshSource()->GetSubMeshes().size() - 1))
-					{
-						meshComp.SetSubMeshIndex(submeshIndex);
-					}
+					if (id == 0)
+						meshComp.RemoveMesh();
+					else
+						meshComp.SetMesh(id);
 				}
-				else
+				if (mesh)
 				{
-					const SubMesh& currentSubMesh = mesh->GetMeshSource()->GetSubMeshes().at( meshComp.GetSubMeshIndex());
-
-					std::vector<std::string> subMeshes;
-					subMeshes.resize(mesh->GetSubMeshes().size());
-
-					for (auto& index : mesh->GetSubMeshes())
+					UI::AttributeBool("SubMeshIndexUseSlider", DynamicMeshUseSlider);
+					if (DynamicMeshUseSlider)
 					{
-						subMeshes[index] = mesh->GetMeshSource()->GetSubMeshes().at(index).Name;
+						auto submeshIndex = meshComp.GetSubMeshIndex();
+						if (UI::AttributeDrag("SubMesh Index", submeshIndex, 1, 0, (uint32_t)mesh->GetMeshSource()->GetSubMeshes().size() - 1))
+						{
+							meshComp.SetSubMeshIndex(submeshIndex);
+						}
 					}
-					auto [changed, currentSelectIndex,currentSelect] = UI::Combo("SubMesh", subMeshes, currentSubMesh.Name);
-					if (changed)
+					else
 					{
-						auto it = std::find(subMeshes.begin(), subMeshes.end(), currentSelect);
-						if (it != subMeshes.end())
-							meshComp.SetSubMeshIndex(std::distance(subMeshes.begin(), it)); // index
+						const SubMesh& currentSubMesh = mesh->GetMeshSource()->GetSubMeshes().at(meshComp.GetSubMeshIndex());
+
+						std::vector<std::string> subMeshes;
+						subMeshes.resize(mesh->GetSubMeshes().size());
+
+						for (auto& index : mesh->GetSubMeshes())
+						{
+							subMeshes[index] = mesh->GetMeshSource()->GetSubMeshes().at(index).Name;
+						}
+						auto [changed, currentSelectIndex, currentSelect] = UI::Combo("SubMesh", subMeshes, currentSubMesh.Name);
+						if (changed)
+						{
+							auto it = std::find(subMeshes.begin(), subMeshes.end(), currentSelect);
+							if (it != subMeshes.end())
+								meshComp.SetSubMeshIndex(std::distance(subMeshes.begin(), it)); // index
+						}
 					}
+
 				}
+				UI::AttributeBool("Visible", meshComp.Visible);
+				ImGui::Separator();
+				UI::EndPropertyGrid();
 
-			}
-			UI::AttributeBool("Visible", meshComp.Visible);
-			ImGui::Separator();
-			UI::EndPropertyGrid();
-
-			if (mesh)
-			{
-				UI::AttributeDrawMaterialTable(meshComp.MaterialTable, mesh->GetMaterialTable());
-			}
-		});
+				if (mesh)
+				{
+					UI::AttributeDrawMaterialTable(meshComp.MaterialTable, mesh->GetMaterialTable());
+				}
+			});
 		DrawComponents<SpriteComponent>({ "Sprite" }, entity, [](SpriteComponent& spriteComp) {
 
 			UI::BeginPropertyGrid();
 
 			if (spriteComp.Texture != nullptr)
-				UI::Image(spriteComp.Texture, {30,30});
-			else 
-				UI::Image(Renderer::GetWhiteTexture(), {30,30});
+				UI::Image(spriteComp.Texture, { 30,30 });
+			else
+				UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
 			if (ImGui::BeginPopupContextItem("RemoveTexture")) {
 				ImGui::EndPopup();
 			}
@@ -785,7 +786,7 @@ namespace Proof
 					uint64_t Data = *(const uint64_t*)payload->Data;
 					if (AssetManager::HasAsset(Data))
 					{
-						spriteComp.Texture =AssetManager::GetAsset<Texture2D>(Data);
+						spriteComp.Texture = AssetManager::GetAsset<Texture2D>(Data);
 					}
 				}
 				ImGui::EndDragDropTarget();
@@ -795,80 +796,80 @@ namespace Proof
 
 			UI::EndPropertyGrid();
 
-		});
+			});
 		DrawComponents<NativeScriptComponent>("Native Script", entity, [](NativeScriptComponent& NativeScriptComp) {
 			UI::AttributeTextBar("Sript", NativeScriptComp.GetScriptName());
-		});
-		DrawComponents<SkyLightComponent>("Sky Light", entity, [](SkyLightComponent& skylight) 
-		{
-
-			UI::BeginPropertyGrid();
-
-			Count<Environment> environment = skylight.Environment;
-
-			auto state = environment->GetEnvironmentState();
-			if (UI::EnumCombo("EnvironmentState", state))
+			});
+		DrawComponents<SkyLightComponent>("Sky Light", entity, [](SkyLightComponent& skylight)
 			{
-				switch (state)
+
+				UI::BeginPropertyGrid();
+
+				Count<Environment> environment = skylight.Environment;
+
+				auto state = environment->GetEnvironmentState();
+				if (UI::EnumCombo("EnvironmentState", state))
 				{
-				case Proof::EnvironmentState::HosekWilkie:
-					environment->Update(environment->GetHosekWilkieDataSkyData());
-					break;
-				case Proof::EnvironmentState::PreethamSky:
-					environment->Update(environment->GetPreethamSkyData());
-					break;
-				case Proof::EnvironmentState::EnvironmentTexture:
-					environment->Update(environment->GetTextureData());
-					break;
-				default:
-					break;
+					switch (state)
+					{
+						case Proof::EnvironmentState::HosekWilkie:
+							environment->Update(environment->GetHosekWilkieDataSkyData());
+							break;
+						case Proof::EnvironmentState::PreethamSky:
+							environment->Update(environment->GetPreethamSkyData());
+							break;
+						case Proof::EnvironmentState::EnvironmentTexture:
+							environment->Update(environment->GetTextureData());
+							break;
+						default:
+							break;
+					}
 				}
-			}
-			switch (environment->GetEnvironmentState())
-			{
-			case EnvironmentState::HosekWilkie:
+				switch (environment->GetEnvironmentState())
 				{
-					auto hosek = environment->GetHosekWilkieDataSkyData();
-					UI::EndPropertyGrid();
-					UI::AttributeText("Edit Rotation of Transform to change sun Position");
-					UI::BeginPropertyGrid();
+					case EnvironmentState::HosekWilkie:
+					{
+						auto hosek = environment->GetHosekWilkieDataSkyData();
+						UI::EndPropertyGrid();
+						UI::AttributeText("Edit Rotation of Transform to change sun Position");
+						UI::BeginPropertyGrid();
 
-					UI::AttributeSlider("Turbidity", hosek.Turbidity,2.f, 30.f);
-					UI::AttributeSlider("GroundReflectance", hosek.GroundReflectance,0, 1);
-					environment->Update(hosek);
+						UI::AttributeSlider("Turbidity", hosek.Turbidity, 2.f, 30.f);
+						UI::AttributeSlider("GroundReflectance", hosek.GroundReflectance, 0, 1);
+						environment->Update(hosek);
 
+					}
+					break;
+					case EnvironmentState::EnvironmentTexture:
+					{
+						auto environmentTexture = environment->GetTextureData();
+						UI::AttributeAssetReference("HDR Map", AssetType::Texture, environmentTexture.Image);
+						UI::AttributeSlider("SkyBoxLoad", skylight.SkyBoxLoad, 0, skylight.Environment->GetPrefilterMap()->GetMipLevelCount());
+						environment->Update(environmentTexture);
+					}
+					break;
+					case EnvironmentState::PreethamSky:
+					{
+						UI::EndPropertyGrid();
+						UI::AttributeText("Edit Rotation of Transform to change sun Position");
+						UI::BeginPropertyGrid();
+
+						auto pretham = environment->GetPreethamSkyData();
+						UI::AttributeSlider("Turbidity", pretham.Turbidity, 0, 30);
+						environment->Update(pretham);
+					}
+					break;
+					default:
+						break;
 				}
-			break;
-			case EnvironmentState::EnvironmentTexture:
-				{
-					auto environmentTexture = environment->GetTextureData();
-					UI::AttributeAssetReference("HDR Map", AssetType::Texture, environmentTexture.Image);
-					UI::AttributeSlider("SkyBoxLoad", skylight.SkyBoxLoad, 0, skylight.Environment->GetPrefilterMap()->GetMipLevelCount());
-					environment->Update(environmentTexture);
-				}
-				break;
-			case EnvironmentState::PreethamSky:
-				{
-					UI::EndPropertyGrid();
-					UI::AttributeText("Edit Rotation of Transform to change sun Position");
-					UI::BeginPropertyGrid();
+				UI::AttributeDrag("Intensity", skylight.Intensity, 0.25, 0, 1000);
+				UI::AttributeDrag("Rotation", skylight.MapRotation, 0.25);
+				UI::AttributeColor("TintColor", skylight.ColorTint);
 
-					auto pretham = environment->GetPreethamSkyData();
-					UI::AttributeSlider("Turbidity", pretham.Turbidity,0, 30);
-					environment->Update(pretham);
-				}
-				break;
-			default:
-				break;
-			}
-			UI::AttributeDrag("Intensity", skylight.Intensity, 0.25, 0, 1000);
-			UI::AttributeDrag("Rotation", skylight.MapRotation, 0.25);
-			UI::AttributeColor("TintColor", skylight.ColorTint);
-
-			UI::EndPropertyGrid();
+				UI::EndPropertyGrid();
 
 
-		});
+			});
 		DrawComponents<DirectionalLightComponent>("Directonal Light", entity, [](DirectionalLightComponent& drl) {
 
 			UI::BeginPropertyGrid();
@@ -879,7 +880,7 @@ namespace Proof
 			UI::AttributeBool("CastShadows", drl.CastShadow);
 			if (drl.CastShadow)
 			{
-				UI::AttributeSlider("ShadowStrength", drl.ShadowStrength,0,1);
+				UI::AttributeSlider("ShadowStrength", drl.ShadowStrength, 0, 1);
 				UI::AttributeBool("CastSoftShadows", drl.CastSoftShadow);
 
 				if (drl.CastSoftShadow)
@@ -890,32 +891,32 @@ namespace Proof
 
 			UI::EndPropertyGrid();
 
-		});
+			});
 
-		DrawComponents<PointLightComponent>("Point Light", entity, [](PointLightComponent& pl) 
-		{
-			UI::BeginPropertyGrid();
-
-			UI::AttributeColor("Color", pl.Color);
-			UI::AttributeDrag("Intensity", pl.Intensity, 0.01, 0.0f, Math::GetMaxType<float>());
-			UI::AttributeDrag("MinRadius", pl.MinRadius, 0.01, 0.0f, pl.Radius);
-			UI::AttributeDrag("Radius", pl.Radius, 0.01, 0.0f);
-			UI::AttributeDrag("Falloff", pl.Falloff, 0.005,0);
-			UI::AttributeBool("Cast Shadows", pl.CastsShadows);
-
-			if (pl.CastsShadows)
+		DrawComponents<PointLightComponent>("Point Light", entity, [](PointLightComponent& pl)
 			{
-				UI::AttributeSlider("ShadowStrength", pl.ShadowStrength, 0, 1);
-				UI::AttributeBool("CastSoftShadows", pl.SoftShadows);
+				UI::BeginPropertyGrid();
 
-				if (pl.SoftShadows)
+				UI::AttributeColor("Color", pl.Color);
+				UI::AttributeDrag("Intensity", pl.Intensity, 0.01, 0.0f, Math::GetMaxType<float>());
+				UI::AttributeDrag("MinRadius", pl.MinRadius, 0.01, 0.0f, pl.Radius);
+				UI::AttributeDrag("Radius", pl.Radius, 0.01, 0.0f);
+				UI::AttributeDrag("Falloff", pl.Falloff, 0.005, 0);
+				UI::AttributeBool("Cast Shadows", pl.CastsShadows);
+
+				if (pl.CastsShadows)
 				{
-					UI::AttributeSlider("ShadowSoftness", pl.ShadowSoftness, 0, 1);
-				}
-			}
-			UI::EndPropertyGrid();
+					UI::AttributeSlider("ShadowStrength", pl.ShadowStrength, 0, 1);
+					UI::AttributeBool("CastSoftShadows", pl.SoftShadows);
 
-		});
+					if (pl.SoftShadows)
+					{
+						UI::AttributeSlider("ShadowSoftness", pl.ShadowSoftness, 0, 1);
+					}
+				}
+				UI::EndPropertyGrid();
+
+			});
 
 		DrawComponents<SpotLightComponent>("Spot Light", entity, [](SpotLightComponent& sl) {
 			UI::BeginPropertyGrid();
@@ -939,7 +940,7 @@ namespace Proof
 
 			UI::EndPropertyGrid();
 
-		});
+			});
 
 		DrawComponents<CameraComponent>("Camera", entity, [](CameraComponent& cameraComp) {
 			UI::BeginPropertyGrid();
@@ -953,7 +954,7 @@ namespace Proof
 				ImGui::Text("Setting to 0 means you can see any object no matter how far away it is");
 				ImGui::EndTooltip();
 			}
-			UI::EnumCombo< ProjectionType>("ProjectionType", cameraComp.Projection,{ ProjectionType::None });
+			UI::EnumCombo< ProjectionType>("ProjectionType", cameraComp.Projection, { ProjectionType::None });
 
 			UI::AttributeBool("UseLocalRotation", cameraComp.UseLocalRotation);
 			/*
@@ -968,31 +969,31 @@ namespace Proof
 			*/
 			UI::EndPropertyGrid();
 
-		}, "if nothing visible set roation of z axis to 1");
+			}, "if nothing visible set roation of z axis to 1");
 
 		DrawComponents<BoxColliderComponent>("Box Collider", entity, [](BoxColliderComponent& cubeCollider) {
 			UI::BeginPropertyGrid();
 
 			UI::AttributeBool("IsTrigger", cubeCollider.IsTrigger);
-			UI::DrawVec3Control("Size", cubeCollider.Size, glm::vec3{1});
+			UI::DrawVec3Control("Size", cubeCollider.Size, glm::vec3{ 1 });
 			UI::DrawVec3Control("Center", cubeCollider.Center);
 
-			UI::AttributeAssetReference("Material",AssetType::PhysicsMaterial, cubeCollider.m_PhysicsMaterialPointerID);
+			UI::AttributeAssetReference("Material", AssetType::PhysicsMaterial, cubeCollider.m_PhysicsMaterialPointerID);
 
 			UI::EndPropertyGrid();
 
-		});
+			});
 		DrawComponents<SphereColliderComponent>("Sphere Collider", entity, [](SphereColliderComponent& sphereCollider) {
 			UI::BeginPropertyGrid();
 
-			UI::AttributeBool("IsTrigger",sphereCollider.IsTrigger);
+			UI::AttributeBool("IsTrigger", sphereCollider.IsTrigger);
 			UI::AttributeDrag("Radius", sphereCollider.Radius, 0.5);
 			UI::DrawVec3Control("Center", sphereCollider.Center);
 
 			UI::AttributeAssetReference("Material", AssetType::PhysicsMaterial, sphereCollider.m_PhysicsMaterialPointerID);
 			UI::EndPropertyGrid();
 
-		});
+			});
 		DrawComponents<CapsuleColliderComponent>("Capsule Collider", entity, [](CapsuleColliderComponent& capsuleCollider) {
 			UI::BeginPropertyGrid();
 
@@ -1004,7 +1005,7 @@ namespace Proof
 			UI::AttributeAssetReference("Material", AssetType::PhysicsMaterial, capsuleCollider.m_PhysicsMaterialPointerID);
 
 			UI::EndPropertyGrid();
-		});
+			});
 		DrawComponents<MeshColliderComponent>("Mesh Collider", entity, [&](MeshColliderComponent& meshCollider) {
 			UI::BeginPropertyGrid();
 
@@ -1039,7 +1040,7 @@ namespace Proof
 
 
 			UI::EndPropertyGrid();
-		});
+			});
 		DrawComponents<RigidBodyComponent>("RigidBody", entity, [&](RigidBodyComponent& rigidBody) {
 			static uint32_t checked = 0;
 			if (entity.GetName() == "bouncyBall" && checked == 0)
@@ -1058,7 +1059,7 @@ namespace Proof
 				const PhysicsLayer& layer = PhysicsLayerManager::GetLayer(rigidBody.PhysicsLayerID);
 
 				auto [changed, outSelectionIndex, outSelectionString] = UI::Combo("Layer", PhysicsLayerManager::GetLayersNames(), layer.Name);
-				if(changed)
+				if (changed)
 				{
 					if (PhysicsLayerManager::IsLayerValid(outSelectionString))
 					{
@@ -1080,7 +1081,7 @@ namespace Proof
 				DrawVectorControl("Freeze Rotation", rigidBody.FreezeRotation, false);
 			}
 			UI::EndPropertyGrid();
-		});
+			});
 
 
 		DrawComponents<CharacterControllerComponent>("CharacterController", entity, [](CharacterControllerComponent& controller) {
@@ -1089,18 +1090,18 @@ namespace Proof
 
 			{
 				float slopdeg = glm::degrees(controller.SlopeLimitRadians);
-				if (UI::AttributeDrag("SlopeLimitDeg", slopdeg,0.5,0))
+				if (UI::AttributeDrag("SlopeLimitDeg", slopdeg, 0.5, 0))
 					controller.SlopeLimitRadians = glm::radians(slopdeg);
 			}
 
-			UI::AttributeDrag("SkinOffset", controller.SkinOffset, 0.1,0.001);
+			UI::AttributeDrag("SkinOffset", controller.SkinOffset, 0.1, 0.001);
 			UI::AttributeBool("GravityEnabled", controller.GravityEnabled);
 			UI::AttributeDrag("GravityScale", controller.GravityScale);
-			UI::AttributeDrag("MinMoveDistance", controller.MinMoveDistance, 0.1,0);
+			UI::AttributeDrag("MinMoveDistance", controller.MinMoveDistance, 0.1, 0);
 			{
 				bool disabled = std::cos(controller.SlopeLimitRadians) < 0.0f;
 				UI::PushItemDisabled(disabled);
-				UI::EnumCombo("WalkableMode", controller.WalkableMode, {}, 
+				UI::EnumCombo("WalkableMode", controller.WalkableMode, {},
 					{
 					"if character lands on a slope it cannot walk it would prevent climbing",
 					"if character lands on a slope it cannot walk it would prevent climbing, the character will slide down"
@@ -1125,9 +1126,9 @@ namespace Proof
 				UI::AttributeDrag("Size", controller.Size);
 			}
 			UI::EndPropertyGrid();
-		});
+			});
 
-		DrawComponents<ParticleSystemComponent>("Particle System",entity, [&](ParticleSystemComponent& particleSystem) {
+		DrawComponents<ParticleSystemComponent>("Particle System", entity, [&](ParticleSystemComponent& particleSystem) {
 			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
 			bool open = ImGui::TreeNodeEx("PartcileTable", treeNodeFlags, "Particle Table");
@@ -1141,7 +1142,7 @@ namespace Proof
 			{
 				UI::ScopedID scope(&index);
 				std::string name;
-				if (particleHandler !=nullptr &&AssetManager::HasAsset(particleHandler->GetParticleSystem()))
+				if (particleHandler != nullptr && AssetManager::HasAsset(particleHandler->GetParticleSystem()))
 				{
 					name = AssetManager::GetAssetInfo(particleHandler->GetParticleSystem()).GetName();
 				}
@@ -1171,12 +1172,12 @@ namespace Proof
 				}
 			}
 			ImGui::TreePop();
-		});
+			});
 		DrawComponents<ScriptComponent>("Scripts", entity, [&](ScriptComponent& scriptComp) {
-			#if 1
+		#if 1
 
 			auto scriptWorld = m_ActiveWorld->GetScriptWorld();
-			if (UI::AttributeButton("","Add Script"))
+			if (UI::AttributeButton("", "Add Script"))
 			{
 				ImGui::OpenPopup("Open Scripts");
 			}
@@ -1197,7 +1198,7 @@ namespace Proof
 			if (!scriptWorld->IsEntityScriptInstantiated(entity))
 				return;
 
-			auto& classFields = *scriptWorld->GetEntityClassesContainer(entity,true);
+			auto& classFields = *scriptWorld->GetEntityClassesContainer(entity, true);
 
 			for (auto& [className, classMetaData] : classFields.GetClassesMetaData())
 			{
@@ -1244,15 +1245,15 @@ namespace Proof
 						UI::DrawFieldValue(m_ActiveWorld, fieldName, storage);
 					}
 				}
-				#if 0
-				for (const auto& [fieldName,field] : classMetaData.Fields)
+			#if 0
+				for (const auto& [fieldName, field] : classMetaData.Fields)
 				{
 					std::string fieldName = field->GetFieldInfo()->DisplayName.empty() ? Utils::String::SubStr(field->GetFieldInfo()->Name, field->GetFieldInfo()->Name.find(':') + 1) : field->GetFieldInfo()->DisplayName;
 
 					if (field->GetFieldInfo()->IsArray())
 					{
 
-					
+
 					}
 					else if (field->GetFieldInfo()->IsEnum())
 					{
@@ -1265,14 +1266,14 @@ namespace Proof
 						UI::DrawFieldValue(m_ActiveWorld, fieldName, storage);
 					}
 				}
-				#endif
+			#endif
 				UI::EndPropertyGrid();
 				ImGui::TreePop();
 			}
 
 
-			#endif
-			# if 0
+		#endif
+		# if 0
 			if (ImGui::Button("Add Script")) {
 				ImGui::OpenPopup("Open Scripts");
 			}
@@ -1290,7 +1291,7 @@ namespace Proof
 				std::vector<std::string> deletes;
 				for (const auto& scriptName : scriptComp.ScriptsNames)
 				{
-					
+
 					if (!ScriptEngine::EntityClassExists(scriptName))
 					{
 						deletes.emplace_back(scriptName);
@@ -1341,7 +1342,7 @@ namespace Proof
 
 					if (ScriptEngine::HasScriptFieldMap(entity) == false)
 						ScriptEngine::CreateScriptFieldMap(entity);
-					
+
 					auto& entityFields = ScriptEngine::GetScriptFieldMap(entity);
 
 					for (auto& [fieldName, field] : fields)
@@ -1374,10 +1375,10 @@ namespace Proof
 							SET_FEILD_DEFAULT(Vector4, Vector4);
 
 							case ScriptFieldType::Enum:
-								{
-									scriptInstance.SetValueRaw(entityClass->GetFieldDefaultValueRaw(fieldName).data()); // use the largest type to set the enum as 0
-									break;
-								}
+							{
+								scriptInstance.SetValueRaw(entityClass->GetFieldDefaultValueRaw(fieldName).data()); // use the largest type to set the enum as 0
+								break;
+							}
 							// these typs are clses so its weird getting ther data
 							case ScriptFieldType::Entity:
 							case ScriptFieldType::Prefab:
@@ -1407,112 +1408,112 @@ namespace Proof
 							SET_FIELD_NUMERICAL_VALUE(Uint32_t, uint32_t, fieldName, ImGuiDataType_U32);
 							SET_FIELD_NUMERICAL_VALUE(Uint64_t, uint64_t, fieldName, ImGuiDataType_U64);
 							case ScriptFieldType::Enum:
+							{
+								const std::string enumTypeName = ScriptEngine::GetFieldEnumName(field);
+								if (!ScriptEngine::GetEnumClasses().contains(enumTypeName))
+									break;
+
+								switch (ScriptEngine::GetEnumClasses().at(enumTypeName).first)
 								{
-									const std::string enumTypeName = ScriptEngine::GetFieldEnumName(field);
-									if(!ScriptEngine::GetEnumClasses().contains(enumTypeName))
+									Set_FIELD_ENUM_NUMERICAL_VALUE(Int8_t, int8_t);
+									Set_FIELD_ENUM_NUMERICAL_VALUE(Int16_t, int16_t);
+									Set_FIELD_ENUM_NUMERICAL_VALUE(Int32_t, int32_t);
+									Set_FIELD_ENUM_NUMERICAL_VALUE(Int64_t, int64_t);
+
+									Set_FIELD_ENUM_NUMERICAL_VALUE(Uint8_t, uint8_t);
+									Set_FIELD_ENUM_NUMERICAL_VALUE(Uint16_t, uint16_t);
+									Set_FIELD_ENUM_NUMERICAL_VALUE(Uint32_t, uint32_t);
+									Set_FIELD_ENUM_NUMERICAL_VALUE(Uint64_t, uint64_t);
+									default:
 										break;
-
-									switch (ScriptEngine::GetEnumClasses().at(enumTypeName).first)
-									{
-										Set_FIELD_ENUM_NUMERICAL_VALUE(Int8_t, int8_t);
-										Set_FIELD_ENUM_NUMERICAL_VALUE(Int16_t, int16_t);
-										Set_FIELD_ENUM_NUMERICAL_VALUE(Int32_t, int32_t);
-										Set_FIELD_ENUM_NUMERICAL_VALUE(Int64_t, int64_t);
-
-										Set_FIELD_ENUM_NUMERICAL_VALUE(Uint8_t, uint8_t);
-										Set_FIELD_ENUM_NUMERICAL_VALUE(Uint16_t, uint16_t);
-										Set_FIELD_ENUM_NUMERICAL_VALUE(Uint32_t, uint32_t);
-										Set_FIELD_ENUM_NUMERICAL_VALUE(Uint64_t, uint64_t);
-										default:
-											break;
-									}
-									break;
 								}
+								break;
+							}
 							case ScriptFieldType::Texture:
+							{
+								ImGui::Text(fieldName.c_str());
+								ImGui::SameLine();
+								if (AssetManager::HasAsset(scriptField.GetValue<uint64_t>()))
 								{
-									ImGui::Text(fieldName.c_str());
-									ImGui::SameLine();
-									if (AssetManager::HasAsset(scriptField.GetValue<uint64_t>()))
-									{
-										auto texture = AssetManager::GetAsset<Texture2D>(scriptField.GetValue<uint64_t>());
-										UI::Image(texture->GetImage(), { 30,30 });
-										//ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
-									}
-									else
-									{
-										UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
-									}
-									if (ImGui::BeginDragDropTarget())
-									{
-										if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
-										{
-											uint64_t Data = *(const uint64_t*)payload->Data;
-											if (AssetManager::HasAsset(Data))
-											{
-												scriptField.SetValue(Data); 
-											}
-										}
-										ImGui::EndDragDropTarget();
-									}
-									break;
+									auto texture = AssetManager::GetAsset<Texture2D>(scriptField.GetValue<uint64_t>());
+									UI::Image(texture->GetImage(), { 30,30 });
+									//ImGui::Image((ImTextureID)Renderer::GetWhiteTexture()->GetImage().SourceImage, { 30,30 });
 								}
+								else
+								{
+									UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
+								}
+								if (ImGui::BeginDragDropTarget())
+								{
+									if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
+									{
+										uint64_t Data = *(const uint64_t*)payload->Data;
+										if (AssetManager::HasAsset(Data))
+										{
+											scriptField.SetValue(Data);
+										}
+									}
+									ImGui::EndDragDropTarget();
+								}
+								break;
+							}
 							case ScriptFieldType::Bool:
-								{
-									bool var = scriptField.GetValue<bool>();
-									UI::AttributeBool(fieldName, var);
-									scriptField.SetValue<bool>(var);
-									break;
-								}
+							{
+								bool var = scriptField.GetValue<bool>();
+								UI::AttributeBool(fieldName, var);
+								scriptField.SetValue<bool>(var);
+								break;
+							}
 							case ScriptFieldType::Prefab:
+							{
+								if (AssetManager::HasAsset(scriptField.GetValue<uint64_t>()))
 								{
-									if (AssetManager::HasAsset(scriptField.GetValue<uint64_t>()))
-									{
-										auto assetInfo =AssetManager::GetAssetInfo(scriptField.GetValue<uint64_t>());
-										UI::AttributeTextBar(field.Name, assetInfo.GetName());
+									auto assetInfo = AssetManager::GetAssetInfo(scriptField.GetValue<uint64_t>());
+									UI::AttributeTextBar(field.Name, assetInfo.GetName());
 
-									}
-									else
-									{
-										scriptField.SetValue<uint64_t>(0);
-
-										UI::AttributeTextBar(field.Name, "null (Prefab)");
-									}
-									if (ImGui::BeginDragDropTarget())
-									{
-										if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Prefab).c_str()))
-										{
-											UUID prefabId = *(UUID*)payload->Data;
-											if (AssetManager::HasAsset(prefabId))
-												scriptField.SetValue<uint64_t>(prefabId);
-										}
-										ImGui::EndDragDropTarget();
-									}
-									break;
 								}
+								else
+								{
+									scriptField.SetValue<uint64_t>(0);
+
+									UI::AttributeTextBar(field.Name, "null (Prefab)");
+								}
+								if (ImGui::BeginDragDropTarget())
+								{
+									if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Prefab).c_str()))
+									{
+										UUID prefabId = *(UUID*)payload->Data;
+										if (AssetManager::HasAsset(prefabId))
+											scriptField.SetValue<uint64_t>(prefabId);
+									}
+									ImGui::EndDragDropTarget();
+								}
+								break;
+							}
 							case ScriptFieldType::Entity:
+							{
+								if (m_ActiveWorld->HasEntity(scriptField.GetValue<uint64_t>()))
 								{
-									if (m_ActiveWorld->HasEntity(scriptField.GetValue<uint64_t>()))
-									{
-										Entity ent = m_ActiveWorld->GetEntity(scriptField.GetValue<uint64_t>());
-										UI::AttributeTextBar(field.Name, ent.GetName());
-										scriptField.SetValue<uint64_t>(ent.GetUUID().Get());
-									}
-									else
-									{
-										scriptField.SetValue<uint64_t>(0);
-										UI::AttributeTextBar(field.Name, "null (Entity)");
-									}
-									if (ImGui::BeginDragDropTarget())
-									{
-										if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity"))
-										{
-											Entity ent = *(Entity*)payload->Data;
-											scriptField.SetValue<uint64_t>(ent.GetUUID());
-										}
-										ImGui::EndDragDropTarget();
-									}
-									break;
+									Entity ent = m_ActiveWorld->GetEntity(scriptField.GetValue<uint64_t>());
+									UI::AttributeTextBar(field.Name, ent.GetName());
+									scriptField.SetValue<uint64_t>(ent.GetUUID().Get());
 								}
+								else
+								{
+									scriptField.SetValue<uint64_t>(0);
+									UI::AttributeTextBar(field.Name, "null (Entity)");
+								}
+								if (ImGui::BeginDragDropTarget())
+								{
+									if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity"))
+									{
+										Entity ent = *(Entity*)payload->Data;
+										scriptField.SetValue<uint64_t>(ent.GetUUID());
+									}
+									ImGui::EndDragDropTarget();
+								}
+								break;
+							}
 							default:
 								PF_CORE_ASSERT(false);
 								break;
@@ -1544,119 +1545,119 @@ namespace Proof
 						{
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Float, float, name, ImGuiDataType_Float);
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Double, double, name, ImGuiDataType_Double);
-								
+
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Int8_t, int8_t, name, ImGuiDataType_S8);
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Int16_t, int16_t, name, ImGuiDataType_S16);
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Int32_t, int32_t, name, ImGuiDataType_S32);
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Int64_t, int64_t, name, ImGuiDataType_S64);
-								
+
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Uint8_t, uint8_t, name, ImGuiDataType_S8);
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Uint16_t, uint16_t, name, ImGuiDataType_U16);
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Uint32_t, uint32_t, name, ImGuiDataType_U32);
 							SET_FIELD_NUMERICAL_VALUE_RUNTIME(Uint64_t, uint64_t, name, ImGuiDataType_U64);
 
 							case ScriptFieldType::Enum:
+							{
+								const std::string enumTypeName = ScriptEngine::GetFieldEnumName(field);
+								if (!ScriptEngine::GetEnumClasses().contains(enumTypeName))
+									break;
+
+								switch (ScriptEngine::GetEnumClasses().at(enumTypeName).first)
 								{
-									const std::string enumTypeName = ScriptEngine::GetFieldEnumName(field);
-									if (!ScriptEngine::GetEnumClasses().contains(enumTypeName))
+									Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Int8_t, int8_t);
+									Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Int16_t, int16_t);
+									Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Int32_t, int32_t);
+									Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Int64_t, int64_t);
+
+									Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Uint8_t, uint8_t);
+									Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Uint16_t, uint16_t);
+									Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Uint32_t, uint32_t);
+									Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Uint64_t, uint64_t);
+									default:
 										break;
-
-									switch (ScriptEngine::GetEnumClasses().at(enumTypeName).first)
-									{
-										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Int8_t, int8_t);
-										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Int16_t, int16_t);
-										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Int32_t, int32_t);
-										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Int64_t, int64_t);
-
-										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Uint8_t, uint8_t);
-										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Uint16_t, uint16_t);
-										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Uint32_t, uint32_t);
-										Set_FIELD_ENUM_NUMERICAL_VALUE_RUNTIME(Uint64_t, uint64_t);
-										default:
-											break;
-									}
-									
-									break;
 								}
+
+								break;
+							}
 							case ScriptFieldType::Texture:
+							{
+								ImGui::Text(field.Name.c_str());
+								ImGui::SameLine();
+								if (AssetManager::HasAsset(instance->GetFieldValue<uint64_t>(name)))
 								{
-									ImGui::Text(field.Name.c_str());
-									ImGui::SameLine();
-									if (AssetManager::HasAsset(instance->GetFieldValue<uint64_t>(name)))
-									{
-										auto texture = AssetManager::GetAsset<Texture2D>(instance->GetFieldValue<uint64_t>(name));
-										UI::Image(texture, { 30,30 });
-										//ImGui::Image((ImTextureID)texture->GetImage().SourceImage, { 30,30 });
-									}
-									else
-									{
-										UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
-									}
-									if (ImGui::BeginDragDropTarget())
-									{
-										if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
-										{
-											uint64_t Data = *(const uint64_t*)payload->Data;
-											if (AssetManager::HasAsset(Data))
-											{
-												instance->SetFieldValue(name,Data);
-											}
-										}
-										ImGui::EndDragDropTarget();
-									}
-									break;
+									auto texture = AssetManager::GetAsset<Texture2D>(instance->GetFieldValue<uint64_t>(name));
+									UI::Image(texture, { 30,30 });
+									//ImGui::Image((ImTextureID)texture->GetImage().SourceImage, { 30,30 });
 								}
+								else
+								{
+									UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
+								}
+								if (ImGui::BeginDragDropTarget())
+								{
+									if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
+									{
+										uint64_t Data = *(const uint64_t*)payload->Data;
+										if (AssetManager::HasAsset(Data))
+										{
+											instance->SetFieldValue(name, Data);
+										}
+									}
+									ImGui::EndDragDropTarget();
+								}
+								break;
+							}
 							case ScriptFieldType::Prefab:
+							{
+								if (AssetManager::HasAsset(instance->GetFieldValue<uint64_t>(name)))
 								{
-									if (AssetManager::HasAsset(instance->GetFieldValue<uint64_t>(name)))
-									{
-										auto assetInfo = AssetManager::GetAssetInfo(instance->GetFieldValue<uint64_t>(name));
-										UI::AttributeTextBar(field.Name, assetInfo.GetName());
+									auto assetInfo = AssetManager::GetAssetInfo(instance->GetFieldValue<uint64_t>(name));
+									UI::AttributeTextBar(field.Name, assetInfo.GetName());
 
-									}
-									else
-									{
-										instance->SetFieldValue<uint64_t>(name,0);
-
-										UI::AttributeTextBar(field.Name, "null (Prefab)");
-									}
-									if (ImGui::BeginDragDropTarget())
-									{
-										if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Prefab).c_str()))
-										{
-											UUID prefabId = *(UUID*)payload->Data;
-											if (AssetManager::HasAsset(prefabId))
-												instance->SetFieldValue<uint64_t>(name, prefabId);
-										}
-										ImGui::EndDragDropTarget();
-									}
-									break;
 								}
+								else
+								{
+									instance->SetFieldValue<uint64_t>(name, 0);
+
+									UI::AttributeTextBar(field.Name, "null (Prefab)");
+								}
+								if (ImGui::BeginDragDropTarget())
+								{
+									if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Prefab).c_str()))
+									{
+										UUID prefabId = *(UUID*)payload->Data;
+										if (AssetManager::HasAsset(prefabId))
+											instance->SetFieldValue<uint64_t>(name, prefabId);
+									}
+									ImGui::EndDragDropTarget();
+								}
+								break;
+							}
 							case ScriptFieldType::Entity:
+							{
+								if (m_ActiveWorld->HasEntity(instance->GetFieldValue<uint64_t>(name)))
 								{
-									if (m_ActiveWorld->HasEntity(instance->GetFieldValue<uint64_t>(name)))
-									{
-										Entity ent = m_ActiveWorld->GetEntity(instance->GetFieldValue<uint64_t>(name));
-										UI::AttributeTextBar(field.Name, ent.GetName());
+									Entity ent = m_ActiveWorld->GetEntity(instance->GetFieldValue<uint64_t>(name));
+									UI::AttributeTextBar(field.Name, ent.GetName());
 
-									}
-									else
-									{
-										instance->SetFieldValue<uint64_t>(name,0);
-										UI::AttributeTextBar(field.Name, "null (Entity)");
-									}
-									if (ImGui::BeginDragDropTarget())
-									{
-
-										if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity"))
-										{
-											UUID entityID = *(UUID*)payload->Data;
-											instance->SetFieldValue<uint64_t>(name, entityID);
-										}
-										ImGui::EndDragDropTarget();
-									}
-									break;
 								}
+								else
+								{
+									instance->SetFieldValue<uint64_t>(name, 0);
+									UI::AttributeTextBar(field.Name, "null (Entity)");
+								}
+								if (ImGui::BeginDragDropTarget())
+								{
+
+									if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity"))
+									{
+										UUID entityID = *(UUID*)payload->Data;
+										instance->SetFieldValue<uint64_t>(name, entityID);
+									}
+									ImGui::EndDragDropTarget();
+								}
+								break;
+							}
 							default:
 								break;
 						}
@@ -1664,19 +1665,19 @@ namespace Proof
 					ImGui::TreePop();
 				}
 			}
-			#endif
-		});
+		#endif
+			});
 
 		DrawComponents<TextComponent>("Text Component", entity, [](TextComponent& textComponent) {
 			//ImGui::InputTextMultiline("Text", (char*)textComponent.Text.c_str(), textComponent.Text.capacity() + 1);
-			UI::AttributeInputTextMultiline("", textComponent.Text,0);
+			UI::AttributeInputTextMultiline("", textComponent.Text, 0);
 			UI::BeginPropertyGrid();
 			UI::AttributeColor("Colour", textComponent.Colour);
 
 			UI::AttributeDrag("Kernng", textComponent.Kerning, 0.025);
 			UI::AttributeDrag("Line Spacing", textComponent.LineSpacing, 0.025);
 			UI::EndPropertyGrid();
-		});
+			});
 
 		DrawComponents<PlayerInputComponent>("Player Input", entity, [](PlayerInputComponent& player) {
 			UI::BeginPropertyGrid();
@@ -1716,7 +1717,7 @@ namespace Proof
 				}
 				UI::PopID();
 			}
-		});
+			});
 
 		/*
 		DrawComponents<PlayerHUDComponent>("Player HUD", entity, [](PlayerHUDComponent& playerHud){
@@ -1756,48 +1757,74 @@ namespace Proof
 		});
 		*/
 
-		DrawComponents<AudioComponent>("Audio", entity, [](AudioComponent& audio)
-		{
-			UI::BeginPropertyGrid();
-
-			UI::AttributeAssetReference("Audio",AssetType::Audio, audio.AudioAsset);
-
-			UI::AttributeSlider("VolumeMultiplier", audio.VolumeMultiplier, 0, 1);
-			UI::AttributeSlider("PitchMultiplier", audio.PitchMultiplier, 0, 24);
-
-			UI::AttributeBool("Looping", audio.Looping);
-			UI::AttributeBool("Play On Awake", audio.PlayOnAwake);
-			UI::AttributeBool("Specialization", audio.SpatializationEnabled);
-
-			if (audio.SpatializationEnabled == false)
+		DrawComponents<WaterComponent>("Water Component", entity, [](WaterComponent& waterComponent)
 			{
+				UI::BeginPropertyGrid();
+				WaterSystem::WaterDataInfo& waterData = waterComponent.WaterSystem->WaterData;
 
-				UI::EnumCombo("Attenuation Model", audio.AttenuationModel);
+				UI::AttributeColor("Color", waterData.Color);
+				UI::AttributeDrag("Speed", waterData.Speed, 0.25f);
+				UI::EndPropertyGrid();
 
-				UI::AttributeDrag("Min Gain", audio.MinGain, 0.025f, 0, 1);
-				UI::AttributeDrag("Max Gain", audio.MaxGain, 0.025f, 0, 1);
-
-				UI::AttributeDrag("Min Distance", audio.MinDistance, 0.025f, 0, audio.MaxDistance);
-				UI::AttributeDrag("Max Distance", audio.MaxDistance, 0.025f, audio.MinDistance, Math::GetMaxType<float>());
-
+				for (uint32_t i = 0; i < waterComponent.WaterSystem->Waves.size(); i++)
 				{
-					float degrees = glm::degrees(audio.ConeInnerAngleInRadians);
-					if (UI::AttributeSlider("Cone Inner Angle", degrees, 0, 360))
-						audio.ConeInnerAngleInRadians = glm::radians(degrees);
+					UI::ScopedID id(fmt::format("Wave: {}", i));
+					WaterSystem::WaterWave& wave = waterComponent.WaterSystem->Waves[i];
 
-					degrees = glm::degrees(audio.ConeOuterAngleInRadians);
-					if (UI::AttributeSlider("Cone Outer Angle", degrees, 0, 360))
-						audio.ConeOuterAngleInRadians = glm::radians(degrees);
+					UI::AttributeText(fmt::format("Wave: {}", i));
+					UI::BeginPropertyGrid();
 
-					UI::AttributeSlider("ConeOuterGain", audio.ConeOuterGain, 0, 1);
+					UI::AttributeDrag("Steepness", wave.Steepness, 0.05f, 0, 1);
+					UI::AttributeDrag("Wavelength", wave.WaveLength, 0.25f);
+					UI::AttributeDrag("Direction", wave.Direction, 0.01f);
+
+					UI::EndPropertyGrid();
+
 				}
 
-				UI::AttributeSlider("Doppler Factor", audio.DopplerFactor, 0, 1);
-				UI::AttributeSlider("RollOff", audio.Rolloff, 0, 1);
-			}
+			});
+		DrawComponents<AudioComponent>("Audio", entity, [](AudioComponent& audio)
+			{
+				UI::BeginPropertyGrid();
 
-			UI::EndPropertyGrid();
-		});
+				UI::AttributeAssetReference("Audio", AssetType::Audio, audio.AudioAsset);
+
+				UI::AttributeSlider("VolumeMultiplier", audio.VolumeMultiplier, 0, 1);
+				UI::AttributeSlider("PitchMultiplier", audio.PitchMultiplier, 0, 24);
+
+				UI::AttributeBool("Looping", audio.Looping);
+				UI::AttributeBool("Play On Awake", audio.PlayOnAwake);
+				UI::AttributeBool("Specialization", audio.SpatializationEnabled);
+
+				if (audio.SpatializationEnabled == false)
+				{
+
+					UI::EnumCombo("Attenuation Model", audio.AttenuationModel);
+
+					UI::AttributeDrag("Min Gain", audio.MinGain, 0.025f, 0, 1);
+					UI::AttributeDrag("Max Gain", audio.MaxGain, 0.025f, 0, 1);
+
+					UI::AttributeDrag("Min Distance", audio.MinDistance, 0.025f, 0, audio.MaxDistance);
+					UI::AttributeDrag("Max Distance", audio.MaxDistance, 0.025f, audio.MinDistance, Math::GetMaxType<float>());
+
+					{
+						float degrees = glm::degrees(audio.ConeInnerAngleInRadians);
+						if (UI::AttributeSlider("Cone Inner Angle", degrees, 0, 360))
+							audio.ConeInnerAngleInRadians = glm::radians(degrees);
+
+						degrees = glm::degrees(audio.ConeOuterAngleInRadians);
+						if (UI::AttributeSlider("Cone Outer Angle", degrees, 0, 360))
+							audio.ConeOuterAngleInRadians = glm::radians(degrees);
+
+						UI::AttributeSlider("ConeOuterGain", audio.ConeOuterGain, 0, 1);
+					}
+
+					UI::AttributeSlider("Doppler Factor", audio.DopplerFactor, 0, 1);
+					UI::AttributeSlider("RollOff", audio.Rolloff, 0, 1);
+				}
+
+				UI::EndPropertyGrid();
+			});
 	}
 
 	void SceneHierachyPanel::DrawVectorControl(const std::string& UniqeLabel, Vector& Vec, float ResetValue, float columnWidth, float Speed) {
