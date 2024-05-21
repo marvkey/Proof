@@ -31,21 +31,19 @@ namespace Proof
 	void WaterSystem::Render(Count<class WorldRenderer> renderer, const glm::mat4& transform)
 	{
 		m_UBWaterDataSet->SetData(Renderer::GetCurrentFrameInFlight(), Buffer(&WaterData, sizeof(WaterData)));
-		m_UBWaterWavesSet->SetData(Renderer::GetCurrentFrameInFlight(),Buffer( Waves.data(), sizeof(Waves)));
 		m_RenderMaterial->Set("u_TextureMap", Renderer::GetWhiteTexture());
-		renderer->SubmitWaterMesh(m_Plane, m_RenderMaterial, transform);
+		//renderer->SubmitWaterMesh(m_Plane, m_RenderMaterial, transform);
+		renderer->SubmitMesh(m_Plane, m_RenderMaterial, transform);
 	}
 
 	void WaterSystem::BaseInit()
 	{
 		m_RenderMaterial = RenderMaterial::Create(RenderMaterialConfiguration{ "WaterSystem", Renderer::GetShader("WaterSystem") });
-		m_UBWaterWavesSet = UniformBufferSet::Create(sizeof(Waves));
 		m_UBWaterDataSet = UniformBufferSet::Create(sizeof(WaterData));
 		m_Plane = MeshWorkShop::GeneratePlane(10,50);
 		m_Plane->SetName("WaterSystemPlane");
 		AssetManager::CreateRuntimeAsset(m_Plane.As<Asset>(), "WaterSystemPlane");
 		m_RenderMaterial->Set("WaterData", m_UBWaterDataSet);
-		m_RenderMaterial->Set("Waves", m_UBWaterWavesSet);
 	}
 
 }

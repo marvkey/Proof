@@ -21,21 +21,22 @@ namespace Proof
 		struct alignas(16) WaterDataInfo
 		{
 			glm::vec4 Color{ 0.0f,0.0f,0.5f,1.0f };
+
 			float Speed = 9.8f;
+			uint32_t WaveCount = 5; 
+			float WaveSpread = 0.5f; // 0-1
+			float WaveDistribution = 0.5f; //0-1
+
+			glm::vec2 WaveDirection = { 1,0 };
+			glm::vec2 MinMaxWavelength = { 5,10 };
+
+			glm::vec2 MinMaxSteepness = { 0.4,0.5 }; //0-1
 		} WaterData;
 
-		struct alignas(16) WaterWave
-		{
-			glm::vec2 Direction{ 1,0 };
-			float Steepness = 0.5; //range (0-1)
-			float WaveLength = 10;
-		};
-		std::array<WaterWave,3> Waves;
 
 	private:
 		void BaseInit();
 		Count<RenderMaterial> m_RenderMaterial;
-		Count<class UniformBufferSet> m_UBWaterWavesSet;
 		Count<class UniformBufferSet> m_UBWaterDataSet;
 
 		Count<class Mesh> m_Plane;

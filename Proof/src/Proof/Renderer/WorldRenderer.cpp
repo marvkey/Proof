@@ -465,20 +465,146 @@ namespace Proof
 
 			m_GeometryPass = RenderPass::Create(geopassConfig);
 
+			{
+				auto noDepthFrameBuffer = geoFramebufferConfig;
+				noDepthFrameBuffer.Attachments.Attachments.pop_back();
+
+				noDepthFrameBuffer.Attachments.Attachments[0].ExistingImage = m_GeometryPass->GetOutput(0);
+				noDepthFrameBuffer.Attachments.Attachments[1].ExistingImage = m_GeometryPass->GetOutput(1);
+				noDepthFrameBuffer.Attachments.Attachments[2].ExistingImage = m_GeometryPass->GetOutput(2);
+				noDepthFrameBuffer.Attachments.Attachments[3].ExistingImage = m_GeometryPass->GetOutput(3);
+				noDepthFrameBuffer.Attachments.Attachments[4].ExistingImage = m_GeometryPass->GetOutput(4);
+
+				noDepthFrameBuffer.DebugName = "Geometry No Depth";
+				m_GeometryPassNoDepthFrameBuffer = FrameBuffer::Create(noDepthFrameBuffer);
+			}
 			/*
 			{
 
-				GraphicsPipelineConfiguration waterPipelineConfig = pipelinelineConfig;
+				GraphicsPipelineConfiguration waterPipelineConfig = m_GeometryPass->GetPipeline()->GetConfig();
 				waterPipelineConfig.DebugName = "Water";
 				waterPipelineConfig.Shader = Renderer::GetShader("WaterSystem");
-				waterPipelineConfig.VertexArray = staticVertexArray;
+				//waterPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA,ImageFormat::RG16F,ImageFormat::RGBA32F,ImageFormat::DEPTH32F };
+				//waterPipelineConfig.Attachments.Attachments[1].Blend = false;
+				//waterPipelineConfig.WriteDepth = false;
+				//waterPipelineConfig.LineWidth = 1.0f;
+				//waterPipelineConfig.DepthCompareOperator = DepthCompareOperator::Equal;
+				//waterPipelineConfig.VertexArray = staticVertexArray;
 
 				auto waterPipeline = GraphicsPipeline::Create(waterPipelineConfig);
+
+
+				FrameBufferConfig extCompFramebufferSpec;
+				extCompFramebufferSpec.DebugName = fmt::format("Water");
+				extCompFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA,ImageFormat::RG16F,ImageFormat::RGBA32F,ImageFormat::DEPTH32F };
+				extCompFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+				extCompFramebufferSpec.ClearColorOnLoad = false;
+				extCompFramebufferSpec.ClearDepthOnLoad = false;
+				// Use the color buffer from the final compositing pass, but the depth buffer from
+				// the actual 3D geometry pass, in case we want to composite elements behind meshes
+				// in the scene
+				extCompFramebufferSpec.Attachments.Attachments[0].ExistingImage = m_GeometryPass->GetOutput(0);
+				extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_GeometryPass->GetOutput(1);
+				extCompFramebufferSpec.Attachments.Attachments[2].ExistingImage = m_GeometryPass->GetOutput(2);
+				extCompFramebufferSpec.Attachments.Attachments[3].ExistingImage = m_GeometryPass->GetOutput(3);
+				extCompFramebufferSpec.Attachments.Attachments[4].ExistingImage = m_GeometryPass->GetOutput(4);
+				extCompFramebufferSpec.Attachments.Attachments[5].ExistingImage = m_GeometryPass->GetOutput(5);
+				//extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetOutput(0);
+
+				//auto frameBuffer = FrameBuffer::Create(extCompFramebufferSpec);
+				auto frameBuffer = m_GeometryPass->GetTargetFrameBuffer();
 
 				RenderPassConfig renderPassConfig;
 				renderPassConfig.DebugName = "Water Pass";
 				renderPassConfig.Pipeline = waterPipeline;
-				renderPassConfig.TargetFrameBuffer = m_GeometryPass->GetTargetFrameBuffer();
+
+				renderPassConfig.TargetFrameBuffer = frameBuffer;
+				m_WaterPass = RenderPass::Create(renderPassConfig);
+
+				m_WaterPass->AddGlobalInput(m_GlobalInputs);
+
+			}
+			*/
+			/*
+			{
+
+				GraphicsPipelineConfiguration waterPipelineConfig = m_GeometryPass->GetPipeline()->GetConfig();
+				waterPipelineConfig.DebugName = "Water";
+				waterPipelineConfig.Shader = Renderer::GetShader("WaterSystem");
+				waterPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA,ImageFormat::RG16F,ImageFormat::RGBA32F };
+				waterPipelineConfig.Attachments.Attachments[1].Blend = false;
+				waterPipelineConfig.WriteDepth = false;
+				waterPipelineConfig.LineWidth = 1.0f;
+				waterPipelineConfig.DepthCompareOperator = DepthCompareOperator::Equal;
+				waterPipelineConfig.VertexArray = staticVertexArray;
+
+				auto waterPipeline = GraphicsPipeline::Create(waterPipelineConfig);
+
+
+				FrameBufferConfig extCompFramebufferSpec;
+				extCompFramebufferSpec.DebugName = fmt::format("Water");
+				extCompFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA,ImageFormat::RG16F,ImageFormat::RGBA32F };
+				extCompFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+				extCompFramebufferSpec.ClearColorOnLoad = false;
+				extCompFramebufferSpec.ClearDepthOnLoad = false;
+				// Use the color buffer from the final compositing pass, but the depth buffer from
+				// the actual 3D geometry pass, in case we want to composite elements behind meshes
+				// in the scene
+				extCompFramebufferSpec.Attachments.Attachments[0].ExistingImage = m_GeometryPass->GetOutput(0);
+				extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_GeometryPass->GetOutput(1);
+				extCompFramebufferSpec.Attachments.Attachments[2].ExistingImage = m_GeometryPass->GetOutput(2);
+				extCompFramebufferSpec.Attachments.Attachments[3].ExistingImage = m_GeometryPass->GetOutput(3);
+				extCompFramebufferSpec.Attachments.Attachments[4].ExistingImage = m_GeometryPass->GetOutput(4);
+				//extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetOutput(0);
+
+				auto frameBuffer = FrameBuffer::Create(extCompFramebufferSpec);
+				//auto frameBuffer = m_GeometryPass->GetTargetFrameBuffer();
+
+				RenderPassConfig renderPassConfig;
+				renderPassConfig.DebugName = "Water Pass";
+				renderPassConfig.Pipeline = waterPipeline;
+
+				renderPassConfig.TargetFrameBuffer = frameBuffer;
+				m_WaterPass = RenderPass::Create(renderPassConfig);
+
+				m_WaterPass->AddGlobalInput(m_GlobalInputs);
+
+			}
+			*/
+			/*
+			{
+
+				GraphicsPipelineConfiguration waterPipelineConfig;
+				waterPipelineConfig.DebugName = "Water";
+				waterPipelineConfig.Shader = Renderer::GetShader("WaterSystem");
+				waterPipelineConfig.Attachments = { ImageFormat::RGBA32F};
+				waterPipelineConfig.WriteDepth = false;
+				waterPipelineConfig.LineWidth = 1.0f;
+				waterPipelineConfig.DepthCompareOperator = DepthCompareOperator::Equal;
+				waterPipelineConfig.VertexArray = staticVertexArray;
+
+				auto waterPipeline = GraphicsPipeline::Create(waterPipelineConfig);
+
+
+				FrameBufferConfig extCompFramebufferSpec;
+				extCompFramebufferSpec.DebugName = fmt::format("Water");
+				extCompFramebufferSpec.Attachments = { ImageFormat::RGBA32F};
+				extCompFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+				extCompFramebufferSpec.ClearColorOnLoad = false;
+				extCompFramebufferSpec.ClearDepthOnLoad = false;
+				// Use the color buffer from the final compositing pass, but the depth buffer from
+				// the actual 3D geometry pass, in case we want to composite elements behind meshes
+				// in the scene
+				extCompFramebufferSpec.Attachments.Attachments[0].ExistingImage = m_GeometryPass->GetOutput(0);
+				//extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetOutput(0);
+
+				auto frameBuffer = FrameBuffer::Create(extCompFramebufferSpec);
+				
+				RenderPassConfig renderPassConfig;
+				renderPassConfig.DebugName = "Water Pass";
+				renderPassConfig.Pipeline = waterPipeline;
+
+				renderPassConfig.TargetFrameBuffer = frameBuffer;
 				m_WaterPass = RenderPass::Create(renderPassConfig);
 
 				m_WaterPass->AddGlobalInput(m_GlobalInputs);
@@ -1351,7 +1477,7 @@ namespace Proof
 				AssetManager::CreateRuntimeAsset(AssetManager::CreateID(), m_GeometryWireFramePassMaterialAsset, "worldRenderer wireFrameMaterial");
 				m_GeometryWireFramePassMaterial = m_GeometryWireFramePassMaterialAsset->GetRenderMaterial();
 			}
-
+			/*
 			{
 
 				GraphicsPipelineConfiguration waterPipelineConfig;
@@ -1376,7 +1502,8 @@ namespace Proof
 				m_WaterPass->AddGlobalInput(m_GlobalInputs);
 
 			}
-			//m_GeometryWireFramePassMaterial = RenderMaterial::Create(RenderMaterialConfiguration{ "WireFrame", Renderer::GetShader("Wireframe") });
+			*/
+			m_GeometryWireFramePassMaterial = RenderMaterial::Create(RenderMaterialConfiguration{ "WireFrame", Renderer::GetShader("Wireframe") });
 
 			m_GeometryWireFramePass->AddGlobalInput(m_GlobalInputs);
 			m_GeometryWireFrameOnTopPass->AddGlobalInput(m_GlobalInputs);
@@ -1587,11 +1714,8 @@ namespace Proof
 			//geometrypass
 			m_GeometryPass->GetTargetFrameBuffer()->Resize(viewportSize);
 
-			for (auto& [shaderName, instances] : m_GeometryPassInstances)
-			{
-				instances->GetTargetFrameBuffer()->Resize(viewportSize);
-			}
-			m_WaterPass->GetTargetFrameBuffer()->Resize(viewportSize);
+			m_GeometryPassNoDepthFrameBuffer->Resize(viewportSize);
+
 			// compoiste 
 			m_CompositePass->GetTargetFrameBuffer()->Resize(viewportSize);
 		#if 0
@@ -1765,7 +1889,6 @@ namespace Proof
 			m_ColliderDrawList.clear();
 			m_DynamicColliderDrawList.clear();
 			m_GeometryPassInstancesDrawList.clear();
-			m_WaterMeshDrawList.clear();
 		}
 
 		m_Timers.TotalDrawScene = drawSceneTimer.ElapsedMillis();
@@ -2235,6 +2358,32 @@ namespace Proof
 			uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 			RenderDynamicMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 		}
+		/*
+		for (auto& [meshKey, dc] : m_WaterMeshDrawList)
+		{
+
+			const auto& transformData = m_CurTransformMap->at(meshKey);
+			uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+			//RenderMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+		}
+		*/
+
+		for (auto& [shaderName, meshDrawList] : m_GeometryPassInstancesDrawList)
+		{
+			if (!m_GeometryPassInstances.contains(shaderName))
+				continue;
+
+			if (m_GeometryPassInstances.at(shaderName).second == false)
+				continue;
+			
+			for (auto& [meshKey, dc] : meshDrawList)
+			{
+				const auto& transformData = m_CurTransformMap->at(meshKey);
+				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+				RenderMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+			}
+		}
+
 		Renderer::EndRenderPass(m_PreDepthPass);
 
 
@@ -2325,34 +2474,7 @@ namespace Proof
 
 			m_Timers.GeometrySkyBoxPass = timer.ElapsedMillis();
 		}
-	#if 0
-		std::unordered_set<std::string> addedInstances;
-		for (auto& [shaderName, meshDrawList] : m_GeometryPassInstancesDrawList)
-		{
-			if (!m_GeometryPassInstances.contains(shaderName))
-			{
-				m_GeometryPassInstances[shaderName] = CreateGeometryPassInstance(shaderName);
-				addedInstances.insert({ shaderName });
-				continue;
-			}
-			if (addedInstances.contains(shaderName))
-				continue;
-			auto renderPass = m_GeometryPassInstances[shaderName];
-			renderPass->SetInput("CameraData", m_UBCameraBuffer);
-
-			Renderer::BeginRenderPass(m_CommandBuffer, renderPass);
-
-			for (auto& [meshKey, dc] : meshDrawList)
-			{
-				const auto& transformData = m_CurTransformMap->at(meshKey);
-				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
-				//RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, dc.OverrideMaterial, renderPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
-				RenderMesh(m_CommandBuffer, dc.Mesh, renderPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
-			}
-
-			Renderer::EndRenderPass(renderPass);
-		}
-	#endif
+	
 
 		
 		{
@@ -2401,7 +2523,56 @@ namespace Proof
 			*/
 			m_Timers.GeometryMeshPass = timer.ElapsedMillis();
 		}
+	#if 1
+		std::unordered_set<std::string> addedInstances;
+		for (auto& [shaderName, meshDrawList] : m_GeometryPassInstancesDrawList)
+		{
+			if (!m_GeometryPassInstances.contains(shaderName))
+			{
+				// we do not attach to depth because the vertex shader 
+				// in water shader will change so it will create wierd effect
+				// only put attach to depth when you are sure u are not changing any vertex position
 
+				bool drawWithDepth = false;
+				m_GeometryPassInstances[shaderName] = { CreateGeometryPassInstance(shaderName,drawWithDepth), drawWithDepth };
+				addedInstances.insert({ shaderName });
+				continue;
+			}
+			if (addedInstances.contains(shaderName))
+				continue;
+			auto renderPass = m_GeometryPassInstances[shaderName].first;
+
+			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, renderPass);
+
+			for (auto& [meshKey, dc] : meshDrawList)
+			{
+				const auto& transformData = m_CurTransformMap->at(meshKey);
+				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+				RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, dc.OverrideMaterial, renderPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+			}
+
+			Renderer::EndRenderPass(renderPass);
+		}
+	#endif
+	#if 0
+		{
+
+			{
+				Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_WaterPass);
+
+				for (auto& [meshKey, dc] : m_WaterMeshDrawList)
+				{
+					const auto& transformData = m_CurTransformMap->at(meshKey);
+					uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+
+					RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, dc.OverrideMaterial, m_WaterPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+
+				}
+
+				Renderer::EndRenderPass(m_WaterPass);
+			}
+		}
+	#endif
 		m_Timers.GeometryPass = geometryPassTimer.ElapsedMillis();
 	}
 
@@ -2487,6 +2658,7 @@ namespace Proof
 			Renderer::EndRenderPass(wireFramePass);
 			m_Timers.DrawPhysicsColliders = physicsDebugMesh.Elapsed();
 		}
+		/*
 		{
 			auto transformBuffer = m_SubmeshTransformBuffers[frameIndex].Buffer;
 
@@ -2505,6 +2677,7 @@ namespace Proof
 				Renderer::EndRenderPass(m_WaterPass);
 			}
 		}
+		*/
 		m_Timers.CompositePass = compositeTimer.ElapsedMillis();
 	}
 	void WorldRenderer::AmbientOcclusionPass()
@@ -3569,57 +3742,7 @@ namespace Proof
 			}
 		}
 	}
-	void WorldRenderer::SubmitWaterMesh(Count<Mesh> mesh, Count<RenderMaterial> renderMaterial, const glm::mat4& transform, bool CastShadowws)
-	{
-		//SubmitPhysicsDebugMesh(mesh, transform);
-		//SubmitMesh(mesh, mesh->GetMaterialTable(), transform);
-		//return;
-
-		PF_PROFILE_FUNC();
-		PF_PROFILE_TAG("{}", mesh->GetName().c_str());
-		//TODO FASTER HASH FUNCTION FOR MESHKEY
-		PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
-
-		AssetID meshID = mesh->GetID();
-		Count<MeshSource> meshSource = mesh->GetMeshSource();
-		for (uint32_t submeshIndex : mesh->GetSubMeshes())
-		{
-			const auto& subMesh = meshSource->GetSubMeshes().at(submeshIndex);
-
-			glm::mat4 subMeshTransform = transform * mesh->GetTransform() * subMesh.Transform;
-
-			AssetID materialHandle = AssetID((uint64_t)renderMaterial.Get());
-			PF_CORE_ASSERT(materialHandle, "Render Material ID cannot be zero");
-
-			MeshKey meshKey = { meshID, materialHandle, submeshIndex, false };
-			auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
-			transformStorage.Transform = subMeshTransform;
-
-			if ((*m_PrevTransformMap).find(meshKey) == (*m_PrevTransformMap).end())
-			{
-				(*m_PrevTransformMap)[meshKey] = (*m_CurTransformMap)[meshKey];
-			}
-			// geo pass
-			{
-				auto& dc = m_WaterMeshDrawList[meshKey];
-				dc.MaterialTable = nullptr;
-				dc.OverrideMaterial = renderMaterial;
-				dc.Mesh = mesh;
-				dc.SubMeshIndex = submeshIndex;
-				dc.InstanceCount++;
-			}
-
-			if (CastShadowws)
-			{
-				auto& dc = m_MeshShadowDrawList[meshKey];
-				dc.MaterialTable = nullptr;
-				dc.OverrideMaterial = renderMaterial;
-				dc.Mesh = mesh;
-				dc.SubMeshIndex = submeshIndex;
-				dc.InstanceCount++;
-			}
-		}
-	}
+	
 	void WorldRenderer::SubmitMesh(Count<Mesh> mesh, Count<RenderMaterial> renderMaterial, const glm::mat4& transform, bool CastShadowws)
 	{
 		PF_PROFILE_FUNC();
@@ -3635,7 +3758,7 @@ namespace Proof
 
 			glm::mat4 subMeshTransform = transform * mesh->GetTransform() * subMesh.Transform;
 
-			AssetID materialHandle = (uint64_t)renderMaterial.Get();
+			AssetID materialHandle = AssetID((uint64_t)renderMaterial.Get());
 			PF_CORE_ASSERT(materialHandle, "Render Material ID cannot be zero");
 
 			MeshKey meshKey = { meshID, materialHandle, submeshIndex, false };
@@ -3855,10 +3978,47 @@ namespace Proof
 		m_LightScene.PointLightCount = pointLights.PointLights.size();
 	}
 
-	Count<RenderPass> WorldRenderer::CreateGeometryPassInstance(const std::string& shaderName)
+	Count<RenderPass> WorldRenderer::CreateGeometryPassInstance(const std::string& shaderName, bool drawWithDepth )
 	{
+		Count<RenderPass> geometryInstance;
 
-	#if 1
+		if (drawWithDepth)
+		{
+			Count<RenderPass> geometryInstance;
+			GraphicsPipelineConfiguration pipelineConfig = m_GeometryPass->GetPipeline()->GetConfig();
+			pipelineConfig.Shader = Renderer::GetShader(shaderName);
+			pipelineConfig.DebugName = fmt::format("{}_static", shaderName);
+
+			Count<GraphicsPipeline> pipeline = GraphicsPipeline::Create(pipelineConfig);
+
+			RenderPassConfig geoPassConfig;
+			geoPassConfig.DebugName = fmt::format("{}pass", shaderName);;
+			geoPassConfig.Pipeline = pipeline;
+			geoPassConfig.TargetFrameBuffer = m_GeometryPass->GetTargetFrameBuffer();
+
+			geometryInstance = RenderPass::Create(geoPassConfig);
+			return geometryInstance;
+			
+		}
+		GraphicsPipelineConfiguration pipelineConfig = m_GeometryPass->GetPipeline()->GetConfig();
+		pipelineConfig.Shader = Renderer::GetShader(shaderName);
+		pipelineConfig.DebugName = fmt::format("{}_static", shaderName);
+		pipelineConfig.Attachments.Attachments.pop_back();
+
+		auto pipeline = GraphicsPipeline::Create(pipelineConfig);
+
+		RenderPassConfig renderPassConfig;
+		renderPassConfig.DebugName = fmt::format("{} Pass",shaderName);
+		renderPassConfig.Pipeline = pipeline;
+
+		renderPassConfig.TargetFrameBuffer = m_GeometryPassNoDepthFrameBuffer;
+		geometryInstance = RenderPass::Create(renderPassConfig);
+
+		geometryInstance->AddGlobalInput(m_GlobalInputs);
+
+		return geometryInstance;
+
+	#if 0
 		FrameBufferConfig extCompFramebufferSpec;
 		extCompFramebufferSpec.DebugName = fmt::format("FrameBuffer {}",shaderName);
 		extCompFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
@@ -3897,8 +4057,7 @@ namespace Proof
 		geometryInstance->AddGlobalInput(m_GlobalInputs);
 
 		return geometryInstance;
-	#else
-
+		
 		Count<RenderPass> geometryInstance;
 		GraphicsPipelineConfiguration pipelineConfig = m_GeometryPass->GetPipeline()->GetConfig();
 		pipelineConfig.Shader = Renderer::GetShader(shaderName);

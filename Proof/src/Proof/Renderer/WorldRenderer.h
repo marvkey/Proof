@@ -169,7 +169,6 @@ namespace Proof
 		void SubmitDirectionalLight(const SBDirectionalLightsSceneData& directionaLights);
 		void SubmitPointLight(const SBPointLightSceneData& pointLights);
 		void SubmitSpotLight(const SBSpotLightSceneData& spotLights);
-		void SubmitWaterMesh(Count<Mesh> mesh, Count<RenderMaterial> renderMaterial, const glm::mat4& transform, bool CastShadowws = true);
 		void SubmitMesh(Count<Mesh> mesh, Count<RenderMaterial> renderMaterial, const glm::mat4& transform, bool CastShadowws = true);
 		void SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws = true);
 		void SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<MaterialTable> materialTable, uint32_t subMeshIndex, const glm::mat4& transform, bool CastShadowws = true);
@@ -268,8 +267,6 @@ namespace Proof
 		std::map<MeshKey, DynamicMeshDrawInfo> m_DynamicColliderDrawList;
 
 
-		Count<RenderPass> m_WaterPass;
-		std::map<MeshKey, MeshDrawInfo> m_WaterMeshDrawList;
 		std::unordered_map<std::string,std::map<MeshKey, MeshDrawInfo>> m_GeometryPassInstancesDrawList; // shaderName
 
 		Count<class Environment> m_Environment;
@@ -277,7 +274,9 @@ namespace Proof
 		uint32_t m_ShadowMapResolution;
 		// geometry pass
 		Count<RenderPass> m_GeometryPass;
-		std::unordered_map<std::string, Count<RenderPass>> m_GeometryPassInstances;
+		// shader name, (render pass, drawing with dpeth buffer)
+		std::unordered_map<std::string, std::pair<Count<RenderPass>,bool>> m_GeometryPassInstances;
+		Count<FrameBuffer> m_GeometryPassNoDepthFrameBuffer;
 		// pre pass
 		Count<RenderPass> m_PreDepthPass;
 		Count<class Image2D> m_PrevDepthImage;
@@ -420,7 +419,10 @@ namespace Proof
 		bool m_ResourcesCreated = false;
 	private:
 
-		Count<RenderPass> CreateGeometryPassInstance(const std::string& shaderName);
+		// only put attach to depth when you are sure u are not changing any vertex position
+		// if you change teh vertex positon and this is true u are going to see wierd things happen
+		// as the depth buffer drawing is different so we do not want this drawn onto depth buffer for things like water
+		Count<RenderPass> CreateGeometryPassInstance(const std::string& shaderName, bool drawWithDepth = false);
 		void Init();
 		void CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection);
 		void CalculateCascadesManualSplit(CascadeData* cascades, const glm::vec3& lightDirection);

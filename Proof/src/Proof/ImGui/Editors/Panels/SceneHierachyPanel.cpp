@@ -1762,25 +1762,19 @@ namespace Proof
 				UI::BeginPropertyGrid();
 				WaterSystem::WaterDataInfo& waterData = waterComponent.WaterSystem->WaterData;
 
+				UI::AttributeDrag("Wave Count", waterData.WaveCount, 0.2f, 0, 100);
+				ImGui::Separator();
+				
 				UI::AttributeColor("Color", waterData.Color);
 				UI::AttributeDrag("Speed", waterData.Speed, 0.25f);
+				UI::AttributeDrag("Direction", waterData.WaveDirection, 0.01f);
+				UI::AttributeSlider("Distribution", waterData.WaveDistribution, 0, 1);
+				UI::AttributeSlider("Spread", waterData.WaveSpread, 0, 1);
+
+				UI::AttributeDrag("Min Max Wavelength", waterData.MinMaxWavelength);
+				UI::AttributeDrag("Min Max Steepness", waterData.MinMaxSteepness,0.01,0,1);
+
 				UI::EndPropertyGrid();
-
-				for (uint32_t i = 0; i < waterComponent.WaterSystem->Waves.size(); i++)
-				{
-					UI::ScopedID id(fmt::format("Wave: {}", i));
-					WaterSystem::WaterWave& wave = waterComponent.WaterSystem->Waves[i];
-
-					UI::AttributeText(fmt::format("Wave: {}", i));
-					UI::BeginPropertyGrid();
-
-					UI::AttributeDrag("Steepness", wave.Steepness, 0.05f, 0, 1);
-					UI::AttributeDrag("Wavelength", wave.WaveLength, 0.25f);
-					UI::AttributeDrag("Direction", wave.Direction, 0.01f);
-
-					UI::EndPropertyGrid();
-
-				}
 
 			});
 		DrawComponents<AudioComponent>("Audio", entity, [](AudioComponent& audio)

@@ -16,7 +16,16 @@ layout(location = 9) in mat4 aPrevTransform;
 layout(std140, set=0, binding = 10) uniform WaterData
 {
 	vec4 Color;
+
 	float Speed;
+	uint WaveCount;
+	float WaveSpread; //0-1
+	float WaveDistribution; // 0-1
+
+	vec2 WaveDirection;
+	vec2 MinMaxWavelength;
+	
+	vec2 MinMaxSteepness;
 } u_WaterData;
 
 
@@ -26,12 +35,6 @@ struct WaterWave
 	float Steepness; //range (0-1)
 	float WaveLength;
 };
-
-
-layout(std140, set=0, binding = 11) uniform Waves
-{
-	WaterWave Waves[3];
-} u_Waves;
 
 struct VertexOutput
 {
@@ -73,14 +76,44 @@ void main()
 {
 	Output.Color = u_WaterData.Color;
 
+
 	vec3 gridPoint = aPosition;
 	vec3 tangent = vec3(0);
 	vec3 binormal = vec3(0);
 	vec3 p = gridPoint;
 
-	p += GerstnerWave(u_Waves.Waves[0], gridPoint, tangent, binormal);
-	p += GerstnerWave(u_Waves.Waves[1], gridPoint, tangent, binormal);
-	p += GerstnerWave(u_Waves.Waves[2], gridPoint, tangent, binormal);
+	//p += GerstnerWave(u_Waves.Waves[0], gridPoint, tangent, binormal);
+	//p += GerstnerWave(u_Waves.Waves[1], gridPoint, tangent, binormal);
+	//p += GerstnerWave(u_Waves.Waves[2], gridPoint, tangent, binormal);
+
+	for(uint i =0; i <u_WaterData.WaveCount; i++)
+	{
+		float t = i / float(u_WaterData.WaveCount - 1);
+
+		vec2 direction = normalize(u_WaterData.WaveDirection);
+
+		float waveLength = mix(u_WaterData.MinMaxWavelength.y,u_WaterData.MinMaxWavelength.x, t * u_WaterData.WaveDistribution);
+		float steepness = mix(u_WaterData.MinMaxSteepness.y,u_WaterData.MinMaxSteepness.x, t * u_WaterData.WaveDistribution);
+
+		steepness = clamp(steepness,0,1);
+
+		WaterWave wave;
+		wave.Direction = direction;
+		wave.Steepness = steepness;
+		wave.WaveLength = waveLength;
+
+		
+        // Apply diminishing influence based on the wave index
+        float influence = 1.0 / (i + 1);
+
+		p += GerstnerWave(wave, gridPoint, tangent, binormal) * influence;// Normalize displacement
+	}
+
+	//WaterWave wave;
+	//wave.Direction = vec2(0.340,0.9680);
+	//wave.Steepness = 0.4;
+	//wave.WaveLength = 30;
+	//p += GerstnerWave(wave, gridPoint, tangent, binormal);
 
 	vec3 normal = normalize(cross(binormal, tangent));
 
