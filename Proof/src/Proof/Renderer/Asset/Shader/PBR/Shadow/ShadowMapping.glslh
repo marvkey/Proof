@@ -19,7 +19,7 @@ vec3 GetShadowMapCoords(vec3 shadowMapCoords[4], uint cascade)
 float GetDirShadowBias(vec3 lightDirection)
 {
 	const float MINIMUM_SHADOW_BIAS = 0.002;
-	float bias = max(MINIMUM_SHADOW_BIAS * (1.0 - dot(m_Params.Normal, -lightDirection)), MINIMUM_SHADOW_BIAS);
+	float bias = max(MINIMUM_SHADOW_BIAS * (1.0 - dot(m_PBRParams.Normal, -lightDirection)), MINIMUM_SHADOW_BIAS);
 	return bias;
 }
 
