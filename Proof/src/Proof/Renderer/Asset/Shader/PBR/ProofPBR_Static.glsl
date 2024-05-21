@@ -1,6 +1,12 @@
 #Vertex Shader
 #version 450
+#include <PBR/PBRShaderBases/PBR.Vertex.glsl>
 
+void main() 
+{
+   ApplyPbrVertex();
+}
+/*
 #include <Common.glslh>
 
 layout(location = 0) in vec3 aPosition;
@@ -81,6 +87,7 @@ void main()
 
    gl_Position =  u_Camera.Projection * u_Camera.View * vec4(Output.WorldPosition, 1.0);
 }
+*/
 
 #Fragment Shader
 #version 450 core
@@ -164,7 +171,7 @@ layout(push_constant) uniform Material
 
 void main()
 {
-    vec2 texCoords = Input.TexCoords * u_MaterialUniform.TextureTiling + u_MaterialUniform.TextureOffset;
+    vec2 texCoords = PBR_Input.TexCoords * u_MaterialUniform.TextureTiling + u_MaterialUniform.TextureOffset;
  
    
 
@@ -173,11 +180,11 @@ void main()
     pbrSetting.Metalness = texture(u_MetallicMap, texCoords).r * u_MaterialUniform.Metalness;
     pbrSetting.Roughness = texture(u_RoughnessMap, texCoords).r * max(u_MaterialUniform.Roughness,0.00);
 
-    pbrSetting.Normal = normalize(Input.Normal);
+    pbrSetting.Normal = normalize(PBR_Input.Normal);
     if (u_MaterialUniform.NormalTexToggle)
 	{
 		pbrSetting.Normal = normalize(texture(u_NormalMap, texCoords).rgb * 2.0f - 1.0f);
-		pbrSetting.Normal = normalize(Input.WorldNormals * pbrSetting.Normal);
+		pbrSetting.Normal = normalize(PBR_Input.WorldNormals * pbrSetting.Normal);
 	}
 
     pbrSetting.TexCoords = texCoords;
