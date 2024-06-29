@@ -1644,7 +1644,7 @@ typedef enum VkBlendFactor {
     VK_BLEND_FACTOR_MAX_ENUM = 0x7FFFFFFF
 } VkBlendFactor;
 
-typedef enum VkBlendOp {
+typedef enum     {
     VK_BLEND_OP_ADD = 0,
     VK_BLEND_OP_SUBTRACT = 1,
     VK_BLEND_OP_REVERSE_SUBTRACT = 2,

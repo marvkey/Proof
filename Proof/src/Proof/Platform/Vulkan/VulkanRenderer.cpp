@@ -1,6 +1,7 @@
 #include "Proofprch.h"
 #include "VulkanRenderer.h"
 #include "Proof/Renderer/Shader.h"
+#include <glm/glm.hpp>
 
 #include <vulkan/vulkan.h>
 #include "VulkanCommandBuffer.h"
@@ -54,9 +55,9 @@ namespace Proof
 		commandBuffer.As<VulkanRenderCommandBuffer>()->EndRecord();
 	}
 
-	void VulkanRenderer::ClearImage(Count<RenderCommandBuffer> commandBuffer, Count<class Image2D> image)
+	void VulkanRenderer::ClearImage(Count<RenderCommandBuffer> commandBuffer, Count<class Image2D> image, glm::vec4 clearColorr)
 	{
-		Renderer::Submit([commandBuffer, image = image.As<VulkanImage2D>()]
+		Renderer::Submit([commandBuffer, image = image.As<VulkanImage2D>(), clearColorr]
 		{
 				
 			const auto vulkanCommandBuffer = commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer();
@@ -97,9 +98,10 @@ namespace Proof
 					0, nullptr,
 					0, nullptr,
 					1, &imageMemoryBarrier);
-			}
-			VkClearColorValue clearColor{ 0.f, 0.f, 0.f, 0.f };
-			vkCmdClearColorImage(vulkanCommandBuffer, image->GetinfoRef().ImageAlloc.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clearColor, 1, &subresourceRange);
+			}	
+			
+			VkClearColorValue vkClearColor = { clearColorr.x,clearColorr.y,clearColorr.z,clearColorr.a };
+			vkCmdClearColorImage(vulkanCommandBuffer, image->GetinfoRef().ImageAlloc.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &vkClearColor, 1, &subresourceRange);
 			{
 				VkImageMemoryBarrier imageMemoryBarrier{};
 				imageMemoryBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;

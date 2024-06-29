@@ -2,9 +2,14 @@
 #version 450
 #include <PBR/PBRShaderBases/PBR.Vertex.glsl>
 
-void main() 
+//void main() 
+//{
+//   ApplyPbrVertex();
+//}
+
+void Vertex(inout PBRVertexInput vertexinput)
 {
-   ApplyPbrVertex();
+    
 }
 /*
 #include <Common.glslh>
@@ -168,37 +173,73 @@ layout(push_constant) uniform Material
 
     vec3 EmissionOverrideColor; // if EmissionOverrideColorToggle is equal to true then we will override the emission color
 } u_MaterialUniform;
-
+/*
 void main()
 {
     vec2 texCoords = PBR_Input.TexCoords * u_MaterialUniform.TextureTiling + u_MaterialUniform.TextureOffset;
  
    
 
-    PbrSettings pbrSetting;
-    pbrSetting.Albedo = texture(u_AlbedoMap, texCoords).rgb * u_MaterialUniform.Albedo;
-    pbrSetting.Metalness = texture(u_MetallicMap, texCoords).r * u_MaterialUniform.Metalness;
-    pbrSetting.Roughness = texture(u_RoughnessMap, texCoords).r * max(u_MaterialUniform.Roughness,0.00);
+    pbrDatas pbrData;
+    pbrData.Albedo = texture(u_AlbedoMap, texCoords).rgb * u_MaterialUniform.Albedo;
+    pbrData.Metalness = texture(u_MetallicMap, texCoords).r * u_MaterialUniform.Metalness;
+    pbrData.Roughness = texture(u_RoughnessMap, texCoords).r * max(u_MaterialUniform.Roughness,0.00);
 
-    pbrSetting.Normal = normalize(PBR_Input.Normal);
+    pbrData.Normal = normalize(PBR_Input.Normal);
     if (u_MaterialUniform.NormalTexToggle)
 	{
-		pbrSetting.Normal = normalize(texture(u_NormalMap, texCoords).rgb * 2.0f - 1.0f);
-		pbrSetting.Normal = normalize(PBR_Input.WorldNormals * pbrSetting.Normal);
+		pbrData.Normal = normalize(texture(u_NormalMap, texCoords).rgb * 2.0f - 1.0f);
+		pbrData.Normal = normalize(PBR_Input.WorldNormals * pbrData.Normal);
 	}
 
-    pbrSetting.TexCoords = texCoords;
-    pbrSetting.Emission = u_MaterialUniform.Emission;
+    pbrData.TexCoords = texCoords;
+    pbrData.Emission = u_MaterialUniform.Emission;
     
     if(u_MaterialUniform.EmissionOverrideColorToggle == false)
     {
-        pbrSetting.EmissionColour = pbrSetting.Albedo;//emision
+        pbrData.EmissionColour = pbrData.Albedo;//emision
     }
     else
     {
-        pbrSetting.EmissionColour = u_MaterialUniform.EmissionOverrideColor ;//emision
+        pbrData.EmissionColour = u_MaterialUniform.EmissionOverrideColor ;//emision
     }
 
-    ApplyPBR(pbrSetting);
+    ApplyPBR(pbrData);
+     
+}
+*/
 
+void Fragment(inout PBRData pbrData)
+{
+    vec2 texCoords = PBR_Input.TexCoords * u_MaterialUniform.TextureTiling + u_MaterialUniform.TextureOffset;
+
+    pbrData.Albedo = texture(u_AlbedoMap, texCoords).rgb * u_MaterialUniform.Albedo;
+    pbrData.Metalness = texture(u_MetallicMap, texCoords).r * u_MaterialUniform.Metalness;
+    pbrData.Roughness = texture(u_RoughnessMap, texCoords).r * max(u_MaterialUniform.Roughness,0.00);
+
+    pbrData.Normal = normalize(PBR_Input.Normal);
+    if (u_MaterialUniform.NormalTexToggle)
+	{
+		pbrData.Normal = normalize(texture(u_NormalMap, texCoords).rgb * 2.0f - 1.0f);
+		pbrData.Normal = normalize(PBR_Input.WorldNormals * pbrData.Normal);
+	}
+
+    pbrData.TexCoords = texCoords;
+    pbrData.Emission = u_MaterialUniform.Emission;
+    
+    if(u_MaterialUniform.EmissionOverrideColorToggle == false)
+    {
+        pbrData.EmissionColour = u_MaterialUniform.Albedo;//emision
+    }
+    else
+    {
+        pbrData.EmissionColour = u_MaterialUniform.EmissionOverrideColor ;//emision
+    }
+    pbrData.OutFinalColor = 1;
+
+}
+
+
+void PreEndFragment()
+{
 }

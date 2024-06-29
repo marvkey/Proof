@@ -56,3 +56,6 @@ Assets:
   - Asset: 2663063277029508446
     Type: Texture
     Path: Models\kawasaki-310xultra-jet-ski\textures\JetSki_Completed_JetSki_Material_Normal.png
+  - Asset: 9631707631607995299
+    Type: Material
+    Path: Materials\Transparant.Material.ProofAsset

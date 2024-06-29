@@ -711,6 +711,7 @@ namespace Proof
     }
     void VulkanRenderPass::SetTargetFrameBuffer(Count<FrameBuffer> frame)
     {
+
         PF_CORE_ASSERT(m_Config.Pipeline->GetConfig().Attachments.GetAttachmentsImages() == frame->GetConfig().Attachments.GetAttachmentsImages(),
             fmt::format("{} renderPass and {} pipeline does not match {} framebuffer imageLayout", m_Config.DebugName, m_Config.Pipeline->GetConfig().DebugName, frame->GetConfig().DebugName).c_str());
         m_Config.TargetFrameBuffer = frame;

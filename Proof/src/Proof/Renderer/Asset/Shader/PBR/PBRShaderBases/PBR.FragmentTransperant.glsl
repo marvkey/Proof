@@ -363,11 +363,6 @@ void PBR_FinalOutput(vec3 directLighting, float shadowScale, vec3 IblEffect, vec
 
 	out_Velocity = screenPosPrev - screenPosCur;
 
-    if(outputColor == 1)
-    {
-        out_FragColor = finalEndingCOlor;
-        //out_FragColor = vec4(0,0,1,1);
-    }
 }
 
 

@@ -64,6 +64,8 @@ namespace Proof{
 		UUID GetMaterialSpecificID() {
 			return m_UniqeMaterialID;
 		}
+
+		void SetMaterialShader(const std::string& materialName,Count<class Shader> shader);
 	private:
 		const UUID m_UniqeMaterialID = UUID();
 		void SetDefault();

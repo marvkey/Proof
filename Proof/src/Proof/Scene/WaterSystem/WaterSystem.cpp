@@ -8,6 +8,7 @@
 #include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Scene/Mesh.h"
+#include "Proof/Asset/MeshImpoter.h"
 namespace Proof
 {
 	WaterSystem::WaterSystem()
@@ -40,7 +41,10 @@ namespace Proof
 	{
 		m_RenderMaterial = RenderMaterial::Create(RenderMaterialConfiguration{ "WaterSystem", Renderer::GetShader("WaterSystem") });
 		m_UBWaterDataSet = UniformBufferSet::Create(sizeof(WaterData));
-		m_Plane = MeshWorkShop::GeneratePlane(10,50);
+		m_Plane = MeshWorkShop::GeneratePlane(10, 50);
+
+		//MeshImporter importer("DefaultPlane.fbx");
+		//m_Plane = Count<Mesh>::Create(importer.ImportToMeshSource());
 		m_Plane->SetName("WaterSystemPlane");
 		AssetManager::CreateRuntimeAsset(m_Plane.As<Asset>(), "WaterSystemPlane");
 		m_RenderMaterial->Set("WaterData", m_UBWaterDataSet);

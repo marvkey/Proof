@@ -28,6 +28,7 @@ namespace Proof
 		Depth,
 		PrevDepth,
 		PrevNormal,
+		TransperantAccume,
 
 	};
 	class ViewPortEditorWorkspace : public EditorWorkspace

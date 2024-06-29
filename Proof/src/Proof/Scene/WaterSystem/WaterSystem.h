@@ -20,17 +20,17 @@ namespace Proof
 
 		struct alignas(16) WaterDataInfo
 		{
-			glm::vec4 Color{ 0.0f,0.0f,0.5f,1.0f };
+			glm::vec4 Color{ 0.36f,0.514f,0.663f,1.0f };
 
-			float Speed = 9.8f;
+			float Speed = 25;
 			uint32_t WaveCount = 5; 
 			float WaveSpread = 0.5f; // 0-1
 			float WaveDistribution = 0.5f; //0-1
 
-			glm::vec2 WaveDirection = { 1,0 };
-			glm::vec2 MinMaxWavelength = { 5,10 };
+			glm::vec2 WaveDirection = { 0.5,0.5 };
+			glm::vec2 MinMaxWavelength = { 25,50 };
 
-			glm::vec2 MinMaxSteepness = { 0.4,0.5 }; //0-1
+			glm::vec2 MinMaxSteepness = { 0.15,0.3 }; //0-1
 		} WaterData;
 
 

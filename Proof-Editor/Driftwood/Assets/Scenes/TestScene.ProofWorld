@@ -6,14 +6,14 @@ World:
         Tag: Directional Light
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [1.39626336, 0.17453292, 0]
+        Location: [0, 12.8999996, 0]
+        Rotation: [0.87266463, 0.87266463, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
       DirectionalLightComponent:
-        Color: [1, 1, 1]
+        Color: [1, 0.956862748, 0.839215696]
         Intensity: 1
     - Entity: 7501408644358868530
       TagComponent:
@@ -43,60 +43,44 @@ World:
         FreezeRotation: [true, true, true]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 1247390953420799313
+    - Entity: 14268197390572284421
       TagComponent:
-        Tag: Sky Light
+        Tag: Plane
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0.0349065848, 0.0174532924, 0]
-        Scale: [1, 1, 1]
+        Location: [11.8999996, 49, 0.100000001]
+        Rotation: [6.20988131, 0, 1.57079637]
+        Scale: [69.1999969, 1, 94.0999985]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
-      SkyLightComponent:
-        TintColor: [1, 1, 1]
-        SkyBoxLod: 0
-        MapRotation: 0
-        Intensity: 1
-        EnvironmentState: PreethamSky
-        TextureDataImage: 0
-        HosekWilkieTurbidity: 4
-        HosekWilkieGroundReflectance: 0.100000001
-        PreethamTurbidity: 4
-    - Entity: 14992545909043507417
-      TagComponent:
-        Tag: Water
-        tags: []
-      TransformComponent:
-        Location: [0, 49.2999992, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-    - Entity: 9917353022349074490
-      TagComponent:
-        Tag: Camera
-        tags: []
-      TransformComponent:
-        Location: [0, 13.3000002, 35.7000008]
-        Rotation: [-0.263544708, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 14418320729577205795
-        Children: []
-      CameraComponent:
-        NearPlane: 0.300000012
-        FarPlane: 1000
-        FOV: 45
-        UseLocalRotation: false
+      MeshComponent:
+        MeshAssetPointerID: 56
+        MaterialTable:
+          - Material: ""
+            AssetID: 9631707631607995299
+            Index: 0
+      MeshColliderComponent:
+        ColliderID: 7151186175304926505
+        IsTrigger: false
+        UseSharedShape: false
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 9768848221824772904
       TagComponent:
         Tag: TestPlayer
         tags: []
       TransformComponent:
-        Location: [0, 6.5, 0]
+        Location: [28, 21.8999996, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -141,6 +125,33 @@ World:
           - InputBindingContextHandler: ""
             InputBindingID: 6003628806341811560
             Active: true
+    - Entity: 9917353022349074490
+      TagComponent:
+        Tag: Camera
+        tags: []
+      TransformComponent:
+        Location: [0, 13.3000002, 35.7000008]
+        Rotation: [-0.263544708, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 14418320729577205795
+        Children: []
+      CameraComponent:
+        NearPlane: 0.300000012
+        FarPlane: 1000
+        FOV: 45
+        UseLocalRotation: false
+    - Entity: 14992545909043507417
+      TagComponent:
+        Tag: Water
+        tags: []
+      TransformComponent:
+        Location: [0, 58.7999992, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
     - Entity: 14418320729577205795
       TagComponent:
         Tag: Head
@@ -152,3 +163,24 @@ World:
       HierarchyComponent:
         ParentHandle: 9768848221824772904
         Children: [9917353022349074490]
+    - Entity: 12886604715736343146
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0907571167, 0.794124782, -0.165806279]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 0.5
+        EnvironmentState: HosekWilkie
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4

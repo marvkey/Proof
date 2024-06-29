@@ -6,10 +6,11 @@ layout(location = 4) in vec3 aBitangent;
 layout(location = 5) in mat4 aTransform;
 layout(location = 9) in mat4 aPrevTransform;
 
+#extension GL_ARB_explicit_attrib_location : enable
 #include <Common.glslh>
 struct PBRVertexOutput
 {
-   vec3 WorldPosition;
+    vec3 WorldPosition;
     vec3 Normal;
     mat3 WorldNormals;
     vec2 TexCoords;
@@ -24,9 +25,9 @@ struct PBRVertexOutput
 
     vec4 NormalizePositionCur; // nomralize device position current
 	vec4 NormalizePositionPrev;
+    vec3 ViewSpaceValue; // for depth wieghted blending
 };
 layout(location = 0) out PBRVertexOutput PBR_Output;
-
 
 layout(std140, set = 1, binding = 0) uniform ShadowMapProjections 
 {
@@ -40,6 +41,7 @@ struct PBRVertexInput
     vec2 TexCoords;
     vec3 Tangent; 
     vec3 Bitangent;
+    vec3 Normal;
 };
 
 
@@ -67,9 +69,21 @@ void ApplyPbrVertex(PBRVertexInput pbrvertex)
 	PBR_Output.ShadowMapCoords[3] = vec3(shadowCoords[3].xyz / shadowCoords[3].w);
 
     mat3 normalMatrix = transpose(inverse(mat3(aTransform)));
-    //PBR_Output.Normal = normalMatrix * aNormal;
-    PBR_Output.Normal = mat3(aTransform) * aNormal;
-    PBR_Output.WorldNormals = mat3(aTransform) * mat3(aTangent, aBitangent, aNormal);
+    PBR_Output.Normal = mat3(aTransform) * pbrvertex.Normal;
+    PBR_Output.WorldNormals = mat3(aTransform) * mat3(pbrvertex.Tangent, pbrvertex.Bitangent, pbrvertex.Normal);
+
+   // PBR_Output.Normal = normalMatrix * pbrvertex.Normal; 
+    //PBR_Output.Normal = mat3(aTransform) * pbrvertex.Normal;
+    //PBR_Output.WorldNormals = mat3(aTransform) * mat3(aTangent, aBitangent,aNormal);
+  //  PBR_Output.WorldNormals = mat3(aTransform) * mat3(aTangent, aBitangent,aNormal );
+        
+   // PBR_Output.Tangent = mat3(aTransform) * pbrvertex.Tangent;
+    //PBR_Output.Normal = normalMatrix * pbrvertex.Normal;
+   // PBR_Output.Bitangent = normalize(cross(PBR_Output.Normal,PBR_Output.Tangent));
+   // PBR_Output.WorldNormals = transpose(mat3(PBR_Output.Tangent, PBR_Output.Bitangent, PBR_Output.Normal));
+    
+    //PBR_Output.Normal = pbrvertex.Normal;
+   // PBR_Output.WorldNormals = mat3(aTransform) * transpose(mat3(pbrvertex.Tangent, pbrvertex.Bitangent, pbrvertex.Normal));
 
     PBR_Output.CameraPosition = u_Camera.Position;
 
@@ -83,23 +97,21 @@ void ApplyPbrVertex(PBRVertexInput pbrvertex)
 	PBR_Output.NormalizePositionPrev = posProjPrev;
 
    gl_Position =  u_Camera.Projection * u_Camera.View * vec4(PBR_Output.WorldPosition, 1.0);
+   PBR_Output.ViewSpaceValue =  (u_Camera.View * vec4(PBR_Output.WorldPosition, 1.0)).xyz;
 }
-void ApplyPbrVertex()
+
+
+void Vertex(inout PBRVertexInput vertexinput);
+void main()
 {
+    
     PBRVertexInput vertexInput;
     vertexInput.VertexPosition = aPosition;
     vertexInput.TexCoords = vec2(aTexCoords.x,1 - aTexCoords.y);
     vertexInput.Tangent = aTangent;
     vertexInput.Bitangent = aBitangent;
+    vertexInput.Normal = aNormal;
 
+    Vertex(vertexInput);
     ApplyPbrVertex(vertexInput);
-}
-
-void ApplyPbrVertex(PBRVertexInput pbrvertex, vec3 normal)
-{
-    ApplyPbrVertex(pbrvertex);
-    
-    PBR_Output.Normal = normal;
-    PBR_Output.WorldNormals = mat3(aTransform) * mat3(aTangent, aBitangent, normal);
-    //PBR_Output.WorldNormals = mat3(aTransform) * mat3(aTangent, aBitangent, aNormal);
 }

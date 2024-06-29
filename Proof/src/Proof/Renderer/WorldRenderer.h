@@ -266,6 +266,7 @@ namespace Proof
 		std::map<MeshKey, MeshDrawInfo> m_ColliderDrawList;
 		std::map<MeshKey, DynamicMeshDrawInfo> m_DynamicColliderDrawList;
 
+		std::map<MeshKey, MeshDrawInfo> m_TransparentMeshDrawList;
 
 		std::unordered_map<std::string,std::map<MeshKey, MeshDrawInfo>> m_GeometryPassInstancesDrawList; // shaderName
 
@@ -274,11 +275,14 @@ namespace Proof
 		uint32_t m_ShadowMapResolution;
 		// geometry pass
 		Count<RenderPass> m_GeometryPass;
+		Count<RenderPass> m_TransparentGeometryPass;
+		Count<RenderPass> m_TransparentPassComposite;
 		// shader name, (render pass, drawing with dpeth buffer)
 		std::unordered_map<std::string, std::pair<Count<RenderPass>,bool>> m_GeometryPassInstances;
 		Count<FrameBuffer> m_GeometryPassNoDepthFrameBuffer;
 		// pre pass
 		Count<RenderPass> m_PreDepthPass;
+		Count<RenderPass> m_PreDepthTransparentPass;
 		Count<class Image2D> m_PrevDepthImage;
 		Count<class Image2D> m_PrevNormalImage;
 		// debug

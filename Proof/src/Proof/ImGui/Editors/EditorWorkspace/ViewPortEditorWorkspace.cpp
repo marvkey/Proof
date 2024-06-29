@@ -305,6 +305,9 @@ namespace Proof
 			case Proof::ViewportEditorImage::PrevNormal:
 				currentImage = m_WorldRenderer->m_PrevNormalImage;
 				break;
+			case Proof::ViewportEditorImage::TransperantAccume:
+				currentImage = m_WorldRenderer->m_TransparentGeometryPass->GetOutput(5);
+				break;
 			default:
 				break;
 		}

@@ -58,6 +58,7 @@ namespace Proof
 		m_NeedsSaving = false;
 		AssetManager::SaveAsset(m_Material->GetID());
 	}
+
 	void Proof::MaterialEditorPanel::RenderDetailSettings()
 	{
 		std::string name = m_Material->Name;
@@ -66,6 +67,17 @@ namespace Proof
 		auto shaderName = fmt::format("Shader: {}", renderMaterial->GetConfig().Shader->GetName());
 		ImGui::Text(shaderName.c_str());
 
+		bool transparentShader = renderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBRTransparent_Static");
+
+		if (UI::AttributeBool("Transparent",transparentShader))
+		{
+			if (transparentShader)
+				m_Material->SetMaterialShader(m_Material->Name, Renderer::GetShader("ProofPBRTransparent_Static"));
+			else
+				m_Material->SetMaterialShader(m_Material->Name, Renderer::GetShader("ProofPBR_Static"));
+			// dont render this frame so the render material can be set ready in the next frame
+			return;
+		}
 		UI::PushModified(m_NeedsSaving);
 		//Albedo
 		if(UI::AttributeTreeNode("Albedo"))
@@ -88,7 +100,10 @@ namespace Proof
 			}
 			
 			ImGui::SameLine();
-			UI::AttributeColor("", m_Material->GetAlbedoColor());
+			if(!transparentShader)
+				UI::AttributeColor("", m_Material->GetAlbedoColor());
+			else
+				UI::AttributeColor("", renderMaterial->GetVector4("u_MaterialUniform.Albedo"));
 			UI::EndTreeNode();
 		}
 

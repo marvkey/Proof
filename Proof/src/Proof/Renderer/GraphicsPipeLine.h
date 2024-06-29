@@ -65,7 +65,141 @@ namespace Proof
 		Points,     // Draw only the vertices of the polygon
 		Rectangle   // Fill the polygon as rectangles (extension-specific)
 	};
-	struct GraphicsPipelineImageConfig {
+	enum class BlendFactor
+	{
+		Zero = 0,
+		One = 1,
+		SrcColor = 2,
+		OneMinusSrcColor = 3,
+		DstColor = 4,
+		OneMinusDstColor = 5,
+		SrcAlpha = 6,
+		OneMinusSrcAlpha = 7,
+		DstAlpha = 8,
+		OneMinusDstAlpha = 9,
+		ConstantColor = 10,
+		OneMinusConstantColor = 11,
+		ConstantAlpha = 12,
+		OneMinusConstantAlpha = 13,
+		SrcAlphaSaturate = 14,
+		Src1Color = 15,
+		OneMinusSrc1Color = 16,
+		Src1Alpha = 17,
+		OneMinusSrc1Alpha = 18
+	};
+	enum class BlendOperation
+	{
+		Add = 0,
+		Subtract = 1,
+		ReverseSubtract = 2,
+		Min = 3,
+		Max = 4
+	};
+	struct BlendAttachmentState
+	{
+		BlendFactor SrcColorBlendFactor = BlendFactor::SrcAlpha;
+		BlendFactor DstColorBlendFactor = BlendFactor::OneMinusSrcAlpha;
+		BlendOperation ColorBlendOperation = BlendOperation::Add;
+
+		BlendFactor SrcAlphaBlendFactor = BlendFactor::SrcAlpha;
+		BlendFactor DstAlphaBlendFactor = BlendFactor::OneMinusSrcAlpha;
+		BlendOperation AlphaBlendOperation = BlendOperation::Add;
+
+		BlendAttachmentState()
+		{
+
+		};
+
+		BlendAttachmentState(BlendFactor srcColorBlendFactor, BlendFactor dstColorBlendFactor, BlendOperation colorBlendOperation,
+			BlendFactor srcAlphaBlendFactor, BlendFactor dstAlphaBlendFactor, BlendOperation alphaBlendOperation)
+			: SrcColorBlendFactor(srcColorBlendFactor),
+			DstColorBlendFactor(dstColorBlendFactor),
+			ColorBlendOperation(colorBlendOperation),
+			SrcAlphaBlendFactor(srcAlphaBlendFactor),
+			DstAlphaBlendFactor(dstAlphaBlendFactor),
+			AlphaBlendOperation(alphaBlendOperation)
+		{
+		}
+
+		BlendAttachmentState(BlendFactor srcBlendFactor, BlendFactor dstBlendFactor, BlendOperation blendOperation)
+			: 
+			SrcColorBlendFactor(srcBlendFactor),
+			DstColorBlendFactor(dstBlendFactor),
+			ColorBlendOperation(blendOperation),
+			SrcAlphaBlendFactor(srcBlendFactor),
+			DstAlphaBlendFactor(dstBlendFactor),
+			AlphaBlendOperation(blendOperation)
+		{
+		}
+		BlendAttachmentState(BlendMode blendMode)
+		{
+			switch (blendMode)
+			{
+				case Proof::BlendMode::None:
+				{
+					SrcColorBlendFactor = BlendFactor::One;
+					DstColorBlendFactor = BlendFactor::Zero;
+					ColorBlendOperation = BlendOperation::Add;
+
+					SrcAlphaBlendFactor = BlendFactor::One;
+					DstAlphaBlendFactor = BlendFactor::Zero;
+					AlphaBlendOperation = BlendOperation::Add;
+				}
+					break;
+				case Proof::BlendMode::OneZero:
+				{
+					SrcColorBlendFactor = BlendFactor::One;
+					DstColorBlendFactor = BlendFactor::Zero;
+					ColorBlendOperation = BlendOperation::Add;
+
+					SrcAlphaBlendFactor = BlendFactor::One;
+					DstAlphaBlendFactor = BlendFactor::Zero;
+					AlphaBlendOperation = BlendOperation::Add;
+				}
+					break;
+				case BlendMode::SrcAlphaOneMinusSrcAlpha:
+				{
+
+					SrcColorBlendFactor = BlendFactor::SrcAlpha;
+					DstColorBlendFactor = BlendFactor::OneMinusSrcAlpha;
+					ColorBlendOperation = BlendOperation::Add;
+
+					SrcAlphaBlendFactor = BlendFactor::SrcAlpha;
+					DstAlphaBlendFactor = BlendFactor::OneMinusSrcAlpha;
+					AlphaBlendOperation = BlendOperation::Add;
+				}
+					break;
+
+				case BlendMode::Additive:
+				{
+					SrcColorBlendFactor = BlendFactor::SrcAlpha;
+					DstColorBlendFactor = BlendFactor::One;
+					ColorBlendOperation = BlendOperation::Add;
+
+					SrcAlphaBlendFactor = BlendFactor::SrcAlpha;
+					DstAlphaBlendFactor = BlendFactor::One;
+					AlphaBlendOperation = BlendOperation::Add;
+				}
+					break;
+
+				case BlendMode::Zero_SrcColor:
+				{
+					SrcColorBlendFactor = BlendFactor::Zero;
+					DstColorBlendFactor = BlendFactor::SrcColor;
+					ColorBlendOperation = BlendOperation::Add;
+
+					SrcAlphaBlendFactor = BlendFactor::Zero;
+					DstAlphaBlendFactor = BlendFactor::SrcAlpha;
+					AlphaBlendOperation = BlendOperation::Add;
+				}
+					break;
+				default:
+					break;
+			}
+		}
+	};
+	struct GraphicsPipelineImageConfig 
+	{
 		GraphicsPipelineImageConfig() = default;
 		GraphicsPipelineImageConfig(ImageFormat format)
 			: Format(format) {}
@@ -73,8 +207,12 @@ namespace Proof
 		ImageFormat Format = ImageFormat::None;
 		bool PresentKHr = false;
 		bool Blend = true;
+		bool OverrideBaseBlend = false;
+		// override baseBled has to enabled to use this
+		BlendAttachmentState BlendState{ BlendMode::SrcAlphaOneMinusSrcAlpha };
 	};
-	struct GraphicsPipelineAttachment {
+	struct GraphicsPipelineAttachment 
+	{
 		GraphicsPipelineAttachment() = default;
 		GraphicsPipelineAttachment(const FrameBufferConfig& config)
 		{
@@ -122,7 +260,7 @@ namespace Proof
 
 		// master swith for each ble
 		bool Blend = true;
-		BlendMode BlendMode = BlendMode::SrcAlphaOneMinusSrcAlpha;
+		BlendAttachmentState BlendMode{ BlendMode::SrcAlphaOneMinusSrcAlpha };
 
 		DepthCompareOperator DepthCompareOperator = DepthCompareOperator::LessOrEqual;
 		FrontFace FrontFace = FrontFace::ClockWise;

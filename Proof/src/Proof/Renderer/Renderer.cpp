@@ -113,6 +113,8 @@ namespace Proof {
 
 		//PBR
 		ShaderLibrary->LoadShader("ProofPBR_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl");
+		ShaderLibrary->LoadShader("ProofPBRTransparent_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBRTransparent_Static.glsl");
+		ShaderLibrary->LoadShader("ProofPBRTransparent_Composite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBRTransparent_Composite.glsl");
 
 		// predepth
 		ShaderLibrary->LoadShader("PreDepth_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PreDepth/PreDepth_Static.glsl");
@@ -927,9 +929,17 @@ namespace Proof {
 		return s_BaseTextures->BRDFLutImage;
 	}
 
-	void Renderer::ClearImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> image)
+	void Renderer::ClearImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> image, glm::vec4 clearColor)
 	{
-		s_RendererAPI->ClearImage(renderCommandBuffer, image);
+		s_RendererAPI->ClearImage(renderCommandBuffer, image, clearColor);
+	}
+
+	void Renderer::ClearRenderPassOutput(Count<RenderCommandBuffer> renderCommandBuffer, Count<RenderPass> pass, uint32_t output)
+	{
+		auto clearColor = pass->GetTargetFrameBuffer()->GetConfig().ClearColor;
+		ClearImage(renderCommandBuffer, pass->GetOutput(output).As<Image2D>(),
+			{ clearColor.X,clearColor.Y,clearColor.Z,clearColor.W });
+
 	}
 
 	void Renderer::CopyImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> sourceImage, Count<Image2D> destinationImage)

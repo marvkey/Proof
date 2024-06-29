@@ -36,6 +36,8 @@ namespace Proof {
         m_RenderMaterial = RenderMaterial::Create(name, shader);
         if (m_RenderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBR_Static"))
             m_DefaultShader = true;
+        if (m_RenderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBRTransparent_Static"))
+            m_DefaultShader = true;
         SetDefault();
     }
     Material::Material()
@@ -44,7 +46,19 @@ namespace Proof {
     {
           // means it is using pbr shader
         m_RenderMaterial = RenderMaterial::Create(RenderMaterialConfiguration(Name, Renderer::GetShader("ProofPBR_Static")));
+        if (m_RenderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBR_Static") )
+            m_DefaultShader = true;
+        if (m_RenderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBRTransparent_Static"))
+            m_DefaultShader = true;
+
+        SetDefault();
+    }
+    void Material::SetMaterialShader(const std::string& materialName,Count<class Shader> shader)
+    {
+        m_RenderMaterial = RenderMaterial::Create(materialName, shader);
         if (m_RenderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBR_Static"))
+            m_DefaultShader = true;
+        if (m_RenderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBRTransparent_Static"))
             m_DefaultShader = true;
         SetDefault();
     }
@@ -52,7 +66,10 @@ namespace Proof {
     {
         if (!m_DefaultShader)
             return;
-        SetAlbedo(glm::vec3(0.8f));
+        if(m_RenderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBRTransparent_Static"))
+            m_RenderMaterial->Set("u_MaterialUniform.Albedo", glm::vec4(0.8f));
+        else
+            SetAlbedo(glm::vec3(0.8f));
 
         SetMetalness(0.0f);
         SetRoughness(0.4f);

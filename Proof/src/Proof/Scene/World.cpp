@@ -253,6 +253,14 @@ namespace Proof {
 		// render meshes
 		{
 			{
+				//static Count<Material> transparentMaterial = Count<Material>::Create("Test Transparent", Renderer::GetShader("ProofPBRTransparent_Static"));
+				//
+				//if (!AssetManager::HasAsset(transparentMaterial))
+				//{
+				//	AssetManager::CreateRuntimeAsset(transparentMaterial);
+				//}
+				//static Count<MaterialTable> transparentMaterialTable = Count<MaterialTable>::Create();
+				//transparentMaterialTable->SetMaterial(0,transparentMaterial);
 				auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
 				for (auto entity : group)
 				{
@@ -269,9 +277,17 @@ namespace Proof {
 						//if (SelectionManager::IsEntityOrAncestorSelected(e))
 						//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
 						//else
-						worldRenderer->SubmitMesh(mesh, staticMeshComponent.MaterialTable, transform, staticMeshComponent.CastShadow);
+						//worldRenderer->SubmitMesh(mesh, staticMeshComponent.MaterialTable, transform, staticMeshComponent.CastShadow);
+
+						//if(e.GetName() == "Cube")
+						//	worldRenderer->SubmitMesh(mesh, transparentMaterialTable, transform, staticMeshComponent.CastShadow);
+						//else
+							worldRenderer->SubmitMesh(mesh, staticMeshComponent.MaterialTable, transform, staticMeshComponent.CastShadow);
+
 					}
 				}
+
+
 			}
 			{
 

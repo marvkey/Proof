@@ -19,6 +19,7 @@ void main()
 
 #Fragment Shader
 #version 450 core
+#include <Common.glslh>
 
 struct OutputBlock
 {
@@ -33,7 +34,8 @@ layout (location = 0) in OutputBlock Input;
 //uniforms
 layout (binding = 5) uniform sampler2D u_WorldTexture;
 layout (binding = 6) uniform sampler2D u_BloomTexture;
-layout (binding =7) uniform sampler2D u_DOFTexture;
+layout (binding = 7) uniform sampler2D u_DOFTexture;
+
 vec3 UpsampleTent9(sampler2D tex, float lod, vec2 uv, vec2 texelSize, float radius)
 {
 	vec4 offset = texelSize.xyxy * vec4(1.0f, 1.0f, -1.0f, 0.0f) * radius;
@@ -84,6 +86,7 @@ layout(push_constant) uniform Uniforms
 	float BloomIntensity;
 } u_Uniforms;
 
+
 void main()
 {
 	const float gamma = 2.2;
@@ -105,4 +108,6 @@ void main()
 	const float exposure = 0.8f;
 	color *= exposure;
 	out_FragColor = vec4(color, 1.0);
+
+	
 }

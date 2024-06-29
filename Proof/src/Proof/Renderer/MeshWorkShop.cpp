@@ -607,6 +607,7 @@ namespace Proof {
         float nx, ny, nz;
         for (i = 0; i < count; i++)
         {
+        #if 0
             // transform vertices
             vx = vertices[i].Position.x;
             vy = vertices[i].Position.y;
@@ -624,6 +625,34 @@ namespace Proof {
             vertices[i].Normal.x = tx[0] * nx + ty[0] * ny + tz[0] * nz;   // nx
             vertices[i].Normal.y = tx[1] * nx + ty[1] * ny + tz[1] * nz;   // ny
             vertices[i].Normal.z = tx[2] * nx + ty[2] * ny + tz[2] * nz;   // nz
+        #else
+            // transform vertices
+            glm::vec3 position = vertices[i].Position;
+            vertices[i].Position.x = tx[0] * position.x + ty[0] * position.y + tz[0] * position.z;   // x
+            vertices[i].Position.y = tx[1] * position.x + ty[1] * position.y + tz[1] * position.z;   // y
+            vertices[i].Position.z = tx[2] * position.x + ty[2] * position.y + tz[2] * position.z;   // z
+
+            // transform normals
+            glm::vec3 normal = vertices[i].Normal;
+            vertices[i].Normal.x = tx[0] * normal.x + ty[0] * normal.y + tz[0] * normal.z;   // nx
+            vertices[i].Normal.y = tx[1] * normal.x + ty[1] * normal.y + tz[1] * normal.z;   // ny
+            vertices[i].Normal.z = tx[2] * normal.x + ty[2] * normal.y + tz[2] * normal.z;   // nz
+
+            // transform tangents
+            glm::vec3 tangent = vertices[i].Tangent;
+            vertices[i].Tangent.x = tx[0] * tangent.x + ty[0] * tangent.y + tz[0] * tangent.z;   // tx
+            vertices[i].Tangent.y = tx[1] * tangent.x + ty[1] * tangent.y + tz[1] * tangent.z;   // ty
+            vertices[i].Tangent.z = tx[2] * tangent.x + ty[2] * tangent.y + tz[2] * tangent.z;   // tz
+
+            // transform bitangents
+            glm::vec3 bitangent = vertices[i].Bitangent;
+            vertices[i].Bitangent.x = tx[0] * bitangent.x + ty[0] * bitangent.y + tz[0] * bitangent.z;   // btx
+            vertices[i].Bitangent.y = tx[1] * bitangent.x + ty[1] * bitangent.y + tz[1] * bitangent.z;   // bty
+            vertices[i].Bitangent.z = tx[2] * bitangent.x + ty[2] * bitangent.y + tz[2] * bitangent.z;   // btz
+
+            // Note: Texture coordinates usually don't need to be transformed in this context
+            // as they are 2D and mapping on the plane doesn't change with axis swaps.
+        #endif
         }
     }
     std::vector<CylinderGeneratorSpecificVertex> GetUnitCircleVertices(uint32_t sectorCount, float baseRadius, float topRadius, float height)
@@ -852,7 +881,7 @@ namespace Proof {
 
     Count<class Mesh> MeshWorkShop::GeneratePlane(uint32_t numSegments, float planeSize)
     {
-          //chatgpt
+        //chatgpt
         std::vector<Vertex> vertices; std::vector<Index> indices;
         float segmentSize = planeSize / static_cast<float>(numSegments);
 
@@ -877,7 +906,8 @@ namespace Proof {
                 vertex.TexCoord.y = static_cast<float>(j) / static_cast<float>(numSegments);
 
                 // You may compute tangent and bitangent vectors later
-
+                vertex.Tangent = glm::vec3(0.0f);
+                vertex.Bitangent = glm::vec3(0.0f);
                 vertices.push_back(vertex);
             }
         }
@@ -899,9 +929,49 @@ namespace Proof {
 
                 Index index2{ topRight,bottomLeft,bottomRight };
                 indices.push_back(index2);
-               // indices.push_back(topRight);
-               // indices.push_back(bottomLeft);
-               // indices.push_back(bottomRight);
+                // indices.push_back(topRight);
+                // indices.push_back(bottomLeft);
+                // indices.push_back(bottomRight);
+            }
+        }
+
+        {
+            for (const auto& index : indices) {
+                Vertex& v0 = vertices[index.V1];
+                Vertex& v1 = vertices[index.V2];
+                Vertex& v2 = vertices[index.V3];
+
+                glm::vec3 edge1 = v1.Position - v0.Position;
+                glm::vec3 edge2 = v2.Position - v0.Position;
+
+                glm::vec2 deltaUV1 = v1.TexCoord - v0.TexCoord;
+                glm::vec2 deltaUV2 = v2.TexCoord - v0.TexCoord;
+
+                float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+
+                glm::vec3 tangent;
+                tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
+                tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
+                tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
+
+                glm::vec3 bitangent;
+                bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
+                bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
+                bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
+
+                v0.Tangent += tangent;
+                v1.Tangent += tangent;
+                v2.Tangent += tangent;
+
+                v0.Bitangent += bitangent;
+                v1.Bitangent += bitangent;
+                v2.Bitangent += bitangent;
+            }
+
+            // Normalize tangents and bitangents
+            for (auto& vertex : vertices) {
+                vertex.Tangent = glm::normalize(vertex.Tangent);
+                vertex.Bitangent = glm::normalize(vertex.Bitangent);
             }
         }
         ChangeUpAxis(3, 2, vertices);

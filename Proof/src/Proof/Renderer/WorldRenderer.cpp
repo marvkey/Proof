@@ -330,7 +330,10 @@ namespace Proof
 			m_PrevDepthImage = Image2D::Create(imageConfig);
 			m_PreDepthPass->AddGlobalInput(m_GlobalInputs);
 
-			//m_PreDepthPass->SetInput("CameraData", m_UBCameraBuffer);
+			renderPassConfig.DebugName = "PreDepth-Transparent";
+			preDepthFramebufferSpec.DebugName = renderPassConfig.DebugName;
+			renderPassConfig.TargetFrameBuffer = FrameBuffer::Create(preDepthFramebufferSpec);
+			m_PreDepthTransparentPass = RenderPass::Create(renderPassConfig);;
 
 		}
 		//foward plus
@@ -441,20 +444,23 @@ namespace Proof
 			geoFramebufferConfig.ClearColorOnLoad = false;
 			//geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32FSTENCIL8UI };
 			geoFramebufferConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA, ImageFormat::RG16F,ImageFormat::RGBA32F,ImageFormat::DEPTH32F }; // color, view limuncance, metallnessroughness,velocity, direct lighting(Point Light,Directional Light,Spotlight,Area Light)
-			geoFramebufferConfig.ClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+			geoFramebufferConfig.ClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 			geoFramebufferConfig.Attachments.Attachments.back().ExistingImage = m_PreDepthPass->GetOutput(0);
 			auto frameBuffer = FrameBuffer::Create(geoFramebufferConfig);
 
 			GraphicsPipelineConfiguration pipelinelineConfig;
+			//pipelinelineConfig.CullMode = CullMode::None;
 			pipelinelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA,ImageFormat::RG16F,ImageFormat::RGBA32F, ImageFormat::DEPTH32F }; // color, view limuncance, metallnessroughness,velocity, direct lighting(Point Light,Directional Light,Spotlight,Area Light)
 			// Don't blend with luminance in the alpha channel.
 			pipelinelineConfig.Attachments.Attachments[1].Blend = false;
+			pipelinelineConfig.Attachments.Attachments[0].Blend = false; // dont blend the first input
 
 			pipelinelineConfig.DebugName = "Geometry_Static";
 			pipelinelineConfig.Shader = Renderer::GetShader("ProofPBR_Static");
 			pipelinelineConfig.DepthCompareOperator = DepthCompareOperator::Equal;
 			pipelinelineConfig.VertexArray = staticVertexArray;
 			pipelinelineConfig.WriteDepth = false;
+			//pipelinelineConfig.Blend = false;
 
 			Count<GraphicsPipeline> pipeline = GraphicsPipeline::Create(pipelinelineConfig);
 
@@ -477,6 +483,102 @@ namespace Proof
 
 				noDepthFrameBuffer.DebugName = "Geometry No Depth";
 				m_GeometryPassNoDepthFrameBuffer = FrameBuffer::Create(noDepthFrameBuffer);
+			}
+			{
+				auto pipelineTransparent = pipelinelineConfig;
+				//pipelineTransparent.Attachments.Attachments[0].Blend = true; 
+				pipelineTransparent.DebugName = "Transparent";
+				pipelineTransparent.Shader = Renderer::GetShader("ProofPBRTransparent_Static");
+				pipelineTransparent.Attachments.Attachments.pop_back();
+				//pipelineTransparent.CullMode = CullMode::None;
+				pipelineTransparent.DepthTest = true;
+				pipelineTransparent.DepthCompareOperator = DepthCompareOperator::Less;
+				//pipelineTransparent.FrontFace = FrontFace::CounterClockWise;
+
+
+				auto& accumeAttachment = pipelineTransparent.Attachments.Attachments.emplace_back(ImageFormat::RGBA16F);//accum
+				accumeAttachment.OverrideBaseBlend = true;
+				
+				accumeAttachment.BlendState = { BlendFactor::One,BlendFactor::One,BlendOperation::Add };
+
+				auto& revealageAttachment = pipelineTransparent.Attachments.Attachments.emplace_back(ImageFormat::R);//reavelage
+				revealageAttachment.OverrideBaseBlend = true;
+				
+				revealageAttachment.BlendState.SrcColorBlendFactor = BlendFactor::Zero;
+				revealageAttachment.BlendState.DstColorBlendFactor = BlendFactor::OneMinusSrcColor;
+				revealageAttachment.BlendState.ColorBlendOperation = BlendOperation::Add;
+
+				revealageAttachment.BlendState.SrcAlphaBlendFactor = BlendFactor::Zero;
+				revealageAttachment.BlendState.DstAlphaBlendFactor = BlendFactor::OneMinusSrcAlpha;
+				revealageAttachment.BlendState.AlphaBlendOperation = BlendOperation::Add;
+				
+				revealageAttachment.BlendState = { BlendFactor::Zero,BlendFactor::OneMinusSrcColor,BlendOperation::Add };
+
+				pipelineTransparent.Attachments.Attachments.push_back(ImageFormat::DEPTH32F);// depth
+				auto transparentPipeline = GraphicsPipeline::Create(pipelineTransparent);
+
+
+				auto transparentFramebuffer = geoFramebufferConfig;
+				transparentFramebuffer.DebugName = "TransparentFrameBuffer";
+
+				transparentFramebuffer.Attachments.Attachments[0].ExistingImage = m_GeometryPass->GetOutput(0);
+				transparentFramebuffer.Attachments.Attachments[1].ExistingImage = m_GeometryPass->GetOutput(1);
+				transparentFramebuffer.Attachments.Attachments[2].ExistingImage = m_GeometryPass->GetOutput(2);
+				transparentFramebuffer.Attachments.Attachments[3].ExistingImage = m_GeometryPass->GetOutput(3);
+				transparentFramebuffer.Attachments.Attachments[4].ExistingImage = m_GeometryPass->GetOutput(4);
+				transparentFramebuffer.Attachments.Attachments.pop_back();
+				transparentFramebuffer.Attachments.Attachments.push_back(ImageFormat::RGBA16F);
+				transparentFramebuffer.Attachments.Attachments.push_back(ImageFormat::R);
+				transparentFramebuffer.Attachments.Attachments.push_back(ImageFormat::DEPTH32F);
+				transparentFramebuffer.Attachments.Attachments.back().ExistingImage = m_PreDepthPass->GetOutput(0);
+				auto frameBuffer = FrameBuffer::Create(transparentFramebuffer);
+
+				m_TransparentGeometryPass = RenderPass::Create({ "TransparentPass",transparentPipeline,frameBuffer });
+				//m_TransparentGeometryPass->SetInput("u_DepthMap", m_PreDepthPass->GetOutput(0));
+
+
+			}
+
+			{
+				//transperantComposite
+				{	
+					FrameBufferConfig framebufferSpec;
+					framebufferSpec.DebugName = "TransparentComposite";
+					framebufferSpec.Attachments = { ImageFormat::RGBA32F };
+					framebufferSpec.ClearColor = { 1.0f,1.0f,1.0f,1.0f };
+					framebufferSpec.Attachments.Attachments[0].ExistingImage = m_GeometryPass->GetOutput(0);
+					framebufferSpec.ClearColorOnLoad = false;
+					framebufferSpec.ClearDepthOnLoad = false;
+
+					auto transperantFrameBuffer = FrameBuffer::Create(framebufferSpec);
+
+					GraphicsPipelineConfiguration pipelineConfig;
+					pipelineConfig.DebugName = "TransparentComposite";
+					//pipelineConfig.VertexArray = quadVertexArray;
+					pipelineConfig.Attachments = { ImageFormat::RGBA32F };
+					pipelineConfig.CullMode = CullMode::None;
+					//pipelineConfig.FrontFace = FrontFace::CounterClockWise;
+
+					//pipelineConfig.BlendMode =
+					//{ BlendFactor::OneMinusSrcAlpha,BlendFactor::SrcAlpha,BlendOperation::Add };
+
+					pipelineConfig.Attachments.Attachments[0].BlendState =
+					{ BlendFactor::SrcAlpha,BlendFactor::OneMinusSrcAlpha,BlendOperation::Add };
+
+					pipelineConfig.Blend = true;
+					pipelineConfig.DepthTest = true;
+					pipelineConfig.WriteDepth = false;
+					pipelineConfig.Shader = Renderer::GetShader("ProofPBRTransparent_Composite");
+					pipelineConfig.DepthCompareOperator = DepthCompareOperator::Less;
+
+					auto transperantComposite = GraphicsPipeline::Create(pipelineConfig);
+
+					RenderPassConfig renderPassConfig;
+					renderPassConfig.DebugName = "TransparentComposite";
+					renderPassConfig.Pipeline = transperantComposite;
+					renderPassConfig.TargetFrameBuffer = transperantFrameBuffer;
+					m_TransparentPassComposite = RenderPass::Create(renderPassConfig);
+				}
 			}
 			/*
 			{
@@ -631,6 +733,26 @@ namespace Proof
 			m_GeometryPass->SetInput("VisibleSpotLightIndicesBuffer", m_SBVisibleSpotLightIndicesBuffer);
 
 
+			m_TransparentGeometryPass->SetInput("DirectionalLightStorageBuffer", m_SBDirectionalLightsBuffer);
+			m_TransparentGeometryPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
+			m_TransparentGeometryPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
+			m_TransparentGeometryPass->SetInput("u_IrradianceMap", m_Environment->GetIrradianceMap());
+			m_TransparentGeometryPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
+			m_TransparentGeometryPass->SetInput("u_BRDFLUT", Renderer::GetBRDFLut());
+			m_TransparentGeometryPass->SetInput("SkyBoxData", m_UBSKyBoxBuffer);
+			m_TransparentGeometryPass->SetInput("u_ShadowMap", m_ShadowPassImage);
+			m_TransparentGeometryPass->SetInput("RendererData", m_UBRenderDataBuffer);
+			m_TransparentGeometryPass->SetInput("SceneData", m_UBSceneDataBuffer);
+			m_TransparentGeometryPass->SetInput("ShadowMapProjections", m_UBCascadeProjectionBuffer);
+
+			m_TransparentGeometryPass->AddGlobalInput(m_GlobalInputs);
+
+			m_TransparentGeometryPass->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
+
+			m_TransparentGeometryPass->SetInput("VisiblePointLightIndicesBuffer", m_SBVisiblePointLightIndicesBuffer);
+			m_TransparentGeometryPass->SetInput("VisibleSpotLightIndicesBuffer", m_SBVisibleSpotLightIndicesBuffer);
+
+
 			ImageConfiguration imageConfig;
 			imageConfig.DebugName = "PrevNormalMap";
 			imageConfig.Height = 1;
@@ -648,6 +770,7 @@ namespace Proof
 			skyBoxPipelineConfig.WriteDepth = false;
 			skyBoxPipelineConfig.Shader = Renderer::GetShader("SkyBox");
 			skyBoxPipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
+			//skyBoxPipelineConfig.DepthCompareOperator = DepthCompareOperator::GreaterOrEqual;
 			skyBoxPipelineConfig.VertexArray = quadVertexArray;
 			auto skyBoxPipeline = GraphicsPipeline::Create(skyBoxPipelineConfig);
 
@@ -1713,9 +1836,9 @@ namespace Proof
 
 			//geometrypass
 			m_GeometryPass->GetTargetFrameBuffer()->Resize(viewportSize);
-
+			m_TransparentGeometryPass->GetTargetFrameBuffer()->Resize(viewportSize);
 			m_GeometryPassNoDepthFrameBuffer->Resize(viewportSize);
-
+			m_TransparentPassComposite->GetTargetFrameBuffer()->Resize(viewportSize);
 			// compoiste 
 			m_CompositePass->GetTargetFrameBuffer()->Resize(viewportSize);
 		#if 0
@@ -1882,6 +2005,7 @@ namespace Proof
 
 			m_MeshDrawList.clear();
 			m_DynamicMeshDrawList.clear();
+			m_TransparentMeshDrawList.clear();
 
 			m_MeshShadowDrawList.clear();
 			m_DynamicMeshShadowDrawList.clear();
@@ -2352,12 +2476,26 @@ namespace Proof
 			uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 			RenderMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 		}
+
 		for (auto& [meshKey, dc] : m_DynamicMeshDrawList)
 		{
 			const auto& transformData = m_CurTransformMap->at(meshKey);
 			uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 			RenderDynamicMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 		}
+	#if 0
+		for (auto& [meshKey, dc] : m_TransparentMeshDrawList)
+		{
+			const auto& transformData = m_CurTransformMap->at(meshKey);
+			uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+			RenderMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+		}
+	#endif
+		//for (auto& [mk, mc] : m_TransparentDrawList)
+		//{
+		//	const auto& transformData = m_CurTransformMap->at(meshKey);
+		//
+		//}
 		/*
 		for (auto& [meshKey, dc] : m_WaterMeshDrawList)
 		{
@@ -2456,12 +2594,17 @@ namespace Proof
 
 			//very important because its not cleared and images are recreating for the limunance
 			// it affects the HBAO so much
-			Renderer::ClearImage(m_CommandBuffer, m_GeometryPass->GetOutput(1).As<Image2D>());
-			Renderer::ClearImage(m_CommandBuffer, m_GeometryPass->GetOutput(2).As<Image2D>()); //clear metallnessRougness
-			Renderer::ClearImage(m_CommandBuffer, m_GeometryPass->GetOutput(3).As<Image2D>()); //clear velocity
-			Renderer::ClearImage(m_CommandBuffer, m_GeometryPass->GetOutput(4).As<Image2D>()); //clear directLighting
-		}
+			Renderer::ClearRenderPassOutput(m_CommandBuffer, m_GeometryPass, 0);
+			Renderer::ClearRenderPassOutput(m_CommandBuffer, m_GeometryPass, 1);
+			Renderer::ClearRenderPassOutput(m_CommandBuffer, m_GeometryPass, 2);
+			Renderer::ClearRenderPassOutput(m_CommandBuffer, m_GeometryPass, 3);
+			Renderer::ClearRenderPassOutput(m_CommandBuffer, m_GeometryPass, 4);
 
+			Renderer::ClearRenderPassOutput(m_CommandBuffer, m_TransparentGeometryPass, 5);//accum
+			Renderer::ClearRenderPassOutput(m_CommandBuffer, m_TransparentGeometryPass, 6);//revealage
+
+
+		}
 		{
 			PF_PROFILE_FUNC("GeometryPass::SkyBoxPass");
 
@@ -2474,14 +2617,11 @@ namespace Proof
 
 			m_Timers.GeometrySkyBoxPass = timer.ElapsedMillis();
 		}
-	
-
-		
 		{
 			PF_PROFILE_FUNC("GeometryPass::MeshPass");
 
 			Timer timer;
-			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->GetIrradianceMap());
+			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->GetPrefilterMap());
 			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
 
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_GeometryPass);
@@ -2506,9 +2646,26 @@ namespace Proof
 
 			
 			Renderer::EndRenderPass(m_GeometryPass);
+			
+			m_TransparentGeometryPass->SetInput("u_IrradianceMap", m_Environment->GetPrefilterMap());
+			m_TransparentGeometryPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
+			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_TransparentGeometryPass);
+			{
+				for (auto& [meshKey, dc] : m_TransparentMeshDrawList)
+				{
+					const auto& transformData = m_CurTransformMap->at(meshKey);
+					uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 
-		
+					if (dc.MaterialTable)
+						RenderMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, dc.MaterialTable, m_TransparentGeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+					else if (dc.OverrideMaterial)
+						RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, dc.OverrideMaterial, m_TransparentGeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+
+				}
+			}
+			Renderer::EndRenderPass(m_TransparentGeometryPass);
 			/*
+
 			{
 				PF_PROFILE_FUNC("GeometryPass::Dynamic");
 
@@ -2523,6 +2680,7 @@ namespace Proof
 			*/
 			m_Timers.GeometryMeshPass = timer.ElapsedMillis();
 		}
+		
 	#if 1
 		std::unordered_set<std::string> addedInstances;
 		for (auto& [shaderName, meshDrawList] : m_GeometryPassInstancesDrawList)
@@ -2542,6 +2700,9 @@ namespace Proof
 				continue;
 			auto renderPass = m_GeometryPassInstances[shaderName].first;
 
+			renderPass->SetInput("u_IrradianceMap", m_Environment->GetPrefilterMap());
+			renderPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
+
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, renderPass);
 
 			for (auto& [meshKey, dc] : meshDrawList)
@@ -2553,7 +2714,21 @@ namespace Proof
 
 			Renderer::EndRenderPass(renderPass);
 		}
+
+		{
+
+			m_TransparentPassComposite->SetInput("u_TransperantAccum", m_TransparentGeometryPass->GetOutput(5));
+			m_TransparentPassComposite->SetInput("u_TransperantReveal", m_TransparentGeometryPass->GetOutput(6));
+
+			Renderer::BeginRenderPass(m_CommandBuffer, m_TransparentPassComposite);
+			Renderer::DrawArrays(m_CommandBuffer, 3, 1);
+			//Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_TransparentPassComposite);
+			//
+			Renderer::EndRenderPass(m_TransparentPassComposite);
+		}
+		
 	#endif
+	
 	#if 0
 		{
 
@@ -2622,6 +2797,8 @@ namespace Proof
 			else
 				m_CompositeMaterial->Set("u_DOFTexture", blackTexture);
 
+
+			
 
 			Renderer::SubmitFullScreenQuad(m_CommandBuffer, m_CompositePass, m_CompositeMaterial);
 			Renderer::EndRenderPass(m_CompositePass);
@@ -3714,6 +3891,8 @@ namespace Proof
 			AssetID materialHandle = materialTable->HasMaterial(materialIndex) ? materialTable->GetMaterial(materialIndex)->GetID() : mesh->GetMaterialTable()->GetMaterial(materialIndex)->GetID();
 			PF_CORE_ASSERT(materialHandle, "Material ID cannot be zero");
 
+			Count<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+
 			MeshKey meshKey = { meshID, materialHandle, submeshIndex, false };
 			auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
 			transformStorage.Transform = subMeshTransform;
@@ -3724,7 +3903,7 @@ namespace Proof
 			}
 			// geo pass
 			{
-				auto& dc = m_MeshDrawList[meshKey];
+				auto& dc =  material->GetRenderMaterial()->GetConfig().Shader == Renderer::GetShader("ProofPBR_Static") ? m_MeshDrawList[meshKey] : m_TransparentMeshDrawList[meshKey];
 				dc.MaterialTable = materialTable;
 				dc.Mesh = mesh;
 				dc.SubMeshIndex = submeshIndex;
@@ -3779,15 +3958,15 @@ namespace Proof
 				dc.InstanceCount++;
 			}
 
-			if (CastShadowws)
-			{
-				auto& dc = m_MeshShadowDrawList[meshKey];
-				dc.MaterialTable = nullptr;
-				dc.OverrideMaterial = renderMaterial;
-				dc.Mesh = mesh;
-				dc.SubMeshIndex = submeshIndex;
-				dc.InstanceCount++;
-			}
+			//if (CastShadowws)
+			//{
+			//	auto& dc = m_MeshShadowDrawList[meshKey];
+			//	dc.MaterialTable = nullptr;
+			//	dc.OverrideMaterial = renderMaterial;
+			//	dc.Mesh = mesh;
+			//	dc.SubMeshIndex = submeshIndex;
+			//	dc.InstanceCount++;
+			//}
 		}
 	}
 
@@ -4016,6 +4195,23 @@ namespace Proof
 
 		geometryInstance->AddGlobalInput(m_GlobalInputs);
 
+		
+		geometryInstance->SetInput("DirectionalLightStorageBuffer", m_SBDirectionalLightsBuffer);
+		geometryInstance->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
+		geometryInstance->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
+		geometryInstance->SetInput("u_IrradianceMap", m_Environment->GetIrradianceMap());
+		geometryInstance->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
+		geometryInstance->SetInput("u_BRDFLUT", Renderer::GetBRDFLut());
+		geometryInstance->SetInput("SkyBoxData", m_UBSKyBoxBuffer);
+		geometryInstance->SetInput("u_ShadowMap", m_ShadowPassImage);
+		geometryInstance->SetInput("RendererData", m_UBRenderDataBuffer);
+		geometryInstance->SetInput("SceneData", m_UBSceneDataBuffer);
+		geometryInstance->SetInput("ShadowMapProjections", m_UBCascadeProjectionBuffer);
+		
+		geometryInstance->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
+
+		geometryInstance->SetInput("VisiblePointLightIndicesBuffer", m_SBVisiblePointLightIndicesBuffer);
+		geometryInstance->SetInput("VisibleSpotLightIndicesBuffer", m_SBVisibleSpotLightIndicesBuffer);
 		return geometryInstance;
 
 	#if 0

@@ -1,6 +1,9 @@
 #Vertex Shader
 #version 450
+#include <Common.glslh>
+#include <PBR/PBRShaderBases/PBR.Vertex.glsl>
 
+/*
 //https://catlikecoding.com/unity/tutorials/flow/waves/#2
 #include <Common.glslh>
 
@@ -11,9 +14,9 @@ layout(location = 3) in vec3 aTangent;
 layout(location = 4) in vec3 aBitangent;
 layout(location = 5) in mat4 aTransform;
 layout(location = 9) in mat4 aPrevTransform;
+*/
 
-
-layout(std140, set=0, binding = 10) uniform WaterData
+layout(std140, set=0, binding = 0) uniform WaterData
 {
 	vec4 Color;
 
@@ -36,11 +39,12 @@ struct WaterWave
 	float WaveLength;
 };
 
+
 struct VertexOutput
 {
    vec4 Color;
 };
-layout(location = 0) out VertexOutput Output;
+layout(location = 21) out VertexOutput Output;
 
 
 // returns vertex
@@ -72,25 +76,23 @@ vec3 GerstnerWave(WaterWave wave, vec3 vertexPosition,inout vec3 tangent, inout 
 				d.y * (a * cos(f))
 			);
 }
-void main() 
+
+void Vertex(inout PBRVertexInput vertexInput)
 {
 	Output.Color = u_WaterData.Color;
 
+   vec3 gridPoint = vertexInput.VertexPosition;
+   vec3 tangent = vec3(1,0,0);
+   vec3 binormal = vec3(0,0,1);
+   vec3 p = gridPoint;
 
-	vec3 gridPoint = aPosition;
-	vec3 tangent = vec3(0);
-	vec3 binormal = vec3(0);
-	vec3 p = gridPoint;
-
-	//p += GerstnerWave(u_Waves.Waves[0], gridPoint, tangent, binormal);
-	//p += GerstnerWave(u_Waves.Waves[1], gridPoint, tangent, binormal);
-	//p += GerstnerWave(u_Waves.Waves[2], gridPoint, tangent, binormal);
-
-	for(uint i =0; i <u_WaterData.WaveCount; i++)
+   	for(uint i =0; i < u_WaterData.WaveCount; i++)
 	{
 		float t = i / float(u_WaterData.WaveCount - 1);
-
-		vec2 direction = normalize(u_WaterData.WaveDirection);
+		float angleOffset = u_WaterData.WaveSpread * (i - (u_WaterData.WaveCount - 1) / 2.0);
+		//float angleOffset = u_WaterData.WaveSpread * t;
+        mat2 rotation = mat2(cos(angleOffset), -sin(angleOffset), sin(angleOffset), cos(angleOffset));
+        vec2 direction = rotation * u_WaterData.WaveDirection;
 
 		float waveLength = mix(u_WaterData.MinMaxWavelength.y,u_WaterData.MinMaxWavelength.x, t * u_WaterData.WaveDistribution);
 		float steepness = mix(u_WaterData.MinMaxSteepness.y,u_WaterData.MinMaxSteepness.x, t * u_WaterData.WaveDistribution);
@@ -101,41 +103,50 @@ void main()
 		wave.Direction = direction;
 		wave.Steepness = steepness;
 		wave.WaveLength = waveLength;
-
 		
         // Apply diminishing influence based on the wave index
         float influence = 1.0 / (i + 1);
+		//influence = 1;
 
-		p += GerstnerWave(wave, gridPoint, tangent, binormal) * influence;// Normalize displacement
+		p += GerstnerWave(wave, gridPoint, tangent, binormal) *influence ;// Normalize displacement
 	}
 
-	//WaterWave wave;
-	//wave.Direction = vec2(0.340,0.9680);
-	//wave.Steepness = 0.4;
-	//wave.WaveLength = 30;
-	//p += GerstnerWave(wave, gridPoint, tangent, binormal);
+	vec3 normal = normalize(cross(binormal,tangent));
+	vertexInput.VertexPosition = p;
+	vertexInput.Normal = normal;
+	//vertexInput.Tangent = tangent;
+	//vertexInput.Bitangent = binormal;
 
-	vec3 normal = normalize(cross(binormal, tangent));
-
-    vec4 worldPos = aTransform * vec4(p,1.0);
-    gl_Position =  u_Camera.Projection * u_Camera.View * vec4(worldPos.xyz,1.0);
 }
-
-
 
 #Fragment Shader
 #version 450 core
-layout(location = 0) out vec4 out_FragColor;
 
-layout(set = 0, binding = 9) uniform sampler2D u_TextureMap;
+#include <PBR/PBRShaderBases/PBR.Fragment.glsl>
+
+layout(set = 0, binding = 1) uniform sampler2D u_TextureMap;
 
 struct VertexOutput
 {
    vec4 Color;
 };
-layout(location = 0) in VertexOutput Input;
+layout(location = 21) in VertexOutput Input;
 
-void main()
+void Fragment(inout PBRData pbrData)
 {
-    out_FragColor = Input.Color;
+    pbrData.Albedo = Input.Color.xyz;
+    pbrData.Metalness = 0;
+    pbrData.Roughness = 0.7;
+    pbrData.Normal = normalize(PBR_Input.Normal);
+
+	//pbrData.Normal = normalize(texture(u_TextureMap, PBR_Input.TexCoords).rgb * 2.0f - 1.0f);
+	//pbrData.Normal =transpose(mat3(PBR_Input.Tangent, PBR_Input.Bitangent, PBR_Input.Normal)) * PBR_Input.Normal;
+	//pbrData.Normal =transpose(mat3(PBR_Input.Tangent, PBR_Input.Bitangent, PBR_Input.Normal)) * pbrData.Normal;
+	//pbrData.Normal = normalize(PBR_Input.WorldNormals * pbrData.Normal);
+
+}
+
+
+void PreEndFragment()
+{
 }

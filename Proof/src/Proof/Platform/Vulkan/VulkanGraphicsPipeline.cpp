@@ -272,20 +272,28 @@ namespace Proof
 		//	blendAttachmentStates[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
 		//}
 		//else
+		
 		for (size_t i = 0; i < colorAttachmentCount; i++)
 		{
 			if (!m_Config.Blend)
 				break;
 
-			blendAttachmentStates[i].colorWriteMask = 0xf;
-			const auto& attachmentSpec = m_Config.Attachments.Attachments[i];
 
+			const auto& attachmentSpec = m_Config.Attachments.Attachments[i];
+			blendAttachmentStates[i] = attachmentSpec.OverrideBaseBlend ?
+				Utils::ProofToVulkanBlendAttachmentState(attachmentSpec.Blend, attachmentSpec.BlendState) :
+				Utils::ProofToVulkanBlendAttachmentState(attachmentSpec.Blend, m_Config.BlendMode);
+
+			/*
+			blendAttachmentStates[i].colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 			blendAttachmentStates[i].blendEnable = attachmentSpec.Blend ? VK_TRUE : VK_FALSE;
 
 			blendAttachmentStates[i].colorBlendOp = VK_BLEND_OP_ADD;
 			blendAttachmentStates[i].alphaBlendOp = VK_BLEND_OP_ADD;
 			blendAttachmentStates[i].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
 			blendAttachmentStates[i].dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;
+			*/
+			/*
 
 			switch (m_Config.BlendMode)
 			{
@@ -312,6 +320,7 @@ namespace Proof
 				default:
 					PF_CORE_ASSERT(false);
 			}
+			*/
 		}
 		pipelineConfig.ColorBlendInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		pipelineConfig.ColorBlendInfo.logicOpEnable = VK_FALSE;
