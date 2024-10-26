@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Matrix of type long with 4 columns and 3 rows.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct lMatrix4x3 : IReadOnlyList<long>, IEquatable<lMatrix4x3>

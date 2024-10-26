@@ -22,7 +22,7 @@ namespace AltoDemo
 		{
             m_Tc = GetComponent<TextComponent>();
             m_FurthestSpikeIndex = 4;
-            m_AngleOfGround = Ground.GetComponent<RigidBodyComponent>().Rotation.X;
+            m_AngleOfGround = Ground.GetComponent<RigidBodyComponent>().Rotation.x;
 
         }
 
@@ -42,16 +42,16 @@ namespace AltoDemo
             {
                 if (Spikes[i] == null)
                     continue;
-                if (Spikes[i].Location.Z > Player.Location.Z && Mathf.Abs(Spikes[i].Location.Z - Player.Location.Z) > 26.0f)
+                if (Spikes[i].Location.x > Player.Location.x && Mathf.Abs(Spikes[i].Location.x - Player.Location.x) > 26.0f)
                 {
-                    float currentFurthestSpikeZ = Spikes[m_FurthestSpikeIndex].Location.Z;
+                    float currentFurthestSpikeZ = Spikes[m_FurthestSpikeIndex].Location.x;
                     float offset = Proof.Random.Float(-7.0f,-13.0f);
                     float newZ = currentFurthestSpikeZ + offset;
 
                     float newY = Mathf.Tan( m_AngleOfGround) * newZ; // Trigonometric way of figuring out the new Y location Tan(theta) = Opp / Adj
 
                     m_FurthestSpikeIndex = i;
-                    Spikes[i].Location = new Vector3(Spikes[i].Location.X, -newY, newZ);
+                    Spikes[i].Location = new Vector3(Spikes[i].Location.x, -newY, newZ);
                 }
             }
         }

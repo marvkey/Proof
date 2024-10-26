@@ -281,7 +281,7 @@ namespace Proof
 			std::advance(it, index); // Move iterator to the specified index
 
 			// Invoke the delegate at the specified index with the provided arguments
-			(*(it->Stub))(it->Object, std::forward<TArgs>(args)...);
+			return (*(it->Stub))(it->Object, std::forward<TArgs>(args)...);
 		}
 
 	private:

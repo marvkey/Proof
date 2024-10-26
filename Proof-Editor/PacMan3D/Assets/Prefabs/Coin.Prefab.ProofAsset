@@ -1,0 +1,36 @@
+AssetType: Prefab
+ID: 18194615169976015386
+EntityOwner: 5822122506612604823
+Entities:
+  - Entity: 5822122506612604823
+    TagComponent:
+      Tag: Coin
+      tags: [Gold Coin]
+    TransformComponent:
+      Location: [-41.2408447, 26.7927704, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 50
+      MaterialTable:
+        - Material: ""
+          AssetID: 5196314860968098635
+          Index: 0
+    BoxColliderComponent:
+      IsTrigger: true
+      Center: [0, 0, 0]
+      Size: [1, 1, 1]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Static
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete

@@ -16,7 +16,7 @@ namespace Proof.Swizzle
     /// <summary>
     /// Temporary Vector of type Half with 2 components, used for implementing swizzling for hVector2.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
    
     [StructLayout(LayoutKind.Sequential)]
     public struct swizzle_hVector2

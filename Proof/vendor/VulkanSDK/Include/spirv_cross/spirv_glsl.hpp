@@ -820,7 +820,7 @@ protected:
 
 	// Used when expressions emit extra opcodes with their own unique IDs,
 	// and we need to reuse the IDs across recompilation loops.
-	// Currently used by NMin/Max/Clamp implementations.
+	// Currently used by NMin/Max/ClampEdge implementations.
 	std::unordered_map<uint32_t, uint32_t> extra_sub_expressions;
 
 	SmallVector<TypeID> workaround_ubo_load_overload_types;

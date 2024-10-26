@@ -108,7 +108,7 @@ namespace Proof
             imageConfig.Width = m_Config.Width;
             imageConfig.Height = m_Config.Height;
 
-            m_DepthImage = Count<VulkanImage2D>::Create(imageConfig, VK_SAMPLE_COUNT_1_BIT);
+            m_DepthImage = Image2D::Create(imageConfig).As<VulkanImage2D>();
             #if  0
 
             Renderer::SubmitCommand([&](CommandBuffer* cmdBuffer) {

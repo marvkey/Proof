@@ -102,6 +102,8 @@ namespace Proof::ScriptUtils
 
 					if (PF_CORE_CLASS(InputBindingContext) && typeClass == PF_CORE_CLASS(InputBindingContext)->Class)
 						return ScriptFieldType::InputBindingContext;
+					if (PF_CORE_CLASS(UIPanel) && typeClass == PF_CORE_CLASS(UIPanel)->Class)
+						return ScriptFieldType::UIPanel;
 					break;
 				}
 			case MONO_TYPE_SZARRAY:
@@ -201,10 +203,11 @@ namespace Proof::ScriptUtils
 				case ScriptFieldType::Texture2D: return ScriptEngine::CreateManagedObject("Proof.Texture2D", *(AssetID*)data);
 				case ScriptFieldType::InputAction: return ScriptEngine::CreateManagedObject("Proof.InputAction", *(AssetID*)data);
 				case ScriptFieldType::InputBindingContext: return ScriptEngine::CreateManagedObject("Proof.InputBindingContext", *(AssetID*)data);
+				case ScriptFieldType::UIPanel: return ScriptEngine::CreateManagedObject("Proof.UIPanel", *(AssetID*)data);
 			}
 		}
 
-		PF_CORE_ASSERT(false, "Unsupported value type!");
+		PF_CORE_ASSERT(false, fmt::format("Unsupported value type! {}",EnumReflection::EnumString(dataType)).c_str());
 		return nullptr;
 	}
 
@@ -378,6 +381,7 @@ namespace Proof::ScriptUtils
 			case ScriptFieldType::Texture2D:
 			case ScriptFieldType::InputAction:
 			case ScriptFieldType::InputBindingContext:
+			case ScriptFieldType::UIPanel:
 				{
 					Buffer handleBuffer = GetFieldValue(obj, "m_ID", ScriptFieldType::AssetID, false);
 					result.Write(handleBuffer.Data, sizeof(AssetID));
@@ -507,7 +511,12 @@ namespace Proof::ScriptUtils
 			return;
 
 		MonoExceptionInfo exceptionInfo = GetExceptionInfo(exception);
-		PF_ENGINE_ERROR("{0}: {1}. Source: {2}, Stack Trace: {3}", exceptionInfo.TypeName, exceptionInfo.Message, exceptionInfo.Source, exceptionInfo.StackTrace);
+		PF_EC_ERROR("{0}: {1}. Source: {2}, Stack Trace: {3}", exceptionInfo.TypeName, exceptionInfo.Message, exceptionInfo.Source, exceptionInfo.StackTrace);
+
+		MonoString* exceptionString = mono_object_to_string(exception, nullptr);
+
+		PF_EC_ERROR(ScriptUtils::MonoStringToUTF8(exceptionString));
+
 	}
 
 }

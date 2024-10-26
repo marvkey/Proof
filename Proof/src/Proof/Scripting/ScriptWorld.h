@@ -105,6 +105,7 @@ namespace Proof
 
 		void BeginRuntime();
 		void OnUpdate(FrameTime frame);
+		void OnPostUpdate(FrameTime frame);
 		void EndRuntime();
 	private:
 

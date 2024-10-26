@@ -38,6 +38,145 @@ namespace Proof
 	};
 	static Special< AssetManagerData> s_AssetManagerData;
 
+	template<class AssetClass>
+	struct AssetKeeper
+	{
+
+	public:
+
+		AssetKeeper()
+		{
+
+		};
+
+		AssetKeeper(Count<AssetClass> asset)
+		{
+			SetAssetID(asset->GetID());
+		}
+
+		AssetKeeper(AssetID id )
+		{
+			SetAssetID(id);
+		}
+
+		Count<AssetClass> GetAsset()
+		{
+			if (IsValid())
+				return nullptr;
+
+			return AssetManager::GetAsset<Asset>(m_AssetID).As<AssetClass>();
+		}
+
+		Count<class Asset> GetAsBaseAsset()
+		{
+			if (IsValid())
+				return AssetManager::GetAsset<Asset>(m_AssetID);
+
+			return nullptr;
+
+		}
+
+		AssetID GetAssetID()
+		{
+			if (IsValid())
+				return m_AssetID;
+
+			return AssetID(0);
+
+		}
+		void SetAssetID(AssetID id)
+		{
+			if (AssetManager::HasAssetAndAssetType(id, AssetClass::GetStaticType()))
+				m_AssetID = id;
+		}
+
+		bool IsValid() const
+		{
+			if (AssetManager::HasAssetAndAssetType(m_AssetID, AssetClass::GetStaticType()))
+				return true;
+
+			m_AssetID = 0;
+			return false;
+		}
+
+		operator AssetID() const { return m_AssetID; }
+		operator bool() const { return IsValid(); }
+
+	private:
+		mutable AssetID m_AssetID = {0};
+	};
+	
+
+	struct MultiTypeAssetHolder
+	{
+		MultiTypeAssetHolder(std::initializer_list<AssetType> types) :
+			m_SupportedTypes(types)
+		{
+
+		}
+
+		MultiTypeAssetHolder(AssetID id)
+		{
+			SetAssetID(id);
+		}
+
+		template<typename AssetClass>
+		Count<AssetClass> GetAsset()
+		{
+			return GetAsBaseAsset().As<AssetClass>();
+		}
+
+		Count<class Asset> GetAsBaseAsset()
+		{
+			if (IsValid())
+				return AssetManager::GetAsset<Asset>(m_AssetID);
+		}
+
+		AssetID GetAssetID()
+		{
+			if (IsValid())
+				return m_AssetID;
+
+			return m_AssetID;
+
+		}
+		void SetAssetID(AssetID id)
+		{
+			if (!AssetManager::HasAsset(id))
+				return;
+
+			auto& assetInfo = AssetManager::GetAssetInfo(id);
+
+			
+			for (auto type : m_SupportedTypes)
+			{
+				if (type == assetInfo.Type)
+				{
+					m_AssetID = id;
+					break;
+				}
+			}
+			m_AssetID = id;
+
+		}
+
+		bool IsValid() const
+		{
+			if (AssetManager::HasAsset(m_AssetID))
+				return true;
+
+			m_AssetID = 0;
+			return false;
+		}
+
+		operator AssetID() const { return m_AssetID; }
+		operator bool() const { return IsValid(); }
+
+	private:
+		mutable AssetID m_AssetID = { 0 };
+		std::unordered_set<AssetType> m_SupportedTypes;
+	};
+
 	void AssetManager::Init(AssetManagerConfiguration& assetManagerConfiguration) {
 
 		ScopeTimer scopeTimer(__FUNCTION__);

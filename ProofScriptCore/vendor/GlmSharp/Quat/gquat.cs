@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Quaternionernion of type T.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct gQuaternion<T> : IReadOnlyList<T>, IEquatable<gQuaternion<T>>

@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Matrix of type bool with 4 columns and 3 rows.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct bMatrix4x3 : IReadOnlyList<bool>, IEquatable<bMatrix4x3>

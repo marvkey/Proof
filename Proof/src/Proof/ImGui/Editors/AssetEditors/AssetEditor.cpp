@@ -13,6 +13,7 @@
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Input/Input.h"
 #include "Proof/ImGui/Editors/AssetEditors/PrefabEditor.h"
+#include "GuiEditorPanel.h"
 #include "InputActionPanel.h"
 #include "InputBindingContextPanel.h"
 namespace Proof 
@@ -193,10 +194,12 @@ namespace Proof
 		RegisterEditor(AssetType::PhysicsMaterial);
 		RegisterEditor(AssetType::ParticleSystem);
 		RegisterEditor(AssetType::Mesh);
+		RegisterEditor(AssetType::DynamicMesh);
 		RegisterEditor(AssetType::MeshCollider);
 		RegisterEditor(AssetType::Prefab);
 		RegisterEditor(AssetType::InputAction);
 		RegisterEditor(AssetType::InputBindingContext);
+		RegisterEditor(AssetType::UIPanel);
 	}
 
 	void AssetEditorPanel::UnregisterAllEditors()
@@ -288,6 +291,7 @@ namespace Proof
 					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<PrefabEditorPanel>::Create();
 					break;
 				case Proof::AssetType::UIPanel:
+					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<GuiEditorPanel>::Create();
 					break;
 				case Proof::AssetType::ParticleSystem:
 					//s_Editors[asset->GetAssetType()][asset->GetID()] = Count<ParticleSystemEditorPanel>::Create();

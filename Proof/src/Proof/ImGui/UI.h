@@ -1,6 +1,5 @@
 #pragma once
 #include "Proof/Core/SmartPointer.h"
-#include "Proof/Renderer/Texture.h"
 #include "Proof/Resources/EnumReflection.h"
 #include "Proof/Math/Math.h"
 #include "Proof/Asset/AssetTypes.h"
@@ -18,6 +17,8 @@ namespace Proof
 	class Image;
 	class Texture2D;
 	class ArrayFieldStorage;
+	class Image2D;
+	class Asset;
 }
 namespace Proof::UI 
 {
@@ -62,7 +63,7 @@ namespace Proof::UI
 
 	// does the drag adn drop
 	bool AttributeAssetTextBar(const std::string& label, AssetID& ID, AssetType type, bool includeRemove = true);
-	bool AttributeAssetTextBar(const std::string& label, Count<class Asset> asset, AssetType type, bool includeRemove = true);
+	bool AttributeAssetTextBar(const std::string& label, Count<Asset> asset, AssetType type, bool includeRemove = true);
 	bool AttributeEntity(const std::string& label,Count < class World > worldContext, UUID& entityID);
 
 	bool AttributeSlider(const std::string& label, uint8_t& value, uint8_t min, uint8_t max, const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%d");

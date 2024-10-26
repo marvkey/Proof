@@ -24914,7 +24914,7 @@ static ma_result ma_device_data_loop__dsound(ma_device* pDevice)
                             /* Same loop iteration. The available bytes wraps all the way around from the virtual write cursor to the physical play cursor. */
                             if (physicalPlayCursorInBytes <= virtualWriteCursorInBytesPlayback) {
                                 availableBytesPlayback  = (pDevice->playback.internalPeriodSizeInFrames*pDevice->playback.internalPeriods*bpfDevicePlayback) - virtualWriteCursorInBytesPlayback;
-                                availableBytesPlayback += physicalPlayCursorInBytes;    /* Wrap around. */
+                                availableBytesPlayback += physicalPlayCursorInBytes;    /* Repeat around. */
                             } else {
                                 /* This is an error. */
                                 ma_log_postf(ma_device_get_log(pDevice), MA_LOG_LEVEL_WARNING, "[DirectSound] (Duplex/Playback): Play cursor has moved in front of the write cursor (same loop iteration). physicalPlayCursorInBytes=%ld, virtualWriteCursorInBytes=%ld.\n", physicalPlayCursorInBytes, virtualWriteCursorInBytesPlayback);
@@ -25139,7 +25139,7 @@ static ma_result ma_device_data_loop__dsound(ma_device* pDevice)
                     /* Same loop iteration. The available bytes wraps all the way around from the virtual write cursor to the physical play cursor. */
                     if (physicalPlayCursorInBytes <= virtualWriteCursorInBytesPlayback) {
                         availableBytesPlayback  = (pDevice->playback.internalPeriodSizeInFrames*pDevice->playback.internalPeriods*bpfDevicePlayback) - virtualWriteCursorInBytesPlayback;
-                        availableBytesPlayback += physicalPlayCursorInBytes;    /* Wrap around. */
+                        availableBytesPlayback += physicalPlayCursorInBytes;    /* Repeat around. */
                     } else {
                         /* This is an error. */
                         ma_log_postf(ma_device_get_log(pDevice), MA_LOG_LEVEL_WARNING, "[DirectSound] (Playback): Play cursor has moved in front of the write cursor (same loop iterations). physicalPlayCursorInBytes=%ld, virtualWriteCursorInBytes=%ld.\n", physicalPlayCursorInBytes, virtualWriteCursorInBytesPlayback);
@@ -25259,7 +25259,7 @@ static ma_result ma_device_data_loop__dsound(ma_device* pDevice)
                     /* Same loop iteration. The available bytes wraps all the way around from the virtual write cursor to the physical play cursor. */
                     if (physicalPlayCursorInBytes <= virtualWriteCursorInBytesPlayback) {
                         availableBytesPlayback  = (pDevice->playback.internalPeriodSizeInFrames*pDevice->playback.internalPeriods*bpfDevicePlayback) - virtualWriteCursorInBytesPlayback;
-                        availableBytesPlayback += physicalPlayCursorInBytes;    /* Wrap around. */
+                        availableBytesPlayback += physicalPlayCursorInBytes;    /* Repeat around. */
                     } else {
                         break;
                     }
@@ -34281,7 +34281,7 @@ static ma_result ma_device_init_internal__coreaudio(ma_context* pContext, ma_dev
         pData->sampleRateOut = bestFormat.mSampleRate;
     }
 
-    /* Clamp the channel count for safety. */
+    /* ClampEdge the channel count for safety. */
     if (pData->channelsOut > MA_MAX_CHANNELS) {
         pData->channelsOut = MA_MAX_CHANNELS;
     }
@@ -50431,7 +50431,7 @@ MA_API ma_result ma_spatializer_process_pcm_frames(ma_spatializer* pSpatializer,
         }
 
 
-        /* Clamp the gain. */
+        /* ClampEdge the gain. */
         gain = ma_clamp(gain, ma_spatializer_get_min_gain(pSpatializer), ma_spatializer_get_max_gain(pSpatializer));
 
         /*

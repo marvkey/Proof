@@ -2,7 +2,6 @@
 #include "Proof/Core/SmartPointer.h"
 #include "Proof/Asset/AssetTypes.h"
 #include "Proof/Asset/AssetManager.h"
-#include "Proof/Renderer/Texture.h"
 namespace Proof
 {
 	#define MAX_INPUT_BUFFER_LENGTH 256
@@ -50,7 +49,7 @@ namespace Proof
 			Directory, Asset
 		};
 	public:
-		ContentBrowserItem(ItemType type, AssetID id, const std::string& name, const Count<Texture2D>& icon);
+		ContentBrowserItem(ItemType type, AssetID id, const std::string& name, const Count<class Texture2D>& icon);
 		virtual ~ContentBrowserItem() {}
 
 		void OnRenderBegin();

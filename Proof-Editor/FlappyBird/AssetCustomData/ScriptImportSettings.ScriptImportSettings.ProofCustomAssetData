@@ -1,0 +1,24 @@
+ScriptImportSettings:
+  Scripts:
+    - Script: FlappyBird.BirdMovement
+      ScriptName: FlappyBird.BirdMovement
+      Fields:
+        - NameID: FlappyBird.BirdMovement.ChangeCameraAction
+          Type: InputAction
+          Data: 0
+        - NameID: FlappyBird.BirdMovement.PlayerScorePanel
+          Type: UIPanel
+          Data: 0
+        - NameID: FlappyBird.BirdMovement.JumpAction
+          Type: InputAction
+          Data: 0
+    - Script: FlappyBird.CameraFollow
+      ScriptName: FlappyBird.CameraFollow
+      Fields:
+        []
+    - Script: FlappyBird.ObstacleSpawner
+      ScriptName: FlappyBird.ObstacleSpawner
+      Fields:
+        - NameID: FlappyBird.ObstacleSpawner.Obstacle
+          Type: Prefab
+          Data: 0

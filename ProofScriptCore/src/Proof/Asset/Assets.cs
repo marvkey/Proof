@@ -20,4 +20,12 @@ namespace Proof
         internal Texture2D() { m_ID = AssetID.Invalid; }
         internal Texture2D(AssetID handle) { m_ID = handle; }
     }
+
+    [RegisterCoreClassStruct]
+    public class UIPanel : Asset
+    {
+
+        internal UIPanel() { m_ID = AssetID.Invalid; }
+        internal UIPanel(AssetID handle) { m_ID = handle; }
+    }
 }

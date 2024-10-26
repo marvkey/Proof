@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Matrix of type uint with 4 columns and 4 rows.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct uMatrix4 : IReadOnlyList<uint>, IEquatable<uMatrix4>

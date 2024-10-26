@@ -35,7 +35,7 @@ namespace Proof {
 	}
 	Prefab::Prefab() {
 		m_World = Count<class World>::Create(fmt::format("Prefab {} world", GetID()));
-		m_BaseEntity = m_World->CreateEntity("Base Prefab");
+		m_BaseEntityUUID = m_World->CreateEntity("Base Prefab").GetUUID();
 	}
 	Prefab::~Prefab()
 	{
@@ -45,35 +45,39 @@ namespace Proof {
 	void Prefab::SetEntity(Entity srcEntity)
 	{
 		if (!srcEntity)return;
-		if (m_World->HasEntity(m_BaseEntity.GetUUID()))
+		if (m_World->HasEntity(GetBaseEntity().GetUUID()))
 		{
-			m_World->DeleteEntity(m_BaseEntity);
+			m_World->DeleteEntity(GetBaseEntity());
 			m_World->DeleteEntitiesfromQeue();
 		}
-		m_BaseEntity = m_World->CreateEntity();
+		m_BaseEntityUUID = m_World->CreateEntity().GetUUID();
 
-		srcEntity.GetCurrentWorld()->PrefabCopyEntity(this, srcEntity, m_BaseEntity);
+		srcEntity.GetCurrentWorld()->PrefabCopyEntity(this, srcEntity, GetBaseEntity());
+	}
+	Entity Prefab::GetBaseEntity()
+	{
+		return m_World->GetEntity(m_BaseEntityUUID);
 	}
 	void Prefab::ReCheckHierachy()
 	{
-		if (!m_World->HasEntity(m_BaseEntity.GetUUID()))
+		if (!m_World->HasEntity(GetBaseEntity().GetUUID()))
 		{
 			for (auto& [entityID, entity] : m_World->GetEntities())
 				m_World->DeleteEntity(entity);
 
 			m_World->DeleteEntitiesfromQeue();
-			m_BaseEntity = m_World->CreateEntity("Base Prefab");
+			m_BaseEntityUUID = m_World->CreateEntity("Base Prefab").GetUUID();
 		}
 		if (m_World->GetEntities().size() == 0)
 		{
-			m_BaseEntity = m_World->CreateEntity("Base Prefab");
+			m_BaseEntityUUID = m_World->CreateEntity("Base Prefab").GetUUID();
 		}
 		for (auto& [entityID,entity] : m_World->GetEntities())
 		{
-			if (entity != m_BaseEntity)
+			if (entity != GetBaseEntity())
 			{
-				if (!entity.IsDescendantOf(m_BaseEntity))
-					m_World->ParentEntity(entity, m_BaseEntity);
+				if (!entity.IsDescendantOf(GetBaseEntity()))
+					m_World->ParentEntity(entity, GetBaseEntity());
 			}
 		}
 

@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Quaternionernion of type Half.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct hQuaternion : IReadOnlyList<Half>, IEquatable<hQuaternion>

@@ -3267,7 +3267,7 @@ void ImFont::AddGlyph(const ImFontConfig* cfg, ImWchar codepoint, float x0, floa
 {
     if (cfg != NULL)
     {
-        // Clamp & recenter if needed
+        // ClampEdge & recenter if needed
         const float advance_x_original = advance_x;
         advance_x = ImClamp(advance_x, cfg->GlyphMinAdvanceX, cfg->GlyphMaxAdvanceX);
         if (advance_x != advance_x_original)

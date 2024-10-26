@@ -115,6 +115,7 @@ namespace Proof
         Count<AssemblyInfo> AppAssemblyInfo = nullptr;
 
         bool IsMonoInitialized = false;
+        bool EnableDebugging = true;
         // entity id, vecotr of all the scripts and its fields
        // FieldMap EntityFieldMap;
        // std::unordered_map<UUID, std::unordered_map<uint32_t, Coun<FieldStorageBase>>> EntityFieldMap;
@@ -172,6 +173,8 @@ namespace Proof
 
         s_ScriptEngineData->CoreDomain = mono_jit_init("ProofJITRuntime");
         PF_CORE_ASSERT(s_ScriptEngineData->CoreDomain);
+        if(s_ScriptEngineData->EnableDebugging)
+            mono_debug_domain_create(s_ScriptEngineData->CoreDomain);
 
         mono_thread_set_main(mono_thread_current());
         s_ScriptEngineData->IsMonoInitialized = true;
@@ -187,8 +190,8 @@ namespace Proof
         }
 
         s_ScriptEngineData->AppDomain = nullptr;
-        mono_jit_cleanup(s_ScriptEngineData->AppDomain);
-        s_ScriptEngineData->AppDomain = nullptr;
+        mono_jit_cleanup(s_ScriptEngineData->CoreDomain);
+        s_ScriptEngineData->CoreDomain = nullptr;
 
         s_ScriptEngineData->IsMonoInitialized = false;
     }
@@ -226,13 +229,11 @@ namespace Proof
 
         s_ScriptEngineData->CoreAssemblyInfo->ReferencedAssemblies.clear();
 
-        std::string domainName = "ProofScriptRuntime";
-        s_ScriptEngineData->CoreDomain = mono_domain_create_appdomain(domainName.data(), nullptr);
        // mono_domain_set(s_ScriptEngineData->CoreDomain, true);
         //mono_domain_set_config(s_ScriptEngineData->CoreDomain, ".", "");
 
         {
-            std::string appDomainname = "ProofScriptRuntime";
+            std::string appDomainname = "ProofScriptApp";
 
             s_ScriptEngineData->AppDomain = mono_domain_create_appdomain(appDomainname.data(), nullptr);
             mono_domain_set(s_ScriptEngineData->AppDomain, true);
@@ -260,7 +261,7 @@ namespace Proof
             return false;
         }
 
-        auto appAssemblyInfo = s_ScriptEngineData->AppAssemblyInfo;
+        Count<AssemblyInfo> appAssemblyInfo = s_ScriptEngineData->AppAssemblyInfo;
 
         appAssemblyInfo->FilePath = appPath;
         appAssemblyInfo->Assembly = LoadMonoAssembly(appPath);
@@ -417,8 +418,11 @@ namespace Proof
                 scriptWorld->DestroyEntityScript(entity,false);
             }
         }
+    #if 1
         ScriptRegistry::ShutDown();
         LoadCoreAssembly();
+    #endif
+
         LoadAppAssembly();
         ScriptFunc::RegisterFunctions();
         ScriptFunc::RegisterAllComponents();
@@ -531,13 +535,21 @@ namespace Proof
         return nullptr;
     }
 
-    void ScriptEngine::CallMethod(MonoObject* monoObject, ManagedMethod* managedMethod, const void** parameters)
+    void ScriptEngine::CallMethodInternal(MonoObject* monoObject, ManagedMethod* managedMethod, const void** parameters)
     {
         PF_PROFILE_FUNC();
 
         MonoObject* exception = NULL;
+
+        if (monoObject == nullptr || managedMethod == nullptr)
+        {
+            PF_ENGINE_WARN("ScriptEngine Attempting to call method on an invalid instance or method!");
+            return;
+        }
+       // PF_EC_INFO(managedMethod->FullName);
         mono_runtime_invoke(managedMethod->Method, monoObject, const_cast<void**>(parameters), &exception);
         
+
         ScriptUtils::HandleException(exception);
     }
     bool ScriptEngine::IsModuleValid(const std::string& classFullName)

@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Matrix of type long with 2 columns and 2 rows.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct lMatrix2 : IReadOnlyList<long>, IEquatable<lMatrix2>

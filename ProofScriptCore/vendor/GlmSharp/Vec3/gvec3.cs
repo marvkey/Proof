@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Vector of type T with 3 components.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct gVector3<T> : IReadOnlyList<T>, IEquatable<gVector3<T>>

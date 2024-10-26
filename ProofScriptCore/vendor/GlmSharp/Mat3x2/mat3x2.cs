@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Matrix of type float with 3 columns and 2 rows.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct Matrix3x2 : IReadOnlyList<float>, IEquatable<Matrix3x2>

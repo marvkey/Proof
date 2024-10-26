@@ -21,6 +21,7 @@ struct PBRParameters
 struct PBRVertexOutput
 {
     vec3 WorldPosition;
+    vec3 VertexPosition;
     vec3 Normal;
     mat3 WorldNormals;
     vec2 TexCoords;
@@ -65,7 +66,8 @@ layout(location = 1) out vec4 out_ViewNormalsLuminance;
 layout(location = 2) out vec4 out_MetalnessRoughness; //RGBA //R= metallnes, G = Roughness
 layout(location = 3) out vec2 out_Velocity; //R16G16 float, velocity
 layout(location = 4) out vec4 out_DirectLighting; //RGBA float Point Light,Directional Light,Spotlight,Area Light
-
+layout(location = 5) out vec4 out_Accum; 
+layout(location = 6) out float out_Reveal; 
 
 //environmentMap
 layout(set = 1, binding = 2) uniform samplerCube u_IrradianceMap;
@@ -312,7 +314,17 @@ vec3 PBR_GetGradient(float value)
 vec4 finalEndingCOlor;
 void PBR_FinalOutput(vec3 directLighting, float shadowScale, vec3 IblEffect, vec3 emissionColor, float emission,uint shadowCascadeIndex,float alpha,int outputColor,PBRData pbrData)
 {
-    vec3 finalColor = directLighting * shadowScale ;
+    vec3 finalColor = vec3(0);
+
+    if(pbrData.UseOnlyAlbedo)
+    {
+        pbrData.Albedo * shadowScale;
+    }
+    else
+    {
+        directLighting * shadowScale ;
+    }
+
     finalColor += CalculatePointLights(m_PBRParams.F0, PBR_Input.WorldPosition);
     finalColor += CalculateSpotLights(m_PBRParams.F0, PBR_Input.WorldPosition); //* sahdow
 
@@ -412,5 +424,16 @@ void main()
 
     
 
+}
+
+void PreEndFragment()
+{
+	float weight = clamp(pow(min(1.0, finalEndingCOlor.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
+
+	// store pixel color accumulation
+	out_Accum = vec4(finalEndingCOlor.rgb * finalEndingCOlor.a, finalEndingCOlor.a) * weight;
+	
+	// store pixel revealage threshold
+	out_Reveal = finalEndingCOlor.a;
 }
 

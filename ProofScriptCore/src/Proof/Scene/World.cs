@@ -29,7 +29,7 @@ namespace Proof
 
             return new Entity(entityID);
         }
-        public static Entity Instanciate(Prefab prefab, Transform transform)
+        public static Entity Instantiate(Prefab prefab, Transform transform)
         {
             ulong entityID = InternalCalls.World_Instanciate(prefab.ID.ToUInt64(), transform);
 
@@ -38,7 +38,7 @@ namespace Proof
 
             return new Entity(entityID);
         }
-        public static Entity Instanciate(Prefab prefab, Proof.Vector3 location)
+        public static Entity Instantiate(Prefab prefab, Proof.Vector3 location)
         {
             Transform transform;
             transform.Location = location;
@@ -86,7 +86,7 @@ namespace Proof
                 foreach (ulong entityID in list)
                 {
                     Entity entity = new Entity(entityID);
-                    scriptslist[index] = entity.As<T>();
+                    scriptslist[index] = entity.GetScript<T>();
                     index++;
                 }
                 return scriptslist;
@@ -97,7 +97,7 @@ namespace Proof
                 foreach (ulong entityID in list)
                 {
                     Entity entity = new Entity(entityID);
-                    scriptslist[index] = entity.As<T>();
+                    scriptslist[index] = entity.GetScript<T>();
                     index++;
                 }
                 return scriptslist;

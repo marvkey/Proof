@@ -19,6 +19,10 @@
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
 #include "Proof/Scene/WaterSystem/WaterSystem.h"
+#include "Proof/Scene/WaterSystem/Water.h"
+#include "Proof/Renderer/Font.h"
+#include "Proof/Renderer/UIRenderer/UIPanel.h"
+#include "Proof/Renderer/ParticleSystem.h"
 namespace Proof
 {
 
@@ -112,6 +116,8 @@ namespace Proof
 		m_MeshID = ID;
 		if (copyMaterialTable)
 			MaterialTable = Count<class MaterialTable>::CreateFrom(AssetManager::GetAsset<DynamicMesh>(m_MeshID)->GetMaterialTable());
+
+		SetSubMeshIndex(0);
 	}
 	void DynamicMeshComponent::RemoveMesh()
 	{
@@ -157,6 +163,8 @@ namespace Proof
 
 		if (mesh->HasSubMesh(setSubMeshIndex))
 			m_SubmeshIndex = setSubMeshIndex;
+
+		MaterialTable = mesh->GetMaterialTableBasedOnSubMeshIndex(m_SubmeshIndex);
 	}
 
 	void SkyLightComponent::RemoveImage()
@@ -203,18 +211,29 @@ namespace Proof
 	PlayerHUDComponent::PlayerHUDComponent(const PlayerHUDComponent& other)
 	{
 		if (other.HudTable)
-			HudTable = Count<UITable>::Create(other.HudTable->Generate());
+			HudTable = Count<UITable>::CreateFrom(other.HudTable);
+	}
+
+	PlayerHUDComponent::PlayerHUDComponent()
+	{
+		HudTable = Count<UITable>::Create();
 	}
 
 	WaterComponent::WaterComponent()
 	{
-		WaterSystem = Count<class WaterSystem>::Create();
+		Water = Count<class Water>::Create();
+	}
+
+	WaterComponent::WaterComponent(Count<class Water> water)
+	{
+		Water = water;
 	}
 
 	WaterComponent::WaterComponent(const WaterComponent& other)
 	{
-		WaterSystem = Count<class WaterSystem>::Create(other.WaterSystem);
+		Water = Count<class Water>::Create(other.Water);
 
 	}
+
 
 }

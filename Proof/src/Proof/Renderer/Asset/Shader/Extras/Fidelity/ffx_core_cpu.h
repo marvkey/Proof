@@ -180,7 +180,7 @@ FFX_STATIC FfxUInt32 ffxMax(FfxUInt32 x, FfxUInt32 y)
     return x > y ? x : y;
 }
 
-/// Clamp a value to a [0..1] range.
+/// ClampEdge a value to a [0..1] range.
 ///
 /// @param [in] x               The value to clamp to [0..1] range.
 ///

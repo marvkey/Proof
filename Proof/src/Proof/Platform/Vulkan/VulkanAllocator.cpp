@@ -27,7 +27,7 @@ namespace Proof
         PF_CORE_ASSERT(bufferInfo.size > 0, "SIze has to be bigger than 0");
         VmaAllocationCreateInfo vmaInfo = {};
         vmaInfo.usage = usage;
-        VK_CHECK_RESULT(vmaCreateBuffer(VulkanAllocator::GetVmaAllocator(), &bufferInfo, &vmaInfo, &buffer.Buffer, &buffer.Allocation, nullptr));
+         VK_CHECK_RESULT(vmaCreateBuffer(VulkanAllocator::GetVmaAllocator(), &bufferInfo, &vmaInfo, &buffer.Buffer, &buffer.Allocation, nullptr));
     }
     void VulkanAllocator::AllocateBuffer(VkBufferCreateInfo bufferInfo, VmaMemoryUsage usage, VulkanBuffer& buffer, VmaAllocationCreateFlagBits bits)
     {

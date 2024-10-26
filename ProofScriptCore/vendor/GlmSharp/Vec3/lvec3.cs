@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Vector of type long with 3 components.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct lVector3 : IReadOnlyList<long>, IEquatable<lVector3>

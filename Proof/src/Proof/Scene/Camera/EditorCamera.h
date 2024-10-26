@@ -275,7 +275,7 @@ namespace Proof
 		float m_Pitch = 0.0f, m_Yaw = 0.0f;
 
 		float m_ViewportWidth = 1280, m_ViewportHeight = 720;
-
+	public:
 		glm::mat4 m_Projection = glm::mat4(1.0f);
 	};
 }

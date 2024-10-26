@@ -128,6 +128,7 @@ namespace Proof {
 		ShaderLibrary->LoadShader("ShadowDepthPass", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Shadow/ShadowDepthPass.glsl");
 		
 		//IBL
+		ShaderLibrary->LoadShader("CubeMapToEquirectangular", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/CubeMapToEquirectangular.glsl");
 		ShaderLibrary->LoadShader("BRDFLUT", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/BRDFLut.glsl");
 		ShaderLibrary->LoadShader("EquirectangularToCubemap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EquirectangularToCubemap.glsl");
 		ShaderLibrary->LoadShader("SkyBox", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/SkyBox.glsl");
@@ -185,10 +186,14 @@ namespace Proof {
 		ShaderLibrary->LoadShader("Text2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Text2D.glsl");
 		ShaderLibrary->LoadShader("Line2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Line2D.glsl");
 		ShaderLibrary->LoadShader("Circle2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Circle2D.glsl");
+		ShaderLibrary->LoadShader("Point2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Point2D.glsl");
 
 
-		// extra
-		ShaderLibrary->LoadShader("WaterSystem", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/WaterSystem.glsl");
+		// water
+		ShaderLibrary->LoadShader("GerstnerWave", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/GerstnerWave.glsl");
+		ShaderLibrary->LoadShader("InitialSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/InitialSpectrum.glsl");
+		ShaderLibrary->LoadShader("TimeDependentSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/TimeDependentSpectrum.glsl");
+		ShaderLibrary->LoadShader("FFTWater", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWater.glsl");
 
 		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
@@ -558,8 +563,8 @@ namespace Proof {
 		ImageFormat format = ImageFormat::RGBA16F;
 		TextureConfiguration baseCubeMapConfig;
 		baseCubeMapConfig.DebugName = "Pretham Cube";
-		baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
-		baseCubeMapConfig.Filter = TextureFilter::Nearest;
+		//baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
+		//baseCubeMapConfig.Filter = TextureFilter::Nearest;
 		baseCubeMapConfig.Height = cubemapSize;
 		baseCubeMapConfig.Width = cubemapSize;
 		baseCubeMapConfig.Storage = true;
@@ -567,7 +572,7 @@ namespace Proof {
 		baseCubeMapConfig.Format = format;
 
 		uint32_t mipLevels = Utils::GetMipLevelCount(cubemapSize, cubemapSize);
-		Count<TextureCube> environmentMap = TextureCube::Create(baseCubeMapConfig);
+		Count<TextureCube> environmentMap = TextureCube::Create(baseCubeMapConfig,SamplerWrap::ClampEdge, SamplerFilter::Nearest);
 		PrethamSkyPass->SetInput("o_CubeMap", environmentMap);
 	
 		glm::vec4 params = { sunDirection,turbidity};
@@ -683,8 +688,8 @@ namespace Proof {
 		ImageFormat format = ImageFormat::RGBA16F;
 		TextureConfiguration baseCubeMapConfig;
 		baseCubeMapConfig.DebugName = "HosekWilkie";
-		baseCubeMapConfig.Wrap = TextureWrap::Repeat;
-		baseCubeMapConfig.Filter = TextureFilter::Nearest;
+		//baseCubeMapConfig.Wrap = TextureWrap::Repeat;
+		//baseCubeMapConfig.Filter = TextureFilter::Nearest;
 		baseCubeMapConfig.Height = cubemapSize;
 		baseCubeMapConfig.Width = cubemapSize;
 		baseCubeMapConfig.Storage = true;
@@ -692,7 +697,7 @@ namespace Proof {
 		baseCubeMapConfig.Format = format;
 
 		uint32_t mipLevels = Utils::GetMipLevelCount(cubemapSize, cubemapSize);
-		Count<TextureCube> environmentMap = TextureCube::Create(baseCubeMapConfig);
+		Count<TextureCube> environmentMap = TextureCube::Create(baseCubeMapConfig,SamplerWrap::Repeat,SamplerFilter::Nearest);
 		s_Data->HosekWilkiePass->SetInput("o_CubeMap", environmentMap);
 
 		Count<RenderCommandBuffer> commandBuffer = s_Data->RenderCommandBuffer;
@@ -748,9 +753,9 @@ namespace Proof {
 			baseCubeMapConfig.Storage = true;
 			baseCubeMapConfig.GenerateMips = false;
 			baseCubeMapConfig.Format = format;
-			baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
+			//baseCubeMapConfig.Wrap = TextureWrap::ClampEdge;
 
-			environmentMapImageCube = TextureCube::Create(baseCubeMapConfig, path);
+			environmentMapImageCube = TextureCube::Create(baseCubeMapConfig, path,SamplerWrap::ClampEdge,SamplerFilter::Linear);
 		}
 		const uint32_t irradianceFilterRate = 32;
 		Count<TextureCube> irradianceMap;
@@ -761,9 +766,9 @@ namespace Proof {
 			irradianceTextureConfig.Height = irradianceFilterRate;
 			irradianceTextureConfig.Storage = true;
 			irradianceTextureConfig.Format = format;
-			irradianceTextureConfig.Wrap = TextureWrap::ClampEdge;
+			//irradianceTextureConfig.Wrap = TextureWrap::ClampEdge;
 			irradianceTextureConfig.GenerateMips = true;
-			irradianceMap = TextureCube::Create(irradianceTextureConfig);
+			irradianceMap = TextureCube::Create(irradianceTextureConfig,SamplerWrap::ClampEdge,SamplerFilter::Linear);
 		}
 
 		{
@@ -804,10 +809,10 @@ namespace Proof {
 			prefilterTextureConfig.Height = prefilterFilterRate;
 			prefilterTextureConfig.Storage = true;
 			prefilterTextureConfig.Format = format;
-			prefilterTextureConfig.Wrap = TextureWrap::ClampEdge;
+			//prefilterTextureConfig.Wrap = TextureWrap::ClampEdge;
 			prefilterTextureConfig.GenerateMips = true;
 
-			prefilterMap = TextureCube::Create(prefilterTextureConfig, path);
+			prefilterMap = TextureCube::Create(prefilterTextureConfig, path,SamplerWrap::ClampEdge,SamplerFilter::Linear);
 
 		}
 
@@ -902,7 +907,8 @@ namespace Proof {
 
 				auto prethamSky = environment->m_PreethamSky;
 				auto texture = CreatePreethamSky(prethamSky.Turbidity, prethamSky.SunDirection);
-				environment->m_PrefilterMap = texture; environment->m_IrradianceMap = texture;
+				environment->m_PrefilterMap = texture; 
+				environment->m_IrradianceMap = texture;
 			}
 			break;
 			case Proof::EnvironmentState::EnvironmentTexture:
@@ -919,8 +925,65 @@ namespace Proof {
 			}
 			break;
 			default:
+				continue;
 				break;
 			}
+			// aspect ratio 2 : 1
+		# if 0
+			const uint32_t textureWidth = (environment->m_PrefilterMap->GetWidth()/2) * 4;
+			const uint32_t textureHeight =  (environment->m_PrefilterMap->GetHeight()/2) * 2;
+
+			Count<Texture2D> prefilterMap2D;
+			{
+				TextureConfiguration prefilterTextureConfig;
+				prefilterTextureConfig.DebugName = environment->GetPrefilterMap()->GetSpecification().DebugName + "2D";
+				prefilterTextureConfig.Width = textureWidth;
+				prefilterTextureConfig.Height = textureHeight;
+				prefilterTextureConfig.Storage = true;
+				prefilterTextureConfig.Format = environment->GetPrefilterMap()->GetSpecification().Format;
+				//prefilterTextureConfig.Wrap = TextureWrap::Repeat;
+				//prefilterTextureConfig.GenerateMips = true;
+
+				prefilterMap2D = Texture2D::Create(prefilterTextureConfig,SamplerWrap::Repeat,SamplerFilter::Linear);
+
+			}
+
+			{
+				
+
+				ComputePipelineConfig computePipelineConfig;
+				computePipelineConfig.DebugName = "CubeMapToEquirectangular";
+				computePipelineConfig.Shader = GetShader("CubeMapToEquirectangular");
+
+				Count<ComputePipeline> computePipeline = ComputePipeline::Create(computePipelineConfig);
+				ComputePassConfiguration computePassConfig;
+				computePassConfig.DebugName = "CubeMapToEquirectangular Pass";
+				computePassConfig.Pipeline = computePipeline;
+
+				auto computePass = ComputePass::Create(computePassConfig);
+				computePass->SetInput("u_CubeMap", environment->GetPrefilterMap());
+				computePass->SetInput("u_EquirectangularMap", prefilterMap2D);
+
+				Count<RenderCommandBuffer>renderCommandBuffer = Renderer::GetRendererCommandBuffer();
+				Renderer::BeginComputePass(renderCommandBuffer, computePass);
+				struct Sizes
+				{
+					glm::uvec2 EquirectangularSize;
+					glm::uvec2 CubeMapSize;
+					
+				}size;
+				size.EquirectangularSize = prefilterMap2D->GetSize();
+				size.CubeMapSize = environment->m_PrefilterMap->GetSize();
+
+				computePass->PushData("u_PushData", &size);
+				computePass->Dispatch(textureWidth / 32, textureHeight / 32, 6);
+				Renderer::EndComputePass(computePass);
+
+				prefilterMap2D->GenerateMips();
+
+			}
+			environment->m_PrefilterMap2D = prefilterMap2D;
+		#endif
 			environment->m_IsUpdated = false;
 		}
 	}
@@ -938,7 +1001,7 @@ namespace Proof {
 	{
 		auto clearColor = pass->GetTargetFrameBuffer()->GetConfig().ClearColor;
 		ClearImage(renderCommandBuffer, pass->GetOutput(output).As<Image2D>(),
-			{ clearColor.X,clearColor.Y,clearColor.Z,clearColor.W });
+			clearColor);
 
 	}
 
@@ -1028,7 +1091,7 @@ namespace Proof {
 		cubeTextureConfig.Width = 1;
 		cubeTextureConfig.Storage = true;
 		cubeTextureConfig.Format = ImageFormat::RGBA;
-		cubeTextureConfig.Wrap = TextureWrap::ClampEdge;
+		//cubeTextureConfig.Wrap = TextureWrap::ClampEdge;
 
 		WhiteTextureCube = TextureCube::Create(cubeTextureConfig, WhiteTexture);
 

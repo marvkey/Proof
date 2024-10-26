@@ -1,0 +1,23 @@
+Project:
+  Name: PacMan3D
+  AssetDirectory: Assets
+  AssetManager: Assets/AssetManager.ProofAssetManager
+  StartWorld: 0
+  ScriptModuleDirectory: Binaries/ScriptApp
+  OnCloseStartWorldEditLastOpen: true
+  StartWorldEdit: 16535157878511678520
+  Input:
+    ActionMapping:
+      []
+    MotionMapping:
+      []
+  Physics:
+    Gravity: [0, -9.81000042, 0]
+    BroadPhaseType: AutomaticBoxPrune
+    FrictionModel: 0
+    SolverPositionIterations: 8
+    SolverVelocityIterations: 2
+    PhysicsLayers:
+      - Name: Default
+        CollidesWith:
+          - Name: Default

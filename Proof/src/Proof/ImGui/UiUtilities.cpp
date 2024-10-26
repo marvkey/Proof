@@ -3,6 +3,7 @@
 #include "Proof/Renderer/Image.h"
 #include "Proof/Core/Application.h"
 #include "Proof/Platform/Vulkan/VulkanImguiLayer.h"
+#include "Proof/Renderer/Texture.h"
 #include "UIColors.h"
 #include "UiUtilities.h"
 
@@ -13,6 +14,13 @@ namespace Proof::UI
 		Application::Get()->GetImguiLayer()->UpdateCurrentModifiedType(value);
 	}
 	ImTextureID GetTextureID(Count<Image> texture)
+	{
+		Count<VulkanImguiLayer> layer = Application::Get()->GetImguiLayer().As< VulkanImguiLayer>();
+
+		return layer->ToImguiImage(texture);
+	}
+
+	ImTextureID GetTextureID(Count<Texture2D> texture)
 	{
 		Count<VulkanImguiLayer> layer = Application::Get()->GetImguiLayer().As< VulkanImguiLayer>();
 

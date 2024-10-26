@@ -26,16 +26,16 @@ namespace Proof
 	class VulkanImage2D : public Image2D
 	{
 	public:
-		VulkanImage2D(const ImageConfiguration& imageSpec, VkSampleCountFlagBits sampleFlags = VK_SAMPLE_COUNT_1_BIT);
+		VulkanImage2D(const ImageConfiguration& imageSpec,Count<class RenderSampler> sampler);
 
 		//TOdo remove this, sttrictly for the swapchain
-		VulkanImage2D(const ImageConfiguration& imageSpec, VulkanImageInfo imageinfo, uint64_t samplerHash);
+		//VulkanImage2D(const ImageConfiguration& imageSpec, VulkanImageInfo imageinfo, uint64_t samplerHash);
 		virtual ~VulkanImage2D();
 		virtual void AddResizeCallback(const Image2DResizeCallback& func);
 		virtual void Resize(uint32_t width, uint32_t height);
-		virtual void Resize(Vector2U size) { Resize(size.X, size.Y); };
+		virtual void Resize(glm::uvec2 size) { Resize(size.x, size.y); };
 
-		virtual Vector2U GetSize()
+		virtual glm::uvec2 GetSize()
 		{
 			return { m_Specification.Width, m_Specification.Height };
 		}
@@ -72,12 +72,12 @@ namespace Proof
 		}
 		//virtual uint64_t GetHash() const override{ return (uint64_t)m_Info.ImageAlloc.Image; }
 		void Release();
-		void SetSamplerHash(uint64_t hash)
-		{		
-			m_SamplerHash = hash;
-		}
+		//void SetSamplerHash(uint64_t hash)
+		//{		
+		//	m_SamplerHash = hash;
+		//}
 
-		uint32_t GetSamplerHash() { return m_SamplerHash; }
+		//uint32_t GetSamplerHash() { return m_SamplerHash; }
 		//virtual RawImage GetRawImage() { return m_Info.ImageView; };
 		void Build();
 		void RT_Build();
@@ -92,18 +92,18 @@ namespace Proof
 		}
 		Count<ImageView> CreateOrGetImageMip(uint32_t mip, uint32_t layer = 0);
 		virtual void CreateMipAndLayerViews();
+		virtual Count<RenderSampler> GetSampler();
 
 	private:
 		std::vector<Image2DResizeCallback > m_ResizeCallbacks;
 
-		VkSampleCountFlagBits m_SampleFlags;
 		ImageConfiguration m_Specification;
 		Buffer m_ImageData;
 		VulkanImageInfo m_Info;
 		VkDeviceSize m_GPUAllocationSize;
 		VkDescriptorImageInfo m_DescriptorImageInfo = {};
-		uint64_t m_SamplerHash;
 		bool m_SwapchainImage = false;
+		Count<RenderSampler> m_Sampler;
 
 		//layer, mip
 		std::map<uint32_t, std::map<uint32_t, Count<ImageView>>> m_ImageViews;
@@ -121,7 +121,7 @@ namespace Proof
 		virtual const ImageViewConfiguration& GetSpecification()const { return m_Specification; }
 		virtual Count<Image2D> GetImage()const { return m_Specification.Image; };
 
-		virtual Vector2U GetSize() { return GetImage()->GetSize(); }
+		virtual glm::uvec2 GetSize() { return GetImage()->GetSize(); }
 		virtual float GetAspectRatio() { return GetImage()->GetAspectRatio(); }
 		virtual uint32_t GetWidth() {return GetImage()->GetWidth();};
 		virtual uint32_t GetHeight() { return GetImage()->GetHeight(); };

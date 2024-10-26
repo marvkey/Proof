@@ -5,6 +5,8 @@
 #include "Proof/ImGui/Editors/Panels/SceneHierachyPanel.h"
 #include "Proof/ImGui/UI.h"
 #include <imgui_internal.h>
+#include "Proof/Scene/Prefab.h"
+#include "Proof/Scene/World.h"
 namespace Proof
 {
 	PrefabEditorPanel::PrefabEditorPanel()

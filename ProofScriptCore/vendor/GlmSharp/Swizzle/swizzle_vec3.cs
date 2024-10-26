@@ -16,7 +16,7 @@ namespace Proof.Swizzle
     /// <summary>
     /// Temporary Vector of type float with 3 components, used for implementing swizzling for Vector3.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
    
     [StructLayout(LayoutKind.Sequential)]
     public struct swizzle_Vector3

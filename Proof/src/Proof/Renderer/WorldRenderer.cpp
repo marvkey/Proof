@@ -267,7 +267,7 @@ namespace Proof
 			m_GlobalInputs->SetData("u_LinearClampEdgeMipFilterSampler", SamplerFactory::GetLinearClampEdgeMipPoint());
 			m_GlobalInputs->SetData("u_LinearRepeatMipFilterSampler", SamplerFactory::GetLinearRepeatMipPoint());
 
-			m_GlobalInputs->SetData("u_LinearSampler", SamplerFactory::GetLinear());
+			m_GlobalInputs->SetData("u_LinearSampler", SamplerFactory::GetTrilinear());
 			m_GlobalInputs->SetData("u_PointSampler", SamplerFactory::GetPoint());
 
 		}
@@ -1114,7 +1114,7 @@ namespace Proof
 							imageConfig.Width = 100;
 							imageConfig.Height = 100;
 							imageConfig.GenerateMips = true;
-							//imageConfig.Wrap = TextureWrap::ClampEdge;
+							//imageConfig.Repeat = TextureWrap::ClampEdge;
 							//imageConfig.Filter = TextureFilter::Nearest;
 							imageConfig.Storage = true;
 							m_NewSSR.HierarchalDepthDownSamplerTexture = Texture2D::Create(imageConfig);
@@ -1205,7 +1205,7 @@ namespace Proof
 					//	config.Format = ImageFormat::R32F;
 					//	config.Width = 1;
 					//	config.Height = 1;
-					//	config.Wrap = TextureWrap::ClampEdge;
+					//	config.Repeat = TextureWrap::ClampEdge;
 					//	config.Filter = TextureFilter::Nearest;
 					//	config.GenerateMips = true;
 					//	config.Storage = true;
@@ -1345,12 +1345,12 @@ namespace Proof
 					config.Format = ImageFormat::R32F;
 					config.Width = 1;
 					config.Height = 1;
-					config.Wrap = TextureWrap::ClampEdge;
-					config.Filter = TextureFilter::Nearest;
+					//config.Wrap = TextureWrap::ClampEdge;
+					//config.Filter = TextureFilter::Nearest;
 					config.GenerateMips = true;
 					config.Storage = true;
 
-					m_SSR.HierarchicalDepthTexture = Texture2D::Create(config);
+					m_SSR.HierarchicalDepthTexture = Texture2D::Create(config, SamplerWrap::ClampEdge, SamplerFilter::Nearest);
 
 					auto computePipeline = ComputePipeline::Create({ "HierarchicalZ",Renderer::GetShader("HZB") });
 					m_SSR.HierarchicalDepthPass = ComputePass::Create({ "HierarchicalZ",computePipeline });
@@ -1380,12 +1380,12 @@ namespace Proof
 					spec.Format = ImageFormat::RGBA32F;
 					spec.Width = 1;
 					spec.Height = 1;
-					spec.Wrap = TextureWrap::ClampEdge;
+					//spec.Wrap = TextureWrap::ClampEdge;
 					spec.DebugName = "Pre-Convoluted";
 					spec.GenerateMips = true;
 					spec.Storage = true;
 
-					m_SSR.PreConvolutedTexture = Texture2D::Create(spec);
+					m_SSR.PreConvolutedTexture = Texture2D::Create(spec,SamplerWrap::ClampEdge,SamplerFilter::Linear);
 
 					auto computePipeline = ComputePipeline::Create({ "PreConvoulution",Renderer::GetShader("PreConvoulution") });
 					m_SSR.PreConvolutePass = ComputePass::Create({ "PreConvoulution",computePipeline });
@@ -1497,15 +1497,15 @@ namespace Proof
 				spec.Format = ImageFormat::RGBA32F;
 				spec.Width = 1;
 				spec.Height = 1;
-				spec.Wrap = TextureWrap::ClampEdge;
+				//spec.Wrap = TextureWrap::ClampEdge;
 				spec.Storage = true;
 				spec.GenerateMips = true;
 				spec.DebugName = "BloomCompute-0";
-				m_BloomComputeTextures[0] = Texture2D::Create(spec);
+				m_BloomComputeTextures[0] = Texture2D::Create(spec, SamplerWrap::ClampEdge, SamplerFilter::Linear);
 				spec.DebugName = "BloomCompute-1";
-				m_BloomComputeTextures[1] = Texture2D::Create(spec);
+				m_BloomComputeTextures[1] = Texture2D::Create(spec, SamplerWrap::ClampEdge, SamplerFilter::Linear);
 				spec.DebugName = "BloomCompute-2";
-				m_BloomComputeTextures[2] = Texture2D::Create(spec);
+				m_BloomComputeTextures[2] = Texture2D::Create(spec, SamplerWrap::ClampEdge, SamplerFilter::Linear);
 
 
 				//glm::uvec2 bloomSize = (viewportSize + 1u) / 2u;
@@ -2643,7 +2643,17 @@ namespace Proof
 
 				
 			}
+			{
+				PF_PROFILE_FUNC("GeometryPass::Dynamic");
 
+				for (auto& [meshKey, dc] : m_DynamicMeshDrawList)
+				{
+					const auto& transformData = m_CurTransformMap->at(meshKey);
+					uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+					//transformData.Transforms
+					RenderDynamicMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, dc.MaterialTable, m_GeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+				}
+			}
 			
 			Renderer::EndRenderPass(m_GeometryPass);
 			
@@ -2666,17 +2676,7 @@ namespace Proof
 			Renderer::EndRenderPass(m_TransparentGeometryPass);
 			/*
 
-			{
-				PF_PROFILE_FUNC("GeometryPass::Dynamic");
-
-				for (auto& [meshKey, dc] : m_DynamicMeshDrawList)
-				{
-					const auto& transformData = m_MeshTransformMap.at(meshKey);
-					uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
-					//transformData.Transforms
-					RenderDynamicMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, dc.MaterialTable, m_GeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
-				}
-			}
+			
 			*/
 			m_Timers.GeometryMeshPass = timer.ElapsedMillis();
 		}
@@ -2692,7 +2692,8 @@ namespace Proof
 				// only put attach to depth when you are sure u are not changing any vertex position
 
 				bool drawWithDepth = false;
-				m_GeometryPassInstances[shaderName] = { CreateGeometryPassInstance(shaderName,drawWithDepth), drawWithDepth };
+				//m_GeometryPassInstances[shaderName] = { CreateGeometryPassInstance(shaderName,drawWithDepth), drawWithDepth };
+				m_GeometryPassInstances[shaderName] = { CreateTransparentPassInstance(shaderName), drawWithDepth };
 				addedInstances.insert({ shaderName });
 				continue;
 			}
@@ -3406,8 +3407,8 @@ namespace Proof
 				hierarchicalDepthPass->SetInput("o_HZB", imageViews);
 				hierarchicalDepthPass->SetInput("u_InputDepth", parentImage);
 
-				const glm::ivec2 srcSize{ Math::DivideAndRoundUp(glm::uvec2(parentImage->GetSize().X,parentImage->GetSize().Y), 1u << parentMip) };
-				const glm::ivec2 dstSize = Math::DivideAndRoundUp(glm::uvec2(hierarchicalZTexture->GetSize().X, hierarchicalZTexture->GetSize().Y), 1u << startDestMip);
+				const glm::ivec2 srcSize{ Math::DivideAndRoundUp(glm::uvec2(parentImage->GetSize().x,parentImage->GetSize().y), 1u << parentMip) };
+				const glm::ivec2 dstSize = Math::DivideAndRoundUp(glm::uvec2(hierarchicalZTexture->GetSize().x, hierarchicalZTexture->GetSize().y), 1u << startDestMip);
 				hierarchicalZComputePushConstants.InvSize = glm::vec2{ 1.0f / (float)srcSize.x, 1.0f / (float)srcSize.y };
 				hierarchicalDepthPass->PushData("u_PushData", &hierarchicalZComputePushConstants);
 
@@ -3420,15 +3421,15 @@ namespace Proof
 			auto srcSize = srcDepthImage->GetSize();
 
 
-			ReduceHZB(0, 0, srcDepthImage, { 1.0f / glm::vec2{ srcSize.X,srcSize.Y } }, { (glm::vec2{ srcSize.X,srcSize.Y } - 0.5f) / glm::vec2{ srcSize.X,srcSize.Y } }, true);
+			ReduceHZB(0, 0, srcDepthImage, { 1.0f / glm::vec2{ srcSize.x,srcSize.y } }, { (glm::vec2{ srcSize.x,srcSize.y } - 0.5f) / glm::vec2{ srcSize.x,srcSize.y } }, true);
 
 			for (uint32_t startDestMip = maxMipBatchSize; startDestMip < hzbMipCount; startDestMip += maxMipBatchSize)
 			{
-				auto newSize = Math::DivideAndRoundUp(glm::uvec2{ hierarchicalZTexture->GetSize().X,hierarchicalZTexture->GetSize().Y }, 1u << uint32_t(startDestMip - 1));
+				auto newSize = Math::DivideAndRoundUp(glm::uvec2{ hierarchicalZTexture->GetSize().x,hierarchicalZTexture->GetSize().y }, 1u << uint32_t(startDestMip - 1));
 
 				srcSize = { newSize.x, newSize.y };
 
-				ReduceHZB(startDestMip, startDestMip - 1, hierarchicalZTexture->GetImage(), { 2.0f / glm::vec2{srcSize.X,srcSize.Y} }, glm::vec2{ 1.0f }, false);
+				ReduceHZB(startDestMip, startDestMip - 1, hierarchicalZTexture->GetImage(), { 2.0f / glm::vec2{srcSize.x,srcSize.y} }, glm::vec2{ 1.0f }, false);
 
 			}
 			Renderer::EndComputePass(hierarchicalDepthPass);
@@ -3982,7 +3983,7 @@ namespace Proof
 		const auto& submeshData = meshSource->GetSubMeshes();
 		const auto& subMesh = meshSource->GetSubMeshes().at(subMeshIndex);
 
-		glm::mat4 subMeshTransform = transform * mesh->GetTransform() * subMesh.Transform;
+		glm::mat4 subMeshTransform = transform * mesh->GetTransform() ; // dont multiply by submesh transform
 
 		uint32_t materialIndex = subMesh.MaterialIndex;
 
@@ -4289,6 +4290,46 @@ namespace Proof
 
 		return geometryInstance;
 	#endif
+	}
+
+	Count<RenderPass> WorldRenderer::CreateTransparentPassInstance(const std::string& shaderName)
+	{
+		Count<RenderPass> instance;
+
+		GraphicsPipelineConfiguration pipelineConfig = m_TransparentGeometryPass->GetPipeline()->GetConfig();
+		pipelineConfig.Shader = Renderer::GetShader(shaderName);
+		pipelineConfig.DebugName = fmt::format("{}_static", shaderName);
+
+		auto pipeline = GraphicsPipeline::Create(pipelineConfig);
+		RenderPassConfig renderPassConfig;
+		renderPassConfig.DebugName = fmt::format("{} Pass", shaderName);
+		renderPassConfig.Pipeline = pipeline;
+
+		renderPassConfig.TargetFrameBuffer = m_TransparentGeometryPass->GetTargetFrameBuffer();
+		instance = RenderPass::Create(renderPassConfig);
+
+
+
+		instance->SetInput("DirectionalLightStorageBuffer", m_SBDirectionalLightsBuffer);
+		instance->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
+		instance->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
+		instance->SetInput("u_IrradianceMap", m_Environment->GetIrradianceMap());
+		instance->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
+		instance->SetInput("u_BRDFLUT", Renderer::GetBRDFLut());
+		instance->SetInput("SkyBoxData", m_UBSKyBoxBuffer);
+		instance->SetInput("u_ShadowMap", m_ShadowPassImage);
+		instance->SetInput("RendererData", m_UBRenderDataBuffer);
+		instance->SetInput("SceneData", m_UBSceneDataBuffer);
+		instance->SetInput("ShadowMapProjections", m_UBCascadeProjectionBuffer);
+
+		instance->AddGlobalInput(m_GlobalInputs);
+
+		instance->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
+
+		instance->SetInput("VisiblePointLightIndicesBuffer", m_SBVisiblePointLightIndicesBuffer);
+		instance->SetInput("VisibleSpotLightIndicesBuffer", m_SBVisibleSpotLightIndicesBuffer);
+
+		return instance;
 	}
 
 	void WorldRenderer::SubmitSpotLight(const SBSpotLightSceneData& spotLights)

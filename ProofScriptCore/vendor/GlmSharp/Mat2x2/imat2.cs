@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Matrix of type int with 2 columns and 2 rows.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct iMatrix2 : IReadOnlyList<int>, IEquatable<iMatrix2>

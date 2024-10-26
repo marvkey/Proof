@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Vector of type uint with 3 components.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct uVector3 : IReadOnlyList<uint>, IEquatable<uVector3>

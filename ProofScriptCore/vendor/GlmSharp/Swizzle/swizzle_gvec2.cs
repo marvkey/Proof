@@ -16,7 +16,7 @@ namespace Proof.Swizzle
     /// <summary>
     /// Temporary Vector of type T with 2 components, used for implementing swizzling for gVector2.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
    
     [StructLayout(LayoutKind.Sequential)]
     public struct swizzle_gVector2<T>

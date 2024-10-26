@@ -1,0 +1,221 @@
+World:
+  ID: 13541951023650058868
+  Entities:
+    - Entity: 2202314130806197235
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [1.39626336, 0.17453292, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+    - Entity: 5688669051187286007
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.0174532924, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 534809590626788377
+      TagComponent:
+        Tag: Camera
+        tags: []
+      TransformComponent:
+        Location: [0, 13.3000002, 35.7000008]
+        Rotation: [-0.263544708, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 1059656669603847335
+        Children: []
+      CameraComponent:
+        NearPlane: 0.300000012
+        FarPlane: 1000
+        FOV: 45
+        UseLocalRotation: false
+    - Entity: 17529283325493608271
+      TagComponent:
+        Tag: TestPlayer
+        tags: []
+      TransformComponent:
+        Location: [0, 3.5999999, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [1059656669603847335, 13234523174882156880, 1327769956017990348, 10296132144757632783, 13842604328340830833]
+      MeshComponent:
+        MeshAssetPointerID: 5062657810340108268
+      ScriptComponent:
+        Scripts:
+          - Script: Driftwood.PlayerMovement
+            ScriptClassName: Driftwood.PlayerMovement
+            ScriptName: Driftwood.PlayerMovement
+            Fields:
+              - NameID: Driftwood.PlayerMovement.FowardForce
+                Type: Float
+                Data: 10
+          - Script: Driftwood.PlayerInput
+            ScriptClassName: Driftwood.PlayerInput
+            ScriptName: Driftwood.PlayerInput
+            Fields:
+              - NameID: Driftwood.PlayerInput.MoveSideWaysAction
+                Type: InputAction
+                Data: 12371603639197638862
+      MeshColliderComponent:
+        ColliderID: 13400412014312119804
+        IsTrigger: false
+        UseSharedShape: false
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+      PlayerInputComponent:
+        InputPlayer: None
+        InputBindings:
+          - InputBindingContextHandler: ""
+            InputBindingID: 6003628806341811560
+            Active: true
+      BuoyancyComponent:
+        Floaters:
+          - Floater: ""
+            EntityID: 13234523174882156880
+            SubmersionDepth: 1
+            Drag: 0.5
+            AngularDrag: 12
+            BuoyancyStrength: 3
+          - Floater: ""
+            EntityID: 1327769956017990348
+            SubmersionDepth: 1
+            Drag: 0.5
+            AngularDrag: 12
+            BuoyancyStrength: 3
+          - Floater: ""
+            EntityID: 10296132144757632783
+            SubmersionDepth: 1
+            Drag: 0.5
+            AngularDrag: 12
+            BuoyancyStrength: 3
+          - Floater: ""
+            EntityID: 13842604328340830833
+            SubmersionDepth: 1
+            Drag: 0.5
+            AngularDrag: 12
+            BuoyancyStrength: 3
+    - Entity: 10296132144757632783
+      TagComponent:
+        Tag: Floater
+        tags: []
+      TransformComponent:
+        Location: [-3, 3.58699989, -6.39219713]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17529283325493608271
+        Children: []
+    - Entity: 1059656669603847335
+      TagComponent:
+        Tag: Head
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17529283325493608271
+        Children: [534809590626788377]
+    - Entity: 13234523174882156880
+      TagComponent:
+        Tag: Floater
+        tags: []
+      TransformComponent:
+        Location: [-3.60897779, 2.5, 6.63939905]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17529283325493608271
+        Children: []
+    - Entity: 1327769956017990348
+      TagComponent:
+        Tag: Floater
+        tags: []
+      TransformComponent:
+        Location: [4.11839294, 2.83270097, 6.31703472]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17529283325493608271
+        Children: []
+    - Entity: 13842604328340830833
+      TagComponent:
+        Tag: Floater
+        tags: []
+      TransformComponent:
+        Location: [3.5, 3.58699989, -6.3920002]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17529283325493608271
+        Children: []
+    - Entity: 16785560049934775623
+      TagComponent:
+        Tag: Water
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: Driftwood.FollowXZ
+            ScriptClassName: Driftwood.FollowXZ
+            ScriptName: Driftwood.FollowXZ
+            Fields:
+              - NameID: Driftwood.FollowXZ.Target
+                Type: Entity
+                Data: 17529283325493608271
+      WaterComponent:
+        "WaveCount ": 5
+        WaveDistribution: 1.89300001
+        WaveDirection: [0.5, 0.5]
+        WaveSpread: 1
+        Color: [0.360000014, 0.513999999, 0.662999988, 1]
+        Speed: 30
+        MinMaxWavelength: [10, 200]
+        WavelengthFalloff: 1
+        MinMaxAmplitude: [0.25, 2.5]
+        AmplitudeFallOff: 0.5
+        MinMaxSteepness: [0, 0.0700000003]
+        SteepnessFallOff: 0.5
+        Seed: 456
+        RandomSeed: false
+        PlaneSize: 1000

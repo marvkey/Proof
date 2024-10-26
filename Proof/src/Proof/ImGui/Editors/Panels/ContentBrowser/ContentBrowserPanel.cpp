@@ -11,6 +11,7 @@
 #include "Proof/ImGui/UIUtilities.h"
 #include "Proof/ImGui/UIWidgets.h"
 #include "Proof/Asset/AssetManager.h"
+#include "Proof/Renderer/UIRenderer/UIPanel.h"
 
 #include "Proof/ImGui/SelectionManager.h"
 #include "Proof/Input/Input.h"
@@ -285,6 +286,9 @@ namespace Proof
 
 									ImGui::EndMenu();
 								}
+
+								if (ImGui::MenuItem("UI"))
+									CreateAsset<UIPanel>("New UI");
 								ImGui::EndMenu();
 							}
 							if (ImGui::MenuItem("Folder"))

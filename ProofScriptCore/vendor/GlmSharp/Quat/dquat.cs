@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Quaternionernion of type double.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct dQuaternion : IReadOnlyList<double>, IEquatable<dQuaternion>

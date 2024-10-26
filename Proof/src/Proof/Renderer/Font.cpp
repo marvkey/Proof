@@ -1,6 +1,7 @@
 #include "Proofprch.h"
 #include "Font.h"
-
+#include "Proof/Core/Application.h"
+#include "Proof/Project/Project.h"
 // msdf has an infinte we need to disbale
 #undef INFINITE
 #include "msdf-atlas-gen/msdf-atlas-gen.h"
@@ -9,129 +10,366 @@
 #include "Proof/Core/Buffer.h"
 
 #include "MSDFData.h"
-namespace Proof {
-	//https://github.com/TheCherno/Hazel/blob/text/Hazel/src/Hazel/Renderer/Font.cpp
-	// thank you for the code
-
-	template<typename T, typename S, int N, msdf_atlas::GeneratorFunction<S, N> GenFunc>
-	static Count<Texture2D> CreateTextureAtlas(const std::string& fontName, float fontSize, const std::vector<msdf_atlas::GlyphGeometry>& glyphs,
-		const msdf_atlas::FontGeometry& fontGeometry, uint32_t width, uint32_t height)
+namespace Proof
+{
+	//https://github.com/Ant-Play/Ant/blob/2dab7c0362f017911df9090b1608ec4b81ad1f2c/Ant/src/Ant/Renderer/UI/Font.cpp
+#define DEFAULT_ANGLE_THRESHOLD 3.0
+#define DEFAULT_MITER_LIMIT 1.0
+#define LCG_MULTIPLIER 6364136223846793005ull
+#define LCG_INCREMENT 1442695040888963407ull
+#define THREADS 8
+	struct FontInput
 	{
-		msdf_atlas::GeneratorAttributes attributes;
-		attributes.config.overlapSupport = true;
-		attributes.scanlinePass = true;
-
-		msdf_atlas::ImmediateAtlasGenerator<S, N, GenFunc, msdf_atlas::BitmapAtlasStorage<T, N>> generator(width, height);
-		generator.setAttributes(attributes);
-		generator.setThreadCount(8);
-		generator.generate(glyphs.data(), (int)glyphs.size());
-
-		msdfgen::BitmapConstRef<T, N> bitmap = (msdfgen::BitmapConstRef<T, N>)generator.atlasStorage();
-
-
-		TextureConfiguration config;
-		config.DebugName = "Font " + fontName;
-		config.Width = bitmap.width;
-		config.Height = bitmap.height;
-		config.Format = ImageFormat::RGB;
-		uint32_t size = Utils::GetImageMemorySize(config.Format, config.Width, config.Height);
-		Buffer buffer((const void*) bitmap.pixels, size);
-		Count<Texture2D> texture = Texture2D::Create(config, buffer);
-		return texture;
-	}
-	Font::Font(const std::filesystem::path& fullPath)
-		: m_Data(pnew MSDFData())
+		Buffer fontData;
+		msdf_atlas::GlyphIdentifierType glyphIdentifierType;
+		const char* charsetFilename;
+		double fontScale;
+		const char* fontName;
+	};
+	struct Configuration
 	{
-		msdfgen::FreetypeHandle* ft = msdfgen::initializeFreetype();
-		PF_CORE_ASSERT(ft);
-		msdfgen::FontHandle* font = msdfgen::loadFont(ft, fullPath.string().c_str());
-		if (!font)
+		msdf_atlas::ImageType imageType;
+		msdf_atlas::ImageFormat imageFormat;
+		msdf_atlas::YDirection yDirection;
+		int width, height;
+		double emSize;
+		double pxRange;
+		double angleThreshold;
+		double miterLimit;
+		void (*edgeColoring)(msdfgen::Shape&, double, unsigned long long);
+		bool expensiveColoring;
+		unsigned long long coloringSeed;
+		msdf_atlas::GeneratorAttributes generatorAttributes;
+	};
+	namespace Utils
+	{
+
+		static std::filesystem::path GetCacheDirectory()
 		{
-			PF_EC_ERROR("Failed to load font: {}", fullPath.string());
+			return Application::Get()->GetProject()->GetCacheDirectory() / "FontAtlases";
+		}
+
+		static void CreateCacheDirectoryIfNeeded()
+		{
+			std::filesystem::path cacheDirectory = GetCacheDirectory();
+			if (!std::filesystem::exists(cacheDirectory))
+				std::filesystem::create_directories(cacheDirectory);
+		}
+	}
+
+	struct AtlasHeader
+	{
+		uint32_t Type = 0;
+		uint32_t Width, Height;
+	};
+
+	static bool TryReadFontAtlasFromCache(const std::string& fontName, float fontSize, AtlasHeader& header, void*& pixels, Buffer& storageBuffer)
+	{
+		std::string filename = fmt::format("{0}-{1}.hfa", fontName, fontSize);
+		std::filesystem::path filepath = Utils::GetCacheDirectory() / filename;
+
+		if (std::filesystem::exists(filepath))
+		{
+			storageBuffer = FileSystem::ReadBytes(filepath);
+			header = *storageBuffer.As<AtlasHeader>();
+			pixels = (uint8_t*)storageBuffer.Data + sizeof(AtlasHeader);
+			return true;
+		}
+		return false;
+	}
+
+	static void CacheFontAtlas(const std::string& fontName, float fontSize, AtlasHeader header, const void* pixels)
+	{
+		Utils::CreateCacheDirectoryIfNeeded();
+
+		std::string filename = fmt::format("{0}-{1}.hfa", fontName, fontSize);
+		std::filesystem::path filepath = Utils::GetCacheDirectory() / filename;
+
+		std::ofstream stream(filepath, std::ios::binary | std::ios::trunc);
+		if (!stream)
+		{
+			stream.close();
+			PF_ENGINE_ERROR("Failed to cache font atlas to {0}", filepath.string());
 			return;
 		}
 
-		struct CharsetRange
-		{
-			uint32_t Begin, End;
-		};
-
-		// From imgui_draw.cpp
-		static const CharsetRange charsetRanges[] =
-		{
-			{ 0x0020, 0x00FF }
-		};
-
-		msdf_atlas::Charset charset;
-		for (CharsetRange range : charsetRanges)
-		{
-			for (uint32_t c = range.Begin; c <= range.End; c++)
-				charset.add(c);
-		}
-
-		double fontScale = 1.0;
-		m_Data->FontGeometry = msdf_atlas::FontGeometry(&m_Data->Glyphs);
-		int glyphsLoaded = m_Data->FontGeometry.loadCharset(font, fontScale, charset);
-		PF_ENGINE_INFO("Loaded {} glyphs from font (out of {})", glyphsLoaded, charset.size());
-
-
-		double emSize = 40.0;
-
-		msdf_atlas::TightAtlasPacker atlasPacker;
-		// atlasPacker.setDimensionsConstraint()
-		atlasPacker.setPixelRange(2.0);
-		atlasPacker.setMiterLimit(1.0);
-		atlasPacker.setPadding(0);
-		atlasPacker.setScale(emSize);
-		int remaining = atlasPacker.pack(m_Data->Glyphs.data(), (int)m_Data->Glyphs.size());
-		PF_CORE_ASSERT(remaining == 0);
-
-		int width, height;
-		atlasPacker.getDimensions(width, height);
-		emSize = atlasPacker.getScale();
-
-
-		#define DEFAULT_ANGLE_THRESHOLD 3.0
-		#define LCG_MULTIPLIER 6364136223846793005ull
-		#define LCG_INCREMENT 1442695040888963407ull
-		#define THREAD_COUNT 8
-
-		uint64_t coloringSeed = 0;
-		bool expensiveColoring = false;
-		if (expensiveColoring)
-		{
-			msdf_atlas::Workload([&glyphs = m_Data->Glyphs, &coloringSeed](int i, int threadNo) -> bool {
-				unsigned long long glyphSeed = (LCG_MULTIPLIER * (coloringSeed ^ i) + LCG_INCREMENT) * !!coloringSeed;
-				glyphs[i].edgeColoring(msdfgen::edgeColoringInkTrap, DEFAULT_ANGLE_THRESHOLD, glyphSeed);
-				return true;
-			}, m_Data->Glyphs.size()).finish(THREAD_COUNT);
-		}
-		else
-		{
-			unsigned long long glyphSeed = coloringSeed;
-			for (msdf_atlas::GlyphGeometry& glyph : m_Data->Glyphs)
-			{
-				glyphSeed *= LCG_MULTIPLIER;
-				glyph.edgeColoring(msdfgen::edgeColoringInkTrap, DEFAULT_ANGLE_THRESHOLD, glyphSeed);
-			}
-		}
-
-
-		m_AtlasTexture = CreateTextureAtlas<uint8_t, float, 3, msdf_atlas::msdfGenerator>("Test", (float)emSize, m_Data->Glyphs, m_Data->FontGeometry, width, height);
-		msdfgen::destroyFont(font);
-		msdfgen::deinitializeFreetype(ft);
-
-		PF_ENGINE_INFO("Loaded font Path: {}", fullPath.string());
+		stream.write((char*)&header, sizeof(AtlasHeader));
+		stream.write((char*)pixels, header.Width * header.Height * sizeof(float) * 4);
 	}
-	Font::~Font() {
-		pdelete m_Data;
+
+	template <typename T, typename S, int N, msdf_atlas::GeneratorFunction<S, N> GEN_FN>
+	static Count<Texture2D> CreateAndCacheAtlas(const std::string& fontName, float fontSize, const std::vector<msdf_atlas::GlyphGeometry>& glyphs, const msdf_atlas::FontGeometry& fontGeometry, const Configuration& config)
+	{
+		msdf_atlas::ImmediateAtlasGenerator<S, N, GEN_FN, msdf_atlas::BitmapAtlasStorage<T, N>> generator(config.width, config.height);
+		generator.setAttributes(config.generatorAttributes);
+		generator.setThreadCount(THREADS);
+		generator.generate(glyphs.data(), (int)glyphs.size());
+
+		msdfgen::BitmapConstRef<T, N> bitmap = (msdfgen::BitmapConstRef<T, N>) generator.atlasStorage();
+
+		AtlasHeader header;
+		header.Width = bitmap.width;
+		header.Height = bitmap.height;
+		CacheFontAtlas(fontName, fontSize, header, bitmap.pixels);
+
+		TextureConfiguration spec;
+		spec.Format = ImageFormat::RGBA32F;
+		spec.Width = header.Width;
+		spec.Height = header.Height;
+		spec.GenerateMips = false;
+		spec.DebugName = "FontAtlas";
+		Count<Texture2D> texture = Texture2D::Create(spec, Buffer(bitmap.pixels, header.Width * header.Height), SamplerWrap::ClampEdge, SamplerFilter::Linear);
+		return texture;
+	}
+
+	static Count<Texture2D> CreateCachedAtlas(AtlasHeader header, const void* pixels)
+	{
+		TextureConfiguration spec;
+		spec.Format = ImageFormat::RGBA32F;
+		spec.Width = header.Width;
+		spec.Height = header.Height;
+		spec.GenerateMips = false;
+		spec.DebugName = "FontAtlas";
+		Count<Texture2D> texture = Texture2D::Create(spec, Buffer(pixels, header.Width * header.Height),SamplerWrap::ClampEdge,SamplerFilter::Linear);
+		return texture;
+	}
+
+	Count<Font> Font::s_DefaultFont = nullptr;
+	Font::Font(const std::filesystem::path& filepath)
+		: m_MSDFData(new MSDFData())
+	{
+		m_Name = filepath.stem().string();
+
+		Buffer buffer = FileSystem::ReadBytes(filepath);
+		CreateAtlas(buffer);
+		buffer.Release();
+	}
+	Font::Font(const std::string& name, Buffer buffer)
+		: m_Name(name), m_MSDFData(new MSDFData())
+	{
+		CreateAtlas(buffer);
+	}
+	Font::~Font()
+	{
+		delete m_MSDFData;
 	}
 	Count<Font> Font::GetDefault()
 	{
-		static Count<Font> font;
-		if (!font)
-			font = Count<Font>::Create("Assets/Fonts/Poppins/Poppins-Regular.ttf");
+		return s_DefaultFont;
+	}
 
-		return font;
+	void Font::Init()
+	{
+		s_DefaultFont = Count<Font>::Create("Assets/Fonts/Poppins/Poppins-Regular.ttf");
+		//s_DefaultFont = Count<Font>::Create("Assets/Fonts/opensans/OpenSans-Regular.ttf");
+	}
+
+	void Font::ShutDown()
+	{
+		s_DefaultFont = nullptr;
+	}
+
+	void Font::CreateAtlas(Buffer buffer)
+	{
+		int result = 0;
+		FontInput fontInput = { };
+		Configuration config = { };
+		fontInput.fontData = buffer;
+		fontInput.glyphIdentifierType = msdf_atlas::GlyphIdentifierType::UNICODE_CODEPOINT;
+		fontInput.fontScale = -1;
+		config.imageType = msdf_atlas::ImageType::MSDF;
+		config.imageFormat = msdf_atlas::ImageFormat::BINARY_FLOAT;
+		config.yDirection = msdf_atlas::YDirection::BOTTOM_UP;
+		config.edgeColoring = msdfgen::edgeColoringInkTrap;
+		const char* imageFormatName = nullptr;
+		int fixedWidth = -1, fixedHeight = -1;
+		config.generatorAttributes.config.overlapSupport = true;
+		config.generatorAttributes.scanlinePass = true;
+		double minEmSize = 0;
+		double rangeValue = 2.0;
+		msdf_atlas::TightAtlasPacker::DimensionsConstraint atlasSizeConstraint = msdf_atlas::TightAtlasPacker::DimensionsConstraint::MULTIPLE_OF_FOUR_SQUARE;
+		config.angleThreshold = DEFAULT_ANGLE_THRESHOLD;
+		config.miterLimit = DEFAULT_MITER_LIMIT;
+		config.imageType = msdf_atlas::ImageType::MTSDF;
+
+		config.emSize = 40;
+
+		// Load fonts
+		bool anyCodepointsAvailable = false;
+		class FontHolder
+		{
+			msdfgen::FreetypeHandle* ft;
+			msdfgen::FontHandle* font;
+		public:
+			FontHolder() : ft(msdfgen::initializeFreetype()), font(nullptr) {}
+			~FontHolder()
+			{
+				if (ft)
+				{
+					if (font)
+						msdfgen::destroyFont(font);
+					msdfgen::deinitializeFreetype(ft);
+				}
+			}
+			bool load(Buffer buffer)
+			{
+				if (ft && buffer)
+				{
+					if (font)
+						msdfgen::destroyFont(font);
+					if ((font = msdfgen::loadFontData(ft, buffer.As<const msdfgen::byte>(), buffer.Size)))
+						return true;
+				}
+				return false;
+			}
+			operator msdfgen::FontHandle* () const
+			{
+				return font;
+			}
+		} font;
+
+		bool success = font.load(fontInput.fontData);
+		PF_CORE_ASSERT(success);
+
+		if (fontInput.fontScale <= 0)
+			fontInput.fontScale = 1;
+
+		// Load character set
+		fontInput.glyphIdentifierType = msdf_atlas::GlyphIdentifierType::UNICODE_CODEPOINT;
+		msdf_atlas::Charset charset;
+
+		// From ImGui
+		static const uint32_t charsetRanges[] =
+		{
+			0x0020, 0x00FF, // Basic Latin + Latin Supplement
+			0x0400, 0x052F, // Cyrillic + Cyrillic Supplement
+			0x2DE0, 0x2DFF, // Cyrillic Extended-A
+			0xA640, 0xA69F, // Cyrillic Extended-B
+			0,
+		};
+
+		for (int range = 0; range < 8; range += 2)
+		{
+			for (uint32_t c = charsetRanges[range]; c <= charsetRanges[range + 1]; c++)
+				charset.add(c);
+		}
+
+		// Load glyphs
+		m_MSDFData->FontGeometry = msdf_atlas::FontGeometry(&m_MSDFData->Glyphs);
+		int glyphsLoaded = -1;
+		switch (fontInput.glyphIdentifierType)
+		{
+			case msdf_atlas::GlyphIdentifierType::GLYPH_INDEX:
+				glyphsLoaded = m_MSDFData->FontGeometry.loadGlyphset(font, fontInput.fontScale, charset);
+				break;
+			case msdf_atlas::GlyphIdentifierType::UNICODE_CODEPOINT:
+				glyphsLoaded = m_MSDFData->FontGeometry.loadCharset(font, fontInput.fontScale, charset);
+				anyCodepointsAvailable |= glyphsLoaded > 0;
+				break;
+		}
+
+		PF_CORE_ASSERT(glyphsLoaded >= 0);
+		PF_ENGINE_TRACE("Loaded geometry of {0} out of {1} glyphs", glyphsLoaded, (int)charset.size());
+		// List missing glyphs
+		if (glyphsLoaded < (int)charset.size())
+		{
+			PF_ENGINE_TRACE("Renderer", "Missing {0} {1}", (int)charset.size() - glyphsLoaded, fontInput.glyphIdentifierType == msdf_atlas::GlyphIdentifierType::UNICODE_CODEPOINT ? "codepoints" : "glyphs");
+		}
+
+		if (fontInput.fontName)
+			m_MSDFData->FontGeometry.setName(fontInput.fontName);
+
+		double pxRange = rangeValue;
+		bool fixedDimensions = fixedWidth >= 0 && fixedHeight >= 0;
+		bool fixedScale = config.emSize > 0;
+		msdf_atlas::TightAtlasPacker atlasPacker;
+		if (fixedDimensions)
+			atlasPacker.setDimensions(fixedWidth, fixedHeight);
+		else
+			atlasPacker.setDimensionsConstraint(atlasSizeConstraint);
+		atlasPacker.setPadding(config.imageType == msdf_atlas::ImageType::MSDF || config.imageType == msdf_atlas::ImageType::MTSDF ? 0 : -1);
+		// TODO: In this case (if padding is -1), the border pixels of each glyph are black, but still computed. For floating-point output, this may play a role.
+		if (fixedScale)
+			atlasPacker.setScale(config.emSize);
+		else
+			atlasPacker.setMinimumScale(minEmSize);
+		atlasPacker.setPixelRange(pxRange);
+		atlasPacker.setMiterLimit(config.miterLimit);
+		if (int remaining = atlasPacker.pack(m_MSDFData->Glyphs.data(), (int)m_MSDFData->Glyphs.size()))
+		{
+			if (remaining < 0)
+			{
+				PF_CORE_ASSERT(false);
+			}
+			else
+			{
+				PF_ENGINE_ERROR("Error: Could not fit {0} out of {1} glyphs into the atlas.", remaining, (int)m_MSDFData->Glyphs.size());
+				PF_CORE_ASSERT(false);
+			}
+		}
+		atlasPacker.getDimensions(config.width, config.height);
+		PF_CORE_ASSERT(config.width > 0 && config.height > 0);
+		config.emSize = atlasPacker.getScale();
+		config.pxRange = atlasPacker.getPixelRange();
+		if (!fixedScale)
+			PF_ENGINE_ERROR("Glyph size: {0} pixels/EM", config.emSize);
+		if (!fixedDimensions)
+			PF_ENGINE_ERROR("Atlas dimensions: {0} x {1}", config.width, config.height);
+
+
+		// Edge coloring
+		if (config.imageType == msdf_atlas::ImageType::MSDF || config.imageType == msdf_atlas::ImageType::MTSDF)
+		{
+			if (config.expensiveColoring)
+			{
+				msdf_atlas::Workload([&glyphs = m_MSDFData->Glyphs, &config](int i, int threadNo) -> bool
+					{
+						unsigned long long glyphSeed = (LCG_MULTIPLIER * (config.coloringSeed ^ i) + LCG_INCREMENT) * !!config.coloringSeed;
+						glyphs[i].edgeColoring(config.edgeColoring, config.angleThreshold, glyphSeed);
+						return true;
+					}, (int)m_MSDFData->Glyphs.size()).finish(THREADS);
+			}
+			else
+			{
+				unsigned long long glyphSeed = config.coloringSeed;
+				for (msdf_atlas::GlyphGeometry& glyph : m_MSDFData->Glyphs)
+				{
+					glyphSeed *= LCG_MULTIPLIER;
+					glyph.edgeColoring(config.edgeColoring, config.angleThreshold, glyphSeed);
+				}
+			}
+		}
+
+		// Check cache here
+		Buffer storageBuffer;
+		AtlasHeader header;
+		void* pixels;
+		if (TryReadFontAtlasFromCache(m_Name, (float)config.emSize, header, pixels, storageBuffer))
+		{
+			m_TextureAtlas = CreateCachedAtlas(header, pixels);
+			storageBuffer.Release();
+		}
+		else
+		{
+			bool floatingPointFormat = true;
+			Count<Texture2D> texture;
+			switch (config.imageType)
+			{
+				case msdf_atlas::ImageType::MSDF:
+					if (floatingPointFormat)
+						texture = CreateAndCacheAtlas<float, float, 3, msdf_atlas::msdfGenerator>(m_Name, (float)config.emSize, m_MSDFData->Glyphs, m_MSDFData->FontGeometry, config);
+					else
+						texture = CreateAndCacheAtlas<byte, float, 3, msdf_atlas::msdfGenerator>(m_Name, (float)config.emSize, m_MSDFData->Glyphs, m_MSDFData->FontGeometry, config);
+					break;
+				case msdf_atlas::ImageType::MTSDF:
+					if (floatingPointFormat)
+						texture = CreateAndCacheAtlas<float, float, 4, msdf_atlas::mtsdfGenerator>(m_Name, (float)config.emSize, m_MSDFData->Glyphs, m_MSDFData->FontGeometry, config);
+					else
+						texture = CreateAndCacheAtlas<byte, float, 4, msdf_atlas::mtsdfGenerator>(m_Name, (float)config.emSize, m_MSDFData->Glyphs, m_MSDFData->FontGeometry, config);
+					break;
+			}
+
+			m_TextureAtlas = texture;
+		}
 	}
 }

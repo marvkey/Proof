@@ -13,6 +13,9 @@
 #include "UIHandlers.h"
 #include "Proof/Scene/Entity.h"
 #include <misc/cpp/imgui_stdlib.h>
+#include "Proof/Renderer/Texture.h"
+#include "Proof/Renderer/Image.h"
+
 //https://github.com/InCloudsBelly/X2_RenderingEngine/blob/e7c349b70bd95af3ab673556cdb56cb2cc40b48e/Engine/X2/ImGui/ImGuiUtilities.h#L285
 // have 
 /*
@@ -508,7 +511,7 @@ namespace Proof::UI
         HandleModified(changeState);
         return changeState;
     }
-    bool AttributeAssetTextBar(const std::string& label, Count<class Asset> asset, AssetType type, bool includeRemove )
+    bool AttributeAssetTextBar(const std::string& label, Count<Asset> asset, AssetType type, bool includeRemove )
     {
         UI::PushID();
         bool changeState = false;
@@ -1312,6 +1315,16 @@ namespace Proof::UI
             {
                 AssetID handle = storage->GetValue<AssetID>();
                 if (AttributeAssetReference(fieldName.c_str(), AssetType::InputBindingContext, handle))
+                {
+                    storage->SetValue(handle);
+                    result = true;
+                }
+                break;
+            }
+            case ScriptFieldType::UIPanel:
+            {
+                AssetID handle = storage->GetValue<AssetID>();
+                if (AttributeAssetReference(fieldName.c_str(), AssetType::UIPanel, handle))
                 {
                     storage->SetValue(handle);
                     result = true;

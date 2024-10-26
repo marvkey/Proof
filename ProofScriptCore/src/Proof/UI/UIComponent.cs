@@ -301,7 +301,7 @@ namespace Proof
             }
         }
     }
-
+    /*
     public class UIPanel
     {
         public uint TableIndex { get; internal set; }
@@ -347,4 +347,5 @@ namespace Proof
             return null;
         }
     }
+    */
 }

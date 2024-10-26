@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Quaternionernion of type float.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct Quaternion : IReadOnlyList<float>, IEquatable<Quaternion>

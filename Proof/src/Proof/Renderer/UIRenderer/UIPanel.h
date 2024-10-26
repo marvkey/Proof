@@ -4,111 +4,81 @@
 #include "Proof/Asset/Asset.h"
 #include <unordered_map>
 #include <map>
-#include "UIButton.h"
-namespace Proof{
-	
-	class UIPanel : public Asset{
+namespace Proof
+{
+	class UIPanel : public Asset
+	{
 	public:
 		ASSET_CLASS_TYPE(UIPanel);
 
-		void SetPlaceHolder(const UIPlaceHolder& placeHolder, const std::string&);
-		void SetImage(const UIImage& placeHolder, const std::string&);
+		UIPanel();
+		UIPanel(const UIPanel& panel);
+		Count<class UIMenu> Menu;
+	///	Count<class VariableRegistry> m_VariableTable;
+	};
+	class UILayer
+	{
+	public:
+		UILayer(const std::string& name)
+			:m_Name(name)
+		{
 
-		void SetButton(const UIButton& button, const std::string&);
-		void SetButtonImage(const UIButtonImage& button, const std::string&);
-		void SetText(const UIText& button, const std::string&);
+		}
 
+		UILayer(const UILayer& other)
+		{
+			m_Name = other.m_Name;
+			for (auto panel : other.m_Panels)
+			{
+				m_Panels.emplace_back(Count<UIPanel>::CreateFrom(panel));
+			}
+		}
+		void PushUI(Count<UIPanel> panel)
+		{
+			m_Panels.emplace_back(panel);
+		}
 
-		bool PlaceHolderHas(const std::string& ID);
-		bool ImageHas(const std::string& ID);
+		void Pop()
+		{
+			m_Panels.pop_back();
+		}
 
-		bool ButtonHas(const std::string& ID);
-		bool ImageButtonHas(const std::string& ID);
-		bool TextHas(const std::string& ID);
-		
+		const std::vector<Count<UIPanel>>& GetUIPanel()const
+		{
+			return m_Panels;
+		}
 
-		UIPlaceHolder& PlaceHolderGet(const std::string& ID);
-		UIImage& ImageGet(const std::string& ID);
-		UIButton& ButtonGet(const std::string& ID);
-		UIButtonImage& GetImageButton(const std::string& ID);
-		UIText& TextGet(const std::string& ID);
-
-		const std::unordered_map<std::string, UIPlaceHolder>& GetPlaceHolders() {
-			return m_PlaceHolders;
-		};
-		const std::unordered_map<std::string, UIImage>& GetImages() {
-			return m_Images;
-		};
-		const std::unordered_map<std::string, UIButton>& GetButtons() {
-			return m_Buttons;
-		};
-
-		const std::unordered_map<std::string, UIButtonImage>& GetImageButtons() {
-			return m_ImageButtons;
-		};
-
-		const std::unordered_map<std::string, UIText>& GetTexts() {
-			return m_Text;
-		};
-
-		std::string	Name;
-		bool Visible = true;
 	private:
-
-		std::unordered_map<std::string, UIPlaceHolder> m_PlaceHolders;
-		std::unordered_map<std::string, UIImage> m_Images;
-		std::unordered_map<std::string, UIButton> m_Buttons;
-		std::unordered_map<std::string, UIButtonImage> m_ImageButtons;
-		std::unordered_map<std::string, UIText> m_Text;
-
+		std::vector<Count<UIPanel>> m_Panels;
+		std::string m_Name;
+		friend class UITable;
+		friend class SceneHierachyPanel;
 	};
 
-	class UITable : public RefCounted {
+	class UITable : public RefCounted 
+	{
 	public:
-		UITable() {
+		Count<UIPanel> Panel;
+		UITable() 
+		{
+		#if 0
+			// rendered back to front so menu always in front
+			// event are checked front to back so menu can block modal events
+			m_Layers.push_back({ "Menu" }); // menu of the game 
+			m_Layers.push_back({ "Modal" }); // pop and dialouges
+			m_Layers.push_back({ "HUD" }); // heads up dispaly
+			m_Layers.push_back({ "BackGround" });// background
+		#endif
 		}
+	#if 0
+		UILayer& GetLayer(uint32_t index)
+		{
+			PF_CORE_ASSERT(m_Layers.size() > index);
 
-		UITable(const std::map<uint32_t, Count<UIPanel>>& panels) {
-			m_Panels = panels;
+			return m_Layers.at(index);
 		}
-		// panel can be nulltr
-		// index cna be existing or non exisitng
-		void SetUI(uint32_t uiIndex, Count<UIPanel> panel) {
-			m_Panels[uiIndex] = panel;
-		}
-
-		void RemovePanel(uint32_t panelIndex) {
-			PF_CORE_ASSERT(HasPanel(panelIndex), "Does not conatin panel index");
-			m_Panels.erase(panelIndex);
-		}
-
-		Count<UIPanel> GetPanel(uint32_t panelIndex) {
-			PF_CORE_ASSERT(HasPanel(panelIndex), "Does not conatin Panel index");
-			return m_Panels[panelIndex];
-		}
-
-		uint32_t GetPanelSize() {
-			return m_Panels.size();
-		}
-
-		bool HasPanel(uint32_t panelIndex)const {
-			return m_Panels.contains(panelIndex);
-		}
-
-		const std::map<uint32_t, Count<UIPanel>>& GetPanels()const {
-			return m_Panels;
-		};
-
-		std::map<uint32_t, Count<UIPanel>> Generate() {
-			std::map<uint32_t, Count<UIPanel>> newPanel;
-			for (auto& [id, panel] : m_Panels)
-			{
-				newPanel [id] = Count<UIPanel>::CreateFrom(panel);
-			}
-			return newPanel;
-		}
+	#endif
 	private:
-		// index, panels
-		std::map<uint32_t, Count<UIPanel>> m_Panels;
+		//std::vector<UILayer> m_Layers;
 	};
 }

@@ -14,6 +14,7 @@
 #include "Proof/Project/ProjectSerilizer.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/SwapChain.h"
+#include "Proof/Renderer/Font.h"
 
 #include "Proof/Physics/PhysicsEngine.h"
 #include "Proof/Utils/FileSystem.h"
@@ -94,7 +95,7 @@ namespace Proof {
         PhysicsEngine::Init();
         ScriptEngine::Init();
         AudioEngine::Init();
-
+        Font::Init();
         AssetManagerConfiguration assetManagerconfig;
         assetManagerconfig.AssetDirectory = m_Project->GetAssetDirectory();
         assetManagerconfig.AssetManager = m_Project->GetFromSystemProjectDirectory(m_Project->GetConfig().AssetManager);
@@ -119,6 +120,7 @@ namespace Proof {
         ScriptEngine::ShutDown();
         PhysicsEngine::Release();
         AudioEngine::ShutDown();
+        Font::ShutDown();
 
         m_Project = nullptr;
         m_Window->m_SwapChain = nullptr;
@@ -282,7 +284,7 @@ namespace Proof {
             float time = glfwGetTime();
             m_FrameTime = time - m_LastFrameTime;
             m_DeltaTime = glm::min<float>(m_FrameTime, 0.0333f);
-            // limiting tehdelta time to about 30fps because we do not want drastic changes to obectusing delta time
+            // limiting the delta time to about 30fps because we do not want drastic changes to obectusing delta time
             m_LastFrameTime = time;
             frameCounter++;
 

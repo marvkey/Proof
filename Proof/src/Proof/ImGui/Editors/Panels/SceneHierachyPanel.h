@@ -1,6 +1,7 @@
 #pragma once
 #include "Panel.h"
-#include "Proof/Scene/Entity.h"
+#include <glm/glm.hpp>
+#include "Proof/Math/Vector.h"
 namespace Proof
 {
 	class SceneHierachyPanel: public Panel
@@ -26,14 +27,15 @@ namespace Proof
 		bool m_IsHovered = false;
 		bool m_IsFocused = false;
 		bool m_WindowHoveredorFocus = false;
-		bool CreateEntityMenu(Entity owner = {});
+		bool CreateEntityMenu(class Entity owner);
+		bool CreateEntityMenu();
 		Count<class World> m_ActiveWorld = nullptr;
 		//Entity m_SelectedEntity = {};
 		void DrawEntityNode(class Entity entity); 
 		void DrawComponent(class Entity& entity);
 
 		template<typename T,typename UIFunction>
-		void DrawComponents(const std::string&name, Entity& entity,UIFunction Uifunction,const std::string& toolTip=std::string());
+		void DrawComponents(const std::string&name,class Entity& entity,UIFunction Uifunction,const std::string& toolTip=std::string());
 		
 	};
 }

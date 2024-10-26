@@ -20,6 +20,7 @@
 #include "VulkanImage.h"
 #include "VulkanAllocator.h"
 #include "Vulkan.h"
+#include "Proof/Renderer/RendererSampler.h"
 #include  "Proof/Utils/FileSystem.h"
 
 #include "VulkanDevice.h"
@@ -76,8 +77,8 @@ namespace Proof
 		}
 	}
 
-	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config, Buffer data)
-		:m_Config(config)
+	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config, Buffer data, Count< RenderSampler> sampler)
+		:m_Config(config),m_RenderSampler(sampler.As<VulkanRenderSampler>())
 
 	{
 		// because assimp whe height is zero it has some weird thign
@@ -112,13 +113,13 @@ namespace Proof
 		imageConfig.Height = m_Config.Height;
 		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
 		imageConfig.DebugName = m_Config.DebugName + " ImageTexture";
-		m_Image = Image2D::Create(imageConfig);
+		m_Image = Image2D::Create(imageConfig, m_RenderSampler);
 		// render thread
 
 		Build();
 	}
-	VulkanTexture2D::VulkanTexture2D(const std::filesystem::path& path, const TextureConfiguration& config)
-		:m_Path(path), m_Config(config)
+	VulkanTexture2D::VulkanTexture2D(const std::filesystem::path& path, const TextureConfiguration& config, Count< RenderSampler> sampler)
+		:m_Path(path), m_Config(config), m_RenderSampler(sampler.As<VulkanRenderSampler>())
 	{
 		Utils::ValidateConfiguration(m_Config);
 		m_ImageData = TextureImporter::ToBufferFromFile(path, m_Config.Format, m_Config.Width, m_Config.Height);
@@ -133,12 +134,12 @@ namespace Proof
 		imageConfig.Height = m_Config.Height;
 		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
 		imageConfig.DebugName = m_Config.DebugName + " ImageTexture";
-		m_Image = Image2D::Create(imageConfig);
+		m_Image = Image2D::Create(imageConfig, m_RenderSampler);
 		//render Thread
 		Build();
 	}
-	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config)
-		:m_Config(config)
+	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config, Count<RenderSampler> sampler)
+		:m_Config(config), m_RenderSampler(sampler.As<VulkanRenderSampler>())
 
 	{
 		ImageConfiguration imageConfig;
@@ -147,7 +148,8 @@ namespace Proof
 		imageConfig.Height = m_Config.Height;
 		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
 		imageConfig.DebugName = m_Config.DebugName + " ImageTexture";
-		m_Image = Image2D::Create(imageConfig);
+
+		m_Image = Image2D::Create(imageConfig,m_RenderSampler);
 		//render Thread
 		Build();
 	}
@@ -168,7 +170,7 @@ namespace Proof
 		imageConfig.Height = m_Config.Height;
 		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
 		imageConfig.DebugName = m_Config.DebugName + " Image";
-		m_Image = Image2D::Create(imageConfig);
+		m_Image = Image2D::Create(imageConfig, m_RenderSampler);
 		// render thread
 		Build();
 	}
@@ -193,6 +195,95 @@ namespace Proof
 
 	void VulkanTexture2D::RT_GenerateMips()
 	{
+
+		m_Config.GenerateMips = true;
+
+		uint32_t mipCount = Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
+		m_Image.As<VulkanImage2D>()->GetSpecificationRef().Mips = mipCount;
+		const uint32_t faces = 1;
+
+		VkImage image = m_Image.As<VulkanImage2D>()->GetinfoRef().ImageAlloc.Image;
+		VkDescriptorImageInfo  vk_ImageDescriporInfo = m_Image.As<VulkanImage2D>()->GetDescriptorInfoVulkan();
+
+		VkCommandBuffer cmdBuffer = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
+
+		VkImageSubresourceRange subresourceRange{};
+		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		subresourceRange.layerCount = faces;
+		subresourceRange.baseArrayLayer = 0;
+		subresourceRange.levelCount = mipCount;
+		subresourceRange.baseMipLevel = 0;
+
+		Utils::SetImageLayout(cmdBuffer, image, vk_ImageDescriporInfo.imageLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, subresourceRange);
+		for (uint32_t face = 0; face < faces; face++)
+		{
+			VkImageMemoryBarrier barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			barrier.image = image;
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			barrier.subresourceRange.baseArrayLayer = face;
+			barrier.subresourceRange.layerCount = 1;
+			barrier.subresourceRange.levelCount = 1;
+
+			int32_t mipWidth = m_Config.Width;
+			int32_t mipHeight = m_Config.Height;
+
+			for (uint32_t mip = 1; mip < mipCount; mip++)
+			{
+				barrier.subresourceRange.baseMipLevel = mip - 1;
+				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+				barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+				barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+
+				vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+					0, nullptr, 0, nullptr, 1, &barrier);
+
+				VkImageBlit blit{};
+				blit.srcOffsets[0] = { 0, 0, 0 };
+				blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
+				blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				blit.srcSubresource.mipLevel = mip - 1;
+				blit.srcSubresource.baseArrayLayer = face;
+				blit.srcSubresource.layerCount = 1;
+				blit.dstOffsets[0] = { 0, 0, 0 };
+				blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
+				blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				blit.dstSubresource.mipLevel = mip;
+				blit.dstSubresource.baseArrayLayer = face;
+				blit.dstSubresource.layerCount = 1;
+
+				vkCmdBlitImage(cmdBuffer, image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+					1, &blit, VK_FILTER_LINEAR);
+
+				barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+				barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+				barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+				vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+					0, nullptr, 0, nullptr, 1, &barrier);
+
+				if (mipWidth > 1) mipWidth /= 2;
+				if (mipHeight > 1) mipHeight /= 2;
+			}
+
+			barrier.subresourceRange.baseMipLevel = mipCount - 1;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+			vkCmdPipelineBarrier(cmdBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+				0, nullptr, 0, nullptr, 1, &barrier);
+		}
+
+		Utils::SetImageLayout(cmdBuffer, image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, vk_ImageDescriporInfo.imageLayout, subresourceRange);
+		VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(cmdBuffer);
+
+	#if 0
 		m_Config.GenerateMips = true;
 		
 		uint32_t mipCount = Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
@@ -208,6 +299,13 @@ namespace Proof
 		barrier.subresourceRange.baseArrayLayer = 0;
 		barrier.subresourceRange.layerCount = 1;
 		barrier.subresourceRange.levelCount = 1;
+
+		VkImageSubresourceRange subresourceRange{};
+		subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		subresourceRange.layerCount = faces;
+		subresourceRange.baseArrayLayer = 0;
+		subresourceRange.levelCount = mipCount;
+		subresourceRange.baseMipLevel = 0;
 
 		int32_t mipWidth = m_Config.Width;
 		int32_t mipHeight = m_Config.Height;
@@ -262,6 +360,7 @@ namespace Proof
 			0, nullptr, 0, nullptr, 1, &barrier);
 
 		VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(cmdBuffer);
+	#endif
 	}
 	ResourceDescriptorInfo VulkanTexture2D::GetResourceDescriptorInfo() const
 	{
@@ -303,6 +402,8 @@ namespace Proof
 			subresourceRange.baseMipLevel = 0;
 			subresourceRange.levelCount = GetMipLevelCount();
 			subresourceRange.baseArrayLayer = 0;
+
+			//vk_Image->GetinfoRef().Sampler = m_RenderSampler->GetSampler();
 
 			Utils::SetImageLayout(cmdBuffer, imageInfo.ImageAlloc.Image, VK_IMAGE_LAYOUT_UNDEFINED, vk_Image->GetDescriptorInfoVulkan().imageLayout, subresourceRange);
 			VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(cmdBuffer);
@@ -400,7 +501,8 @@ namespace Proof
 
 		// sampler
 		{
-
+		
+		#if 0
 			vk_Image->GetinfoRef().Sampler = nullptr;
 			graphicsContext->DeleteSampler(vk_Image->GetSamplerHash());
 
@@ -428,6 +530,8 @@ namespace Proof
 			auto [sampler, hash] = graphicsContext->GetOrCreateSampler(samplerCreateInfo);
 			vk_Image->GetinfoRef().Sampler = sampler;
 			vk_Image->SetSamplerHash(hash);
+		#endif
+
 			vk_Image->UpdateDescriptor();
 
 		}
@@ -437,7 +541,7 @@ namespace Proof
 
 			VkImageViewCreateInfo imageViewCreateInfo = {};
 			imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-			imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+			imageViewCreateInfo.viewType = m_Config.Array ? VK_IMAGE_VIEW_TYPE_2D_ARRAY : VK_IMAGE_VIEW_TYPE_2D;
 			imageViewCreateInfo.format = Utils::ProofFormatToVulkanFormat(m_Config.Format);
 			imageViewCreateInfo.subresourceRange = {};
 			imageViewCreateInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -501,13 +605,18 @@ namespace Proof
 
 	}
 
+	Count<class RenderSampler> VulkanTexture2D::GetSampler()
+	{
+		return m_RenderSampler;
+	}
+
 	void VulkanTexture2D::Release()
 	{
 		m_ImageData.Release();
 	}
 
-	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config, const std::filesystem::path& path)
-		:m_Config(config), m_Path(path)
+	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config, const std::filesystem::path& path, Count<RenderSampler> sampler)
+		:m_Config(config), m_Path(path),m_RenderSampler(sampler.As<VulkanRenderSampler>())
 	{
 		uint32_t mipCount = m_Config.GenerateMips ? GetMipLevelCount() : 1;
 
@@ -529,13 +638,13 @@ namespace Proof
 		else
 			imageConfig.Usage = ImageUsage::Attachment;
 		imageConfig.Transfer = true;
-		m_Image = Image2D::Create(imageConfig);
+		m_Image = Image2D::Create(imageConfig, m_RenderSampler);
 		Build();
 
 
 	}
-	VulkanTextureCube::VulkanTextureCube(const void* data, const TextureConfiguration& config)
-		:m_Config(config)
+	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config,Buffer data, Count<RenderSampler> sampler)
+		:m_Config(config), m_RenderSampler(sampler.As<VulkanRenderSampler>())
 
 	{
 		uint32_t mipCount = m_Config.GenerateMips ? GetMipLevelCount() : 1;
@@ -548,8 +657,12 @@ namespace Proof
 		textureConfig.Width = m_Config.Width;
 		textureConfig.Storage = true;
 
-		Buffer buffer(data, Utils::GetImageMemorySize(m_Config.Format, m_Config.Height, m_Config.Width));
-		m_Texture = Texture2D::Create(textureConfig,buffer).As<VulkanTexture2D>();
+		//Buffer buffer(data, Utils::GetImageMemorySize(m_Config.Format, m_Config.Height, m_Config.Width));
+
+		//m_ImageData = TextureImporter::ToBufferFromMemory(Buffer(data.Data, m_Config.Width), m_Config.Format, m_Config.Width, m_Config.Height);
+
+		//m_Texture = Texture2D::Create(textureConfig, buffer).As<VulkanTexture2D>();
+		m_Texture = Texture2D::Create(textureConfig,data).As<VulkanTexture2D>();
 
 		ImageConfiguration imageConfig;
 		imageConfig.DebugName = fmt::format("{} TextureCubeImage", config.DebugName);
@@ -564,13 +677,13 @@ namespace Proof
 		else
 			imageConfig.Usage = ImageUsage::Attachment;
 		imageConfig.Transfer = true;
-		m_Image = Image2D::Create(imageConfig);
+		m_Image = Image2D::Create(imageConfig, m_RenderSampler);
 
 		Build();
 
 	}
-	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config)
-		:m_Config(config)
+	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config, Count<RenderSampler> sampler)
+		:m_Config(config),m_RenderSampler(sampler.As<VulkanRenderSampler>())
 	{
 		uint32_t mipCount = m_Config.GenerateMips ? GetMipLevelCount() : 1;
 
@@ -586,13 +699,13 @@ namespace Proof
 		else
 			imageConfig.Usage = ImageUsage::Attachment;
 		imageConfig.Transfer = true;
-		m_Image = Image2D::Create(imageConfig);
+		m_Image = Image2D::Create(imageConfig, m_RenderSampler);
 
 		Build();
 
 	}
-	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config, Count<Texture2D> texture)
-		:m_Config(config)
+	VulkanTextureCube::VulkanTextureCube(const TextureConfiguration& config, Count<Texture2D> texture, Count<RenderSampler> sampler)
+		:m_Config(config), m_RenderSampler(sampler.As<VulkanRenderSampler>())
 	{
 		uint32_t mipCount = m_Config.GenerateMips ? GetMipLevelCount() : 1;
 
@@ -611,7 +724,7 @@ namespace Proof
 		else
 			imageConfig.Usage = ImageUsage::Attachment;
 		imageConfig.Transfer = true;
-		m_Image = Image2D::Create(imageConfig);
+		m_Image = Image2D::Create(imageConfig, m_RenderSampler);
 
 		Build();
 
@@ -675,7 +788,8 @@ namespace Proof
 			// sampler
 			{
 
-				vk_Image->GetinfoRef().Sampler = nullptr;
+				//vk_Image->GetinfoRef().Sampler = nullptr;
+			#if 0
 				graphicsContext->DeleteSampler(vk_Image->GetSamplerHash());
 
 				VkSamplerCreateInfo samplerCreateInfo = {};
@@ -702,6 +816,9 @@ namespace Proof
 				auto [sampler, hash] = graphicsContext->GetOrCreateSampler(samplerCreateInfo);
 				vk_Image->GetinfoRef().Sampler = sampler;
 				vk_Image->SetSamplerHash(hash);
+			#endif
+				//vk_Image->GetinfoRef().Sampler = 
+			
 				vk_Image->UpdateDescriptor();
 
 			}
@@ -726,7 +843,8 @@ namespace Proof
 			// sampler
 			{
 
-				vk_Image->GetinfoRef().Sampler = nullptr;
+				//vk_Image->GetinfoRef().Sampler = nullptr;
+			#if 0
 				graphicsContext->DeleteSampler(vk_Image->GetSamplerHash());
 
 				VkSamplerCreateInfo samplerCreateInfo = {};
@@ -753,6 +871,8 @@ namespace Proof
 				auto [sampler, hash] = graphicsContext->GetOrCreateSampler(samplerCreateInfo);
 				vk_Image->GetinfoRef().Sampler = sampler;
 				vk_Image->SetSamplerHash(hash);
+				vk_Image->GetinfoRef().Sampler = m_RenderSampler->GetSampler();
+			#endif
 				vk_Image->UpdateDescriptor();
 
 			}
@@ -794,8 +914,8 @@ namespace Proof
 			computePass->m_DescritptorSetManager->SetInput("u_CubeMap", cube, true);
 			struct pushData
 			{
-				Vector2U imageSize;
-				Vector2U cubeSize;
+				glm::uvec2 imageSize;
+				glm::uvec2 cubeSize;
 			};
 
 			// make sure cube does not delete this due to refercne cout
@@ -827,6 +947,11 @@ namespace Proof
 			{
 				instance->RT_GenerateMips();
 			});
+	}
+
+	Count<class RenderSampler> VulkanTextureCube::GetSampler()
+	{
+		return Count<class RenderSampler>();
 	}
 
 	void VulkanTextureCube::RT_GenerateMips()

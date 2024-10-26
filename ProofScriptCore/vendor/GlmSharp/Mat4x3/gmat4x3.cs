@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Matrix of type T with 4 columns and 3 rows.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct gMatrix4x3<T> : IReadOnlyList<T>, IEquatable<gMatrix4x3<T>>

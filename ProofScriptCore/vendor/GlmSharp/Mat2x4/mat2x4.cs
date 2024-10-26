@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Matrix of type float with 2 columns and 4 rows.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct Matrix2x4 : IReadOnlyList<float>, IEquatable<Matrix2x4>

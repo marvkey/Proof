@@ -6,8 +6,6 @@
 #include "Proof/Renderer/Texture.h"
 #include <unordered_set>
 #include "Material.h"
-#include "Proof/Renderer/UIRenderer/UIPanel.h"
-#include "Proof/Renderer//ParticleSystem.h"
 #include "Proof/Math/MathResource.h"
 #include "Proof/Math/Vector.h"
 #include "Camera/SceneCamera.h"
@@ -419,7 +417,9 @@ namespace Proof
 		float FarPlane = 1000.f;
 		float FovDeg = 45;
 
+		// render using local rotation 
 		bool UseLocalRotation = false;
+		bool ActiveForRendering = true; // is it active to be used as a scene camera for rendering
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
@@ -649,7 +649,9 @@ namespace Proof
 		float LineSpacing = 1.0f;
 		//Todo background color
 
-		bool UseLocalRotation = false;
+		bool Visible = true;
+		bool UseLocalRotation = false;// render using local rotation 
+		bool RenderInViewSpace = false;
 	};
 	
 	struct PlayerInputComponent 
@@ -667,14 +669,14 @@ namespace Proof
 	public:
 		ParticleSystemComponent(const ParticleSystemComponent& other);
 		ParticleSystemComponent() = default;
-		Count< ParticleHandlerTable> ParticleHandlerTable = Count<class ParticleHandlerTable>::Create();
+		Count< class ParticleHandlerTable> ParticleHandlerTable;
 	};
 
 	struct PlayerHUDComponent 
 	{
 		PlayerHUDComponent(const PlayerHUDComponent& other);
-		PlayerHUDComponent() = default;
-		Count< UITable> HudTable = Count<class UITable>::Create();
+		PlayerHUDComponent();
+		Count< class UITable> HudTable;
 	};
 
 	struct AudioComponent
@@ -718,8 +720,27 @@ namespace Proof
 	struct WaterComponent
 	{
 		WaterComponent();
+		WaterComponent(Count< class Water> water);
 		WaterComponent(const WaterComponent& other);
-		Count< class WaterSystem> WaterSystem;
+		Count< class Water> Water;
+	};
+
+	struct BuoyancyComponent
+	{
+		struct Floater
+		{
+			float SubmersionDepth = 1.0f;
+			float Drag = 0.99f;
+			float AngularDrag = 0.5f;
+			float BuoyancyStrength = 3.0f;
+		};
+
+		struct EntityFloater
+		{
+			UUID EntityUUID;
+			Floater Floater;
+		};
+		std::vector<EntityFloater> Floaters;
 	};
 	template<class ... Component>
 	struct ComponentGroup {
@@ -727,10 +748,10 @@ namespace Proof
 	};
 	using AllComponents =
 		ComponentGroup<IDComponent, TagComponent, HierarchyComponent, TransformComponent, PrefabComponent,
-		MeshComponent,DynamicMeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent, CharacterControllerComponent, RigidBodyComponent,
-		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent,
+		MeshComponent,DynamicMeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent, CharacterControllerComponent,
+		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent, RigidBodyComponent, // rigid body should be here due to if we spawn entity we want to check if it has any collider then we add rigidbody on it
 		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent, AudioListenerComponent,
-		WaterComponent>;
+		WaterComponent, BuoyancyComponent>;
 	
 
 	using LightComponnet =ComponentGroup<SkyLightComponent, DirectionalLightComponent, PointLightComponent, SpotLightComponent>;

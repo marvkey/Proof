@@ -94,7 +94,7 @@ Starting with .NET 4.5, `System.Numerics.Complex` and `IReadOnlyList<T>` are sup
 * Implicit casts for vectors where base types can be casted implicitly
 * Most GLSL functions
 * Radians-only lib
-* Serialization via `[RegisterCoreClassStruct]`, `` and `` (and thus [Json.NET](https://github.com/JamesNK/Newtonsoft.Json))
+* Serialization via ``, `` and `` (and thus [Json.NET](https://github.com/JamesNK/Newtonsoft.Json))
 * Marshalling via `[StructLayout(LayoutKind.Sequential)]`
 * Quaternions
 * Support for .NET 2.0 (with new features since .NET 4.5)

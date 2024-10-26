@@ -110,7 +110,7 @@ namespace Proof
 		
 		const physx::PxFilterData& GetFilterData() const { return m_FilterData; }
 
-		void AddForceAtLocation(const glm::vec3& force, const glm::vec3& location, ForceMode forceMode);
+		void AddForceAtPosition(const glm::vec3& force, const glm::vec3& location, ForceMode forceMode);
 
 		glm::mat4 GetCenterOfMass() const;
 		glm::mat4 GetLocalCenterOfMass() const;

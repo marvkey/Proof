@@ -14,6 +14,6 @@ namespace Proof
 		static Count<class Mesh> GenerateCone(uint32_t sectorCount = 36, uint32_t stackCount = 15, float radius = 0.5f, float height = 1.0f);
 		static Count<class Mesh> GenerateCylinder(uint32_t sectorCount = 36, uint32_t stackCount = 1, float topradius = 0.5f, float baseRadius = 0.5f, float height = 1.0f);
 		static Count<class Mesh> GenerateTorus(uint32_t numSegments = 20, uint32_t numRings = 10, float majorRadius = 0.5f, float minorRadius = 0.1f);
-		static Count<class Mesh> GeneratePlane(uint32_t numSegments = 10, float size = 1.0f);
+		static Count<class Mesh> GeneratePlane(uint32_t numSegments = 10, float size = 1.0f, bool doubleSided = false);
 	};
 }

@@ -132,8 +132,8 @@ namespace Proof
 				VkImageAspectFlagBits aspectMask = Utils::IsDepthFormat( dst->GetSpecification().Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 				VkImage srcImage = src->GetinfoRef().ImageAlloc.Image;
 				VkImage dstImage = dst->GetinfoRef().ImageAlloc.Image;
-				glm::uvec2 srcSize = { src->GetSize().X,src->GetSize().Y };
-				glm::uvec2 dstSize = { dst->GetSize().X,dst->GetSize().Y };
+				glm::uvec2 srcSize = { src->GetSize().x,src->GetSize().y };
+				glm::uvec2 dstSize = { dst->GetSize().x,dst->GetSize().y };
 
 				VkImageCopy region;
 				region.srcOffset = { 0, 0, 0 };

@@ -4,6 +4,7 @@
 #include "VulkanShader.h"
 #include "VulkanResourceBuffer.h"
 #include "VulkanTexutre.h"
+#include "VulkanImage.h"
 #include "VulkanSampler.h"
 
 #include <map>

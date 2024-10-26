@@ -1,8 +1,8 @@
 #pragma once
-#include "Entity.h"
 #include <vector>
 #include "Proof/Math/Math.h"
 namespace Proof{
+#if 0
 	enum class ColliderTypes {
 		CubeCollider = 0,
 		SphereCollider,
@@ -37,5 +37,5 @@ namespace Proof{
 		ColliderTypes OtherColliderType;
 		Entity otherEntity;
 	};
-
+#endif
 }

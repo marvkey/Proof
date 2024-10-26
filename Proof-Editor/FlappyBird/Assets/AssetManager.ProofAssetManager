@@ -1,0 +1,49 @@
+Assets:
+  - Asset: 16034998859201702648
+    Type: Material
+    Path: Materials\m_White.Material.ProofAsset
+  - Asset: 17819033342336243331
+    Type: InputBindingContext
+    Path: Input\PlayeInputContext.InputBindingContext.ProofAsset
+  - Asset: 21111461629328851
+    Type: Material
+    Path: Materials\m_Black.Material.ProofAsset
+  - Asset: 1727338198408425826
+    Type: World
+    Path: Scenes\Level1.ProofWorld
+  - Asset: 7429149590947314185
+    Type: PhysicsMaterial
+    Path: PhysicsMaterials\pm_Bouncy.PhysicsMaterial.ProofAsset
+  - Asset: 14672714111568738449
+    Type: ScriptFile
+    Path: Scripts\BirdMovement.cs
+  - Asset: 17583959974702302579
+    Type: MeshSourceFile
+    Path: Models\FlappyBird\scene.gltf
+  - Asset: 14323665009738248236
+    Type: Mesh
+    Path: Meshes\FlappyBird.Mesh.ProofAsset
+  - Asset: 14119781984078702474
+    Type: InputAction
+    Path: Input\MovePlayer.InputAction.ProofAsset
+  - Asset: 4337114102758531292
+    Type: InputAction
+    Path: Input\ChangeCamera.InputAction.ProofAsset
+  - Asset: 4304198284687535296
+    Type: MeshSourceFile
+    Path: Models\BirdFracture\BirdFracture.fbx
+  - Asset: 1767072673273954394
+    Type: DynamicMesh
+    Path: Meshes\BirdFracture.DynamicMesh.ProofAsset
+  - Asset: 8358095728716913711
+    Type: ScriptFile
+    Path: Scripts\ObstacleSpawner.cs
+  - Asset: 35420920226295225
+    Type: UIPanel
+    Path: UI\UI_PlayerHud.UIPanel.ProofAsset
+  - Asset: 7121165998562327910
+    Type: ScriptFile
+    Path: Scripts\CameraFollow.cs
+  - Asset: 17336988028706640135
+    Type: Prefab
+    Path: Prefabs\p_Obstacle.Prefab.ProofAsset

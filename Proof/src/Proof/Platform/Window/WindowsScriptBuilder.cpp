@@ -195,7 +195,7 @@ project "$PROJECT_NAME$"
 		bool outPut = system(command.c_str());
 		if (!outPut)
 		{
-			//PF_ENGINE_ERROR("Error Building CS Project  FilePath: {}, msBuildPath: {} command: {}", filepath.string(),msBuildPath.string(), command);
+				PF_EC_ERROR("Error Building CS Project  FilePath: {}, msBuildPath: {} command: {}", filepath.string(),msBuildPath.string(), command);
 		}
 	}
 

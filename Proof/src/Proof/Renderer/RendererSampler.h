@@ -1,21 +1,44 @@
 #pragma once
 #include "RendererResouce.h"
+#include "ImageUtils.h"
 namespace Proof
 {
-	enum class SamplerAddressMode
-	{
-		Wrap,
-		Mirror,
-		Clamp,
-		Border,
-		MirrorOnce,
-	};
+	
 
-	enum class SamplerFilter
+	struct SamplerFilterMetaData
 	{
-		Linear,
-		Nearest,
-		Cubic
+		SamplerFilter MinFilter = SamplerFilter::Linear;
+		SamplerFilter MagFilter = SamplerFilter::Nearest;
+		SamplerFilterMetaData()
+		{
+
+		}
+		SamplerFilterMetaData(SamplerFilter filter) :
+			MinFilter(filter),MagFilter(filter)
+		{
+
+		}
+		SamplerFilterMetaData(SamplerFilter minFilter, SamplerFilter magFilter) :
+			MinFilter(minFilter),MagFilter(magFilter)
+		{
+
+		}
+
+		bool operator<(const SamplerFilterMetaData& other) const
+		{
+			if (MinFilter < other.MinFilter)
+				return true;
+
+			if (MinFilter > other.MinFilter)
+				return false;
+
+			return MagFilter < other.MagFilter;
+		}
+
+		bool operator>(const SamplerFilterMetaData& other) const 
+		{
+			return other < *this;
+		}
 	};
 	enum class SamplerBorderColor
 	{
@@ -29,31 +52,52 @@ namespace Proof
 
 	enum class SamplerMipMapMode
 	{
-		NEAREST = 0,
-		LINEAR = 1,
+		Linear = 0,
+		Nearest = 1,
 	};
 
-	struct SamplerAddressModeMetaData
+	struct SamplerWrapMetaData
 	{
-		SamplerAddressModeMetaData()
+		SamplerWrapMetaData()
 		{
 
 		}
-		SamplerAddressModeMetaData(SamplerAddressMode wrap) :
+		SamplerWrapMetaData(SamplerWrap wrap) :
 			AddressU(wrap),AddressV(wrap), AddressW(wrap)
 		{
 
 		}
-		SamplerAddressModeMetaData(SamplerAddressMode wrapU, SamplerAddressMode wrapV, SamplerAddressMode wrapW) :
+		SamplerWrapMetaData(SamplerWrap wrapU, SamplerWrap wrapV, SamplerWrap wrapW) :
 			AddressU(wrapU), AddressV(wrapV), AddressW(wrapW)
 
 		{
 
 		}
-		SamplerAddressMode AddressU = SamplerAddressMode::Wrap;
-		SamplerAddressMode AddressV = SamplerAddressMode::Wrap;
-		SamplerAddressMode AddressW = SamplerAddressMode::Wrap;
+		SamplerWrap AddressU = SamplerWrap::Repeat;
+		SamplerWrap AddressV = SamplerWrap::Repeat;
+		SamplerWrap AddressW = SamplerWrap::Repeat;
 
+		bool operator<(const SamplerWrapMetaData& other) const
+		{
+			if (AddressU < other.AddressU)
+				return true;
+
+			if (AddressU > other.AddressU)
+				return false;
+
+			if (AddressV < other.AddressV)
+				return true;
+
+			if (AddressV > other.AddressV)
+				return false;
+
+			return AddressW < other.AddressW;
+		}
+
+		bool operator>(const SamplerWrapMetaData& other) const
+		{
+			return other < *this;
+		}
 	};
 
 	enum class SamplerCompare 
@@ -62,7 +106,7 @@ namespace Proof
 		Less = 1,
 		Equal = 2,
 		LessOrEqual = 3,
-		Greater = 4,
+		Greater = 4,	
 		NotEqual = 5,
 		GreaterOrEqual = 6,
 		Always = 7,
@@ -70,11 +114,14 @@ namespace Proof
 	struct SamplerResourceConfig
 	{
 		std::string DebugName;
-		SamplerAddressModeMetaData AddressMode = SamplerAddressMode::Wrap;
-		SamplerFilter Filter = SamplerFilter::Linear;
+		SamplerWrapMetaData Wrap = SamplerWrap::Repeat;
+		SamplerFilterMetaData Filter = SamplerFilter::Linear;
 		SamplerBorderColor BorderColor = SamplerBorderColor::TransperantBlack;
-		SamplerMipMapMode MipMapMode = SamplerMipMapMode::NEAREST;
+		SamplerMipMapMode MipMapMode = SamplerMipMapMode::Linear;
 		SamplerCompare CompareOp = SamplerCompare::Never;
+		float Anisotropy = 1.0f;
+
+		bool operator<(const SamplerResourceConfig& other) const;
 	};
 	class RenderSampler : public RendererResource
 	{
@@ -86,27 +133,5 @@ namespace Proof
 		virtual const SamplerResourceConfig& GetConfig() const = 0;
 	};
 
-	class SamplerFactory
-	{
-	public:
-		//https://github.com/qiutang98/flower/blob/b32f8097ca43f02aafdf7af3c67e8987939eebe2/source/engine/graphics/base.h#L499
 
-		static Count<RenderSampler> GetPointClampEdge();
-		static Count<RenderSampler> GetPointClampBorder0000();
-		static Count<RenderSampler> GetPointClampBorder1111();
-		static Count<RenderSampler> GetPointRepeat();
-		static Count<RenderSampler> GetLinearClampEdge();
-		static Count<RenderSampler> GetLinearClampEdgeMipPoint();
-		static Count<RenderSampler> GetLinearClampBorder0000MipPoint();
-		static Count<RenderSampler> GetLinearClampBorder1111MipPoint();
-		static Count<RenderSampler> GetLinearRepeatMipPoint();
-		static Count<RenderSampler> GetLinearRepeat();
-
-		static Count<RenderSampler> GetLinear();
-		static Count<RenderSampler> GetPoint();
-	private:
-		static void Init();
-		static void ShutDown();
-		friend class Renderer;
-	};
 }

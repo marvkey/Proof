@@ -427,6 +427,7 @@ namespace Proof
 		// if you change teh vertex positon and this is true u are going to see wierd things happen
 		// as the depth buffer drawing is different so we do not want this drawn onto depth buffer for things like water
 		Count<RenderPass> CreateGeometryPassInstance(const std::string& shaderName, bool drawWithDepth = false);
+		Count<RenderPass> CreateTransparentPassInstance(const std::string& shaderName);
 		void Init();
 		void CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection);
 		void CalculateCascadesManualSplit(CascadeData* cascades, const glm::vec3& lightDirection);

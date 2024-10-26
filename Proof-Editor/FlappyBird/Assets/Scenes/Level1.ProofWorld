@@ -1,0 +1,311 @@
+World:
+  ID: 1727338198408425826
+  Entities:
+    - Entity: 1906796830639401264
+      TagComponent:
+        Tag: Plane
+        tags: []
+      TransformComponent:
+        Location: [0, -1.60000002, 0]
+        Rotation: [0, 0, 0]
+        Scale: [82.6786957, 1, 13.3999996]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        MaterialTable:
+          - Material: ""
+            AssetID: 21111461629328851
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 6735317338095580548
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [1.39626336, 0.17453292, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+    - Entity: 9349092802385242280
+      TagComponent:
+        Tag: Bird
+        tags: []
+      TransformComponent:
+        Location: [0, 6.19999981, 0]
+        Rotation: [0, -0, 0]
+        Scale: [0.800000012, 0.800000012, 0.800000012]
+      HierarchyComponent:
+        ParentHandle: 230703648228711441
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 14323665009738248236
+        MaterialTable:
+          - Material: ""
+            AssetID: 21111461629328851
+            Index: 1
+      ScriptComponent:
+        Scripts:
+          - Script: FlappyBird.BirdMovement
+            ScriptClassName: FlappyBird.BirdMovement
+            ScriptName: FlappyBird.BirdMovement
+            Fields:
+              - NameID: FlappyBird.BirdMovement.ChangeCameraAction
+                Type: InputAction
+                Data: 4337114102758531292
+              - NameID: FlappyBird.BirdMovement.PlayerScorePanel
+                Type: UIPanel
+                Data: 35420920226295225
+              - NameID: FlappyBird.BirdMovement.IncreaseSpeedValue
+                Type: Float
+                Data: 0.25
+              - NameID: FlappyBird.BirdMovement.ForwardSpeed
+                Type: Float
+                Data: 3
+              - NameID: FlappyBird.BirdMovement.MaxForwardSpeed
+                Type: Float
+                Data: 10
+              - NameID: FlappyBird.BirdMovement.JumpAction
+                Type: InputAction
+                Data: 14119781984078702474
+              - NameID: FlappyBird.BirdMovement.IncreaseSpeedIntervalSeconds
+                Type: Float
+                Data: 5
+              - NameID: FlappyBird.BirdMovement.JumpForce
+                Type: Float
+                Data: 6
+              - NameID: FlappyBird.BirdMovement.ScoreEntity
+                Type: Entity
+                Data: 10047144193988509295
+              - NameID: FlappyBird.BirdMovement.Cameras
+                Type: Entity
+                Length: 3
+                Data:
+                  - 5801210212382716098
+                  - 12917521485709972632
+                  - 12694213833621260716
+              - NameID: FlappyBird.BirdMovement.TextCameras
+                Type: Entity
+                Length: 3
+                Data:
+                  - 15045088149692351039
+                  - 10047144193988509295
+                  - 6541340304331375578
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1.60000002, 0.800000012, 1.20000005]
+        PhysicsMaterialPointerID: 7429149590947314185
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+      PlayerInputComponent:
+        InputPlayer: None
+        InputBindings:
+          - InputBindingContextHandler: ""
+            InputBindingID: 17819033342336243331
+            Active: true
+      PlayerHUDComponent:
+        {}
+    - Entity: 12694213833621260716
+      TagComponent:
+        Tag: FirstPersonCamera
+        tags: []
+      TransformComponent:
+        Location: [0, 6.4000001, 0]
+        Rotation: [0, 1.57079637, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 230703648228711441
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: FlappyBird.CameraFollow
+            ScriptClassName: FlappyBird.CameraFollow
+            ScriptName: FlappyBird.CameraFollow
+            Fields:
+              - NameID: FlappyBird.CameraFollow.Target
+                Type: Entity
+                Data: 9349092802385242280
+              - NameID: FlappyBird.CameraFollow.FollowX
+                Type: Bool
+                Data: true
+              - NameID: FlappyBird.CameraFollow.FollowY
+                Type: Bool
+                Data: true
+              - NameID: FlappyBird.CameraFollow.FollowZ
+                Type: Bool
+                Data: false
+              - NameID: FlappyBird.CameraFollow.FollowOffset
+                Type: Vector3
+                Data: [-1, 0, 0]
+      CameraComponent:
+        NearPlane: 0.300000012
+        FarPlane: 1000
+        FOV: 45
+        UseLocalRotation: false
+        ActiveForRendering: false
+    - Entity: 12917521485709972632
+      TagComponent:
+        Tag: BehindCamera
+        tags: []
+      TransformComponent:
+        Location: [12.7559996, 7.35514832, 0]
+        Rotation: [0, 1.57079637, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 230703648228711441
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: FlappyBird.CameraFollow
+            ScriptClassName: FlappyBird.CameraFollow
+            ScriptName: FlappyBird.CameraFollow
+            Fields:
+              - NameID: FlappyBird.CameraFollow.Target
+                Type: Entity
+                Data: 9349092802385242280
+              - NameID: FlappyBird.CameraFollow.FollowX
+                Type: Bool
+                Data: true
+              - NameID: FlappyBird.CameraFollow.FollowY
+                Type: Bool
+                Data: true
+              - NameID: FlappyBird.CameraFollow.FollowZ
+                Type: Bool
+                Data: false
+              - NameID: FlappyBird.CameraFollow.FollowOffset
+                Type: Vector3
+                Data: [8, 0, 0]
+      CameraComponent:
+        NearPlane: 0.300000012
+        FarPlane: 1000
+        FOV: 45
+        UseLocalRotation: false
+        ActiveForRendering: false
+    - Entity: 8170577130468737619
+      TagComponent:
+        Tag: SpawnObstacle
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: FlappyBird.ObstacleSpawner
+            ScriptClassName: FlappyBird.ObstacleSpawner
+            ScriptName: FlappyBird.ObstacleSpawner
+            Fields:
+              - NameID: FlappyBird.ObstacleSpawner.Bird
+                Type: Entity
+                Data: 9349092802385242280
+              - NameID: FlappyBird.ObstacleSpawner.DistanceFromPlayer
+                Type: Float
+                Data: -10
+              - NameID: FlappyBird.ObstacleSpawner.Frequency
+                Type: Float
+                Data: 0.5
+              - NameID: FlappyBird.ObstacleSpawner.Obstacle
+                Type: Prefab
+                Data: 17336988028706640135
+    - Entity: 4913491707922800382
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.0174532924, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 230703648228711441
+      TagComponent:
+        Tag: Player
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [9349092802385242280, 12917521485709972632, 5801210212382716098, 12694213833621260716]
+    - Entity: 5801210212382716098
+      TagComponent:
+        Tag: DefaultCamera
+        tags: []
+      TransformComponent:
+        Location: [-2.79999995, 19.3999996, -20.8731804]
+        Rotation: [0, 3.14159274, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 230703648228711441
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: FlappyBird.CameraFollow
+            ScriptClassName: FlappyBird.CameraFollow
+            ScriptName: FlappyBird.CameraFollow
+            Fields:
+              - NameID: FlappyBird.CameraFollow.Target
+                Type: Entity
+                Data: 9349092802385242280
+              - NameID: FlappyBird.CameraFollow.FollowX
+                Type: Bool
+                Data: true
+              - NameID: FlappyBird.CameraFollow.FollowY
+                Type: Bool
+                Data: true
+              - NameID: FlappyBird.CameraFollow.FollowZ
+                Type: Bool
+                Data: false
+              - NameID: FlappyBird.CameraFollow.FollowOffset
+                Type: Vector3
+                Data: [0, 0, 0]
+      CameraComponent:
+        NearPlane: 0.300000012
+        FarPlane: 1000
+        FOV: 45
+        UseLocalRotation: false
+        ActiveForRendering: true

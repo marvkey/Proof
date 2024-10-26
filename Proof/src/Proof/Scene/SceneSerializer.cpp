@@ -22,6 +22,11 @@
 #include "Proof/Scripting/ScriptFile.h"
 #include "Proof/Asset/SerializeCommon.h"
 
+#include "Proof/Scene/WaterSystem/WaterSystem.h"
+#include "Proof/Scene/WaterSystem/Water.h"
+#include "Proof/Scene/WaterSystem/GerstnerWave.h"
+#include "Proof/Renderer/UIRenderer/UIPanel.h"
+#include "Proof/Renderer/ParticleSystem.h"
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 #include "Material.h"
@@ -174,8 +179,20 @@ namespace Proof
 				out << YAML::Key << "SubMeshIndex" << YAML::Value << dynamicMeshComponent.m_SubmeshIndex;
 				if (AssetManager::HasAsset(dynamicMeshComponent.GetMesh()))
 				{
-					if (*dynamicMeshComponent.GetMesh()->GetMaterialTable() == *dynamicMeshComponent.MaterialTable)
-						goto leavedynamic;
+					//if (*dynamicMeshComponent.GetMesh()->GetMaterialTable() == *dynamicMeshComponent.MaterialTable)
+					//	goto leavedynamic;
+
+					auto meshMaterialTable = dynamicMeshComponent.GetMesh()->GetMaterialTable();
+					for (auto [index, material] : dynamicMeshComponent.MaterialTable->GetMaterials())
+					{
+						if(!meshMaterialTable->HasMaterial(index))
+							goto leavedynamic;
+
+						if(meshMaterialTable->GetMaterial(index) != material)
+							goto leavedynamic;
+
+
+					}
 					out << YAML::Key << "MaterialTable";
 					out << YAML::BeginSeq;//MaterialTbale 
 					for (auto& [index, material] : dynamicMeshComponent.MaterialTable->GetMaterials())
@@ -353,7 +370,9 @@ namespace Proof
 				out << YAML::Key << "Kerning" << textComponent.Kerning;
 				out << YAML::Key << "LineSpacing" << textComponent.LineSpacing;
 				out << YAML::Key << "Text" << textComponent.Text;
+				out << YAML::Key << "Visible" << textComponent.Visible;
 				out << YAML::Key << "UseLocalRotation" << textComponent.UseLocalRotation;
+				out << YAML::Key << "RenderInViewSpace" << textComponent.RenderInViewSpace;
 				out << YAML::EndMap; // Text Component
 			}
 		}
@@ -367,6 +386,7 @@ namespace Proof
 				out << YAML::Key << "FarPlane" << cameraComponent.FarPlane;
 				out << YAML::Key << "FOV" << cameraComponent.FovDeg;
 				out << YAML::Key << "UseLocalRotation" << cameraComponent.UseLocalRotation;
+				out << YAML::Key << "ActiveForRendering" << cameraComponent.ActiveForRendering;
 				out << YAML::EndMap; // CameraComponet
 			}
 		}
@@ -501,11 +521,14 @@ namespace Proof
 		}
 		
 		{
+		#if 1
 			if (entity.HasComponent<PlayerHUDComponent>())
 			{
+				
 				PlayerHUDComponent& hud = entity.GetComponent<PlayerHUDComponent>();
 				out << YAML::Key << "PlayerHUDComponent";
 				out << YAML::BeginMap; // PlayerHudComponent
+				/*
 
 				out << YAML::Key << "UiTable";
 				out << YAML::BeginSeq;//hudTable
@@ -527,8 +550,10 @@ namespace Proof
 					}
 				}
 				out << YAML::EndSeq; // hudTable
+				*/
 				out << YAML::EndMap; // PlayerHudComponent
 			}
+		#endif
 		}
 
 		{
@@ -618,6 +643,88 @@ namespace Proof
 			}
 
 		}
+		//water
+		{
+			if (entity.HasComponent<WaterComponent>())
+			{
+				WaterComponent& waterComponent = entity.GetComponent<WaterComponent>();
+				out << YAML::Key << "WaterComponent";
+				out << YAML::BeginMap; // WaterComponent
+				out << YAML::Key << "WaveType" << YAML::Key << EnumReflection::EnumString(waterComponent.Water->GetWaveType());
+
+				switch (waterComponent.Water->GetWaveType())
+				{
+					case WaveType::GerstnerWave:
+					{
+						GerstnerWave::GerstnerWaveInfo& waterDataInfo = waterComponent.Water.As<GerstnerWave>()->GerstnerData;
+
+						out << YAML::Key << "WaveCount " << YAML::Key << waterDataInfo.WaveCount;
+						out << YAML::Key << "WaveDistribution" << YAML::Key << waterDataInfo.WaveDistribution;
+						out << YAML::Key << "WaveDirection" << YAML::Key << waterDataInfo.WaveDirection;
+						out << YAML::Key << "WaveSpread" << YAML::Key << waterDataInfo.WaveSpread;
+
+						out << YAML::Key << "Color" << YAML::Key << waterDataInfo.Color;
+						out << YAML::Key << "Speed" << YAML::Key << waterDataInfo.Speed;
+
+						out << YAML::Key << "MinMaxWavelength" << YAML::Key << waterDataInfo.MinMaxWavelength;
+						out << YAML::Key << "WavelengthFalloff" << YAML::Key << waterDataInfo.WavelengthFalloff;
+
+						out << YAML::Key << "MinMaxAmplitude" << YAML::Key << waterDataInfo.MinMaxAmplitude;
+						out << YAML::Key << "AmplitudeFallOff" << YAML::Key << waterDataInfo.AmplitudeFallOff;
+
+						out << YAML::Key << "MinMaxSteepness" << YAML::Key << waterDataInfo.MinMaxSteepness;
+						out << YAML::Key << "SteepnessFallOff" << YAML::Key << waterDataInfo.SteepnessFallOff;
+
+						out << YAML::Key << "Seed" << YAML::Key << waterDataInfo.Seed;
+						out << YAML::Key << "RandomSeed" << YAML::Key << waterDataInfo.RandomSeed;
+						out << YAML::Key << "PlaneSize" << YAML::Key << waterDataInfo.PlaneSize;
+					}
+					break;
+
+					default:
+						break;
+				}
+			
+
+
+				out << YAML::EndMap; // WaterComponent
+			}
+
+		}
+
+		//buoyancy
+		{
+			if (entity.HasComponent<BuoyancyComponent>())
+			{
+				BuoyancyComponent& buoyancyComponent = entity.GetComponent<BuoyancyComponent>();
+				out << YAML::Key << "BuoyancyComponent";
+				out << YAML::BeginMap; // buoyancyComponent
+
+					
+				out << YAML::Key << "Floaters";
+				out << YAML::BeginSeq;//Floaters
+				{
+					for (auto& [entityID,floater] : buoyancyComponent.Floaters)
+					{
+						out << YAML::BeginMap;// floater
+
+						out << YAML::Key << "Floater" << YAML::Key << "";
+
+						out << YAML::Key << "EntityID" << YAML::Value << entityID;
+						out << YAML::Key << "SubmersionDepth" << YAML::Value << floater.SubmersionDepth;
+						out << YAML::Key << "Drag" << YAML::Value << floater.Drag;
+						out << YAML::Key << "AngularDrag" << YAML::Value << floater.AngularDrag;
+						out << YAML::Key << "BuoyancyStrength" << YAML::Value << floater.BuoyancyStrength;
+
+						out << YAML::EndMap;// floater
+					}
+					
+				}
+				out << YAML::EndSeq; // Floaters
+
+				out << YAML::EndMap; // buoyancyComponent
+			}
+		}
 		out << YAML::EndMap; // entity
 	}
 
@@ -674,6 +781,24 @@ namespace Proof
 			return false;
 
 		DeSerilizeEntity(entities, m_World);
+		// one time error where we saved and somehtign bad occured so some entities are holdin children that dont exist
+		auto hiearchyView = m_World->m_Registry.view<HierarchyComponent>();
+		for (auto entity : hiearchyView)
+		{
+			HierarchyComponent& hierarchyComponent = hiearchyView.get<HierarchyComponent>(entity);
+			std::vector<UUID>& children = hierarchyComponent.Children;
+			if (hierarchyComponent.Children.size() > 0)
+			{
+
+				for (auto it = children.begin(); it != children.end(); )
+				{
+					if (!m_World->HasEntity(*it))
+						it = children.erase(it);
+					else
+						++it;
+				}
+			}
+		}
 		return true;
 	}
 
@@ -748,7 +873,7 @@ namespace Proof
 					//src.SetMesh( meshComponent["MeshAssetPointerID"].as<uint64_t>());
 					if (meshComponent["MaterialTable"])
 					{
-						Count<MaterialTable> matTable = Count<MaterialTable>::Create();
+						Count<MaterialTable> matTable = Count<MaterialTable>::Create(false);
 						for (auto mat : meshComponent["MaterialTable"])
 						{
 							AssetID id = mat["AssetID"].as<uint64_t>();
@@ -794,7 +919,7 @@ namespace Proof
 
 					if (dynamicMeshComponent["MaterialTable"])
 					{
-						Count<MaterialTable> matTable = Count<MaterialTable>::Create();
+						Count<MaterialTable> matTable = Count<MaterialTable>::Create(false);
 						for (auto mat : dynamicMeshComponent["MaterialTable"])
 						{
 							AssetID id = mat["AssetID"].as<uint64_t>();
@@ -815,7 +940,8 @@ namespace Proof
 					{
 						if (AssetManager::HasAsset(src.m_MeshID))
 						{
-							src.MaterialTable = Count<MaterialTable>::CreateFrom(AssetManager::GetAsset<DynamicMesh>(src.m_MeshID)->GetMaterialTable());
+							//src.MaterialTable = Count<MaterialTable>::CreateFrom(AssetManager::GetAsset<DynamicMesh>(src.m_MeshID)->GetMaterialTable());
+							src.MaterialTable = AssetManager::GetAsset<DynamicMesh>(src.m_MeshID)->GetMaterialTableBasedOnSubMeshIndex(src.m_SubmeshIndex);
 						}
 						else
 						{
@@ -947,6 +1073,9 @@ namespace Proof
 					src.Text = textComponent["Text"].as<std::string>();
 					if(textComponent["UseLocalRotation"])
 						src.UseLocalRotation = textComponent["UseLocalRotation"].as<bool>();
+
+					src.Visible = textComponent["Visible"].as<bool>(src.Visible);
+					src.RenderInViewSpace = textComponent["RenderInViewSpace"].as<bool>(src.RenderInViewSpace);
 				}
 			}
 			// CAMERA
@@ -959,6 +1088,7 @@ namespace Proof
 					src.FarPlane = cameraComponent["FarPlane"].as<float>();
 					src.FovDeg = cameraComponent["FOV"].as<float>();
 					src.UseLocalRotation = cameraComponent["UseLocalRotation"].as<bool>();
+					src.ActiveForRendering = cameraComponent["ActiveForRendering"].as<bool>(src.ActiveForRendering);
 
 				}
 			}
@@ -1093,10 +1223,12 @@ namespace Proof
 			}
 			// PlayerHudComppoent
 			{
+			#if 1
 				auto playerHudComponent = entity["PlayerHUDComponent"];
 				if (playerHudComponent)
 				{
 					auto& phc = NewEntity.AddComponent<PlayerHUDComponent>();
+					/*
 					Count<UITable> table = Count<UITable>::Create();
 					for(auto hud :  playerHudComponent["UiTable"])
 					{
@@ -1118,7 +1250,9 @@ namespace Proof
 						}
 					}
 					phc.HudTable = table;
+					*/
 				}
+			#endif
 			}
 			// audio compoennt
 			{
@@ -1156,6 +1290,83 @@ namespace Proof
 				}
 
 			}
+			//Water Component
+			{
+				auto waterComponent = entity["WaterComponent"];
+				if (waterComponent)
+				{
+
+					auto waveType = EnumReflection::StringEnum<WaveType>(waterComponent["WaveType"].as<std::string>(EnumReflection::EnumString(WaveType::GerstnerWave)));
+
+
+					Count<Water> water = Count<Water>::Create(waveType);
+
+					switch (waveType)
+					{
+						case Proof::WaveType::GerstnerWave:
+						{
+							GerstnerWave::GerstnerWaveInfo& waterDataInfo = water->GetWave().As<GerstnerWave>()->GerstnerData;
+							waterDataInfo.WaveCount = waterComponent["WaveCount"].as<uint32_t>(waterDataInfo.WaveCount);
+							waterDataInfo.WaveDirection = waterComponent["WaveDirection"].as<glm::vec2>(waterDataInfo.WaveDirection);
+							waterDataInfo.WaveSpread = waterComponent["WaveSpread"].as<float>(waterDataInfo.WaveSpread);
+							waterDataInfo.WaveDistribution = waterComponent["WaveDistribution"].as<float>(waterDataInfo.WaveDistribution);
+
+							waterDataInfo.Color = waterComponent["Color"].as<glm::vec4>(waterDataInfo.Color);
+							waterDataInfo.Speed = waterComponent["Speed"].as<float>(waterDataInfo.Speed);
+
+							waterDataInfo.MinMaxWavelength = waterComponent["MinMaxWavelength"].as<glm::vec2>(waterDataInfo.MinMaxWavelength);
+							waterDataInfo.WavelengthFalloff = waterComponent["WavelengthFalloff"].as<float>(waterDataInfo.WavelengthFalloff);
+
+							waterDataInfo.MinMaxAmplitude = waterComponent["MinMaxAmplitude"].as<glm::vec2>(waterDataInfo.MinMaxAmplitude);
+							waterDataInfo.AmplitudeFallOff = waterComponent["AmplitudeFallOff"].as<float>(waterDataInfo.AmplitudeFallOff);
+
+							waterDataInfo.MinMaxSteepness = waterComponent["MinMaxSteepness"].as<glm::vec2>(waterDataInfo.MinMaxSteepness);
+							waterDataInfo.SteepnessFallOff = waterComponent["SteepnessFallOff"].as<float>(waterDataInfo.SteepnessFallOff);
+
+							waterDataInfo.Seed = waterComponent["Seed"].as<int>(waterDataInfo.Seed);
+							waterDataInfo.RandomSeed = waterComponent["RandomSeed"].as<bool>(waterDataInfo.RandomSeed);
+							waterDataInfo.PlaneSize = waterComponent["PlaneSize"].as<float>(waterDataInfo.PlaneSize);
+						}
+							break;
+						case Proof::WaveType::FastFourierTransformWave:
+							break;
+						default:
+							break;
+					}
+
+					auto& wtc = NewEntity.AddComponent<WaterComponent>(water);
+
+				
+				}
+
+			}
+
+			// buoyancyComponent
+			{
+				auto buoyancyComponent = entity["BuoyancyComponent"];
+				if (buoyancyComponent)
+				{
+					BuoyancyComponent& bycc = NewEntity.AddComponent<BuoyancyComponent>();
+					for (auto byc : buoyancyComponent["Floaters"])
+					{
+
+						float submersionDepth = byc["SubmersionDepth"].as<float>();
+						float buoyancyStrength = byc["BuoyancyStrength"].as<float>();
+
+						BuoyancyComponent::EntityFloater entFloater;
+						entFloater.EntityUUID = byc["EntityID"].as<uint64_t>();
+						entFloater.Floater.SubmersionDepth = byc["SubmersionDepth"].as<float>();
+						entFloater.Floater.Drag = byc["Drag"].as<float>();
+						entFloater.Floater.AngularDrag = byc["AngularDrag"].as<float>();
+						entFloater.Floater.BuoyancyStrength = byc["BuoyancyStrength"].as<float>();
+
+						bycc.Floaters.emplace_back(entFloater);
+						
+					}
+				}
+			
+			}
+
 			// ParticleSystemComponent
 			{
 				auto particleSystemComponent = entity["ParticleSystemComponent"];

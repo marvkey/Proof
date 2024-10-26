@@ -7,6 +7,8 @@
 #include "Proof/Renderer/RenderPass.h"
 #include "Proof/Core/FrameTime.h"
 #include "Proof/ImGui/UIWidgets.h"
+#include "Proof/Renderer/Image.h"
+#include "Proof/Renderer/Texture.h"
 namespace Proof
 {
 

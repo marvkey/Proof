@@ -549,7 +549,7 @@ namespace Proof {
 
 	glm::mat4 PhysicsActor::GetLocalCenterOfMass() const { return !IsDynamic() ? glm::mat4(1.0f) : PhysXUtils::FromPhysXTransform(m_RigidActor->is<physx::PxRigidDynamic>()->getCMassLocalPose()); }
 
-	void PhysicsActor::AddForceAtLocation(const glm::vec3& force, const glm::vec3& location, ForceMode forceMode)
+	void PhysicsActor::AddForceAtPosition(const glm::vec3& force, const glm::vec3& position, ForceMode forceMode)
 	{
 		PF_PROFILE_FUNC();
 
@@ -560,8 +560,31 @@ namespace Proof {
 		}
 		physx::PxRigidDynamic* actor = m_RigidActor->is<physx::PxRigidDynamic>();
 		PF_CORE_ASSERT(actor);
+		
+		actor->wakeUp();
 
-		physx::PxRigidBodyExt::addForceAtPos(*actor, PhysXUtils::ToPhysXVector(force), PhysXUtils::ToPhysXVector(location), Utils::ToPhysxForce(forceMode));
+
+		glm::vec3 centerOfMassWorldSpace = PhysXUtils::FromPhysXVector( actor->getGlobalPose().transform(actor->getCMassLocalPose().p));
+		glm::vec3 torque = glm::cross(position - centerOfMassWorldSpace, force);
+		switch (forceMode)
+		{
+			case ForceMode::VelocityChange:
+			{
+				AddForce(force, ForceMode::Impulse);
+				AddTorque(torque, ForceMode::Impulse);
+				return;
+			}
+			case ForceMode::Acceleration:
+			{
+				glm::vec3 appliedForce = GetMass() * force;
+				AddForce(appliedForce, ForceMode::Force);
+				//AddTorque(torque, ForceMode::Force);
+				break;
+			}
+			default:
+				physx::PxRigidBodyExt::addForceAtPos(*actor, PhysXUtils::ToPhysXVector(force), PhysXUtils::ToPhysXVector(position), Utils::ToPhysxForce(forceMode));
+				break;
+		}
 	}
 
 	void PhysicsActor::AddRigidBody()

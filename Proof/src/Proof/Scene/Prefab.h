@@ -1,24 +1,26 @@
 #pragma once
 #include "Proof/Core/Core.h"
+#include "Proof/Core/UUID.h"
 #include "Proof/Asset/Asset.h"
-#include "Entity.h"
-namespace Proof{
+namespace Proof
+{
 	class Entity;
-	class Prefab : public Asset {
+	class Prefab : public Asset 
+	{
 	public: 
 		Prefab();
 
 		~Prefab();
-		void SetEntity(Entity entity);
+		void SetEntity(class Entity entity);
 		ASSET_CLASS_TYPE(Prefab);
 		
 		bool KeepLinkedOnSpawn = true;
 
 		Count<class World> GetWorld() { return m_World;}
-		Entity GetBaseEntity() { return m_BaseEntity; }
+		class Entity GetBaseEntity();
 		void ReCheckHierachy();
 	private:
-		Entity m_BaseEntity;
+		UUID m_BaseEntityUUID;
 		Count<class World> m_World;
 		friend class PrefabAssetSerilizer;
 		friend class World;

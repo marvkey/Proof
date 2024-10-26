@@ -74,11 +74,11 @@ namespace Proof
 			if constexpr (argsCount > 0)
 			{
 				const void* data[] = { &args... };
-				CallMethod(managedObject, method, data);
+				CallMethodInternal(managedObject, method, data);
 			}
 			else
 			{
-				CallMethod(managedObject, method, nullptr);
+				CallMethodInternal(managedObject, method, nullptr);
 			}
 		}
 		#if 0
@@ -131,7 +131,7 @@ namespace Proof
 
 		static void InitRuntimeObject(MonoObject* monoObject);
 
-		static void CallMethod(MonoObject* monoObject, ManagedMethod* managedMethod, const void** parameters);
+		static void CallMethodInternal(MonoObject* monoObject, ManagedMethod* managedMethod, const void** parameters);
 
 	private:
 
@@ -170,7 +170,7 @@ namespace Proof
 				}
 
 				const void* data[] = { &args... };
-				CallMethod(obj, ctor, data);
+				CallMethodInternal(obj, ctor, data);
 			}
 
 			return obj;

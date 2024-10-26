@@ -9,97 +9,185 @@
 //#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include"../vendor/stb_image.h"
 #include "Proof/Utils/ContainerUtils.h"
-namespace Proof {
-	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config, const std::filesystem::path& path)
+#include "Proof/Renderer/RendererSampler.h"
+#include "Proof/Renderer/SamplerFactory.h"
+namespace Proof 
+{
+
+	SamplerResourceConfig texture2DConfig("Texture2DCustomSampler", SamplerWrap::Repeat, SamplerFilter::Linear, SamplerBorderColor::OpaqueWhiteInt, SamplerMipMapMode::Linear);
+	SamplerResourceConfig textureCubeConfig("TextureCubeCustomSampler", SamplerWrap::ClampEdge, SamplerFilter::Linear, SamplerBorderColor::OpaqueWhiteInt, SamplerMipMapMode::Linear);
+	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config, const std::filesystem::path& path, SamplerWrap wrap, SamplerFilter filter)
 	{
+		texture2DConfig.Wrap = wrap;
+		texture2DConfig.Filter = filter;
+
 		switch (Renderer::GetAPI())
 		{
 			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
 			case Renderer::API::OpenGL: return nullptr;
-			case Renderer::API::Vulkan: return Count<VulkanTexture2D>::Create(path,config);
-		}
-		return nullptr;
-	}
-	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config, Buffer data)
-	{
-		switch (Renderer::GetAPI())
-		{
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
-			case Renderer::API::OpenGL: return nullptr;
-			case Renderer::API::Vulkan: return Count<VulkanTexture2D>::Create(config,data);
+			case Renderer::API::Vulkan: return Count<VulkanTexture2D>::Create(path,config,SamplerFactory::GetOrAddSamplerToFactory(texture2DConfig));
 		}
 		return nullptr;
 	}
 
-	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config)
+	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config, const std::filesystem::path& path, Count<class RenderSampler> sampler)
 	{
 		switch (Renderer::GetAPI())
 		{
 			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
 			case Renderer::API::OpenGL: return nullptr;
-			case Renderer::API::Vulkan: return Count<VulkanTexture2D>::Create(config);
+			case Renderer::API::Vulkan: return Count<VulkanTexture2D>::Create(path, config, sampler);
 		}
 		return nullptr;
 	}
 
-	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config, const std::filesystem::path& path)
+	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config, Buffer data, SamplerWrap wrap, SamplerFilter filter)
 	{
+		texture2DConfig.Wrap = wrap;
+		texture2DConfig.Filter = filter;
 		switch (Renderer::GetAPI())
 		{
 			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
 			case Renderer::API::OpenGL: return nullptr;
-			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(config, path);
-		}
-		return nullptr;
-	}
-	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config)
-	{
-		switch (Renderer::GetAPI())
-		{
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
-			case Renderer::API::OpenGL: return nullptr;
-			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(config);
-		}
-		return nullptr;
-	}
-	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config, Count<Texture2D> texture)
-	{
-		switch (Renderer::GetAPI())
-		{
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
-			case Renderer::API::OpenGL: return nullptr;
-			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(config, texture);
-		}
-		return nullptr;
-	}
-	Count<TextureCube> TextureCube::Create(const void* data, const TextureConfiguration& config)
-	{
-		switch (Renderer::GetAPI())
-		{
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
-			case Renderer::API::OpenGL: return nullptr;
-			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(data,config);
-		}
-		return nullptr;
-	}
-	Count<Image2D> Image2D::Create(const ImageConfiguration& specification)
-	{
-		switch (Renderer::GetAPI())
-		{
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
-			case Renderer::API::OpenGL: return nullptr;
-			case Renderer::API::Vulkan: return Count<VulkanImage2D>::Create(specification);
+			case Renderer::API::Vulkan: return Count<VulkanTexture2D>::Create(config,data, SamplerFactory::GetOrAddSamplerToFactory(texture2DConfig));
 		}
 		return nullptr;
 	}
 
-	Count<ImageView> ImageView::Create(const ImageViewConfiguration& specification)
+	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config, Buffer data, Count<class RenderSampler> sampler)
 	{
 		switch (Renderer::GetAPI())
 		{
 			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
 			case Renderer::API::OpenGL: return nullptr;
-			case Renderer::API::Vulkan: return Count<VulkanImageView>::Create(specification);
+			case Renderer::API::Vulkan: return Count<VulkanTexture2D>::Create(config, data, sampler);
+		}
+		return nullptr;
+	}
+
+	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config, SamplerWrap wrap, SamplerFilter filter)
+	{
+
+		texture2DConfig.Wrap = wrap;
+		texture2DConfig.Filter = filter;
+
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTexture2D>::Create(config, SamplerFactory::GetOrAddSamplerToFactory(texture2DConfig));
+		}
+		return nullptr;
+	}
+
+	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config, Count<class RenderSampler> sampler)
+	{
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTexture2D>::Create(config, sampler);
+		}
+		return nullptr;
+	}
+
+
+	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config, const std::filesystem::path& path, Count<class RenderSampler> sampler)
+	{
+
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(config, path,sampler);
+		}
+		return nullptr;
+	}
+
+	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config, const std::filesystem::path& path, SamplerWrap wrap, SamplerFilter filter)
+	{
+
+		textureCubeConfig.Wrap = wrap;
+		textureCubeConfig.Filter = filter;
+
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(config, path, SamplerFactory::GetOrAddSamplerToFactory(textureCubeConfig));
+		}
+		return nullptr;
+	}
+
+	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config, Count<class RenderSampler> sampler)
+	{
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(config,sampler);
+		}
+		return nullptr;
+	}
+
+	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config, SamplerWrap wrap, SamplerFilter filter)
+	{
+
+		textureCubeConfig.Wrap = wrap;
+		textureCubeConfig.Filter = filter;
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(config, SamplerFactory::GetOrAddSamplerToFactory(textureCubeConfig));
+		}
+		return nullptr;
+	}
+
+	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config, Count<Texture2D> texture, Count<class RenderSampler> sampler)
+	{
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(config, texture,sampler);
+		}
+		return nullptr;
+	}
+
+	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config, Count<Texture2D> texture, SamplerWrap wrap, SamplerFilter filter)
+	{
+		textureCubeConfig.Wrap = wrap;
+		textureCubeConfig.Filter = filter;
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(config, texture, SamplerFactory::GetOrAddSamplerToFactory(textureCubeConfig));
+		}
+		return nullptr;
+	}
+
+	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config, Buffer data, Count<class RenderSampler> sampler)
+	{
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(config,data,sampler);
+		}
+		return nullptr;
+	}
+	
+	Count<TextureCube> TextureCube::Create(const TextureConfiguration& config, Buffer data, SamplerWrap wrap, SamplerFilter filter)
+	{
+		textureCubeConfig.Wrap = wrap;
+		textureCubeConfig.Filter = filter;
+		switch (Renderer::GetAPI())
+		{
+			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+			case Renderer::API::OpenGL: return nullptr;
+			case Renderer::API::Vulkan: return Count<VulkanTextureCube>::Create(config, data, SamplerFactory::GetOrAddSamplerToFactory(textureCubeConfig));
 		}
 		return nullptr;
 	}

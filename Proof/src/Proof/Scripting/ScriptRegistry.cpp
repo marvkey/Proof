@@ -162,6 +162,7 @@ namespace Proof
 			case ScriptFieldType::Texture2D: return PF_REGISTERED_CLASS("PF.Texture2D")->Class;
 			case ScriptFieldType::InputAction: return PF_REGISTERED_CLASS("PF.InputAction")->Class;
 			case ScriptFieldType::InputBindingContext: return PF_REGISTERED_CLASS("PF.InputBindingContext")->Class;
+			case ScriptFieldType::UIPanel: return PF_REGISTERED_CLASS("PF.UIPanel")->Class;
 		}
 		PF_ENGINE_ERROR("NOt supported type {}", EnumReflection::EnumString(fieldType));
 		PF_CORE_ASSERT(false);
@@ -732,7 +733,19 @@ namespace Proof
 
 
 			if (mono_class_is_enum(monoClass))
+			{
+				auto& managedEnumClass = s_ScriptRegistryData->EnumClasses[fullName];
+				MonoType* enumType = mono_class_enum_basetype(monoClass);
+				managedEnumClass.Class = monoClass;
+				managedEnumClass.FullName = fullName;
+				//managedEnumClass.
+
+				auto type = ScriptUtils::GetFieldTypeFromMonoType(enumType);
+				PF_ENGINE_INFO("	Registering Enums Fields{} Type: {}", fullName, EnumReflection::EnumString(type));
+				ReflectEnumFields(fullName, monoClass, ScriptEngine::GetCoreAssemblyInfo());
 				continue;
+
+			}
 			MonoCustomAttrInfo* customAttrs = mono_custom_attrs_from_class( monoClass);
 
 			PF_ENGINE_TRACE("Checking  class {} Attributes", fullName);
@@ -748,7 +761,7 @@ namespace Proof
 				RegisterClasss(fullName, monoClass);
 			}
 		}
-		RegisterEnums(ScriptEngine::GetCoreAssemblyInfo());
+		//RegisterEnums(ScriptEngine::GetCoreAssemblyInfo());
 	}
 	void ScriptRegistry::BuildClassMetadata(Count<AssemblyInfo>& assemblyInfo, MonoClass* monoClass)
 	{

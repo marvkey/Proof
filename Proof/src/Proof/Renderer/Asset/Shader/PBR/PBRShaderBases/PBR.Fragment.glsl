@@ -1,6 +1,12 @@
 
 #include <PBR/PBR.glslh>
 #include <PBR/Shadow/ShadowMapping.glslh>
+//https://github.com/Nadrin/PBR/blob/master/data/shaders/glsl/pbr_fs.glsl
+//https://learnopengl.com/code_viewer_gh.php?code=src/6.pbr/2.2.2.ibl_specular_textured/2.2.2.pbr.fs
+//https://cdn2.unrealengine.com/Resources/files/2013SiggraphPresentationsNotes-26915738.pdf
+//https://github.com/Shot511/RapidGL/blob/master/src/demos/22_pbr/pbr-lighting.glh
+//https://github.com/Angelo1211/HybridRenderingEngine/blob/master/assets/shaders/PBRClusteredShader.frag
+//https://github.com/HighLo-Engine/HighLo-Engine/blob/b9bf9c3ed87e63ba358ff50ec180927a3801829c/HighLo/assets/shaders/HighLoPBR.glsl
 
 /*
 struct PBRParameters
@@ -21,6 +27,7 @@ struct PBRParameters
 struct PBRVertexOutput
 {
     vec3 WorldPosition;
+    vec3 VertexPosition;
     vec3 Normal;
     mat3 WorldNormals;
     vec2 TexCoords;
@@ -312,7 +319,16 @@ vec3 PBR_GetGradient(float value)
 vec4 finalEndingCOlor;
 void PBR_FinalOutput(vec3 directLighting, float shadowScale, vec3 IblEffect, vec3 emissionColor, float emission,uint shadowCascadeIndex,float alpha,int outputColor,PBRData pbrData)
 {
-    vec3 finalColor = directLighting * shadowScale ;
+    vec3 finalColor = vec3(0);
+    
+    if(pbrData.UseOnlyAlbedo)
+    {
+       finalColor =  pbrData.Albedo * shadowScale;
+    }
+    else
+    {
+        finalColor = directLighting * shadowScale ;
+    }
     finalColor += CalculatePointLights(m_PBRParams.F0, PBR_Input.WorldPosition);
     finalColor += CalculateSpotLights(m_PBRParams.F0, PBR_Input.WorldPosition); //* sahdow
 

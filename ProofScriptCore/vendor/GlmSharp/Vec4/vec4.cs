@@ -12,12 +12,12 @@ using Proof.Swizzle;
 
 namespace Proof
 {
-    
+
     /// <summary>
     /// A Vector of type float with 4 components.
     /// </summary>
+
     [RegisterCoreClassStruct]
-    
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector4 : IReadOnlyList<float>, IEquatable<Vector4>
     {

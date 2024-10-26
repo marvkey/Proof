@@ -13,7 +13,7 @@ namespace AltoDemo
         // OnCreate is called once when the Entity that this script is attached to
         // is instantiated in the world at runtime
         void OnCreate()
-		{ 
+		{
 		}
 
 		// OnUpdate is called once every frame while this script is active in the world
@@ -23,7 +23,7 @@ namespace AltoDemo
             if (Player != null)
 			{
                 TransformComponent transform = GetComponent<TransformComponent>();
-				transform.Location = new Vector3(transform.Location.X, Player.GetComponent<TransformComponent>().Location.Y + 10.0f, Player.GetComponent<TransformComponent>().Location.Z - 0.7f);
+				transform.Location = new Vector3(transform.Location.x, Player.GetComponent<TransformComponent>().Location.y + 10.0f, Player.GetComponent<TransformComponent>().Location.z - 0.7f);
 			}
         }
 

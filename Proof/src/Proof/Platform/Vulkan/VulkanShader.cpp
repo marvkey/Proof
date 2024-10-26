@@ -26,9 +26,11 @@ namespace Proof
         static const char* GetVulkanCachedShaderExtension(ShaderStage stage) {
             switch (stage) {
                 case ShaderStage::Vertex: return ".cach_vulkan_shader.vertex";
+                case ShaderStage::TessellationControl: return ".cach_vulkan_shader.tessellationControl";
+                case ShaderStage::TessellationEvaluation: return ".cach_vulkan_shader.tessellationEvaluation";
+                case ShaderStage::Geometry: return ".cach_vulkan_shader.geometry";
                 case ShaderStage::Fragment: return ".cach_vulkan_shader.fragment";
                 case ShaderStage::Compute: return ".cach_vulkan_shader.compute";
-                case ShaderStage::Geometry: return ".cach_vulkan_shader.geometry";
             }
             PF_CORE_ASSERT(false, "Invalid Shader Stage");
             return "";
@@ -41,9 +43,11 @@ namespace Proof
         static shaderc_shader_kind ShaderStageToShaderC(ShaderStage stage) {
             switch (stage) {
                 case ShaderStage::Vertex:   return shaderc_glsl_vertex_shader;
+                case ShaderStage::TessellationControl:   return shaderc_glsl_tess_control_shader;
+                case ShaderStage::TessellationEvaluation:   return shaderc_glsl_tess_evaluation_shader;
+                case ShaderStage::Geometry: return shaderc_glsl_geometry_shader;
                 case ShaderStage::Fragment: return shaderc_glsl_fragment_shader;
                 case ShaderStage::Compute: return shaderc_glsl_compute_shader;
-                case ShaderStage::Geometry: return shaderc_glsl_geometry_shader;
             }
             PF_CORE_ASSERT(false,"Invalid Shader stage");
             return (shaderc_shader_kind)0;
@@ -58,15 +62,22 @@ namespace Proof
             case Proof::ShaderStage::Vertex:
                 symbol = "#Vertex Shader";
                 break;
+            case Proof::ShaderStage::TessellationControl:
+                symbol = "#TessellationControl Shader";
+                break;
+            case Proof::ShaderStage::TessellationEvaluation:
+                symbol = "#TessellationEvaluation Shader";
+                break;
+            case Proof::ShaderStage::Geometry:
+                symbol = "#Geometry Shader";
+                break;
             case Proof::ShaderStage::Fragment:
                 symbol = "#Fragment Shader";
                 break;
             case Proof::ShaderStage::Compute:
                 symbol = "#Compute Shader";
                 break;
-            case Proof::ShaderStage::Geometry:
-                symbol = "#Geometry Shader";
-                break;
+            
             default:
             {
                 PF_ENGINE_ERROR("Shader does not have a Type {}", path.string());
@@ -289,6 +300,7 @@ namespace Proof
         static inline const std::vector<std::string> ShaderDirectoryPaths = 
         {
             ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/",
+            ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/",
             ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Extras/",
             ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/Extras/Fidelity/",
         };
@@ -1060,6 +1072,39 @@ namespace Proof
                     shaderStageInfo.pSpecializationInfo = nullptr;
                     break;
                 }
+            case Proof::ShaderStage::TessellationControl:
+                {
+                    shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                    shaderStageInfo.stage = VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT;
+                    shaderStageInfo.module = shaderModule;
+                    shaderStageInfo.pName = "main";
+                    shaderStageInfo.flags = 0;
+                    shaderStageInfo.pNext = nullptr;
+                    shaderStageInfo.pSpecializationInfo = nullptr;
+                    break;
+                }
+            case Proof::ShaderStage::TessellationEvaluation:
+                {
+                    shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                    shaderStageInfo.stage = VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+                    shaderStageInfo.module = shaderModule;
+                    shaderStageInfo.pName = "main";
+                    shaderStageInfo.flags = 0;
+                    shaderStageInfo.pNext = nullptr;
+                    shaderStageInfo.pSpecializationInfo = nullptr;
+                    break;
+                }
+                case Proof::ShaderStage::Geometry:
+                {
+                    shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+                    shaderStageInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT;
+                    shaderStageInfo.module = shaderModule;
+                    shaderStageInfo.pName = "main";
+                    shaderStageInfo.flags = 0;
+                    shaderStageInfo.pNext = nullptr;
+                    shaderStageInfo.pSpecializationInfo = nullptr;
+                    break;
+                }
             case Proof::ShaderStage::Fragment:
                 {
                     shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -1071,17 +1116,7 @@ namespace Proof
                     shaderStageInfo.pSpecializationInfo = nullptr;
                     break;
                 }
-            case Proof::ShaderStage::Geometry:
-                {
-                    shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-                    shaderStageInfo.stage = VK_SHADER_STAGE_GEOMETRY_BIT;
-                    shaderStageInfo.module = shaderModule;
-                    shaderStageInfo.pName = "main";
-                    shaderStageInfo.flags = 0;
-                    shaderStageInfo.pNext = nullptr;
-                    shaderStageInfo.pSpecializationInfo = nullptr;
-                    break;
-                }
+           
             case Proof::ShaderStage::Compute:
                 {
                     shaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;

@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Vector of type double with 4 components.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct dVector4 : IReadOnlyList<double>, IEquatable<dVector4>

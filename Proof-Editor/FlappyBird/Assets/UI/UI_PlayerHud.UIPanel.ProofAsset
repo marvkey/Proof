@@ -1,0 +1,16 @@
+AssetType: UIPanel
+ID: 35420920226295225
+UIElements:
+  - UIElement: 11749623098364570259
+    UICoreComponent:
+      ElementID: 11749623098364570259
+      Name: PlayerScore
+      UIElementType: Text
+      Position: [30, 100]
+      Rotation: [0, 0]
+      Size: [100, 100]
+    UITextComponent:
+      Text: 2
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1

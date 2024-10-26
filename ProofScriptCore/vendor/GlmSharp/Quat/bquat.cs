@@ -15,7 +15,7 @@ namespace Proof
     /// <summary>
     /// A Quaternionernion of type bool.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct bQuaternion : IReadOnlyList<bool>, IEquatable<bQuaternion>

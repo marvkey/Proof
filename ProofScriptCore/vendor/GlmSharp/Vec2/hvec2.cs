@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Vector of type Half with 2 components.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct hVector2 : IReadOnlyList<Half>, IEquatable<hVector2>

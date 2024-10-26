@@ -1,6 +1,7 @@
 #include "Proofprch.h"
 #include "ElevatedInputDeviceManager.h"
 #include "ElevatedInputMouseKeyBoard.h"
+#include "Proof/Events/ControllerEvent.h"
 namespace Proof
 {
 	ElevatedInputDeviceManager::ElevatedInputDeviceManager()
@@ -12,6 +13,17 @@ namespace Proof
 	}
 	void ElevatedInputDeviceManager::OnEvent(Event& e)
 	{
+
+		PF_PROFILE_FUNC();
+		EventDispatcher dispatcher(e);
+		/*
+		Count< ElevatedInputDeviceManager> inputDevice = this;
+		dispatcher.Dispatch<ControllerConnectEvent>([&](ControllerConnectEvent& controllerConnectEvent)
+			{
+
+			});
+			*/
+
 		for (auto device : m_InputDevices)
 			device->OnEvent(e);
 	}

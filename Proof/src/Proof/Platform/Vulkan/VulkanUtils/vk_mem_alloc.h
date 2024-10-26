@@ -478,7 +478,7 @@ typedef enum VmaMemoryUsage
     Memory that is both mappable on host (guarantees to be `HOST_VISIBLE`) and preferably fast to access by GPU.
     CPU access is typically uncached. Writes may be write-combined.
 
-    Usage: Resources written frequently by host (dynamic), read by device. E.g. textures (with LINEAR layout), vertex buffers, uniform buffers updated every frame or every draw call.
+    Usage: Resources written frequently by host (dynamic), read by device. E.g. textures (with Linear layout), vertex buffers, uniform buffers updated every frame or every draw call.
     */
     VMA_MEMORY_USAGE_CPU_TO_GPU = 3,
     /** Memory mappable on host (guarantees to be `HOST_VISIBLE`) and cached.
@@ -1620,7 +1620,7 @@ This algorithm tries to find a memory type that:
 from this function or any other allocating function probably means that your
 device doesn't support any memory type with requested features for the specific
 type of resource you want to use it for. Please check parameters of your
-resource, like image layout (OPTIMAL versus LINEAR) or mip level count.
+resource, like image layout (OPTIMAL versus Linear) or mip level count.
 */
 VMA_CALL_PRE VkResult VMA_CALL_POST vmaFindMemoryTypeIndex(
     VmaAllocator VMA_NOT_NULL allocator,
@@ -8680,7 +8680,7 @@ bool VmaBlockMetadata_Linear::CreateAllocationRequest_LowerAddress(
         }
     }
 
-    // Wrap-around to end of 2nd vector. Try to allocate there, watching for the
+    // Repeat-around to end of 2nd vector. Try to allocate there, watching for the
     // beginning of 1st vector as the end of free space.
     if (m_2ndVectorMode == SECOND_VECTOR_EMPTY || m_2ndVectorMode == SECOND_VECTOR_RING_BUFFER)
     {
@@ -19467,7 +19467,7 @@ This is a more complex situation. Different solutions are possible,
 and the best one depends on specific GPU type, but you can use this simple approach for the start.
 Prefer to write to such resource sequentially (e.g. using `memcpy`).
 Don't perform random access or any reads from it on CPU, as it may be very slow.
-Also note that textures written directly from the host through a mapped pointer need to be in LINEAR not OPTIMAL layout.
+Also note that textures written directly from the host through a mapped pointer need to be in Linear not OPTIMAL layout.
 
 \subsection usage_patterns_readback Readback
 
@@ -19531,7 +19531,7 @@ solutions are possible:
 You should take some measurements to decide which option is faster in case of your specific
 resource.
 
-Note that textures accessed directly from the host through a mapped pointer need to be in LINEAR layout,
+Note that textures accessed directly from the host through a mapped pointer need to be in Linear layout,
 which may slow down their usage on the device.
 Textures accessed only by the device and transfer operations can use OPTIMAL layout.
 

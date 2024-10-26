@@ -293,6 +293,9 @@ Assets:
   - Asset: 13994665151775855675
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\5823059166183034438.jpg
+  - Asset: 13866412923197075697
+    Type: Material
+    Path: Materials\m_BloomYellow.Material.ProofAsset
   - Asset: 10481245525737868683
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\6047387724914829168.jpg

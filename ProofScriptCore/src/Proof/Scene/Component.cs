@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -160,6 +161,19 @@ namespace Proof
 				InternalCalls.TextComponent_SetText(Entity.ID, ref value);
 			}
 		}
+
+		public bool Visible
+		{
+			get
+			{
+                return InternalCalls.TextComponent_GetVisible(Entity.ID);
+            }
+			set
+			{
+                InternalCalls.TextComponent_SetVisible(Entity.ID,value);
+
+            }
+        }
 	}
 	public enum ForceMode
 	{
@@ -268,19 +282,16 @@ namespace Proof
 
 	public class PlayerHUDComponent : Component
 	{
-		public UIPanel GetPanel(uint index)
+		public void SetPanel(UIPanel panel)
 		{
-			if (InternalCalls.PlayerHUDComponent_IndexHasHUD(Entity.ID, index))
-			{
-				return new UIPanel(index, Entity);
-			}
-			return null;
-		}
-	}
-	public class CameraComponent : Component
-	{
+			InternalCalls.PlayerHUDComponent_SetPanel(Entity.ID, panel.ID);
+        }
+        public void SetText(string text)
+		{
+            InternalCalls.PlayerHUDComponent_SetText(Entity.ID, text);
+        }
+    }
 
-	}
     [RegisterCoreClassStruct]
     public class ParticleSystemComponent : Component
 	{
@@ -614,6 +625,21 @@ namespace Proof
         }
     }
 	*/
+
+    [RegisterCoreClassStruct]
+	public class CameraComponent : Component
+	{
+		public bool UseLocalRotation
+		{
+			get => InternalCalls.CameraComponent_GetLocalRotation(Entity.ID);
+			set => InternalCalls.CameraComponent_SetLocalRotation(Entity.ID,value);
+        }
+		public bool ActiveForRendering
+		{
+			get => InternalCalls.CameraComponent_GetActiveForRendering(Entity.ID);	
+			set => InternalCalls.CameraComponent_SetActiveForRendering(Entity.ID, value);
+		}
+    }
     [RegisterCoreClassStruct]
     public class MeshColliderComponent : Component
     {

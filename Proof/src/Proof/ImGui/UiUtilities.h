@@ -3,7 +3,11 @@
 
 #include <imgui.h>
 #include "UIColors.h"
-#include "Proof/Renderer/Texture.h"
+namespace Proof
+{
+	class Texture2D;
+	class Image;
+}
 namespace Proof::UI
 {
 	namespace Draw {
@@ -170,7 +174,8 @@ namespace Proof::UI
 			ImGui::SetTooltip(text.data());
 		}
 	}
-	ImTextureID GetTextureID(Count < class Image > texture);
+	ImTextureID GetTextureID(Count<class Proof::Image> texture);
+	ImTextureID GetTextureID(Count<Texture2D> texture);
 
 	static void DrawButtonImage(const Count<Texture2D>& imageNormal, const Count<Texture2D>& imageHovered, const Count<Texture2D>& imagePressed,
 		ImU32 tintNormal, ImU32 tintHovered, ImU32 tintPressed,
@@ -178,11 +183,11 @@ namespace Proof::UI
 	{
 		auto* drawList = ImGui::GetWindowDrawList();
 		if (ImGui::IsItemActive())
-			drawList->AddImage(GetTextureID(imagePressed->GetImage()), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintPressed);
+			drawList->AddImage(GetTextureID(imagePressed), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintPressed);
 		else if (ImGui::IsItemHovered())
-			drawList->AddImage(GetTextureID(imageHovered->GetImage()), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintHovered);
+			drawList->AddImage(GetTextureID(imageHovered), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintHovered);
 		else
-			drawList->AddImage(GetTextureID(imageNormal->GetImage()), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintNormal);
+			drawList->AddImage(GetTextureID(imageNormal), rectMin, rectMax, ImVec2(0, 0), ImVec2(1, 1), tintNormal);
 	};
 
 	static void DrawButtonImage(const Count<Texture2D>& imageNormal, const Count<Texture2D>& imageHovered, const Count<Texture2D>& imagePressed,

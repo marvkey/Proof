@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Vector of type bool with 4 components.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct bVector4 : IReadOnlyList<bool>, IEquatable<bVector4>

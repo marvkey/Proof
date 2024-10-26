@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Matrix of type Half with 3 columns and 4 rows.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct hMatrix3x4 : IReadOnlyList<Half>, IEquatable<hMatrix3x4>

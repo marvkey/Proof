@@ -1,0 +1,241 @@
+#ifndef FFT_OCEAN_SURFACE_GLSLH
+#define FFT_OCEAN_SURFACE_GLSLH
+
+#include <PBR/Water/FFTWaves/BrunetonLighting.glslh>
+#include <PBR/Water/FFTWaves/OceanVolume.glslh>
+#include <PBR/Water/FFTWaves/OceanGradient.glslh>
+
+
+
+
+struct LightingInput
+{
+	vec3 normal;
+	vec3 viewDir;
+	float viewDist;
+    float roughnessMap;
+	vec3 positionWS;
+	vec4 shore;
+	vec4 positionNDC;
+    float viewDepth;
+	vec3 cameraPos;
+    DirectionalLight  mainLight;
+};
+
+struct BrunetonInputs
+{
+	vec3 lightDir_windSpace;
+	vec3 viewDir_windSpace;
+    vec3 normal_windSpace;
+    vec3 tangentX_windSpace;
+    vec3 tangentY_windSpace;
+	vec2 slopeVarianceSquared;
+};
+
+float Pow5(float x)
+{
+	return x * x * x * x * x;
+}
+
+vec3 PositionWsFromDepth(float rawDepth, vec2 screenUV, mat4 inverseProj, mat4 inverseView)
+{
+    vec4 positionCS = vec4(screenUV * 2.0 - 1.0, rawDepth, 1.0);
+    vec4 positionVS = inverseProj * positionCS;
+    positionVS /= positionVS.w;
+    return (inverseView * positionVS).xyz;
+}
+
+vec2 SlopeVarianceSquared(float windSpeed, float viewDist, float alignement, float scale)
+{
+    float upwind = 0.01 * sqrt(windSpeed) * viewDist / (viewDist + scale);
+    return vec2(upwind, upwind * (1.0 - 0.3 * alignement));
+}
+
+float EffectiveFresnel(BrunetonInputs bi)
+{
+    const float R = 0.02;
+    float fresnel = R + (1.0 - R) * MeanFresnel(
+        bi.viewDir_windSpace,
+        bi.normal_windSpace,
+        bi.slopeVarianceSquared);
+    return clamp(fresnel, 0.0, 1.0);
+}
+
+float ShlickFresnel(vec3 viewDir, vec3 normal)
+{
+    const float R = 0.02;
+    return R + (1.0 - R) * pow(1.0 - clamp(abs(dot(viewDir, normal)), 0.0, 1.0), 5.0);
+}
+
+
+// TODO not right missing attenuation
+vec3 Specular(LightingInput li, BrunetonInputs bi)
+{
+    float radiance =  ReflectedSunRadiance(
+		bi.lightDir_windSpace,
+		bi.viewDir_windSpace,
+		bi.normal_windSpace,
+		bi.tangentX_windSpace,
+		bi.tangentY_windSpace,
+		max(vec2(1e-4), bi.slopeVarianceSquared + GlobalStruct.SpecularMinRoughness * 0.2));
+    return radiance * GlobalStruct.SpecularStrength * li.mainLight.Color;
+}
+
+
+
+vec3 Reflection(LightingInput li, BrunetonInputs bi)
+{
+    vec3 sky = MeanSkyRadiance(u_EnvironmentMap2D,
+		transpose(GlobalStruct.OceanWorldToWindSpace),
+        bi.viewDir_windSpace,
+        bi.normal_windSpace,
+        bi.tangentX_windSpace,
+        bi.tangentY_windSpace,
+        bi.slopeVarianceSquared);
+
+	#ifdef PLANAR_REFLECTIONS_ENABLED
+	float4 local = GetPlanarReflection(li.viewDir, li.normal, li.positionWS, 
+		bi.slopeVarianceSquared.x * 100, 1 - GlobalStruct.ReflectionNormalStength);
+	return lerp(sky, local.rgb, local.a);
+	#else
+	return sky;
+	#endif
+
+}
+
+
+
+vec3 ReflectionBackface(LightingInput li)
+{
+    vec3 normal = li.normal;
+    normal.xz *= 0.2;
+    normal = normalize(normal);
+    vec3 dir = reflect(li.viewDir, normal);
+    vec3 volume = UnderwaterFogColor(dir, li.mainLight.Direction, 0);
+    return volume;
+    
+    //#ifdef PLANAR_REFLECTIONS_ENABLED
+    //vec4 color = GetPlanarReflection(li.viewDir, li.normal, li.positionWS, 0, 1);
+    //color.rgb = ColorThroughWater(color.rgb, 0, 0, -li.shore.x).rgb;
+    //return mix(volume, color.rgb, color.a);
+    //#else
+    //return volume;
+    //#endif
+}
+//todo find shadow attenuation
+vec3 LitFoamColor(LightingInput li, FoamData foamData)
+{
+    float ndotl = (0.2 + 0.8 * clamp(dot(foamData.normal, li.mainLight.Direction), 0.0, 1.0)) ;
+    return foamData.albedo * GlobalStruct.FoamTint.rgb * 
+        (ndotl * li.mainLight.Color + OceanEnvironmentDiffuse(foamData.normal));
+}
+
+vec2 SubsurfaceScatteringFactor(LightingInput li)
+{
+    float normalFactor = clamp(dot(normalize(mix(li.viewDir, li.normal, GlobalStruct.SssNormalStrength)), li.viewDir), 0.0, 1.0);
+    float heightFactor = clamp((li.positionWS.y + GlobalStruct.OceanReferenceWaveHeight * (1.0 + GlobalStruct.SssHeightBias)) * 0.5 / max(0.5, GlobalStruct.OceanReferenceWaveHeight), 0.0, 1.0);
+    heightFactor = pow(abs(heightFactor), max(1.0, GlobalStruct.OceanReferenceWaveHeight * 0.4));
+    float sun = GlobalStruct.SssSunStrength * normalFactor * heightFactor * pow(clamp(dot(li.mainLight.Direction, -li.viewDir), 0.0, 1.0), min(50.0, 1.0 / GlobalStruct.SssSpread));
+    float environment = GlobalStruct.SssEnvironmentStrength * normalFactor * heightFactor * clamp(1.0 - li.viewDir.y, 0.0, 1.0);
+    vec2 factor = vec2(sun, environment);
+    factor *= GlobalStruct.SssFadeDistance / (GlobalStruct.SssFadeDistance + li.viewDist);
+    return factor;
+}
+
+vec3 RefractionCoords(float refractionStrength, vec4 positionNDC, float viewDepth, vec3 normal)
+{
+    vec2 uvOffset = normal.xz * refractionStrength;
+    uvOffset.y *= GetDepthTexelSize().z * abs(GetDepthTexelSize().y);
+    vec2 refractedScreenUV = (positionNDC.xy + uvOffset) / positionNDC.w;
+    float rawDepth = SampleSceneDepth(refractedScreenUV);
+    float refractedDepthDiff = LinearEyeDepth(rawDepth, GetZBufferParams()) - viewDepth;
+    uvOffset *= clamp(refractedDepthDiff, 0.0, 1.0);
+    refractedScreenUV = (positionNDC.xy + uvOffset) / positionNDC.w;
+    rawDepth = SampleSceneDepth(refractedScreenUV);
+    return vec3(refractedScreenUV, rawDepth);
+}
+
+vec3 Refraction(LightingInput li, FoamData foamData, vec2 sss, vec3 foamColor)
+{
+    float depthScale = 0.0; // exp(li.shore.x / Ocean_FogGradientScale);
+    vec3 color = DeepScatterColor(0.0 * (1.0 - abs(li.viewDir.y)) * (1.0 - abs(li.viewDir.y)) * depthScale);
+    vec3 sssColor = SssColor(depthScale);
+    color += sssColor * clamp(sss.x + sss.y, 0.0, 1.0);
+    float ndotl = clamp(dot(li.normal, li.mainLight.Direction), 0.0, 1.0);
+    color += (ndotl * 0.8 + 0.2) * li.mainLight.Color * GlobalStruct.OceanDiffuseColor;
+
+    #ifdef OCEAN_TRANSPARENCY_ENABLED
+    vec3 refractionCoords = RefractionCoords(GlobalStruct.RefractionStrength, li.positionNDC, li.viewDepth, li.normal);
+    vec3 backgroundColor = SampleSceneColor(refractionCoords.xy);
+    
+    vec3 backgroundPositionWS = PositionWsFromDepth(refractionCoords.z, refractionCoords.xy, Ocean_InverseProjectionMatrix, Ocean_InverseViewMatrix);
+    float backgroundDistance = length(backgroundPositionWS - li.cameraPos) - li.viewDist;
+    color = ColorThroughWater(backgroundColor, color, backgroundDistance, -backgroundPositionWS.y);
+    #endif
+    
+    #ifdef WAVES_FOAM_ENABLED
+    float underwaterFoamVisibility = 20.0 / (20.0 + li.viewDist);
+    vec3 tint = AbsorptionTint(0.8);
+    vec3 underwaterFoamColor = foamColor * tint * tint;
+    color = mix(color, underwaterFoamColor, foamData.coverage.y * underwaterFoamVisibility);
+    #endif
+    return color;
+}
+
+vec3 RefractionBackface(LightingInput li, vec3 refractionDir)
+{
+    #ifdef OCEAN_TRANSPARENCY_ENABLED
+    vec3 refractionCoords = RefractionCoords(GlobalStruct.RefractionStrengthUnderwater, li.positionNDC, li.viewDepth, li.normal);
+    return SampleSceneColor(refractionCoords.xy);
+    #else
+    return SampleOceanSpecCube(refractionDir);
+    #endif
+}
+
+vec4 HorizonBlend(LightingInput li)
+{
+    vec3 dir = -vec3(li.viewDir.x, 0.0, li.viewDir.z);
+    vec3 horizonColor = SampleOceanSpecCube(dir);
+    
+    float distanceScale = 100.0 + 7.0 * abs(li.cameraPos.y);
+    float t = exp(-5.0 / max(GlobalStruct.HorizonFog, 0.01) * (abs(li.viewDir.y) + distanceScale / (li.viewDist + distanceScale)));
+    return vec4(horizonColor, t);    
+}
+
+
+vec3 GetOceanColor(LightingInput li, FoamData foamData)
+{
+    vec3 tangentY = vec3(0.0, li.normal.z, -li.normal.y);
+    tangentY /= max(0.001, length(tangentY));
+    vec3 tangentX = cross(tangentY, li.normal);
+    
+    BrunetonInputs bi;
+    bi.lightDir_windSpace = (GlobalStruct.OceanWorldToWindSpace * vec4(li.mainLight.Direction, 0.0)).xyz;
+    bi.viewDir_windSpace = (GlobalStruct.OceanWorldToWindSpace * vec4(li.viewDir, 0.0)).xyz;
+    bi.normal_windSpace = (GlobalStruct.OceanWorldToWindSpace * vec4(li.normal, 0.0)).xyz;
+    bi.tangentX_windSpace = (GlobalStruct.OceanWorldToWindSpace * vec4(tangentX, 0.0)).xyz;
+    bi.tangentY_windSpace = (GlobalStruct.OceanWorldToWindSpace * vec4(tangentY, 0.0)).xyz;
+    bi.slopeVarianceSquared = GlobalStruct.RoughnessScale * (1.0 + li.roughnessMap * 0.3)
+        * SlopeVarianceSquared(GlobalStruct.OceanWindSpeed * GlobalStruct.OceanWavesScale, li.viewDist,
+        GlobalStruct.OceanWavesAlignement, GlobalStruct.RoughnessDistance);
+    
+    vec2 sss = SubsurfaceScatteringFactor(li);
+    vec3 foamLitColor = vec3(0.0);
+    #if defined(WAVES_FOAM_ENABLED) || defined(CONTACT_FOAM_ENABLED)
+    foamLitColor = LitFoamColor(li, foamData);
+    #endif
+    
+    float fresnel = EffectiveFresnel(bi);
+    vec3 specular = Specular(li, bi) * Pow5(1.0 - foamData.coverage.y);
+    vec3 reflected = Reflection(li, bi);
+    vec3 refracted = Refraction(li, foamData, sss, foamLitColor);
+    vec4 horizon = HorizonBlend(li);
+    vec3 color = specular + mix(refracted, reflected, fresnel);
+    #if defined(WAVES_FOAM_ENABLED) || defined(CONTACT_FOAM_ENABLED)
+    color = mix(color, foamLitColor, foamData.coverage.x);
+    #endif
+    color = mix(color, horizon.rgb, horizon.a);
+    return color;
+}
+
+#endif //FFT_OCEAN_SURFACE

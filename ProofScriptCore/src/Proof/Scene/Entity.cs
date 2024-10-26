@@ -124,8 +124,8 @@ namespace Proof
 
 			T component = new T() { Entity = this };
 			return component;
-		}
-        public T As<T>() where T : Entity, new()
+		} 
+        public T GetScript<T>() where T : Entity, new()
         {
             object instance = InternalCalls.GetScriptInstance(ID, typeof(T).FullName);
             return instance as T;
@@ -142,7 +142,10 @@ namespace Proof
             }
         }
 
-
+        public void Destroy(bool includeChildren = true)
+        {
+            World.DeleteEntity(this,includeChildren);   
+        }
         private void OnCollisionEnterInternal(ulong id) => CollisionEnterEvent?.Invoke(new Entity(id));
         private void OnCollisionStayInternal(ulong id) => CollisionStayEvent?.Invoke(new Entity(id));
         private void OnCollisionLeaveInternal(ulong id) => CollisionLeaveEvent?.Invoke(new Entity(id));

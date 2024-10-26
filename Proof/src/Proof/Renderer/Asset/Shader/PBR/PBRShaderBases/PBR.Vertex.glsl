@@ -11,6 +11,7 @@ layout(location = 9) in mat4 aPrevTransform;
 struct PBRVertexOutput
 {
     vec3 WorldPosition;
+    vec3 VertexPosition;
     vec3 Normal;
     mat3 WorldNormals;
     vec2 TexCoords;
@@ -42,6 +43,7 @@ struct PBRVertexInput
     vec3 Tangent; 
     vec3 Bitangent;
     vec3 Normal;
+    vec3 WorldPositionOffset;
 };
 
 
@@ -54,9 +56,10 @@ void ApplyPbrVertex(PBRVertexInput pbrvertex)
     PBR_Output.TexCoords = pbrvertex.TexCoords;
 
 
-    vec4 worldPos = aTransform * vec4(modifiedPosition, 1.0);
-    PBR_Output.WorldPosition = worldPos.xyz;
-
+    vec4 worldPos = aTransform * vec4(modifiedPosition , 1.0);
+    //worldPos = worldPos + vec4(pbrvertex.WorldPositionOffset,0);
+    PBR_Output.WorldPosition = worldPos.xyz+ pbrvertex.WorldPositionOffset ;
+    pbrvertex.VertexPosition = modifiedPosition; 
     vec4 shadowCoords[4];
     shadowCoords[0] = u_CascadePositions.ViewProjections[0] * vec4(PBR_Output.WorldPosition, 1.0);
 	shadowCoords[1] = u_CascadePositions.ViewProjections[1] * vec4(PBR_Output.WorldPosition, 1.0);
@@ -98,6 +101,7 @@ void ApplyPbrVertex(PBRVertexInput pbrvertex)
 
    gl_Position =  u_Camera.Projection * u_Camera.View * vec4(PBR_Output.WorldPosition, 1.0);
    PBR_Output.ViewSpaceValue =  (u_Camera.View * vec4(PBR_Output.WorldPosition, 1.0)).xyz;
+
 }
 
 
@@ -111,6 +115,7 @@ void main()
     vertexInput.Tangent = aTangent;
     vertexInput.Bitangent = aBitangent;
     vertexInput.Normal = aNormal;
+    vertexInput.WorldPositionOffset = vec3(0);
 
     Vertex(vertexInput);
     ApplyPbrVertex(vertexInput);

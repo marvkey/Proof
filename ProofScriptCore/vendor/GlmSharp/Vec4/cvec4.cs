@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Vector of type Complex with 4 components.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct cVector4 : IReadOnlyList<Complex>, IEquatable<cVector4>

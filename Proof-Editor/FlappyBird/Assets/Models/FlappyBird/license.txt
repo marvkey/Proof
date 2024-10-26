@@ -1,0 +1,11 @@
+Model Information:
+* title:	Flappy bird 3D (Vertex Colors)
+* source:	https://sketchfab.com/3d-models/flappy-bird-3d-vertex-colors-3f2bc66f220c46c3bfdb00e912ae245e
+* author:	XtremeZero (https://sketchfab.com/mohammedzero43)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Flappy bird 3D (Vertex Colors)" (https://sketchfab.com/3d-models/flappy-bird-3d-vertex-colors-3f2bc66f220c46c3bfdb00e912ae245e) by XtremeZero (https://sketchfab.com/mohammedzero43) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

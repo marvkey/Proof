@@ -1,14 +1,13 @@
 #pragma once
-#include <vector>
+#include "Proof/Asset/Asset.h"
 #include "Proof/Renderer/Vertex.h"
-#include "Proof/Renderer/Texture.h"
 #include "Proof/Math/Math.h"
+#include "Proof/Math/AABB.h"
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "Material.h"
-#include "Proof/Math/AABB.h"
 #include <algorithm>
+#include <vector>
 namespace Proof
 {
 
@@ -16,6 +15,7 @@ namespace Proof
     class MaterialTable;
     class SkeletonData;
     class AnimationData;
+    class Texture2D;
 
     struct BoneInfo
     {
@@ -211,7 +211,9 @@ namespace Proof
     {
     public:
         virtual Count<MaterialTable> GetMaterialTable() = 0;
-        virtual const std::vector<uint32_t>& GetSubMeshes()const= 0;;
+        virtual const std::vector<uint32_t>& GetSubMeshes()const = 0;;
+        // doesnt have a reference to meshes as submesh just crewates a list from the GetSubmehses
+        virtual std::vector<SubMesh> GetSubMeshesAsSubMesh();
         virtual void SetSubMeshes(const std::vector<uint32_t>& submeshes = {})= 0;
         virtual Count<MeshSource> GetMeshSource() = 0;
 
@@ -227,6 +229,9 @@ namespace Proof
         {
             return m_MeshMatrix;
         }
+    protected:
+        void ArrangeMaterialTable();
+
     private:
         float m_Scale =1;
         glm::vec3 m_RotationDeg = { 0,0,0 };
@@ -300,11 +305,11 @@ namespace Proof
         Count<MeshSource> GetMeshSource() {return m_MeshSource;}
 
         Count<MaterialTable> GetMaterialTable() { return m_MaterialTable; }
+        Count<MaterialTable> GetMaterialTableBasedOnSubMeshIndex(uint32_t index);
 
         const std::vector<uint32_t>& GetSubMeshes()const { return m_SubMeshes; };
         bool HasSubMesh(uint32_t subMeshIndex);
     private:
-
         std::string m_Name;
         std::vector<uint32_t> m_SubMeshes;
         Count<MaterialTable> m_MaterialTable;

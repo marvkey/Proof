@@ -6,9 +6,11 @@
 #include "Proof/Resources/ExternalCreations.h"
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Prefab.h"
+#include "Proof/Scene/Entity.h"
 #include "Proof/Scene/World.h"
 #include "Proof/Renderer/ParticleSystem.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
+#include "Proof/Renderer/UIRenderer/UIMenu.h"
 #include "Proof/Scene/SceneSerializer.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Asset/AssetManager.h"
@@ -344,7 +346,7 @@ namespace Proof {
 		out << YAML::BeginMap;
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(prefab->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << prefab->GetID();
-		out << YAML::Key << "EntityOwner" << YAML::Value << prefab->m_BaseEntity.GetUUID();
+		out << YAML::Key << "EntityOwner" << YAML::Value << prefab->GetBaseEntity().GetUUID();
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
 		for (auto [id, entity] : prefab->m_World->GetEntities())
@@ -459,160 +461,118 @@ namespace Proof {
 		SetID(assetData, particleSystem);
 		return particleSystem;
 	}
+	void UIPanelAssetSerilizer::SaveUIElement(YAML::Emitter& out, UIElement element)const
+	{
+		out << YAML::BeginMap;// Element
+		out << YAML::Key << "UIElement" << YAML::Value << element.GetUUID();
+
+		{
+			UICoreComponent& coreComponent = element.GetComponent<UICoreComponent>();
+			out << YAML::Key << "UICoreComponent";
+			out << YAML::BeginMap; // CoreComponent
+			out << YAML::Key << "ElementID" << YAML::Value << coreComponent.GetElementID();
+			out << YAML::Key << "Name" << YAML::Value << coreComponent.Name;
+			out << YAML::Key << "UIElementType" << YAML::Value << EnumReflection::EnumString(coreComponent.ElementType);
+			out << YAML::Key << "Position" << YAML::Value << coreComponent.Transform.Position;
+			out << YAML::Key << "Rotation" << YAML::Value << coreComponent.Transform.Rotation;
+			out << YAML::Key << "Size" << YAML::Value << coreComponent.Transform.Size;
+			out << YAML::EndMap; // CoreComponent
+		}
+
+		{
+			if (element.HasComponent<UITextComponent>())
+			{
+				auto& textComponent = element.GetComponent<UITextComponent>();
+
+				out << YAML::Key << "UITextComponent";
+				out << YAML::BeginMap; // UITextComponent
+				out << YAML::Key << "Text" << YAML::Value << textComponent.Text;
+				out << YAML::Key << "Color" << YAML::Value << textComponent.TextConfig.Color;
+				out << YAML::Key << "Kerning" << YAML::Value << textComponent.TextConfig.Kerning;
+				out << YAML::Key << "LineSpacing" << YAML::Value << textComponent.TextConfig.LineSpacing;
+				out << YAML::EndMap; // UITextComponent
+			}
+		}
+		out << YAML::EndMap; // Element
+
+	}
+	
 	void UIPanelAssetSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
 	{
 		Count<UIPanel>uiPanel = asset.As<UIPanel>();
-
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(uiPanel->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << uiPanel->GetID();
+		out << YAML::Key << "UIElements" << YAML::Value << YAML::BeginSeq;
+		
 		{
-			out << YAML::Key << "Buttons" << YAML::Value << YAML::BeginSeq;
-			// Buttons
-			for (auto& [name, button] : uiPanel->GetButtons())
+			for (auto& [name, element] : uiPanel->Menu->GetUIElementsMap())
 			{
-
-				out << YAML::BeginMap;// Button
-				out << YAML::Key << "Button" << name;
-				out << YAML::Key << "Position" << button.Postion;
-				out << YAML::Key << "Size" << button.Size;
-				out << YAML::Key << "Rotation" << button.Rotation;
-				out << YAML::Key << "Text" << button.Text;
-				out << YAML::Key << "TintColor" << button.TintColour;
-				out << YAML::Key << "Visible" << button.Visible;
-				out << YAML::EndMap;// Button
+				SaveUIElement(out, element);
 			}
-			out << YAML::EndSeq;
 		}
-
-		{
-			out << YAML::Key << "ImageButtons" << YAML::Value << YAML::BeginSeq;
-			// Buttons
-			for (auto& [name, imageButton] : uiPanel->GetImageButtons())
-			{
-
-				out << YAML::BeginMap;// Button
-				out << YAML::Key << "ImageButton" << name;
-				out << YAML::Key << "Position" << imageButton.Postion;
-				out << YAML::Key << "Size" << imageButton.Size;
-				out << YAML::Key << "Rotation" << imageButton.Rotation;
-				out << YAML::Key << "TintColor" << imageButton.TintColour;
-				out << YAML::Key << "Visible" << imageButton.Visible;
-
-				AssetID id = (imageButton.Texture == nullptr) ? AssetID(0) : imageButton.Texture->GetID();
-				out << YAML::Key << "ImageAssetID" << (uint64_t)id;
-				out << YAML::EndMap;// Button
-			}
-			out << YAML::EndSeq;
-		}
-
-		{
-			out << YAML::Key << "Texts" << YAML::Value << YAML::BeginSeq;
-			// Texts
-			for (auto& [name, texts] : uiPanel->GetTexts())
-			{
-
-				out << YAML::BeginMap;// Text
-				out << YAML::Key << "Text" << name;
-				out << YAML::Key << "Position" << texts.Postion;
-				out << YAML::Key << "Size" << texts.Size;
-				out << YAML::Key << "Rotation" << texts.Rotation;
-				out << YAML::Key << "Color" << texts.Param.Color;
-				out << YAML::Key << "Input" << texts.Text;
-				out << YAML::Key << "Kerning" << texts.Param.Kerning;
-				out << YAML::Key << "LineSpacing" << texts.Param.LineSpacing;
-				out << YAML::Key << "Visible" << texts.Visible;
-				AssetID id = (texts.Font == nullptr) ? AssetID(0) : texts.Font->GetID();
-				out << YAML::Key << "Font" << (uint64_t)id;
-				out << YAML::EndMap;// Text
-			}
-			out << YAML::EndSeq;
-		}
+		out << YAML::EndSeq;
 		out << YAML::EndMap;
 
 		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
 		stream << out.c_str();
 		stream.close();
 	}
+	void UIPanelAssetSerilizer::DeserilizeUIElements(YAML::Node& uiElements, Count<class UIPanel> asset)const
+	{
+		Count<UIPanel>uiPanel = asset.As<UIPanel>();
+		for (auto uiElement : uiElements)
+		{
+			//coreComponnet
+			UIElement newUIElement;
+			{
+				auto coreComponent = uiElement["UICoreComponent"];
+				if (coreComponent)
+				{
+					uint64_t id = coreComponent["ElementID"].as<uint64_t>();
+					std::string name = coreComponent["Name"].as<std::string>("Empty");
+					UIElementType elementType = EnumReflection::StringEnum<UIElementType>(coreComponent["UIElementType"].as<std::string>(" "));
 
+					newUIElement = uiPanel->Menu->CreateElement(name, id, elementType);
+					UITransform& transform = newUIElement.GetComponent<UICoreComponent>().Transform;
+					transform.Position = coreComponent["Position"].as<glm::vec2>(transform.Position);
+					transform.Rotation = coreComponent["Rotation"].as<glm::vec2>(transform.Rotation);
+					transform.Size = coreComponent["Size"].as<glm::vec2>(transform.Size);
+				}
+			}
+
+			{
+				auto textComponent = uiElement["UITextComponent"];
+				if (textComponent)
+				{
+					auto& src = newUIElement.GetComponent<UITextComponent>();
+					src.TextConfig.Color = textComponent["Color"].as<glm::vec4>();
+					src.TextConfig.Kerning = textComponent["Kerning"].as<float>();
+					src.TextConfig.LineSpacing = textComponent["LineSpacing"].as<float>();
+					src.Text = textComponent["Text"].as<std::string>();
+				}
+			}
+		}
+	}
 	Count<class Asset> UIPanelAssetSerilizer::TryLoadAsset(const AssetInfo& assetData) const
 	{
 		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
 		if (!data["AssetType"])
 			return nullptr;
-
+	
 		Count<UIPanel> uiPanel = Count<UIPanel>::Create();
-		uiPanel->Name = assetData.GetName();
-		auto buttons = data["Buttons"];
-		for (auto button : buttons)
+
+		if (data["UIElements"])
 		{
-			UIButton uiButton;
-			uiButton.Postion = button["Position"].as<glm::vec2>();
-			uiButton.Size = button["Size"].as<glm::vec2>();
-			uiButton.Rotation = button["Rotation"].as<glm::vec2>();
-			uiButton.Text = button["Text"].as < std::string >();
-			uiButton.TintColour = button["TintColor"].as < glm::vec4>();
-			if (button["Visible"])
-			{
-				uiButton.Visible = button["Visible"].as<bool>();
-			}
-			std::string name = button["Button"].as<std::string>();
-			uiPanel->SetButton(uiButton, name);
-		}
-
-		auto imageButtons = data["ImageButtons"];
-
-		for (auto imageButton : imageButtons)
-		{
-			UIButtonImage uiImageButton;
-			uiImageButton.Postion = imageButton["Position"].as<glm::vec2>();
-			uiImageButton.Size = imageButton["Size"].as<glm::vec2>();
-			uiImageButton.Rotation = imageButton["Rotation"].as<glm::vec2>();
-			uiImageButton.TintColour = imageButton["TintColor"].as < glm::vec4>();
-			if (imageButton["Visible"])
-			{
-				uiImageButton.Visible = imageButton["Visible"].as<bool>();
-			}
-			AssetID textureId = imageButton["ImageAssetID"].as<uint64_t>();
-
-			if (AssetManager::HasAsset(textureId))
-			{
-				uiImageButton.Texture = AssetManager::GetAsset<Texture2D>(textureId);
-			}
-			std::string name = imageButton["ImageButton"].as<std::string>();
-			uiPanel->SetButtonImage(uiImageButton, name);
-		}
-
-		auto texts = data["Texts"];
-
-		for (auto text : texts)
-		{
-			UIText uiText;
-			uiText.Postion = text["Position"].as<glm::vec2>();
-			uiText.Size = text["Size"].as<glm::vec2>();
-			uiText.Rotation = text["Rotation"].as<glm::vec2>();
-			uiText.Param.Color = text["Color"].as < glm::vec4>();
-			uiText.Text = text["Input"].as < std::string>();
-			uiText.Param.Kerning = text["Kerning"].as < float>();
-			uiText.Param.LineSpacing = text["LineSpacing"].as<float>();
-			if (text["Visible"])
-			{
-				uiText.Visible = text["Visible"].as<bool>();
-			}
-			AssetID fontId = text["Font"].as<uint64_t>();
-
-			if (AssetManager::HasAsset(fontId))
-			{
-				uiText.Font = AssetManager::GetAsset<Font>(fontId);
-			}
-			std::string name = text["Text"].as<std::string>();
-			uiPanel->SetText(uiText, name);
+			auto elements = data["UIElements"];
+			DeserilizeUIElements(elements, uiPanel);
 		}
 		SetID(assetData, uiPanel);
 		return uiPanel;
-
 	}
+
+	
 
 	void AudioAssetSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
 	{

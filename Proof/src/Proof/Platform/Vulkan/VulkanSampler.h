@@ -4,14 +4,15 @@
 namespace Proof
 {
 	
-	class VulkanRendererSampler : public RenderSampler
+	class VulkanRenderSampler : public RenderSampler
 	{
 	public:
-		VulkanRendererSampler(const SamplerResourceConfig& config);
-		virtual ~VulkanRendererSampler();
+		VulkanRenderSampler(const SamplerResourceConfig& config);
+		virtual ~VulkanRenderSampler();
 		virtual const SamplerResourceConfig& GetConfig() const { return m_Config; };
 		const VkDescriptorImageInfo& GetDescriptorInfoVulkan()const { return *(VkDescriptorImageInfo*)GetResourceDescriptorInfo(); };
 		virtual ResourceDescriptorInfo GetResourceDescriptorInfo()const { return (ResourceDescriptorInfo)&m_DescriptorImageInfo; }
+		VkSampler GetSampler() { return m_VulkanSampler; }
 	private:
 		SamplerResourceConfig m_Config;
 		VkSampler m_VulkanSampler;

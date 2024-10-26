@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Quaternionernion of type long.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct lQuaternion : IReadOnlyList<long>, IEquatable<lQuaternion>

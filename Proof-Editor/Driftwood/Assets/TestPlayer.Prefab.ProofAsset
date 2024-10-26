@@ -1,0 +1,81 @@
+AssetType: Prefab
+ID: 16713222569645990253
+EntityOwner: 14698782786201216351
+Entities:
+  - Entity: 14698782786201216351
+    TagComponent:
+      Tag: TestPlayer
+      tags: []
+    TransformComponent:
+      Location: [68.8000031, 108.099998, 42.0999985]
+      Rotation: [0, 0, 0]
+      Scale: [0.5, 0.5, 0.5]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: [14407437156431807177]
+    MeshComponent:
+      MeshAssetPointerID: 5062657810340108268
+    ScriptComponent:
+      Scripts:
+        - Script: Driftwood.PlayerMovement
+          ScriptClassName: Driftwood.PlayerMovement
+          ScriptName: Driftwood.PlayerMovement
+          Fields:
+            - NameID: Driftwood.PlayerMovement.FowardForce
+              Type: Float
+              Data: 1000
+        - Script: Driftwood.PlayerInput
+          ScriptClassName: Driftwood.PlayerInput
+          ScriptName: Driftwood.PlayerInput
+          Fields:
+            - NameID: Driftwood.PlayerInput.MoveSideWaysAction
+              Type: InputAction
+              Data: 12371603639197638862
+    BoxColliderComponent:
+      IsTrigger: false
+      Center: [0, 2.79999995, 0]
+      Size: [10.3999996, 8.69999981, 21.2000008]
+      PhysicsMaterialPointerID: 16430391847963516997
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+    PlayerInputComponent:
+      InputPlayer: None
+      InputBindings:
+        - InputBindingContextHandler: ""
+          InputBindingID: 6003628806341811560
+          Active: true
+  - Entity: 14407437156431807177
+    TagComponent:
+      Tag: Head
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 14698782786201216351
+      Children: [3821649821208280666]
+  - Entity: 3821649821208280666
+    TagComponent:
+      Tag: Camera
+      tags: []
+    TransformComponent:
+      Location: [0, 13.3000002, 35.7000008]
+      Rotation: [-0.263544708, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 14407437156431807177
+      Children: []
+    CameraComponent:
+      NearPlane: 0.300000012
+      FarPlane: 1000
+      FOV: 45
+      UseLocalRotation: false

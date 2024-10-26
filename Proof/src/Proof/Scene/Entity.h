@@ -14,7 +14,7 @@ namespace Proof{
 		Entity(entt::entity handle, World* scene)
 			: m_EntityHandle(handle), m_World(scene) {}
 		Entity(const Entity& other) =default;
-		Entity()=default;
+		Entity()=default;	
 
 		//template<class T>
 		//T& GetComponent() {

@@ -3,6 +3,7 @@
 #include "Proof/Platform/Vulkan/VulkanResourceBuffer.h"
 #include "Proof/Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Proof/Platform/Vulkan/VulkanTexutre.h"
+#include "Proof/Platform/Vulkan/VulkanImage.h"
 #include "RendererSampler.h"
 #include "Renderer.h"
 namespace Proof

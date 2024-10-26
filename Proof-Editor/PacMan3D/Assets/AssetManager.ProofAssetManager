@@ -1,0 +1,79 @@
+Assets:
+  - Asset: 4620423415291113911
+    Type: Texture
+    Path: Models\PacManMap\textures\nes_bldg_pacmanmaze_ghosts.png
+  - Asset: 4053659276955609160
+    Type: Mesh
+    Path: Meshes\Map.Mesh.ProofAsset
+  - Asset: 15755887837939528469
+    Type: MeshCollider
+    Path: Colliders\NewMeshCollider.MeshCollider.ProofAsset
+  - Asset: 7330344338230132354
+    Type: World
+    Path: Scenes\Level.ProofWorld
+  - Asset: 14146562526640298986
+    Type: Texture
+    Path: Models\PacManMap\source\pacman\nes_bldg_pacmanmaze_ghosts.png
+  - Asset: 10195873243354819264
+    Type: DynamicMesh
+    Path: Meshes\OtherPacmanMapDynamic.DynamicMesh.ProofAsset
+  - Asset: 3306638049626419248
+    Type: MeshSourceFile
+    Path: Models\PacmanGhost\source\PacmanGhost.fbx
+  - Asset: 15298493908407828510
+    Type: Texture
+    Path: Models\PacManMap\textures\nes_bldg_pacmanmaze_food.png
+  - Asset: 13844665725823832464
+    Type: Texture
+    Path: Models\PacManMap\textures\nes_bldg_pacmanmaze_main.png
+  - Asset: 10425816024388560322
+    Type: UIPanel
+    Path: New UI.UIPanel.ProofAsset
+  - Asset: 5188642499868486166
+    Type: Texture
+    Path: Models\PacManMap\textures\nes_bldg_pacmanmaze_maze.png
+  - Asset: 11967804478687979739
+    Type: Texture
+    Path: Models\PacManMap\textures\nes_bldg_pacmanmaze_top.png
+  - Asset: 2963220087072284372
+    Type: Texture
+    Path: Models\PacManMap\source\pacman\nes_bldg_pacmanmaze_base.png
+  - Asset: 13980944407255389794
+    Type: Texture
+    Path: Models\PacManMap\source\pacman\nes_bldg_pacmanmaze_food.png
+  - Asset: 7394867020350420044
+    Type: Texture
+    Path: Models\PacManMap\source\pacman\nes_bldg_pacmanmaze_main.png
+  - Asset: 9074925291314043166
+    Type: Texture
+    Path: Models\PacManMap\source\pacman\nes_bldg_pacmanmaze_maze.png
+  - Asset: 18068755671753633870
+    Type: Texture
+    Path: Models\PacManMap\source\pacman\nes_bldg_pacmanmaze_top.png
+  - Asset: 1809675169706098863
+    Type: MeshSourceFile
+    Path: Models\PacManMap\source\pacman\pacman.fbx
+  - Asset: 5791367454005929675
+    Type: Material
+    Path: Materials\Black.Material.ProofAsset
+  - Asset: 18194615169976015386
+    Type: Prefab
+    Path: Prefabs\Coin.Prefab.ProofAsset
+  - Asset: 5196314860968098635
+    Type: Material
+    Path: Materials\Gold.Material.ProofAsset
+  - Asset: 16111162952041682780
+    Type: MeshSourceFile
+    Path: Models\PacManCoinmap\CoinMap.fbx
+  - Asset: 18362338234243716043
+    Type: DynamicMesh
+    Path: Meshes\CoinMap.DynamicMesh.ProofAsset
+  - Asset: 15086194006163233723
+    Type: Mesh
+    Path: Meshes\OtherMeshMap.Mesh.ProofAsset
+  - Asset: 14450133657319122732
+    Type: MeshSourceFile
+    Path: Models\pacmanTest.fbx
+  - Asset: 8979710663574227750
+    Type: DynamicMesh
+    Path: Meshes\PacMan.DynamicMesh.ProofAsset

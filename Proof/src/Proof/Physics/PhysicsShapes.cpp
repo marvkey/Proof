@@ -9,11 +9,14 @@
 #include "PhysicsMeshCooker.h"
 #include "PhysicsEngine.h"
 #include "PhysicsWorld.h"
+#include "Proof/Scene/Entity.h"
+#include "Proof/Scene/Component.h"
 namespace Proof {
 	ColliderShape::ColliderShape(ColliderType type, Entity entity, bool isShared)
-		: m_Type(type), m_IsShared(isShared) ,m_Entity(entity)
+		: m_Type(type), m_IsShared(isShared) 
 
 	{
+		m_Entity = entity;
 		if (m_Material == nullptr)
 			m_Material = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::PhysicsMaterial).As<PhysicsMaterial>();
 	}
@@ -86,7 +89,7 @@ namespace Proof {
 		physx::PxBoxGeometry geometry = physx::PxBoxGeometry(colliderSize.x, colliderSize.y, colliderSize.z);
 		m_Shape->setGeometry(geometry);
 
-		auto& component = m_Entity.GetComponent<BoxColliderComponent>();
+		BoxColliderComponent& component = m_Entity.GetComponent<BoxColliderComponent>();
 		component.Size = size;
 	}
 	const glm::vec3& BoxColliderShape::GetCenter() const
@@ -95,7 +98,7 @@ namespace Proof {
 	}
 	void BoxColliderShape::SetCenter(const glm::vec3& center)
 	{
-		auto& component = m_Entity.GetComponent<BoxColliderComponent>();
+		BoxColliderComponent& component = m_Entity.GetComponent<BoxColliderComponent>();
 		m_Shape->setLocalPose(PhysXUtils::ToPhysXTransform(center, glm::vec3(0.0f)));
 		component.Center = center;
 	}
@@ -107,7 +110,7 @@ namespace Proof {
 	{
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !isTrigger);
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, isTrigger);
-		auto& component = m_Entity.GetComponent<BoxColliderComponent>();
+		BoxColliderComponent& component = m_Entity.GetComponent<BoxColliderComponent>();
 		component.IsTrigger = isTrigger;
 	}
 	void BoxColliderShape::SetFilterData(const physx::PxFilterData& filterData)
@@ -150,6 +153,10 @@ namespace Proof {
 	SphereColliderShape::~SphereColliderShape()
 	{
 	}
+	float SphereColliderShape::GetRadius() const
+	{
+		return m_Entity.GetComponent<SphereColliderComponent>().Radius;
+	}
 	void SphereColliderShape::SetRadius(float radius)
 	{
 		Count<PhysicsActor> actor = (PhysicsActor*)m_Shape->getActor()->userData;
@@ -163,20 +170,28 @@ namespace Proof {
 		physx::PxSphereGeometry geometry = physx::PxSphereGeometry(largestComponent * radius);
 		m_Shape->setGeometry(geometry);
 
-		auto& component = m_Entity.GetComponent<SphereColliderComponent>();
+		SphereColliderComponent& component = m_Entity.GetComponent<SphereColliderComponent>();
 		component.Radius = radius;
+	}
+	const glm::vec3& SphereColliderShape::GetCenter() const
+	{
+		return m_Entity.GetComponent<SphereColliderComponent>().Center;
 	}
 	void SphereColliderShape::SetCenter(const glm::vec3& center)
 	{
-		auto& component = m_Entity.GetComponent<SphereColliderComponent>();
+		SphereColliderComponent& component = m_Entity.GetComponent<SphereColliderComponent>();
 		m_Shape->setLocalPose(PhysXUtils::ToPhysXTransform(center, glm::vec3(0.0f)));
 		component.Center = center;
+	}
+	bool SphereColliderShape::IsTrigger() const
+	{
+		return m_Entity.GetComponent<SphereColliderComponent>().IsTrigger;
 	}
 	void SphereColliderShape::SetTrigger(bool isTrigger)
 	{
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !isTrigger);
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, isTrigger);
-		auto& component = m_Entity.GetComponent<SphereColliderComponent>();
+		SphereColliderComponent& component = m_Entity.GetComponent<SphereColliderComponent>();
 		component.IsTrigger = isTrigger;
 	}
 	void SphereColliderShape::SetFilterData(const physx::PxFilterData& filterData)
@@ -219,6 +234,11 @@ namespace Proof {
 	}
 
 	
+	float CapsuleColliderShape::GetRadius() const
+	{
+		return m_Entity.GetComponent<CapsuleColliderComponent>().Radius;
+	}
+
 	void CapsuleColliderShape::SetRadius(float radius)
 	{
 
@@ -237,8 +257,13 @@ namespace Proof {
 		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(capsuleData.radiusScale * radius, oldGeometry.halfHeight);
 		m_Shape->setGeometry(geometry);
 
-		auto& component = m_Entity.GetComponent<CapsuleColliderComponent>();
+		CapsuleColliderComponent& component = m_Entity.GetComponent<CapsuleColliderComponent>();
 		component.Radius = radius;
+	}
+
+	CapsuleDirection CapsuleColliderShape::GetDirection() const
+	{
+		return m_Entity.GetComponent<CapsuleColliderComponent>().Direction;
 	}
 
 	void CapsuleColliderShape::SetDirection(CapsuleDirection direction)
@@ -253,6 +278,11 @@ namespace Proof {
 		SetHeight(GetHeight());
 		SetRadius(GetRadius());
 		SetCenter(GetCenter());
+	}
+
+	float CapsuleColliderShape::GetHeight() const
+	{
+		return m_Entity.GetComponent<CapsuleColliderComponent>().Height;
 	}
 
 	void CapsuleColliderShape::SetHeight(float height)
@@ -273,8 +303,13 @@ namespace Proof {
 		m_Shape->setGeometry(geometry);
 		m_Shape->setGeometry(geometry);
 
-		auto& component = m_Entity.GetComponent<CapsuleColliderComponent>();
+		CapsuleColliderComponent& component = m_Entity.GetComponent<CapsuleColliderComponent>();
 		component.Height = height;
+	}
+
+	const glm::vec3& CapsuleColliderShape::GetCenter() const
+	{
+		return m_Entity.GetComponent<CapsuleColliderComponent>().Center;
 	}
 
 	void CapsuleColliderShape::SetCenter(const glm::vec3& offset)
@@ -287,14 +322,19 @@ namespace Proof {
 		TransformComponent worldTransform = world->GetWorldSpaceTransformComponent(entity);
 		
 		auto capsuleData = GetCapsuleData(GetDirection(), worldTransform);
-		auto& component = m_Entity.GetComponent<CapsuleColliderComponent>();
+		CapsuleColliderComponent& component = m_Entity.GetComponent<CapsuleColliderComponent>();
 		component.Center = offset;
 		m_Shape->setLocalPose(PhysXUtils::ToPhysXTransform(offset, capsuleData.offsetRotation));
 	}
 
+	bool CapsuleColliderShape::IsTrigger() const
+	{
+		return m_Entity.GetComponent<CapsuleColliderComponent>().IsTrigger;
+	}
+
 	void CapsuleColliderShape::SetTrigger(bool isTrigger)
 	{
-		auto& component = m_Entity.GetComponent<CapsuleColliderComponent>();
+		CapsuleColliderComponent& component = m_Entity.GetComponent<CapsuleColliderComponent>();
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !isTrigger);
 		m_Shape->setFlag(physx::PxShapeFlag::eTRIGGER_SHAPE, isTrigger);
 		component.IsTrigger = isTrigger;
@@ -411,9 +451,19 @@ namespace Proof {
 	{
 	}
 
+	AssetID ConvexMeshShape::GetColliderHandle() const
+	{
+		return m_Entity.GetComponent<MeshColliderComponent>().ColliderID;
+	}
+
+	bool ConvexMeshShape::IsTrigger() const
+	{
+		return m_Entity.GetComponent<MeshColliderComponent>().IsTrigger;
+	}
+
 	void ConvexMeshShape::SetTrigger(bool isTrigger)
 	{
-		auto& component = m_Entity.GetComponent<MeshColliderComponent>();
+		MeshColliderComponent& component = m_Entity.GetComponent<MeshColliderComponent>();
 		if (component.UseSharedShape)
 			return;
 
@@ -430,7 +480,7 @@ namespace Proof {
 
 	void ConvexMeshShape::SetFilterData(const physx::PxFilterData& filterData)
 	{
-		auto& component = m_Entity.GetComponent<MeshColliderComponent>();
+		MeshColliderComponent& component = m_Entity.GetComponent<MeshColliderComponent>();
 		if (component.UseSharedShape)
 			return;
 
@@ -450,7 +500,7 @@ namespace Proof {
 			actor->detachShape(*shape);
 		}
 
-		const auto& component = m_Entity.GetComponent<MeshColliderComponent>();
+		const MeshColliderComponent& component = m_Entity.GetComponent<MeshColliderComponent>();
 
 		// Reference count was 1, meaning the shape has now been destroyed, so clear it from the map
 		if (referenceCount == 1)
@@ -562,13 +612,21 @@ namespace Proof {
 	TriangleMeshShape::~TriangleMeshShape()
 	{
 	}
+	AssetID TriangleMeshShape::GetColliderHandle() const
+	{
+		return m_Entity.GetComponent<MeshColliderComponent>().ColliderID;
+	}
+	bool TriangleMeshShape::IsTrigger() const
+	{
+		return m_Entity.GetComponent<MeshColliderComponent>().IsTrigger;
+	}
 	void TriangleMeshShape::SetTrigger(bool isTrigger)
 	{
 		// cannot be set as triggers
 	}
 	void TriangleMeshShape::SetFilterData(const physx::PxFilterData& filterData)
 	{
-		const auto& component = m_Entity.GetComponent<MeshColliderComponent>();
+		const MeshColliderComponent& component = m_Entity.GetComponent<MeshColliderComponent>();
 		if (component.UseSharedShape)
 			return;
 
@@ -587,7 +645,7 @@ namespace Proof {
 			actor->detachShape(*shape);
 		}
 
-		const auto& component = m_Entity.GetComponent<MeshColliderComponent>();
+		const MeshColliderComponent& component = m_Entity.GetComponent<MeshColliderComponent>();
 
 		// Reference count was 1, meaning the shape has now been destroyed, so clear it from the map
 		if (referenceCount == 1)
@@ -667,4 +725,44 @@ namespace Proof {
 	}
 	SharedShapeManager::SharedShapeMap SharedShapeManager::s_SharedShapes;
 	
+	CapusleData GetCapsuleData(CapsuleDirection direction, const TransformComponent& worldTransform)
+	{
+		glm::vec3 scaleabs = glm::abs(worldTransform.Scale);
+
+		float radiusScale = 0;
+
+		float scaleDirection;
+		glm::vec3 offsetRotation;
+		switch (direction)
+		{
+			case CapsuleDirection::X:
+			{
+				scaleDirection = glm::max(glm::max(scaleabs.y, scaleabs.z) / 2, scaleabs.x);
+				offsetRotation = glm::vec3{ 0,0,0 };
+				radiusScale = glm::max(scaleabs.y, scaleabs.z);
+			}
+			break;
+			case CapsuleDirection::Y:
+			{
+				offsetRotation = glm::vec3{ 0,0,physx::PxHalfPi };
+				scaleDirection = glm::max(glm::max(scaleabs.x, scaleabs.z) / 2, scaleabs.y);
+				radiusScale = glm::max(scaleabs.x, scaleabs.z);
+			}
+			break;
+			case CapsuleDirection::Z:
+			{
+				offsetRotation = glm::vec3{ 0,physx::PxHalfPi,0 };
+				scaleDirection = glm::max(glm::max(scaleabs.y, scaleabs.x) / 2, scaleabs.z);
+				radiusScale = glm::max(scaleabs.y, scaleabs.x);
+			}
+			break;
+			default:
+				break;
+		}
+
+
+
+		return { offsetRotation,radiusScale,scaleDirection };
+	}
+
 }

@@ -312,7 +312,7 @@ namespace Proof {
             float sTexture = 1.0f - j * toTexHorizontal;
             sTextureCache[j] = sTexture;
 
-            // Wrap to first element upon reaching last.
+            // Repeat to first element upon reaching last.
             int jMod = j % longitudes;
             glm::vec2 tc = thetaCartesian[jMod];
             glm::vec2 rtc = rhoThetaCartesian[jMod];
@@ -879,7 +879,7 @@ namespace Proof {
         return Count<class Mesh>::Create("Torus", vertices, indices);
     }
 
-    Count<class Mesh> MeshWorkShop::GeneratePlane(uint32_t numSegments, float planeSize)
+    Count<class Mesh> MeshWorkShop::GeneratePlane(uint32_t numSegments, float planeSize, bool doubleSided)
     {
         //chatgpt
         std::vector<Vertex> vertices; std::vector<Index> indices;
@@ -906,8 +906,7 @@ namespace Proof {
                 vertex.TexCoord.y = static_cast<float>(j) / static_cast<float>(numSegments);
 
                 // You may compute tangent and bitangent vectors later
-                vertex.Tangent = glm::vec3(0.0f);
-                vertex.Bitangent = glm::vec3(0.0f);
+
                 vertices.push_back(vertex);
             }
         }
@@ -932,46 +931,16 @@ namespace Proof {
                 // indices.push_back(topRight);
                 // indices.push_back(bottomLeft);
                 // indices.push_back(bottomRight);
-            }
-        }
 
-        {
-            for (const auto& index : indices) {
-                Vertex& v0 = vertices[index.V1];
-                Vertex& v1 = vertices[index.V2];
-                Vertex& v2 = vertices[index.V3];
+                if (doubleSided)
+                {
+                    Index index3{ topLeft + 1,bottomLeft + 1,topRight + 1 };
+                    indices.push_back(index3);
 
-                glm::vec3 edge1 = v1.Position - v0.Position;
-                glm::vec3 edge2 = v2.Position - v0.Position;
+                    Index index4{ topRight + 1,bottomLeft + 1,bottomRight + 1 };
+                    indices.push_back(index4);
+                }
 
-                glm::vec2 deltaUV1 = v1.TexCoord - v0.TexCoord;
-                glm::vec2 deltaUV2 = v2.TexCoord - v0.TexCoord;
-
-                float f = 1.0f / (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
-
-                glm::vec3 tangent;
-                tangent.x = f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x);
-                tangent.y = f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y);
-                tangent.z = f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z);
-
-                glm::vec3 bitangent;
-                bitangent.x = f * (-deltaUV2.x * edge1.x + deltaUV1.x * edge2.x);
-                bitangent.y = f * (-deltaUV2.x * edge1.y + deltaUV1.x * edge2.y);
-                bitangent.z = f * (-deltaUV2.x * edge1.z + deltaUV1.x * edge2.z);
-
-                v0.Tangent += tangent;
-                v1.Tangent += tangent;
-                v2.Tangent += tangent;
-
-                v0.Bitangent += bitangent;
-                v1.Bitangent += bitangent;
-                v2.Bitangent += bitangent;
-            }
-
-            // Normalize tangents and bitangents
-            for (auto& vertex : vertices) {
-                vertex.Tangent = glm::normalize(vertex.Tangent);
-                vertex.Bitangent = glm::normalize(vertex.Bitangent);
             }
         }
         ChangeUpAxis(3, 2, vertices);

@@ -18,7 +18,7 @@ namespace Proof.Swizzle
     /// </summary>
     /// 
     /*
-    [RegisterCoreClassStruct]
+    
    
     [StructLayout(LayoutKind.Sequential)]
     public struct swizzle_cVector2

@@ -10,6 +10,7 @@
 #include "Proof/Core/Application.h"
 #include "Proof/ImGui/UI.h"
 #include "Proof/ImGui/UiUtilities.h"
+#include "Proof/Renderer/Image.h"
 namespace Proof
 {
 	ParticleSystemEditorPanel::ParticleSystemEditorPanel()

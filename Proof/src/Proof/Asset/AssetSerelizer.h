@@ -1,6 +1,11 @@
 #pragma once
 #include "Proof/Core/Core.h"
-namespace Proof {
+#include <yaml-cpp/yaml.h>
+#include <set>
+#include <entt/entt.hpp>
+class YAML::Emitter;
+namespace Proof 
+{
 	struct AssetInfo;
 	class  AssetSerializer {
 	public:
@@ -56,6 +61,10 @@ namespace Proof {
 	public:
 		virtual void Save(const AssetInfo& data, const Count<class Asset>& asset)const;
 		virtual Count<class Asset>TryLoadAsset(const AssetInfo& data)const;
+	private:
+		void SaveUIElement(YAML::Emitter& out, class UIElement element)const;
+		void DeserilizeUIElements(YAML::Node& uiElements, Count<class UIPanel> asset)const;
+
 	};
 
 	class ParticleSystemSerilizer : public AssetSerializer {

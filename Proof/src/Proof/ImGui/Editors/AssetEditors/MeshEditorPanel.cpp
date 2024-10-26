@@ -281,7 +281,7 @@ namespace Proof
 				//subMesh
 
 				bool value = Utils::Contains(submeshes, subMesh.SubMeshIndex);
-				if (ImGui::Checkbox(subMesh.Name.c_str(), &value))
+				if (ImGui::Checkbox(fmt::format("{}##{}",subMesh.Name,i).c_str(), &value))
 				{
 					std::vector<uint32_t> subMeshCopy;
 					// doing this because if we have large amoutn dont want to be creating a copy every time

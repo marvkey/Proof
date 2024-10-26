@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Matrix of type decimal with 4 columns and 3 rows.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct decMatrix4x3 : IReadOnlyList<decimal>, IEquatable<decMatrix4x3>

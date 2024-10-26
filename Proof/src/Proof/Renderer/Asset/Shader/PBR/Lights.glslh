@@ -91,4 +91,14 @@ layout(set = 2, binding = 8) buffer VisibleSpotLightIndicesBuffer
 //	uint s_PointLightGrid[];
 //};
 
+vec3 CalculateSkyLight(samplerCube environmentMap,vec3 coords)
+{
+	vec3 envColor = textureLod(environmentMap, coords,u_SkyBoxInfo.Lod).rgb;
+    envColor *= u_SkyBoxInfo.TintColor; 
+    envColor *= u_SkyBoxInfo.Intensity;
+
+    return envColor;
+
+}
+
 #endif //LIGHT_FUNCTIONS

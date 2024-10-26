@@ -21,6 +21,7 @@
 #include "Proof/ImGui/SelectionManager.h"
 #include "Proof/Input/Input.h"
 #include "Proof/Events/KeyEvent.h"
+#include "Proof/Renderer/Image.h"
 #include <ImGuizmo.h>
 namespace Proof
 {
@@ -216,7 +217,7 @@ namespace Proof
 		{
 		case Proof::WorldState::Play:
 		{
-			if (m_WorldContext->HasWorldCamera())
+			if (m_WorldContext->HasWorldCamera() && !m_PlayMode.EjectFromPlayer )
 			{
 				bool inputEvent = Application::Get()->GetWindow()->IsInputEventEnabled();
 				Application::Get()->GetWindow()->SetWindowInputEvent(true);
@@ -234,7 +235,7 @@ namespace Proof
 				m_Camera.SetActive(IsFocused() || IsHovered());
 				m_Camera.OnUpdate(ts);
 				m_WorldContext->OnRenderEditor(m_WorldRenderer, ts, m_Camera);
-				m_WorldContext->OnUpdateEditor(ts);
+				m_WorldContext->OnUpdateRuntime(ts);
 
 				OnRender2D();
 			}
@@ -440,6 +441,19 @@ namespace Proof
 		//basically means that m_editor camera is beign used 
 		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight) == true)
 			return false;
+
+		switch (e.GetKey())
+		{
+			case KeyBoardKey::Escape:
+			{
+				if (m_WorldContext->IsPlaying())
+				{
+					Math::ChangeBool(m_PlayMode.EjectFromPlayer);
+					return true;
+				}
+				break;
+			}
+		}
 		if (m_ViewPortEditorData.EnableSelection)
 		{
 			switch (e.GetKey())
@@ -883,6 +897,105 @@ namespace Proof
 
 		if (selectedEntity && m_GizmoType != -1)
 		{
+
+			ImGuizmo::SetOrthographic(true);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(ImGui::GetWindowPos().x, ImGui::GetWindowPos().y, ImGui::GetWindowWidth(), ImGui::GetWindowHeight());
+
+			bool snap = Input::IsKeyPressed(KeyBoardKey::LeftControl);
+
+			float snapValue = GetSnapValue();
+			float snapValues[3] = { snapValue, snapValue, snapValue };
+
+			glm::mat4 projectionMatrix, viewMatrix;
+			if (m_WorldContext->IsPlaying() && !m_Camera.IsActive())
+			{
+				/*
+				Entity cameraEntity = m_WorldContext->GetWorldCameraEntity();
+
+				SceneCamera sceneCamera;
+
+				auto& camera = cameraEntity.GetComponent<CameraComponent>();
+				projectionMatrix = camera.GetProjectionMatrix();
+				viewMatrix = glm::inverse(m_CurrentScene->GetWorldSpaceTransformMatrix(cameraEntity));
+
+				*/
+			}
+			else
+			{
+				projectionMatrix = m_Camera.GetProjectionMatrix();
+				viewMatrix = m_Camera.GetViewMatrix();
+			}
+			Entity entity = selectedEntity;
+			TransformComponent& entityTransform = entity.Transform();
+			glm::mat4 transform = m_WorldContext->GetWorldSpaceTransform(entity);
+
+			if (ImGuizmo::Manipulate(
+				glm::value_ptr(viewMatrix),
+				glm::value_ptr(projectionMatrix),
+				(ImGuizmo::OPERATION)m_GizmoType,
+				ImGuizmo::LOCAL,
+				glm::value_ptr(transform),
+				nullptr,
+				snap ? snapValues : nullptr)
+				)
+			{
+				Entity parent = m_WorldContext->TryGetEntityWithUUID(entity.GetParentUUID());
+				if (parent)
+				{
+					glm::mat4 parentTransform = m_WorldContext->GetWorldSpaceTransform(parent);
+					transform = glm::inverse(parentTransform) * transform;
+				}
+
+				// Manipulated transform is now in local space of parent (= world space if no parent)
+				// We can decompose into translation, rotation, and scale and compare with original
+				// to figure out how to best update entity transform
+				//
+				// Why do we do this instead of just setting the entire entity transform?
+				// Because it's more robust to set only those components of transform
+				// that we are meant to be changing (dictated by m_GizmoType).  That way we avoid
+				// small drift (particularly in rotation and scale) due numerical precision issues
+				// from all those matrix operations.
+				glm::vec3 translation;
+				glm::quat rotation;
+				glm::vec3 scale;
+				MathResource::DecomposeTransform(transform, translation, rotation, scale);
+
+				switch (m_GizmoType)
+				{
+					case ImGuizmo::TRANSLATE:
+					{
+						entityTransform.Location = translation;
+						break;
+					}
+					case ImGuizmo::ROTATE:
+					{
+						// Do this in Euler in an attempt to preserve any full revolutions (> 360)
+						glm::vec3 originalRotationEuler = entityTransform.GetRotationEuler();
+
+						// Map original rotation to range [-180, 180] which is what ImGuizmo gives us
+						originalRotationEuler.x = fmodf(originalRotationEuler.x + glm::pi<float>(), glm::two_pi<float>()) - glm::pi<float>();
+						originalRotationEuler.y = fmodf(originalRotationEuler.y + glm::pi<float>(), glm::two_pi<float>()) - glm::pi<float>();
+						originalRotationEuler.z = fmodf(originalRotationEuler.z + glm::pi<float>(), glm::two_pi<float>()) - glm::pi<float>();
+
+						glm::vec3 deltaRotationEuler = glm::eulerAngles(rotation) - originalRotationEuler;
+
+						// Try to avoid drift due numeric precision
+						if (fabs(deltaRotationEuler.x) < 0.001) deltaRotationEuler.x = 0.0f;
+						if (fabs(deltaRotationEuler.y) < 0.001) deltaRotationEuler.y = 0.0f;
+						if (fabs(deltaRotationEuler.z) < 0.001) deltaRotationEuler.z = 0.0f;
+
+						entityTransform.SetRotationEuler(entityTransform.GetRotationEuler() += deltaRotationEuler);
+						break;
+		}
+					case ImGuizmo::SCALE:
+					{
+						entityTransform.Scale = scale;
+						break;
+					}
+	}
+			}
+		#if 0
 			ImGuizmo::SetOrthographic(true);
 			ImGuizmo::SetDrawlist();
 
@@ -967,6 +1080,7 @@ namespace Proof
 					selectedentityTc.Scale = scale;
 				}
 			}
+		#endif
 
 		}
 	}

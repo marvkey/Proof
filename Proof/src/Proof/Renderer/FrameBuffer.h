@@ -1,9 +1,12 @@
 #pragma once
 #include "Proof/Core/Core.h"
-#include "Image.h"
+#include "ImageUtils.h"
 #include <glm/glm.hpp>
-namespace Proof {
-	struct FrameBufferImageConfig {
+namespace Proof 
+{
+	class Image;
+	struct FrameBufferImageConfig 
+	{
 		FrameBufferImageConfig() = default;
 		FrameBufferImageConfig(ImageFormat format)
 			: Format(format) {}
@@ -13,7 +16,8 @@ namespace Proof {
 		
 		Count<class Image> ExistingImage = nullptr;
 	};
-	struct FrameBufferAttachments {
+	struct FrameBufferAttachments 
+	{
 		FrameBufferAttachments() = default;
 		FrameBufferAttachments(std::initializer_list<FrameBufferImageConfig> attachments)
 			: Attachments(attachments) {}
@@ -29,13 +33,14 @@ namespace Proof {
 	};
 	// https://github.com/TheCherno/Hazel/blob/master/Hazel/src/Platform/OpenGL/OpenGLFramebuffer.cpp
 	// this helped a lot
-	struct FrameBufferConfig {
+	struct FrameBufferConfig 
+	{
 		std::string DebugName;
 		uint32_t Width = 0;//if 0 will use swapchiann size
 		uint32_t Height = 0;//if 0 will use swapchiann size
 		uint32_t Samples = 1; // multisampling
 
-		mutable Vector4 ClearColor = { 0,0,0,1.0f };
+		mutable glm::vec4 ClearColor = { 0,0,0,1.0f };
 		FrameBufferAttachments Attachments;
 		std::vector<uint32_t> ExistingImageLayers;
 

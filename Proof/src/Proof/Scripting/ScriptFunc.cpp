@@ -24,7 +24,11 @@
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 #include "Proof/Scripting/ScriptWorld.h"
 #include "Proof/Scene/Mesh.h"
-
+#include "Proof/Scene/SceneUtils.h"
+#include "Proof/Renderer/Font.h"
+#include "Proof/Renderer/UIRenderer/UIPanel.h"
+#include "Proof/Renderer/UIRenderer/UIMenu.h"
+#include "Proof/Renderer/ParticleSystem.h"
 #include "Proof/Asset/AssetManager.h"
 
 
@@ -43,7 +47,7 @@ namespace Proof
 #define SCRIPT_FUNC_GET_NAME Utils::String::ReplaceUnderscoresWithPeriod(std::string(__FUNCTION__)) 
 
 #define SCRIPT_FUNC_ENTITY_CHECK_BASE(errorAction)\
-	Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID); \
+	Entity entity = ScriptEngine::GetWorldContext()->TryGetEntityWithUUID(entityID); \
 	if (!entity)\
 	{\
 		PF_ERROR("{} - entity is invalid",SCRIPT_FUNC_GET_NAME);\
@@ -98,12 +102,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 #define SCRIPT_FUNC_ENTITY_CHECK_ASSET(assetID,assetType,Component,returnValue)\
 	SCRIPT_FUNC_ENTITY_CHECK_ASSET_BASE(assetID,assetType,Component,return returnValue);
 
-	struct Transform
-	{
-		glm::vec3 Location;
-		glm::vec3 Rotation;
-		glm::vec3 Scale;
-	};
+	
 	static inline Entity GetEntity(uint64_t entityID)
 	{
 		Count<World> scene = ScriptEngine::GetWorldContext();
@@ -627,41 +626,30 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 	static void TextComponent_GetText(uint64_t entityID, MonoString** text) 
 	{
-
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_EC_ERROR("TextComponent.GetText - entity is invalid");
-			return;
-		}
-
-		#endif
-		if (!entity.HasComponent<TextComponent>())
-		{
-			PF_EC_ERROR("TextComponent.GetText - Does not have TextComponent");
-			return;
-		}
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(TextComponent);
 		* text = ScriptUtils::UTF8StringToMono(entity.GetComponent<TextComponent>().Text);
 	}
 
 	static void TextComponent_SetText(uint64_t entityID, MonoString** text)
 	{
 
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_EC_ERROR("TextComponent.SetText - entity is invalid");
-			return;
-		}
-		#endif
-		if (!entity.HasComponent<TextComponent>())
-		{
-			PF_EC_ERROR("TextComponent.SetText - Does not have TextComponent");
-			return;
-		}
-		entity.GetComponent<TextComponent>().Text = ScriptUtils::MonoStringToUTF8(*text);
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(TextComponent);
+		if(entity)
+			entity.GetComponent<TextComponent>().Text = ScriptUtils::MonoStringToUTF8(*text);
+	}
+
+	static bool TextComponent_GetVisible(uint64_t entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(TextComponent, false);
+
+		return entity.GetComponent<TextComponent>().Visible;
+	}
+
+	static void TextComponent_SetVisible(uint64_t entityID, bool visible)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(TextComponent);
+
+		entity.GetComponent<TextComponent>().Visible = visible;
 	}
 #pragma endregion
 
@@ -1394,7 +1382,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			return;
 		}
 
-		actor->AddForceAtLocation(*inForce, *inLocation, forceMode);
+		actor->AddForceAtPosition(*inForce, *inLocation, forceMode);
 	}
 #pragma endregion
 #pragma region BoxColliderComponent
@@ -2595,6 +2583,359 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 	}
 
 #pragma endregion
+
+#pragma region CameraComponent
+#if 0
+
+	void CameraComponent_SetPerspective(uint64_t entityID, float inVerticalFOV, float inNearClip, float inFarClip)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Invalid entity!");
+				return;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Entity doesn't have a CameraComponent");
+				return;
+			}
+
+			SceneCamera& camera = entity.GetComponent<CameraComponent>().Camera;
+			camera.SetPerspective(inVerticalFOV, inNearClip, inFarClip);
+		}
+
+		void CameraComponent_SetOrthographic(uint64_t entityID, float inSize, float inNearClip, float inFarClip)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Invalid entity!");
+				return;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Entity doesn't have a CameraComponent");
+				return;
+			}
+
+			SceneCamera& camera = entity.GetComponent<CameraComponent>().Camera;
+			camera.SetOrthographic(inSize, inNearClip, inFarClip);
+		}
+
+		float CameraComponent_GetVerticalFOV(uint64_t entityID)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.GetVerticalFOV - Invalid entity!");
+				return 0.0f;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.GetVerticalFOV - Entity doesn't have a CameraComponent");
+				return 0.0f;
+			}
+
+			const auto& component = entity.GetComponent<CameraComponent>();
+			return component.Camera.GetDegPerspectiveVerticalFOV();
+		}
+
+		void CameraComponent_SetVerticalFOV(uint64_t entityID, float inVerticalFOV)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetVerticalFOV - Invalid entity!");
+				return;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetVerticalFOV - Entity doesn't have a CameraComponent");
+				return;
+			}
+
+			auto& component = entity.GetComponent<CameraComponent>();
+			return component.Camera.SetDegPerspectiveVerticalFOV(inVerticalFOV);
+		}
+
+		float CameraComponent_GetPerspectiveNearClip(uint64_t entityID)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Invalid entity!");
+				return 0.0f;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Entity doesn't have a CameraComponent");
+				return 0.0f;
+			}
+
+			SceneCamera& camera = entity.GetComponent<CameraComponent>().Camera;
+			return camera.GetPerspectiveNearClip();
+		}
+
+		void CameraComponent_SetPerspectiveNearClip(uint64_t entityID, float inNearClip)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Invalid entity!");
+				return;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Entity doesn't have a CameraComponent");
+				return;
+			}
+
+			SceneCamera& camera = entity.GetComponent<CameraComponent>().Camera;
+			camera.SetPerspectiveNearClip(inNearClip);
+		}
+
+		float CameraComponent_GetPerspectiveFarClip(uint64_t entityID)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Invalid entity!");
+				return 0.0f;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Entity doesn't have a CameraComponent");
+				return 0.0f;
+			}
+
+			SceneCamera& camera = entity.GetComponent<CameraComponent>().Camera;
+			return camera.GetPerspectiveFarClip();
+		}
+
+		void CameraComponent_SetPerspectiveFarClip(uint64_t entityID, float inFarClip)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Invalid entity!");
+				return;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Entity doesn't have a CameraComponent");
+				return;
+			}
+
+			SceneCamera& camera = entity.GetComponent<CameraComponent>().Camera;
+			camera.SetPerspectiveFarClip(inFarClip);
+		}
+
+		float CameraComponent_GetOrthographicSize(uint64_t entityID)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Invalid entity!");
+				return 0.0f;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Entity doesn't have a CameraComponent");
+				return 0.0f;
+			}
+
+			SceneCamera& camera = entity.GetComponent<CameraComponent>().Camera;
+			return camera.GetOrthographicSize();
+		}
+
+		void CameraComponent_SetOrthographicSize(uint64_t entityID, float inSize)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Invalid entity!");
+				return;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Entity doesn't have a CameraComponent");
+				return;
+			}
+
+			SceneCamera& camera = entity.GetComponent<CameraComponent>().Camera;
+			camera.SetOrthographicSize(inSize);
+		}
+
+		float CameraComponent_GetOrthographicNearClip(uint64_t entityID)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Invalid entity!");
+				return 0.0f;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Entity doesn't have a CameraComponent");
+				return 0.0f;
+			}
+
+			SceneCamera& camera = entity.GetComponent<CameraComponent>().Camera;
+			return camera.GetOrthographicNearClip();
+		}
+
+		void CameraComponent_SetOrthographicNearClip(uint64_t entityID, float inNearClip)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Invalid entity!");
+				return;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Entity doesn't have a CameraComponent");
+				return;
+			}
+
+			SceneCamera& camera = entity.GetComponent<CameraComponent>().Camera;
+			camera.SetOrthographicNearClip(inNearClip);
+		}
+
+		float CameraComponent_GetOrthographicFarClip(uint64_t entityID)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Invalid entity!");
+				return 0.0f;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Entity doesn't have a CameraComponent");
+				return 0.0f;
+			}
+
+			SceneCamera& camera = entity.GetComponent<CameraComponent>().Camera;
+			return camera.GetOrthographicFarClip();
+		}
+
+		void CameraComponent_SetOrthographicFarClip(uint64_t entityID, float inFarClip)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Invalid entity!");
+				return;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Entity doesn't have a CameraComponent");
+				return;
+			}
+
+			SceneCamera& camera = entity.GetComponent<CameraComponent>().Camera;
+			camera.SetOrthographicFarClip(inFarClip);
+		}
+		CameraComponent::Type CameraComponent_GetProjectionType(uint64_t entityID)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Invalid entity!");
+				return CameraComponent::Type::None;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Entity doesn't have a CameraComponent");
+				return CameraComponent::Type::None;
+			}
+
+			const auto& component = entity.GetComponent<CameraComponent>();
+			return component.ProjectionType;
+		}
+
+		void CameraComponent_SetProjectionType(uint64_t entityID, CameraComponent::Type inType)
+		{
+			Entity entity = GetEntity(entityID);
+
+			if (!entity)
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Invalid entity!");
+				return;
+			}
+
+			if (!entity.HasComponent<CameraComponent>())
+			{
+				ANT_CONSOLE_LOG_ERROR("CameraComponent.SetPerspective - Entity doesn't have a CameraComponent");
+				return;
+			}
+
+			auto& component = entity.GetComponent<CameraComponent>();
+			component.Camera.SetProjectionType((SceneCamera::ProjectionType)inType);
+		}
+	#endif
+		bool CameraComponent_GetActiveForRendering(uint64_t entityID)
+		{
+			SCRIPT_FUNC_FUNCTION_CHECK(CameraComponent,false);
+			const auto& component = entity.GetComponent<CameraComponent>();
+			return component.ActiveForRendering;
+		}
+
+		void CameraComponent_SetActiveForRendering(uint64_t entityID, bool inValue)
+		{
+			SCRIPT_FUNC_FUNCTION_CHECK_VOID(CameraComponent);
+			auto& component = entity.GetComponent<CameraComponent>();
+			component.ActiveForRendering = inValue;
+		}
+
+		bool CameraComponent_GetLocalRotation(uint64_t entityID)
+		{
+			SCRIPT_FUNC_FUNCTION_CHECK(CameraComponent, false);
+			const auto& component = entity.GetComponent<CameraComponent>();
+			return component.UseLocalRotation;
+		}
+
+		void CameraComponent_SetLocalRotation(uint64_t entityID, bool inValue)
+		{
+			SCRIPT_FUNC_FUNCTION_CHECK_VOID(CameraComponent);
+			auto& component = entity.GetComponent<CameraComponent>();
+			component.UseLocalRotation = inValue;
+		}
+
+#pragma endregion
+
 	#pragma region PlayerInputComponent
 
 	struct PlayerInputBindingContextInstance
@@ -2674,19 +3015,19 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 	#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
-			PF_ERROR("PlayerInputComponent.BindAction - entity is invalid");
+			PF_EC_ERROR("PlayerInputComponent.BindAction - entity is invalid");
 			return;
 		}
 	#endif
 
 		if (!entity.HasComponent<PlayerInputComponent>())
 		{
-			PF_ERROR("PlayerInputComponent.BindAction - entity {} does not have playerInput", entity.GetName());
+			PF_EC_ERROR("PlayerInputComponent.BindAction - entity {} does not have playerInput", entity.GetName());
 			return;
 		}
 
 
-		if (AssetManager::HasAsset(actionID) && AssetManager::GetAssetInfo(actionID).Type == AssetType::InputAction)
+		if (AssetManager::HasAssetAndAssetType(actionID,AssetType::InputAction))
 		{
 			auto playerInput = entity.GetComponent<PlayerInputComponent>().Player;
 
@@ -3046,7 +3387,9 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 	#pragma region PlayerHUDComponent
 	
-	static uint64_t PlayerHUDComponent_GetHUDAssetID(uint64_t entityID, uint32_t index) {
+	static uint64_t PlayerHUDComponent_GetHUDAssetID(uint64_t entityID, uint32_t index) 
+	{
+	#if 0 
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
 		#if PF_ENABLE_DEBUG
 		if (!entity)
@@ -3071,6 +3414,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		{
 			return 0;
 		}
+	#endif
 	}
 	struct UIBaseData {
 		glm::vec2 Position;
@@ -3090,6 +3434,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		float Kerning;
 		float LineSpacing;
 	};
+#if 0
 	static bool PlayerHUDComponent_IndexHasHUD(uint64_t entityID, uint32_t tableIndex) 
 	{
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
@@ -3332,7 +3677,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			}
 			UIButtonImage& button = panel->GetImageButton(buttonNamestr);
 
-			data.Base.Color = button.TintColour;
+			data.Base.Color = button.TintColor;
 			data.Base.Position = button.Postion;
 			data.Base.Rotation = button.Rotation;
 			data.Base.Size = button.Size;
@@ -3373,7 +3718,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			}
 			UIButtonImage& button = panel->GetImageButton(buttonNamestr);
 
-			button.TintColour = data->Base.Color;
+			button.TintColor = data->Base.Color;
 			button.Postion = data->Base.Position;
 			button.Visible = data->Base.Visible;
 			button.Rotation = data->Base.Rotation;
@@ -3510,6 +3855,24 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		PF_ERROR("PlayerHUDComponent.SetTextData entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
 	}
 	#pragma endregion
+#endif
+
+	static void PlayerHUDComponent_SetPanel(uint64_t entityID, uint64_t assetID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
+		SCRIPT_FUNC_ENTITY_CHECK_ASSET_VOID(assetID, AssetType::UIPanel, PlayerHUDComponent);
+
+		entity.GetComponent<PlayerHUDComponent>().HudTable->Panel = AssetManager::GetAsset<UIPanel>(assetID);
+	}
+
+	static void PlayerHUDComponent_SetText(uint64_t entityID, MonoString* textData)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
+		std::string text = ScriptUtils::MonoStringToUTF8(textData);
+
+		entity.GetComponent<PlayerHUDComponent>().HudTable->Panel->Menu->GetUIElement(11749623098364570259).GetComponent<UITextComponent>().Text = text;
+	}
+
 
 #pragma region ScriptFunc
 
@@ -3773,6 +4136,9 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		{
 			PF_ADD_INTERNAL_CALL(TextComponent_GetText);
 			PF_ADD_INTERNAL_CALL(TextComponent_SetText);
+
+			PF_ADD_INTERNAL_CALL(TextComponent_GetVisible);
+			PF_ADD_INTERNAL_CALL(TextComponent_SetVisible);
 		}
 		//random
 		{
@@ -3796,9 +4162,20 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(PlayerInputComponent_SetInputState);
 			PF_ADD_INTERNAL_CALL(PlayerInputComponent_BindAction);
 		}
+		//Camera Component
+		{
+			PF_ADD_INTERNAL_CALL(CameraComponent_GetActiveForRendering);
+			PF_ADD_INTERNAL_CALL(CameraComponent_SetActiveForRendering);
+			PF_ADD_INTERNAL_CALL(CameraComponent_GetLocalRotation);
+			PF_ADD_INTERNAL_CALL(CameraComponent_SetLocalRotation);
+		}
 		
 		//playerHud COmponent
 		{
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_SetPanel);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_SetText);
+
+		#if 0
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_IndexHasHUD);
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_GetVisible);
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_SetVisible);
@@ -3815,6 +4192,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_HasText);
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_GetTextData);
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_SetTextData);
+		#endif
 		}
 		//particleSystem component
 		{

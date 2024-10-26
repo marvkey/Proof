@@ -31,7 +31,8 @@ namespace Driftwood
                 return;
             }
 
-			m_RigidBody.AddForce(Transform.Forward * FowardForce * deltaTime, ForceMode.Force);
+
+            m_RigidBody.AddForce(Transform.Forward * FowardForce * deltaTime, ForceMode.Acceleration);
         }
 
 		public void MoveSideways(float x)

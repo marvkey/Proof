@@ -998,7 +998,7 @@ static void ShowDemoWindowWidgets()
             ImGui::Spacing();
 
             static float wrap_width = 200.0f;
-            ImGui::SliderFloat("Wrap width", &wrap_width, -20, 600, "%.0f");
+            ImGui::SliderFloat("Repeat width", &wrap_width, -20, 600, "%.0f");
 
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
             for (int n = 0; n < 2; n++)
@@ -2053,7 +2053,7 @@ static void ShowDemoWindowWidgets()
         static bool drag_clamp = false;
         IMGUI_DEMO_MARKER("Widgets/Data Types/Drags");
         ImGui::Text("Drags:");
-        ImGui::Checkbox("Clamp integers to 0..50", &drag_clamp);
+        ImGui::Checkbox("ClampEdge integers to 0..50", &drag_clamp);
         ImGui::SameLine(); HelpMarker(
             "As with every widgets in dear imgui, we never modify values unless there is a user interaction.\n"
             "You can override the clamping limits by using CTRL+Click to input a value.");

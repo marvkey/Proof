@@ -15,6 +15,7 @@
 #include "Proof/Animation/Skeleton.h"
 #include "Proof/Animation/Animation.h"
 #include "Proof/Renderer/Buffer.h"
+#include "Proof/Scene/Material.h"
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include"../vendor/stb_image_write.h"
 #include <assimp/scene.h>
@@ -318,11 +319,14 @@ namespace Proof
 				aiColor3D aiColor, aiEmission;
 				if (aiMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, aiColor) == AI_SUCCESS)
 					albedoColor = { aiColor.r, aiColor.g, aiColor.b };
+				else
+					albedoColor = { 1.0, 1.0, 1.0 };
+
 
 				if (aiMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, aiEmission) == AI_SUCCESS)
 					emission = aiEmission.r;
 
-				//mi->SetAlbedo(Vector{ aiColor.r, aiColor.g, aiColor.b });
+				mi->SetAlbedo(glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
 				//mi->SetAlbedo(albedoColor);
 				//mi->Set("u_MaterialUniforms.Emission", emission);
 

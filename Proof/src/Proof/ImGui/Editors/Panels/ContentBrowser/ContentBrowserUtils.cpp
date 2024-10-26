@@ -12,6 +12,7 @@
 #include "Proof/Utils/StringUtils.h"
 #include "Proof/ImGui/Editors/EditorResources.h"
 #include "ContentBrowserPanel.h"
+#include "Proof/Renderer/Texture.h"
 
 #include "Proof/Asset/AssetManager.h"
 #include <imgui.h>

@@ -610,7 +610,7 @@ FfxFloat32x4 ffxLerp(FfxFloat32x4 x, FfxFloat32x4 y, FfxFloat32x4 t)
     return lerp(x, y, t);
 }
 
-/// Clamp a value to a [0..1] range.
+/// ClampEdge a value to a [0..1] range.
 ///
 /// @param [in] x               The value to clamp to [0..1] range.
 ///
@@ -623,7 +623,7 @@ FfxFloat32 ffxSaturate(FfxFloat32 x)
     return saturate(x);
 }
 
-/// Clamp a value to a [0..1] range.
+/// ClampEdge a value to a [0..1] range.
 ///
 /// @param [in] x               The value to clamp to [0..1] range.
 ///
@@ -636,7 +636,7 @@ FfxFloat32x2 ffxSaturate(FfxFloat32x2 x)
     return saturate(x);
 }
 
-/// Clamp a value to a [0..1] range.
+/// ClampEdge a value to a [0..1] range.
 ///
 /// @param [in] x               The value to clamp to [0..1] range.
 ///
@@ -649,7 +649,7 @@ FfxFloat32x3 ffxSaturate(FfxFloat32x3 x)
     return saturate(x);
 }
 
-/// Clamp a value to a [0..1] range.
+/// ClampEdge a value to a [0..1] range.
 ///
 /// @param [in] x               The value to clamp to [0..1] range.
 ///

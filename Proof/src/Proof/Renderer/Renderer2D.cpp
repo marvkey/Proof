@@ -220,10 +220,61 @@ namespace Proof {
 			m_CircleOnTopRenderPass = RenderPass::Create(renderPassConfig);
 			m_CircleOnTopRenderPass->SetInput("CameraData", m_UBCamera);
 
+			m_CircleVertexBufferBase = pnew CircleVertex[c_MaxLineVertices];
+			m_CircleVertexBufferPtr = m_CircleVertexBufferBase.Get();
+
+			m_CircleVertexBuffer = Count<VertexBufferSet>::Create(c_MaxLineVertices * sizeof(CircleVertex));
+
+
+		}
+
+
+		{
+			auto vertexArray = VertexArray::Create({ sizeof(PointVertex) });
+			vertexArray->AddData(0, DataType::Vec3, offsetof(PointVertex, PointVertex::Position));
+			vertexArray->AddData(1, DataType::Vec4, offsetof(PointVertex, PointVertex::Color));
+			vertexArray->AddData(2, DataType::Float, offsetof(PointVertex, PointVertex::PointSize));
+
+			GraphicsPipelineConfiguration graphicsPipelineConfig;
+			graphicsPipelineConfig.DebugName = "Point";
+			graphicsPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
+			graphicsPipelineConfig.Shader = Renderer::GetShader("Point2D");
+			graphicsPipelineConfig.VertexArray = vertexArray;
+			graphicsPipelineConfig.CullMode = CullMode::None;
+			graphicsPipelineConfig.DrawMode = DrawType::Point;
+
+			auto graphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
+
+			RenderPassConfig renderPassConfig("Point");
+			renderPassConfig.Pipeline = graphicsPipeline;
+			renderPassConfig.TargetFrameBuffer = m_FrameBuffer;
+			m_PointRenderPass = RenderPass::Create(renderPassConfig);
+			m_PointRenderPass->SetInput("CameraData", m_UBCamera);
+
+			graphicsPipelineConfig.DebugName = "PointOnTop";
+			graphicsPipelineConfig.DepthTest = false;
+			auto graphicsPipelineOnTop = GraphicsPipeline::Create(graphicsPipelineConfig);
+
+			renderPassConfig.DebugName = "PointOnTop";
+			renderPassConfig.Pipeline = graphicsPipelineOnTop;
+			m_PointonTopRenderPass = RenderPass::Create(renderPassConfig);
+			m_PointonTopRenderPass->SetInput("CameraData", m_UBCamera);
+
+
+			uint32_t* pointIndices = pnew uint32_t[c_MaxPointIndices];
+			for (uint32_t i = 0; i < c_MaxPointIndices; i++)
+				pointIndices[i] = i;
+			m_PointIndexBuffer = IndexBuffer::Create(pointIndices, c_MaxPointIndices);
+			pdelete[] pointIndices;
+
+			m_PointVertexBufferBase = pnew PointVertex[c_MaxPointVertices];
+			m_PointVertexBufferPtr = m_PointVertexBufferBase.Get();
+
+			m_PointVertexBuffer = Count<VertexBufferSet>::Create(c_MaxPointVertices * sizeof(PointVertex));
 		}
 	}
 
-	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Renderer2DContextSettings contextSettings)
+	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Renderer2DContextSettings contextSettings,bool clearFrameBuffer)
 	{
 		PF_PROFILE_FUNC()
 		m_Camera = CameraData{ projection,view,Position };
@@ -232,7 +283,14 @@ namespace Proof {
 		Buffer buffer(&m_Camera, sizeof(CameraData));
 		m_UBCamera->SetData(Renderer::GetCurrentFrameInFlight(), buffer);
 		m_Stats = {};
+		Reset();
 		Renderer::BeginCommandBuffer(m_CommandBuffer);
+		if (clearFrameBuffer)
+		{
+			Renderer::BeginRenderPass(m_CommandBuffer, m_QuadPass, true);
+			Renderer::EndRenderPass(m_QuadPass);
+
+		}
 		m_ContextSettings = contextSettings;
 
 	}
@@ -249,17 +307,13 @@ namespace Proof {
 			pdelete[] m_LineVertexBufferBase.GetByIndex(i);
 		}
 	}
+#if 0
 	void Renderer2D::DrawQuad(const glm::vec3& Location) {
 		DrawQuad(Location, { 0.0,0.0,0.0 }, { 1,1,1 }, { 1.0f,1.0f,1.0f,1.0f }, Renderer::GetWhiteTexture());
 	}
 
 	void Renderer2D::DrawQuad(const glm::vec3& Location, const glm::vec3& Size) {
 		DrawQuad(Location, { 0.0,0.0,0.0 }, Size, { 1.0f,1.0f,1.0f,1.0f }, Renderer::GetWhiteTexture());
-	}
-
-
-	void Renderer2D::DrawQuad(const glm::vec3& Location, const glm::vec3& Rotation, const glm::vec4& Color) {
-		DrawQuad(Location, Rotation, { 1.0f,1.0f,1.0f }, Color, Renderer::GetWhiteTexture());
 	}
 
 	void Renderer2D::DrawQuad(const glm::vec3& Location, const glm::vec4& Color) {
@@ -278,16 +332,12 @@ namespace Proof {
 	void Renderer2D::DrawQuad(const glm::vec3& Location, const glm::vec3& Rotation, const glm::vec3& Size, const glm::vec4& Color) {
 		DrawQuad(Location, Rotation, Size, Color, Renderer::GetWhiteTexture());
 	}
-	void Renderer2D::DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform) {
-		if (Sprite.Texture != nullptr)
-		{
-			DrawQuad(transform.Location, transform.GetRotationEuler(), transform.Scale,
-				glm::vec4{ Sprite.Colour }, Sprite.Texture);
-		}
-		else
-		{
-			DrawQuad(transform.Location, transform.GetRotationEuler(), transform.Scale, glm::vec4{ Sprite.Colour }, m_WhiteTexture);
-		}
+#endif
+
+	void Renderer2D::DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform) 
+	{
+		auto texture = Sprite.Texture != nullptr ? Sprite.Texture : m_WhiteTexture;
+		DrawQuad(transform.GetTransform(),glm::vec4{Sprite.Colour}, texture);
 	}
 	void Renderer2D::DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
 	{
@@ -308,6 +358,25 @@ namespace Proof {
 		m_LineIndexCount += 2;
 
 	}
+
+	void Renderer2D::DrawPoint(const glm::vec3& position, float size, const glm::vec4& color)
+	{
+
+		if (m_PointIndexCount >= c_MaxPointIndices)
+		{
+			Render();
+			Reset();
+		}
+
+		m_PointVertexBufferPtr->Position = position;
+		m_PointVertexBufferPtr->Color = color;
+		m_PointVertexBufferPtr->PointSize = size;
+
+		m_PointVertexBufferPtr ++;
+
+		m_PointIndexCount++;
+	}
+
 	void Renderer2D::DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color)
 	{
 		glm::vec4 min = { aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f };
@@ -506,7 +575,27 @@ namespace Proof {
 		// Now, you can use your existing DrawLine function to draw the ray
 		DrawLine(origin, endPoint, color);
 	}
-	void Renderer2D::DrawQuad(const glm::vec3& Location, const glm::vec3& Rotation, const glm::vec3& Size, const glm::vec4& Color, const Count<Texture2D>& texture2D)
+	void Renderer2D::DrawQuad(glm::vec3 location, glm::vec3 size, const glm::vec4& Color)
+	{
+		glm::vec3 rotation = glm::vec3{ 0.0f };
+
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), location)
+			* glm::toMat4(glm::quat(rotation))
+			* glm::scale(glm::mat4(1.0f), { size.x,size.y,1.0 });
+
+		DrawQuad(transform, Color, Renderer::GetWhiteTexture());
+	}
+	void Renderer2D::DrawQuad(glm::vec3 location, glm::vec3 size, const glm::vec4& Color, Count<class Texture2D> texture)
+	{
+		glm::vec3 rotation = glm::vec3{ 0.0f };
+
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), location)
+			* glm::toMat4(glm::quat(rotation))
+			* glm::scale(glm::mat4(1.0f), { size.x,size.y,1.0 });
+
+		DrawQuad(transform, Color, texture);
+	}
+	void Renderer2D::DrawRotatedQuad(const glm::vec3& Location, const glm::vec3& Rotation, const glm::vec3& Size, const glm::vec4& Color, const Count<Texture2D>& texture2D)
 	{
 		glm::mat4 transform = glm::translate(glm::mat4(1.0f), Location)
 			* glm::toMat4(glm::quat(Rotation))
@@ -715,7 +804,7 @@ namespace Proof {
 		//https://freetype.org/freetype2/docs/tutorial/step2.html
 		const auto& fontGeometry = font->GetMSDFData()->FontGeometry;
 		const auto& metrics = fontGeometry.getMetrics();
-		Count<Texture2D> fontAtlas = font->GetAtlasTexture();
+		Count<Texture2D> fontAtlas = font->GetTextureAtlas();
 
 		//m_Storage2DData->FontTexture = fontAtlas;
 		float fontIndex = -1.f;
@@ -873,6 +962,7 @@ namespace Proof {
 			DrawLine(p0, p1, color);
 		}
 	}
+	
 	void Renderer2D::DrawHalfCircle(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color)
 	{
 		/*
@@ -1038,7 +1128,30 @@ namespace Proof {
 
 	}
 
-	
+	void Renderer2D::FillCircle(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color, float thickness)
+	{
+		if (m_CircleIndexCount >= c_MaxIndexCount)
+		{
+			Render();
+			Reset();
+		}
+		glm::quat orientation = glm::quat(rotation);
+
+			glm::mat4 transform = glm::translate(glm::mat4(1.0f), position)
+				* glm::toMat4(orientation)
+			* glm::scale(glm::mat4(1.0f), { radius * 2.0f, radius * 2.0f, 1.0f });
+
+		for (int i = 0; i < 4; i++)
+		{
+			m_CircleVertexBufferPtr->WorldPosition = transform * m_QuadVertexPositions[i];
+			m_CircleVertexBufferPtr->Thickness = thickness;
+			m_CircleVertexBufferPtr->LocalPosition = m_QuadVertexPositions[i] * 2.0f;
+			m_CircleVertexBufferPtr->Color = color;
+			m_CircleVertexBufferPtr++;
+			m_CircleIndexCount += 6;
+		}
+	}
+
 
 	void Renderer2D::EndContext() {
 		Render();
@@ -1083,12 +1196,18 @@ namespace Proof {
 			m_CircleIndexCount = 0;
 			m_CircleVertexBufferPtr = m_CircleVertexBufferBase.Get();
 		}
+
+		{
+			m_PointIndexCount = 0;
+			m_PointVertexBufferPtr = m_PointVertexBufferBase.Get();
+		}
 	}
 	
 	void Renderer2D::Render() {
 		PF_PROFILE_FUNC();
 
 		Timer renderTime;
+		
 		
 		if (m_QuadIndexCount > 0) // nothing to draw
 		{
@@ -1133,7 +1252,7 @@ namespace Proof {
 			textureVec.resize(m_FontTextures.size());
 			for (uint32_t i = 0; i < textureVec.size(); i++)
 			{
-				textureVec[i] = m_FontTextures[i]->GetAtlasTexture();
+				textureVec[i] = m_FontTextures[i]->GetTextureAtlas();
 			}
 			textPass->SetInput("u_FontAtlas", textureVec);
 
@@ -1185,6 +1304,24 @@ namespace Proof {
 			Renderer::EndRenderPass(circlePass);
 		}
 
+		if (m_PointIndexCount > 0)
+		{
+			PF_PROFILE_FUNC("Renderer2D::PointDraw");
+
+			Count<RenderPass> pointPass = m_ContextSettings.RenderOnTop == true ? m_PointonTopRenderPass : m_PointRenderPass;
+
+			// Points
+			uint32_t dataSize = (uint32_t)((uint8_t*)m_PointVertexBufferPtr - (uint8_t*)m_PointVertexBufferBase.Get());
+			m_PointVertexBuffer->GetVertexBuffer()->SetData(m_PointVertexBufferBase.Get(), dataSize);
+
+			Renderer::BeginRenderPass(m_CommandBuffer, pointPass);
+			m_PointIndexBuffer->Bind(m_CommandBuffer);
+			m_PointVertexBuffer->GetVertexBuffer()->Bind(m_CommandBuffer);
+
+			Renderer::DrawElementIndexed(m_CommandBuffer, m_PointIndexCount);
+			Renderer::EndRenderPass(pointPass);
+
+		}
 		m_Stats.TotalRenderTime += renderTime.ElapsedMillis();
 		#if 0
 		if(m_Storage2DData->TextIndexCount > 0){

@@ -1,11 +1,15 @@
 ScriptImportSettings:
   Scripts:
+    - Script: Driftwood.FollowXZ
+      ScriptName: Driftwood.FollowXZ
+      Fields:
+        []
     - Script: Driftwood.PlayerInput
       ScriptName: Driftwood.PlayerInput
       Fields:
         - NameID: Driftwood.PlayerInput.MoveSideWaysAction
           Type: InputAction
-          Data: 12371603639197638862
+          Data: 0
     - Script: Driftwood.PlayerMovement
       ScriptName: Driftwood.PlayerMovement
       Fields:

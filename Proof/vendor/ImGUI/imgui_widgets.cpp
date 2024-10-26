@@ -2080,7 +2080,7 @@ int ImGui::DataTypeCompare(ImGuiDataType data_type, const void* arg_1, const voi
 template<typename T>
 static bool DataTypeClampT(T* v, const T* v_min, const T* v_max)
 {
-    // Clamp, both sides are optional, return true if modified
+    // ClampEdge, both sides are optional, return true if modified
     if (v_min && *v < *v_min) { *v = *v_min; return true; }
     if (v_max && *v > *v_max) { *v = *v_max; return true; }
     return false;
@@ -2289,7 +2289,7 @@ bool ImGui::DragBehaviorT(ImGuiDataType data_type, TYPE* v, float v_speed, const
     if (v_cur == (TYPE)-0)
         v_cur = (TYPE)0;
 
-    // Clamp values (+ handle overflow/wrap-around for integer types)
+    // ClampEdge values (+ handle overflow/wrap-around for integer types)
     if (*v != v_cur && is_clamped)
     {
         if (v_cur < v_min || (v_cur > *v && adjust_delta < 0.0f && !is_floating_point))

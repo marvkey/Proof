@@ -1,3 +1,4 @@
+
 #include "Proofprch.h"
 #include "ScriptWorld.h"
 #include "Proof/Scene/World.h"
@@ -677,6 +678,26 @@ namespace Proof
             }
         }
                 
+    }
+
+    void ScriptWorld::OnPostUpdate(FrameTime frame)
+    {
+        PF_PROFILE_FUNC();
+
+        auto view = m_World->GetAllEntitiesWith<ScriptComponent>();
+
+        for (auto& [enityID, classes] : m_RuntimeEntityClassStorage)
+        {
+            if (!RuntimeIsEntityScriptInstantiated(m_World->GetEntity(enityID)))continue;
+            for (auto& [className, classMetaData] : classes.Classes)
+            {
+
+                if (classMetaData.ScriptHandle)
+                    ScriptEngine::CallMethod(classMetaData.ScriptHandle, "OnPostUpdate", frame.Get());
+
+            }
+        }
+
     }
 
     void ScriptWorld::EndRuntime()

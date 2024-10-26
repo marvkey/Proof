@@ -5,7 +5,6 @@
 #include <memory>
 #include <unordered_map>
 #include <iostream>
-#include "CollisionInfo.h"
 namespace Proof
 {
 	
@@ -18,29 +17,29 @@ namespace Proof
 		virtual void OnSpawn() {}; // called only when spawned into the world
 		virtual void OnDestroy() {}; // called when destoryed
 
-		virtual void OnTriggerEnter(ColliderTypes colliderSetOff, TriggerInfo& info) {};
-		virtual void OnTriggerStay(ColliderTypes colliderSetOff, TriggerInfo& info) {};
-		virtual void OnTriggerLeave(ColliderTypes colliderSetOff, TriggerInfo& info) {};
+	////	virtual void OnTriggerEnter(ColliderTypes colliderSetOff, TriggerInfo& info) {};
+		///virtual void OnTriggerStay(ColliderTypes colliderSetOff, TriggerInfo& info) {};
+		///virtual void OnTriggerLeave(ColliderTypes colliderSetOff, TriggerInfo& info) {};
 		
 		//virtual void OnCollisionEnter(ColliderTypes colliderSetOff, CollisionInfo& info) {};
 		//virtual void OnCollisionStay(ColliderTypes colliderSetOff, CollisionInfo& info) {};
 		//virtual void OnCollisionLeave(ColliderTypes colliderSetOff, CollisionInfo& info) {};
-		template<class T>
-		T* GetComponent() {
-			return m_Owner.GetComponent<T>();
-		}
-		template<class T>
-		bool HasComponent() {
-			return m_Owner.HasComponent<T>();
-		}
-		World* GetWorld() { return m_World; };
+		//template<class T>
+		//T* GetComponent() {
+		//	return m_Owner.GetComponent<T>();
+		//}
+		//template<class T>
+		//bool HasComponent() {
+		//	return m_Owner.HasComponent<T>();
+		//}
+		//World* GetWorld() { return m_World; };
 		bool b_CallPerframe = true;
 	private:
 		friend class World;
 		friend class Entity;
 		friend struct NativeScriptComponent;
-		Entity m_Owner = {};
-		World* m_World =nullptr;
+		//Entity m_Owner = {};
+		//World* m_World =nullptr;
 	};
 	
 	namespace ScriptDetail{	

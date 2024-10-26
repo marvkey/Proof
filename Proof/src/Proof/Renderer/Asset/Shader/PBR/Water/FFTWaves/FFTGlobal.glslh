@@ -1,0 +1,273 @@
+#ifndef FFT_GLOBAL_GLSLH
+#define FFT_GLOBAL_GLSLH
+
+#extension GL_EXT_samplerless_texture_functions : enable
+#include <Common.glslh>
+#include <PBR/Water/FFTWaves/OceanGradient.glslh>
+#include <PBR/Lights.glslh>
+
+struct FFTGlobalStruct
+{
+//-----------------------Clip Map ------------------------------------------
+
+	vec3 ClipMapViewerPosition;
+	float ClipMapScale;
+
+    float ClipMapLevelHalfSize;
+    int padding0;
+    int padding1;
+    int padding2;
+//-----------------------------------------------------------------
+
+//-----------------------OceanSimulation ------------------------------------------ 
+
+    vec4 ActiveCascades; //for 4 casdcaes =v
+    vec4 OceanLengthScales;
+//-----------------------------------------------------------------
+    
+
+//----------------------- Foam ------------------------------------------
+
+vec4 FoamTint;
+
+float FoamNormalDetail;
+float UnderWaterFoamParallax;
+float ContactFoam;
+int padding3;
+
+float OceanFoamCoverage;
+float OceanFoamDensity;
+float OceanFoamSharpness;
+float OceanFoamPersistence;
+
+float OceanFoamTrail;
+float OceanFoamTrailTextureStrength;
+float OceanFoamTrailBlendValue;
+float OceanFoamUnderwater;
+
+vec4 OceanFoamCascadesWeights;
+
+vec2 OceanFoamTrailTextureSize0;
+vec2 OceanFoamTrailTextureSize1;
+
+vec2 OceanFoamTrailDirection0;
+vec2 OceanFoamTrailDirection1;
+
+vec4 FoamAlbedo_ST;
+
+vec4 FoamUnderwaterTexture_ST;
+
+vec4 ContactFoamTexture_ST;
+//-----------------------------------------------------------------
+
+//----------------------- Simulation ------------------------------------------
+
+// simulation
+float OceanWindSpeed;
+float OceanWavesScale;
+float OceanWavesAlignement;
+float OceanReferenceWaveHeight;
+
+mat4 OceanWorldToWindSpace;
+
+vec2 OceanWindDirection;
+int padding4;
+int padding5;
+
+//-----------------------------------------------------------------
+
+//----------------------- Rougness ------------------------------------------
+
+float RoughnessScale;
+float SpecularStrength;
+float SpecularMinRoughness; 
+float ReflectionNormalStength;
+
+//-----------------------------------------------------------------
+
+//----------------------- Distance ------------------------------------------
+
+  float RoughnessDistance;
+  float HorizonFog;
+  float CascadeFadeDist;
+  float UVWrapStrength;
+//-----------------------------------------------------------------
+
+//----------------------- color ------------------------------------------
+
+vec3 OceanDeepScatterColor;
+int padding6;
+vec3 OceanSssColor;
+int padding7;
+vec3 OceanDiffuseColor;
+int padding8;
+
+vec4 OceanAbsorptionColor0;
+vec4 OceanAbsorptionColor1;
+vec4 OceanAbsorptionColor2;
+vec4 OceanAbsorptionColor3;
+vec4 OceanAbsorptionColor4;
+vec4 OceanAbsorptionColor5;
+vec4 OceanAbsorptionColor6;
+vec4 OceanAbsorptionColor7;
+
+vec2 OceanAbsorptionGradientParams;
+float OceanFogDensity;
+float OceanAbsorptionDepthScale;
+
+//-----------------------------------------------------------------
+
+//----------------------- subsurface scattering ------------------------------------------
+
+
+float SssSunStrength;
+float SssEnvironmentStrength;
+float SssSpread;
+float SssNormalStrength;
+
+float SssHeightBias;
+float SssFadeDistance;
+int padding9;
+int padding10;
+
+//-----------------------------------------------------------------
+
+//----------------------- Refraction and Reflection ------------------------------------------
+
+float RefractionStrength;
+float RefractionStrengthUnderwater;
+float ReflectionMaskRadius;
+float ReflectionMaskSharpness;
+
+//-----------------------------------------------------------------
+
+
+vec4 DistanctRoughnessMap_ST;
+};
+layout(std430, set = 0, binding = 0) buffer SpectrumBuffer 
+{
+    FFTGlobalStruct GlobalStruct;
+};
+
+layout(set = 0, binding = 1) uniform texture2DArray u_OceanDisplacementAndDerivatives;
+layout(set = 0, binding = 2) uniform texture2DArray u_OceanTurbulence;
+
+// Foam
+layout(set = 0, binding = 3) uniform sampler2D u_FoamAlbedo;              // Albedo texture for foam
+layout(set = 0, binding = 4) uniform sampler2D u_FoamUnderwaterTexture;   // Underwater foam texture
+layout(set = 0, binding = 5) uniform sampler2D u_ContactFoamTexture;      // Contact foam texture
+layout(set = 0, binding = 6) uniform sampler2D u_FoamTrailTexture;        // Foam trail texture
+layout(set = 0, binding = 7) uniform sampler2D u_DepthMap;        // Foam trail texture
+layout(set = 0, binding = 8) uniform samplerCube u_EnvironmentMap;        
+layout(set = 0, binding = 9) uniform sampler2D u_EnvironmentMap2D;        
+layout(set = 0, binding = 10) uniform sampler2D u_DistanceRoughnessMap;        
+vec4 GetDepthTexelSize() {
+    // Get the dimensions of the texture
+    vec2 texSize = textureSize(u_DepthMap, 0); // Level 0 mipmap
+    
+    // Calculate the texel size in normalized coordinates
+    vec2 texelSizeNormalized = 1.0 / texSize;
+    
+    // Return the texel size in a vec4 format
+    // x: texel size in normalized x
+    // y: texel size in normalized y
+    // z: texture width in pixels
+    // w: texture height in pixels
+    return vec4(texelSizeNormalized, texSize.x, texSize.y);
+}
+vec2 UnityStereoTransformScreenSpaceTex(vec2 uv) {
+    // Assuming a function to transform UVs for stereo rendering
+    // Depending on your context, this may or may not be needed.
+    return uv;  // For now, we'll just return the UV unchanged.
+}
+
+vec2 ClampAndScaleUVForBilinear(vec2 uv, vec2 texelSize) {
+    // Clamp UV coordinates to avoid sampling outside the texture bounds
+    uv = clamp(uv, texelSize, 1.0 - texelSize);
+    return uv;
+}
+
+// SampleSceneDepth function (with sampler)
+float SampleSceneDepth(vec2 uv, sampler2D samplerParam) {
+    uv = ClampAndScaleUVForBilinear(UnityStereoTransformScreenSpaceTex(uv), GetDepthTexelSize().xy);
+    return texture(samplerParam, uv).r;
+}
+
+// SampleSceneDepth function (without sampler)
+float SampleSceneDepth(vec2 uv) {
+    return SampleSceneDepth(uv, u_DepthMap);  // Use the depth texture directly
+}
+
+// LoadSceneDepth function (using texelFetch for integer coordinates)
+float LoadSceneDepth(ivec2 pixelCoords) {
+    return texelFetch(u_DepthMap, pixelCoords, 0).r;  // Use texelFetch for exact pixel coords
+}
+
+vec3 SampleOceanSpecCube(vec3 dir)
+{
+    return CalculateSkyLight(u_EnvironmentMap,dir);
+}
+
+// Function to simulate environment diffuse lighting using a basic sky color gradient
+vec3 OceanEnvironmentDiffuse(vec3 dir)
+{
+    // Define a simple sky color gradient (you can adjust these colors)
+    vec3 skyColorTop = vec3(0.6, 0.7, 0.8);  // Light blue (sky)
+    vec3 skyColorHorizon = vec3(0.4, 0.5, 0.6);  // Darker blue (horizon)
+    vec3 groundColor = vec3(0.1, 0.1, 0.1);  // Dark color (ground)
+
+    // Interpolate between sky and ground based on the vertical direction (y component of dir)
+    float t = clamp(dir.y * 0.5 + 0.5, 0.0, 1.0);  // Remap -1 to 1 range of dir.y to 0 to 1
+    vec3 skyGradient = mix(groundColor, skyColorHorizon, t);
+    vec3 finalColor = mix(skyGradient, skyColorTop, smoothstep(0.4, 1.0, t));
+
+    return max(finalColor, 0.0);  // Ensure no negative values
+}
+/*
+vec3 OceanEnvironmentDiffuse(vec3 dir)
+{
+    vec4 coefficients[7];
+    coefficients[0] = unity_SHAr;
+    coefficients[1] = unity_SHAg;
+    coefficients[2] = unity_SHAb;
+    coefficients[3] = unity_SHBr;
+    coefficients[4] = unity_SHBg;
+    coefficients[5] = unity_SHBb;
+    coefficients[6] = unity_SHC;
+    return max(0.0, SampleSH9(coefficients, dir));
+}
+*/
+
+vec3 DeepScatterColor(float t)
+{
+    return GlobalStruct.OceanDeepScatterColor;
+}
+
+vec3 SssColor(float t)
+{
+    return GlobalStruct.OceanSssColor;
+}
+
+vec3 DiffuseColor(float t)
+{
+    return GlobalStruct.OceanDiffuseColor;
+}
+
+vec3 AbsorptionTint(float t)
+{
+    vec4 colors[GRADIENT_MAX_KEYS] =
+    {
+        GlobalStruct.OceanAbsorptionColor0,
+        GlobalStruct.OceanAbsorptionColor1,
+        GlobalStruct.OceanAbsorptionColor2,
+        GlobalStruct.OceanAbsorptionColor3,
+        GlobalStruct.OceanAbsorptionColor4,
+        GlobalStruct.OceanAbsorptionColor5,
+        GlobalStruct.OceanAbsorptionColor6,
+        GlobalStruct.OceanAbsorptionColor7
+    };
+    Gradient g = CreateGradient(colors, GlobalStruct.OceanAbsorptionGradientParams);
+    return SampleGradient(g, t);
+}
+
+#endif //FFT_GLOBAL_GLSLH

@@ -1,0 +1,97 @@
+AssetType: Prefab
+ID: 17336988028706640135
+EntityOwner: 11418619428537195798
+Entities:
+  - Entity: 11418619428537195798
+    TagComponent:
+      Tag: Obstacle
+      tags: []
+    TransformComponent:
+      Location: [-8, 10.6168337, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: [6208172660259257313, 10854682187175189226, 8247748566319131598]
+  - Entity: 6208172660259257313
+    TagComponent:
+      Tag: Obstacle
+      tags: []
+    TransformComponent:
+      Location: [0, 9.5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 15, 1]
+    HierarchyComponent:
+      ParentHandle: 11418619428537195798
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 50
+    BoxColliderComponent:
+      IsTrigger: false
+      Center: [0, 0, 0]
+      Size: [1, 1, 1]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Static
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 10854682187175189226
+    TagComponent:
+      Tag: Obstacle
+      tags: []
+    TransformComponent:
+      Location: [0, -9.5, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 15, 1]
+    HierarchyComponent:
+      ParentHandle: 11418619428537195798
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 50
+    BoxColliderComponent:
+      IsTrigger: false
+      Center: [0, 0, 0]
+      Size: [1, 1, 1]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Static
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 8247748566319131598
+    TagComponent:
+      Tag: ScoreIncreaseCollider
+      tags: []
+    TransformComponent:
+      Location: [-0.5, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 4, 1]
+    HierarchyComponent:
+      ParentHandle: 11418619428537195798
+      Children: []
+    BoxColliderComponent:
+      IsTrigger: true
+      Center: [0, 0, 0]
+      Size: [1, 1, 1]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Static
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete

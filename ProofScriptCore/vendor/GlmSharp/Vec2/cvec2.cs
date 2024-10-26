@@ -18,7 +18,7 @@ namespace Proof
     /// </summary>
     /// 
     /*
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct cVector2 : IReadOnlyList<Complex>, IEquatable<cVector2>

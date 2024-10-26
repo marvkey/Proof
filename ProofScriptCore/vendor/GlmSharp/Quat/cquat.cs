@@ -18,7 +18,7 @@ namespace Proof
     /// </summary>
     /// 
     /*
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct cQuaternion : IReadOnlyList<Complex>, IEquatable<cQuaternion>

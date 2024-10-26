@@ -138,8 +138,8 @@ namespace Proof {
 
 		void OnRender(Count<class WorldRenderer> renderer, FrameTime timestep,const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane,float Fov);
 
-		void RenderPhysicsDebug(Count<WorldRenderer> renderer, bool runtime);
-		void RenderPhysicsDebug2D(Count<WorldRenderer> renderer, bool runtime);
+		void RenderPhysicsDebug(Count<class WorldRenderer> renderer, bool runtime);
+		void RenderPhysicsDebug2D(Count<class WorldRenderer> renderer, bool runtime);
 		void Init();
 		void DeleteEntitiesfromQeue();
 		
@@ -153,8 +153,9 @@ namespace Proof {
 		void OnScriptAdded(entt::registry& component, entt::entity entityID);
 		void OnScriptDelete(entt::registry& component, entt::entity entityID);
 
+		void OnWaterComponentCreate(entt::registry& registry, entt::entity entity);
 		//https://github.com/Ant-Play/Ant/blob/2dab7c0362f017911df9090b1608ec4b81ad1f2c/Ant/src/Ant/Scene/Scene.h
-		void BuildDynamicMeshEntityHierarchy(Entity parent, Count<DynamicMesh> mesh, const MeshNode& node, bool generateColliders);
+		void BuildDynamicMeshEntityHierarchy(Entity parent, Count<class DynamicMesh> mesh, const MeshNode& node, bool generateColliders);
 		//void BuildBoneEntityIds(Entity entity);
 		//void BuildMeshBoneEntityIds(Entity entity, Entity rootEntity);
 		//void BuildAnimationBoneEntityIds(Entity entity, Entity rootEntity);

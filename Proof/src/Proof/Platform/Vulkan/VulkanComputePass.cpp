@@ -278,7 +278,7 @@ namespace Proof
 	{
 		std::string str = std::string(name);
 		auto vkShader = m_Config.Pipeline->GetShader().As<VulkanShader>();
-		PF_CORE_ASSERT(vkShader->GetPushConstants().contains(str));
+		PF_CORE_ASSERT(vkShader->GetPushConstants().contains(str),fmt::format("{} ComputePass does not have {}",m_Config.DebugName,str).c_str());
 		const auto& pushRange = vkShader->GetPushConstants().at(str);
 
 

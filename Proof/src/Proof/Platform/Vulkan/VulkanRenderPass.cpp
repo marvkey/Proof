@@ -404,7 +404,7 @@ namespace Proof
             instance->m_CommandBuffer = command;
             instance->m_RenderPassEnabled = true;
             const FrameBufferConfig config = instance->GetTargetFrameBuffer()->GetConfig();
-            VkClearValue colorValue{ config.ClearColor.X, config.ClearColor.Y, config.ClearColor.Z, config.ClearColor.W };
+            VkClearValue colorValue{ config.ClearColor.x, config.ClearColor.y, config.ClearColor.z, config.ClearColor.w };
             std::vector< VkClearValue> clearValues;
             VkViewport vk_viewport;
             VkRect2D vk_scissor;
@@ -600,7 +600,7 @@ namespace Proof
         vk_scissor.offset = { (int)scisscor.Offset.X, (int)scisscor.Offset.Y };
         vk_scissor.extent = { (uint32_t)scisscor.Extent.X,(uint32_t)scisscor.Extent.Y };
         const FrameBufferConfig frameBufferConfig = GetTargetFrameBuffer()->GetConfig();
-        VkClearValue colorValue{ frameBufferConfig.ClearColor.X, frameBufferConfig.ClearColor.Y, frameBufferConfig.ClearColor.Z, frameBufferConfig.ClearColor.W };
+        VkClearValue colorValue{ frameBufferConfig.ClearColor.x, frameBufferConfig.ClearColor.y, frameBufferConfig.ClearColor.z, frameBufferConfig.ClearColor.w };
 
         if (explicitClear)
         {

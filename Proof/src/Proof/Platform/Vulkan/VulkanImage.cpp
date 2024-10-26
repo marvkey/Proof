@@ -12,6 +12,7 @@
 #include "Proof/Core/Application.h"
 #include "VulkanAllocator.h"
 #include "VulkanDevice.h"
+#include "VulkanSampler.h"
 namespace Proof {
 	
 
@@ -71,15 +72,16 @@ namespace Proof {
 			return VK_IMAGE_VIEW_TYPE_MAX_ENUM;
 		}
 	}
-	VulkanImage2D::VulkanImage2D(const ImageConfiguration& imageSpec, VkSampleCountFlagBits sampleFlags )
+	VulkanImage2D::VulkanImage2D(const ImageConfiguration& imageSpec, Count<RenderSampler> sampler)
 		:
 		m_Specification(imageSpec),
-		m_SampleFlags(sampleFlags)
+		m_Sampler(sampler)
 	{
 		PF_CORE_ASSERT(m_Specification.Height > 0 && m_Specification.Width > 0);
 		Utils::ValidateConfiguration(m_Specification);
 		Build();
 	}
+	/*
 	VulkanImage2D::VulkanImage2D(const ImageConfiguration& imageSpec, VulkanImageInfo info, uint64_t samplerHash)
 	{
 		m_SampleFlags = VK_SAMPLE_COUNT_1_BIT;
@@ -89,6 +91,7 @@ namespace Proof {
 		m_SwapchainImage = true;
 		UpdateDescriptor();
 	}
+	*/
 	VulkanImage2D::~VulkanImage2D()
 	{
 
@@ -133,6 +136,11 @@ namespace Proof {
 		}
 	}
 
+	Count<RenderSampler> VulkanImage2D::GetSampler()
+	{
+		return m_Sampler;
+	}
+
 	void VulkanImage2D::AddResizeCallback(const Image2DResizeCallback& func)
 	{
 		m_ResizeCallbacks.push_back(func);
@@ -158,7 +166,7 @@ namespace Proof {
 		m_Specification.Height = height;
 		Utils::ValidateConfiguration(m_Specification);
 
-		uint32_t oldSamplerHash = m_SamplerHash;
+		//uint32_t oldSamplerHash = m_SamplerHash;
 		VulkanImageInfo oldImageInfo = m_Info;
 		auto oldDescriptorInfo = m_DescriptorImageInfo;
 
@@ -313,8 +321,9 @@ namespace Proof {
 			VulkanAllocator allocator("VulkanImage2DRelease");
 			allocator.DestroyImage(info.ImageAlloc);
 		});
-		auto graphics = VulkanRenderer::GetGraphicsContext();
-		graphics->DeleteSampler(oldSamplerHash);
+
+		//auto graphics = VulkanRenderer::GetGraphicsContext();
+		//graphics->DeleteSampler(oldSamplerHash);
 
 		
 		for (auto& callback : m_ResizeCallbacks)
@@ -364,11 +373,11 @@ namespace Proof {
 		imageCreateInfo.format = vulkanFormat;
 		imageCreateInfo.extent.width = m_Specification.Width;
 		imageCreateInfo.extent.height = m_Specification.Height;
-		imageCreateInfo.extent.depth = 1;
+		imageCreateInfo.extent.depth = m_Specification.Depth;
 		imageCreateInfo.mipLevels = m_Specification.Mips;
 		imageCreateInfo.arrayLayers = m_Specification.Layers;
 		imageCreateInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-		imageCreateInfo.samples = m_SampleFlags;
+		imageCreateInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 		imageCreateInfo.tiling = m_Specification.Usage == ImageUsage::HostRead ? VK_IMAGE_TILING_LINEAR : VK_IMAGE_TILING_OPTIMAL;
 		imageCreateInfo.usage = usage;
 		imageCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -393,6 +402,7 @@ namespace Proof {
 		if (m_Info.ImageView)
 			VulkanUtils::SetDebugUtilsObjectName(device,VK_OBJECT_TYPE_IMAGE_VIEW, std::format("{} Image View", m_Specification.DebugName), m_Info.ImageView);
 
+	#if 0
 		VkSamplerCreateInfo samplerCreateInfo = {};
 		samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 		samplerCreateInfo.maxAnisotropy = 1.0f;
@@ -420,8 +430,12 @@ namespace Proof {
 
 		{
 			auto [Sampler, hash] = graphicsContext->GetOrCreateSampler(samplerCreateInfo);
-			m_SamplerHash = hash, m_Info.Sampler = Sampler;
+			m_SamplerHash = hash;
+			m_Info.Sampler = Sampler;
 		}
+	#endif
+
+		m_Info.Sampler = m_Sampler.As<VulkanRenderSampler>()->GetSampler();
 		//vkCreateSampler(graphicsContext->GetDevice(), &samplerCreateInfo, nullptr, &m_Info.Sampler);
 	//	Utils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_SAMPLER, std::format("{} Sampler", m_Specification.DebugName), m_Info.Sampler);
 
@@ -635,12 +649,12 @@ namespace Proof {
 		if (m_SwapchainImage)
 		{
 			const VulkanImageInfo info = m_Info;
-			Renderer::SubmitResourceFree([info , samplerHash = m_SamplerHash]()
+			Renderer::SubmitResourceFree([info /*, samplerHash = m_SamplerHash*/]()
 			{
-				auto graphics= VulkanRenderer::GetGraphicsContext();
+				//auto graphics= VulkanRenderer::GetGraphicsContext();
 				//vmaFreeMemory(graphics->GetVMA_Allocator(), info.ImageAlloc.Allocation);
 				//vkDestroyImageView(graphics->GetDevice(), info.ImageView, nullptr);
-				graphics->DeleteSampler(samplerHash);
+				//graphics->DeleteSampler(samplerHash);
 			});
 			m_SwapchainImage = false;
 			m_Info.ImageAlloc.Image = nullptr;
@@ -663,8 +677,8 @@ namespace Proof {
 		m_Info.ImageAlloc.Allocation = nullptr;
 		m_Info.Sampler = nullptr;
 		m_Info.ImageView = nullptr;
-		auto graphics = VulkanRenderer::GetGraphicsContext();
-		graphics->DeleteSampler(m_SamplerHash);
+		//auto graphics = VulkanRenderer::GetGraphicsContext();
+		//graphics->DeleteSampler(m_SamplerHash);
 	}
 
 	Buffer VulkanImage2D::GetStoredDataAsBuffer()

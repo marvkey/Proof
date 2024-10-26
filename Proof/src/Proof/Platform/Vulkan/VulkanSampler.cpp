@@ -23,24 +23,24 @@ namespace Proof
 			return (VkFilter)0;
 		}
 
-		inline VkSamplerAddressMode VulkanSamplerWrap(SamplerAddressMode wrap)
+		inline VkSamplerAddressMode VulkanSamplerWrap(SamplerWrap wrap)
 		{
 			switch (wrap)
 			{
-			case Proof::SamplerAddressMode::Wrap:
+			case Proof::SamplerWrap::Repeat:
 				return VK_SAMPLER_ADDRESS_MODE_REPEAT;
 				break;
-			case Proof::SamplerAddressMode::Mirror:
+			case Proof::SamplerWrap::MirroredRepeat:
 
 				return VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
 				break;
-			case Proof::SamplerAddressMode::Clamp:
+			case Proof::SamplerWrap::ClampEdge:
 				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 				break;
-			case Proof::SamplerAddressMode::Border:
+			case Proof::SamplerWrap::MirroredClampEdge:
 				return VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
 				break;
-			case Proof::SamplerAddressMode::MirrorOnce:
+			case Proof::SamplerWrap::ClampBorder:
 				return VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
 				break;
 			}
@@ -75,9 +75,9 @@ namespace Proof
 		{
 			switch (mipMapMode)
 			{
-			case SamplerMipMapMode::NEAREST:
+			case SamplerMipMapMode::Nearest:
 				return VK_SAMPLER_MIPMAP_MODE_NEAREST;
-			case SamplerMipMapMode::LINEAR:
+			case SamplerMipMapMode::Linear:
 				return VK_SAMPLER_MIPMAP_MODE_LINEAR;
 			}
 			PF_CORE_ASSERT(false, "Not supported");
@@ -110,31 +110,34 @@ namespace Proof
 
 		}
 	}
-	VulkanRendererSampler::VulkanRendererSampler(const SamplerResourceConfig& config)
+	VulkanRenderSampler::VulkanRenderSampler(const SamplerResourceConfig& config)
 	{
 		m_Config = config;
-		Count<VulkanRendererSampler> sampler = this;
+		m_Config.Anisotropy = glm::min(15.f, m_Config.Anisotropy);
+		Count<VulkanRenderSampler> sampler = this;
 		Renderer::Submit([sampler, config = m_Config] () mutable
 			{
 				auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
 
 				VkSamplerCreateInfo samplerCreateInfo = {};
 				samplerCreateInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-				samplerCreateInfo.maxAnisotropy = 1.0f;
+				samplerCreateInfo.maxAnisotropy = glm::min(16.0f, config.Anisotropy);
+				samplerCreateInfo.anisotropyEnable = samplerCreateInfo.maxAnisotropy > 1;
 				samplerCreateInfo.mipLodBias = 0.0f;
 				samplerCreateInfo.minLod = 0.0f;
-				samplerCreateInfo.maxLod = std::numeric_limits<float>::max();;
+				samplerCreateInfo.maxLod = std::numeric_limits<float>::max();; 
 
-				samplerCreateInfo.addressModeU = Utils::VulkanSamplerWrap(config.AddressMode.AddressU);
-				samplerCreateInfo.addressModeV = Utils::VulkanSamplerWrap(config.AddressMode.AddressV);
-				samplerCreateInfo.addressModeW = Utils::VulkanSamplerWrap(config.AddressMode.AddressW);
+				samplerCreateInfo.addressModeU = Utils::VulkanSamplerWrap(config.Wrap.AddressU);
+				samplerCreateInfo.addressModeV = Utils::VulkanSamplerWrap(config.Wrap.AddressV);
+				samplerCreateInfo.addressModeW = Utils::VulkanSamplerWrap(config.Wrap.AddressW);
 
-				samplerCreateInfo.minFilter = Utils::VulkanSamplerFilter(config.Filter);
-				samplerCreateInfo.magFilter = Utils::VulkanSamplerFilter(config.Filter);
+				samplerCreateInfo.minFilter = Utils::VulkanSamplerFilter(config.Filter.MinFilter);
+				samplerCreateInfo.magFilter = Utils::VulkanSamplerFilter(config.Filter.MagFilter);
 
 				samplerCreateInfo.borderColor = Utils::VulkanBorderColor(config.BorderColor);
 				samplerCreateInfo.mipmapMode = Utils::ConvertToVulkanMipMapMode(config.MipMapMode);
 				samplerCreateInfo.compareOp = Utils::ConvertToVulkanCompareOp(config.CompareOp);
+				samplerCreateInfo.compareEnable = config.CompareOp != SamplerCompare::Never ? VK_TRUE : VK_FALSE;
 
 				vkCreateSampler(VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice(), &samplerCreateInfo, nullptr, &sampler->m_VulkanSampler);
 				VulkanUtils::SetDebugUtilsObjectName(device,VK_OBJECT_TYPE_SAMPLER, config.DebugName, sampler->m_VulkanSampler);
@@ -143,7 +146,7 @@ namespace Proof
 				sampler->m_DescriptorImageInfo.sampler = sampler->m_VulkanSampler;
 			});
 	}
-	VulkanRendererSampler::~VulkanRendererSampler()
+	VulkanRenderSampler::~VulkanRenderSampler()
 	{
 		Renderer::SubmitResourceFree([sampler = m_VulkanSampler]()
 			{

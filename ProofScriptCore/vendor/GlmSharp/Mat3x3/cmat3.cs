@@ -17,7 +17,7 @@ namespace Proof
     /// A Matrix of type Complex with 3 columns and 3 rows.
     /// </summary>
     /*
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct cMatrix3 : IReadOnlyList<Complex>, IEquatable<cMatrix3>

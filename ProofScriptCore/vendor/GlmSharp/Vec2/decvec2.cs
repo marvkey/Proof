@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Vector of type decimal with 2 components.
     /// </summary> 
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct decVector2 : IReadOnlyList<decimal>, IEquatable<decVector2>

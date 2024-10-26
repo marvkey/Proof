@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -334,7 +335,18 @@ namespace Proof
         internal static extern bool MeshColliderComponent_GetMaterialHandle(ulong entityID, out AssetID outHandle);
 
         #endregion
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool CameraComponent_GetActiveForRendering(ulong entityID);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void CameraComponent_SetActiveForRendering(ulong entityID, bool value);
 
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool CameraComponent_GetLocalRotation(ulong entityID);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void CameraComponent_SetLocalRotation(ulong entityID, bool value);
+        #region CameraComponent
+
+        #endregion
         #region PhysicsMaterial
 
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -384,10 +396,16 @@ namespace Proof
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void TextComponent_SetText(ulong entityID, ref string Text);
-		#endregion
 
-		#region Random
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TextComponent_SetVisible(ulong entityID, bool value);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool TextComponent_GetVisible(ulong entityID);
+        #endregion
+
+        #region Random
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static bool Random_RandomBool();
 
 
@@ -473,6 +491,12 @@ namespace Proof
         internal extern static void PlayerHUDComponent_GetTextData(ulong entityID, uint tableIndex, string textname, out UITextData textData, out string text);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void PlayerHUDComponent_SetTextData(ulong entityID, uint tableIndex, string textname, ref UITextData textData, ref string text);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PlayerHUDComponent_SetPanel(ulong entityID, AssetID id);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void PlayerHUDComponent_SetText(ulong entityID, string text);
         #endregion
 
         #region ParticleSystemComponent

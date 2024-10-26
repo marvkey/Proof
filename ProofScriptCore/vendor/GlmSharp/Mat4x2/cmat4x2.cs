@@ -18,7 +18,7 @@ namespace Proof
     /// </summary>
     /// 
     /*
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct cMatrix4x2 : IReadOnlyList<Complex>, IEquatable<cMatrix4x2>

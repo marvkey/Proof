@@ -33,7 +33,7 @@ namespace Proof
 		Vector2, Vector3, Vector4, bVector2, bVector3, bVector4,
 		Entity,
 		//everything after entity should be an asset Type
-		Prefab,Texture2D, AssetID,Mesh,DynamicMesh,Material,PhysicsMaterial,InputAction,InputBindingContext//asset
+		Prefab,Texture2D, AssetID,Mesh,DynamicMesh,Material,PhysicsMaterial,InputAction,InputBindingContext,UIPanel//asset
 		
 	};
 	inline bool IsScriptFieldAssetType(ScriptFieldType type)
@@ -125,6 +125,7 @@ namespace Proof
 			case ScriptFieldType::Texture2D:
 			case ScriptFieldType::InputAction:
 			case ScriptFieldType::InputBindingContext:
+			case ScriptFieldType::UIPanel:
 				return sizeof(UUID);
 		}
 

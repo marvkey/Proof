@@ -7,11 +7,14 @@
 #include <filesystem>
 namespace Proof
 {
-    enum class ShaderStage {
+    enum class ShaderStage 
+    {
         Vertex,
+        TessellationControl,
+        TessellationEvaluation,
+        Geometry,
         Fragment,
         Compute,
-        Geometry
     };
 
     using ShaderReloadCallback = std::function<void()>;

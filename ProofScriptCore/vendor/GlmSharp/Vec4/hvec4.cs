@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Vector of type Half with 4 components.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct hVector4 : IReadOnlyList<Half>, IEquatable<hVector4>

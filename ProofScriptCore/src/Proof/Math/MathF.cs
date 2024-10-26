@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -49,10 +50,17 @@ namespace Proof
             return new Proof.Vector3(Math.Abs(value.x), Math.Abs(value.y), Math.Abs(value.z));
         }
 
-       // public static float Lerp(float p1, float p2, float t) => Interpolate.Linear(p1, p2, t);
-       // public static Proof.Vector3 Lerp(Proof.Vector3 p1, Proof.Vector3 p2, float t) => Interpolate.Linear(p1, p2, t);
+        public static readonly Vector3 Forward = new Vector3(0F, 0F, -1F);
+        public static readonly Vector3 Back = -Forward;
+        public static readonly Vector3 Up = new Vector3(0F, 1F, 0F);
+        public static readonly Vector3 Down = -Up;
+        public static readonly Vector3 Right = new Vector3(1F, 0F, 0F);
+        public static readonly Vector3 Left = -Right;
 
-        public static float Floor(float value) => (float)Math.Floor(value);
+    // public static float Lerp(float p1, float p2, float t) => Interpolate.Linear(p1, p2, t);
+    // public static Proof.Vector3 Lerp(Proof.Vector3 p1, Proof.Vector3 p2, float t) => Interpolate.Linear(p1, p2, t);
+
+    public static float Floor(float value) => (float)Math.Floor(value);
 
         // not the same as a%b
         public static float Modulo(float a, float b) => a - b * (float)Math.Floor(a / b);

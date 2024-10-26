@@ -29,8 +29,12 @@
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
 #include "Proof/Input/ElevatedInputSystem/InputAction.h"
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
-
+#include "Proof/Renderer/Font.h"
+#include "Proof/Renderer/UIRenderer/UIPanel.h"
+#include "Proof/Renderer/UIRenderer/UIRenderer.h"
+#include "Proof/Renderer/ParticleSystem.h"
 #include "WaterSystem/WaterSystem.h"
+#include "WaterSystem/Water.h"
 
 #include "Proof/Scripting/ScriptWorld.h"
 #include <glm/gtx/euler_angles.hpp>
@@ -54,7 +58,8 @@ namespace Proof {
 		return m_EntitiesMap.contains(ID);
 	}
 	
-	void World::OnUpdateEditor(FrameTime DeltaTime) {
+	void World::OnUpdateEditor(FrameTime DeltaTime) 
+	{
 		PF_PROFILE_FUNC();
 		DeleteEntitiesfromQeue();
 		{
@@ -88,9 +93,11 @@ namespace Proof {
 				Entity e = Entity(entity, this);
 				glm::mat4 transform = GetWorldSpaceTransform(e);
 
-				waterComponent.WaterSystem->Update(DeltaTime);
+				waterComponent.Water->Update(DeltaTime, transform);
+
 			}
 		}
+		
 	}
 	
 	glm::vec3 GetAnyPerpendicularUnitVector(const glm::vec3& vec)
@@ -100,11 +107,62 @@ namespace Proof {
 		else
 			return glm::vec3(0, 1, 0);
 	}
+
+	std::vector<glm::vec3> SamplePlaneKeyPoints(float planeSize) 
+	{
+		std::vector<glm::vec3> positions;
+
+		float offset = 0.8;
+		float halfSize = (planeSize * offset) / 2.f;
+
+		// Calculate step sizes
+		float verticalStep = (planeSize * offset) / 4.0f;  // Corrected: Divides the plane into 5 rows (4 intervals)
+		float horizontalStep = (planeSize * offset) / 4.0f; // Divides the plane horizontally into 5 columns (4 intervals)
+
+		// Loop through each column (left, middle-left, middle, middle-right, right)
+		for (int col = 0; col < 5; ++col) {
+			float x = -halfSize + col * horizontalStep;
+
+			// Loop through each row (top, top-middle, middle, bottom-middle, bottom)
+			for (int row = 0; row < 5; ++row) {
+				float z = halfSize - row * verticalStep;
+
+				positions.push_back(glm::vec3(x, 0.0f, z));
+			}
+		}
+
+		return positions;
+	}
+	glm::vec2 WorldToScreenSpace(const glm::vec3& worldPos, const Camera& camera,glm::vec2 screenDimesnion)
+	{
+		// Step 1: Get the view and projection matrices from the camera
+
+		// Step 2: Transform world position to view space
+		glm::vec4 viewSpacePos = camera.GetViewMatrix() * glm::vec4(worldPos, 1.0f);
+
+		// Step 3: Transform view space position to clip space
+		glm::vec4 clipSpacePos = camera.GetProjectionMatrix() * viewSpacePos;
+
+		// Step 4: Perform perspective division (clip space to NDC)
+		glm::vec3 ndcPos = glm::vec3(clipSpacePos) / clipSpacePos.w; // Divide by w
+
+		// Step 5: Convert NDC to screen space coordinates
+		glm::vec2 screenSpacePos;
+		screenSpacePos.x = (ndcPos.x * 0.5f + 0.5f) * screenDimesnion.x;
+		screenSpacePos.y = (ndcPos.y * 0.5f + 0.5f) * screenDimesnion.y;
+
+		// Optional: Flip Y if needed (for top-left origin)
+		screenSpacePos.y = screenDimesnion.y - screenSpacePos.y;
+
+		return screenSpacePos;
+	}
 	void World::OnRender(Count<class WorldRenderer> worldRenderer, FrameTime timestep, const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane, float fov)
 	{
 		PF_PROFILE_FUNC();
 		m_Camera = camera;
 		m_CameraPositon = cameraLocation;
+
+		glm::vec2 screenDimensions = worldRenderer->GetScreenData().FullResolution;
 		worldRenderer->SetContext(this);
 		worldRenderer->BeginScene({ camera,nearPlane,farPlane,fov }, cameraLocation);
 
@@ -323,9 +381,8 @@ namespace Proof {
 
 
 				Entity e = Entity(entity, this);
-				glm::mat4 transform = GetWorldSpaceTransform(e);
 
-				waterComponent.WaterSystem->Render(worldRenderer,transform);
+				waterComponent.Water->Render(worldRenderer);
 			}
 		}
 		RenderPhysicsDebug(worldRenderer, false);
@@ -337,6 +394,20 @@ namespace Proof {
 		renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(), GlmVecToProof(cameraLocation));
 
 		renderer2D->SetTargetFrameBuffer(worldRenderer->GetExternalCompositePassFrameBuffer());
+		
+		Count<Texture2D> prefilter2D;
+		auto skylights = m_Registry.group<SkyLightComponent>(entt::get<TransformComponent>);
+		if (!skylights.empty())
+		{
+			auto entityID = skylights.front();
+			Entity entity(entityID, this);
+			auto& skyLightComponent = entity.GetComponent<SkyLightComponent>();
+
+			Count<Environment> environment = skyLightComponent.Environment;
+			prefilter2D = environment->GetPrefilterMap2D();
+
+
+		}
 
 		{
 			auto view = m_Registry.view<TransformComponent, SpriteComponent>();
@@ -344,6 +415,8 @@ namespace Proof {
 			{
 				Entity e = Entity(entity, this);
 				auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteComponent>(entity);
+				spriteRendererComponent.Texture = prefilter2D;
+				/*
 				if (spriteRendererComponent.Texture)
 				{
 					//Count<Texture2D> texture = AssetManager::GetAsset<Texture2D>(spriteRendererComponent.Texture);
@@ -353,6 +426,9 @@ namespace Proof {
 				{
 					renderer2D->DrawQuad(spriteRendererComponent, transformComponent);
 				}
+				*/
+				renderer2D->DrawQuad(spriteRendererComponent, transformComponent);
+
 			}
 		}
 		{
@@ -364,6 +440,8 @@ namespace Proof {
 				Entity e = Entity(entity, this);
 				auto font = Font::GetDefault();
 
+				if (!textComponent.Visible)
+					continue;
 				TextParams params;
 				params.Color = textComponent.Colour;
 				params.Kerning = textComponent.Kerning;
@@ -372,6 +450,21 @@ namespace Proof {
 					renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransformUsingLocalRotation(e));
 				else
 					renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransform(e));
+			}
+			
+		}
+
+		// render water
+		{
+			auto group = m_Registry.group<WaterComponent>(entt::get<TransformComponent>);
+			for (auto entity : group)
+			{
+				auto [transformComponent, waterComponent] = group.get<TransformComponent, WaterComponent>(entity);
+
+
+				Entity e = Entity(entity, this);
+
+				waterComponent.Water->Render2D(renderer2D);
 			}
 		}
 		{
@@ -385,7 +478,7 @@ namespace Proof {
 					continue;
 
 
-				auto mesh = staticMeshComponent.GetMesh();
+				auto mesh = staticMeshComponent.GetMesh();   
 				if (mesh)
 				{
 
@@ -396,6 +489,56 @@ namespace Proof {
 		}
 
 		renderer2D->EndContext();
+		
+		{
+			auto view = m_Registry.view<PlayerHUDComponent>();
+
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				auto& hudComponent = e.GetComponent<PlayerHUDComponent>();
+
+				if (hudComponent.HudTable->Panel != nullptr)
+					UIRenderer::DrawUI(hudComponent.HudTable->Panel, renderer2D, glm::mat4(1.0f), glm::mat4(1.0f), worldRenderer->GetScreenData().FullResolution.x,
+						worldRenderer->GetScreenData().FullResolution.y);
+			}
+
+		}
+	#if 0
+		// for scren space
+		{
+
+			Count<Renderer2D> renderer2D = worldRenderer->GetRenderer2D();
+
+			Camera screenSpaceCamera = Camera(glm::ortho(0.0f, screenDimensions.x, screenDimensions.y, 0.0f, -1.0f, 1.0f),glm::mat4(1.0f),glm::mat4(1.0f));
+			renderer2D->BeginContext(glm::mat4(1), glm::mat4(1), GlmVecToProof(cameraLocation));
+			{
+				auto view = m_Registry.view<TransformComponent, TextComponent>();
+
+				for (auto entity : view)
+				{
+					auto [transformComponenteerafa, textComponent] = view.get<TransformComponent, TextComponent>(entity);
+					Entity e = Entity(entity, this);
+					auto font = Font::GetDefault();
+
+					if (textComponent.RenderInViewSpace == false)
+						continue;
+
+					auto transformComponent = textComponent.UseLocalRotation ? GetWorldSpaceTransformComponentUsingLocalRotation(e) : GetWorldSpaceTransformComponent(e);
+					
+					transformComponent.Location =glm::vec3( WorldToScreenSpace(transformComponent.Location, camera, screenDimensions),-10);
+					TextParams params;
+					params.Color = textComponent.Colour;
+					params.Kerning = textComponent.Kerning;
+					params.LineSpacing = textComponent.LineSpacing;
+					renderer2D->DrawString(textComponent.Text, font, params, transformComponent.GetTransform());
+				}
+
+			}
+
+			renderer2D->EndContext();
+		}
+	#endif
 	}
 	void World::RenderPhysicsDebug(Count<WorldRenderer> renderer, bool runtime)
 	{
@@ -529,12 +672,12 @@ namespace Proof {
 				auto capsuleData = GetCapsuleData(collider.Direction, worldTransformComp);
 				float radius = capsuleData.radiusScale * collider.Radius;
 				float height = capsuleData.scaleDirection * collider.Height;
-				renderer2D->DrawCapsule(location + center, glm::eulerAngles(rotation), height , radius, renderer->DebugOptions.PhysicsDebugOptions.PhysicsColliderColor);
+				renderer2D->DrawCapsule(location + center, glm::eulerAngles(rotation), height, radius, renderer->DebugOptions.PhysicsDebugOptions.PhysicsColliderColor);
 
 			}
-
 		}
 
+		
 		{
 			auto view = m_Registry.view<CharacterControllerComponent>();
 			for (auto entity : view)
@@ -588,12 +731,43 @@ namespace Proof {
 				}
 			}
 		}
+
+		// water
+		{
+			auto  buoyancyEntities = m_Registry.view<BuoyancyComponent, RigidBodyComponent>();
+
+			for (auto e : buoyancyEntities)
+			{
+				Entity buoyancyEntity = { e, this };
+
+				BuoyancyComponent& buoyancyComponent = buoyancyEntity.GetComponent<BuoyancyComponent>();
+				for (auto& [entityID, floater] : buoyancyComponent.Floaters)
+				{
+					auto floaterEntity = TryGetEntityWithUUID(entityID);
+					if (!floaterEntity)continue;
+
+					TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(floaterEntity);
+
+					auto location = worldTransformComp.Location;
+
+					float baseRadius = 0.25f;
+					float radius = baseRadius * glm::max(worldTransformComp.Scale.x, glm::max(worldTransformComp.Scale.y, worldTransformComp.Scale.z));
+
+					glm::vec4 color = glm::vec4(0.0f, 0.0f, 0.8f, 1.0f);  // Adjust color as needed
+					glm::vec3 rotation = worldTransformComp.GetRotationEuler();
+
+					renderer2D->DrawDebugSphere(location, rotation, radius, color);
+				}
+			}
+		}
 		renderer2D->EndContext();
 	}
 	void World::Init()
 	{
 		m_Registry.on_construct<MeshColliderComponent>().connect<&World::OnMeshColliderComponentConstruct>(this);
 		m_Registry.on_destroy<MeshColliderComponent>().connect<&World::OnMeshColliderComponentDestroy>(this);
+
+		m_Registry.on_construct<WaterComponent>().connect<&World::OnWaterComponentCreate>(this);
 	}
 
 	void World::DeleteEntitiesfromQeue()
@@ -644,13 +818,19 @@ namespace Proof {
 	{
 		//ScriptMeathod::OnDestroy({ entityID,this }); 
 	}
+	void World::OnWaterComponentCreate(entt::registry& registry, entt::entity entityID)
+	{
+		Entity e = { entityID, this };
+
+		e.GetComponent<WaterComponent>().Water->SetWorld(this);
+	}
 	void World::BuildDynamicMeshEntityHierarchy(Entity parent, Count<DynamicMesh> mesh, const MeshNode& node, bool generateColliders)
 	{
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
-   		const auto& nodes = meshSource->GetNodes();
+		const auto& nodes = meshSource->GetNodes();
 
 		// Skip empty root node
-		if (node.IsRoot() && node.Submeshes.size() == 0)
+		if (node.IsRoot() && node.Submeshes.empty())
 		{
 			for (uint32_t child : node.Children)
 				BuildDynamicMeshEntityHierarchy(parent, mesh, nodes[child], generateColliders);
@@ -659,6 +839,7 @@ namespace Proof {
 		}
 
 		Entity nodeEntity = CreateChildEntity(parent, node.Name);
+
 		nodeEntity.Transform().SetTransform(node.LocalTransform);
 
 		if (node.Submeshes.size() == 1)
@@ -667,50 +848,48 @@ namespace Proof {
 			uint32_t submeshIndex = node.Submeshes[0];
 
 			nodeEntity.AddComponent<DynamicMeshComponent>();
-			DynamicMeshComponent& component = nodeEntity.GetComponent< DynamicMeshComponent>();
+			DynamicMeshComponent& component = nodeEntity.GetComponent<DynamicMeshComponent>();
 			component.SetMesh(mesh->GetID());
 			component.SetSubMeshIndex(submeshIndex);
 
-			/*
+
 			if (generateColliders)
 			{
 				auto& colliderComponent = nodeEntity.AddComponent<MeshColliderComponent>();
-				Ref<MeshColliderAsset> colliderAsset = PhysicsSystem::GetOrCreateColliderAsset(nodeEntity, colliderComponent);
-				colliderComponent.ColliderAsset = colliderAsset->Handle;
-				colliderComponent.SubmeshIndex = submeshIndex;
+				Count<MeshCollider> colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(nodeEntity, colliderComponent);
+				colliderComponent.ColliderID = colliderAsset->GetID();
+				colliderComponent.SubMeshIndex = submeshIndex;
 				colliderComponent.UseSharedShape = colliderAsset->AlwaysShareShape;
 				nodeEntity.AddComponent<RigidBodyComponent>();
 			}
-			*/
 		}
 		else if (node.Submeshes.size() > 1)
 		{
 			// Create one entity per child mesh, parented under node
 			for (uint32_t i = 0; i < node.Submeshes.size(); i++)
 			{
-				
 				uint32_t submeshIndex = node.Submeshes[i];
 				Entity childEntity = CreateChildEntity(nodeEntity, meshSource->GetSubMesh(submeshIndex).Name);
 
 				childEntity.AddComponent<DynamicMeshComponent>();
-				DynamicMeshComponent& component = childEntity.GetComponent< DynamicMeshComponent>();
+				DynamicMeshComponent& component = childEntity.GetComponent<DynamicMeshComponent>();
 				component.SetMesh(mesh->GetID());
 				component.SetSubMeshIndex(submeshIndex);
-				/*
+
+
 				if (generateColliders)
 				{
 					auto& colliderComponent = childEntity.AddComponent<MeshColliderComponent>();
-					Ref<MeshColliderAsset> colliderAsset = PhysicsSystem::GetOrCreateColliderAsset(childEntity, colliderComponent);
-					colliderComponent.ColliderAsset = colliderAsset->Handle;
-					colliderComponent.SubmeshIndex = submeshIndex;
+					Count<MeshCollider> colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(childEntity, colliderComponent);
+					colliderComponent.ColliderID = colliderAsset->GetID();
+					colliderComponent.SubMeshIndex = submeshIndex;
 					colliderComponent.UseSharedShape = colliderAsset->AlwaysShareShape;
 					childEntity.AddComponent<RigidBodyComponent>();
 				}
-				*/
 			}
-
 		}
 
+		// Recursively process children
 		for (uint32_t child : node.Children)
 			BuildDynamicMeshEntityHierarchy(nodeEntity, mesh, nodes[child], generateColliders);
 	}
@@ -762,19 +941,11 @@ namespace Proof {
 
 		{
 			PF_PROFILE_FUNC("World::OnUpdate - C# OnUpdate");
-
-			const auto& scriptView = m_Registry.view<ScriptComponent>();
-			for (auto entity : scriptView)
-			{
-				auto& script = scriptView.get<ScriptComponent>(entity);
-				//ScriptMeathod::OnUpdate(Entity{ entity,this }, DeltaTime);
-			}
-
 			m_ScriptWorld->OnUpdate(DeltaTime);
 		}
 		
 		{
-			PF_PROFILE_FUNC("World::OnUpdate PlayerInpit")
+			PF_PROFILE_FUNC("World::OnUpdate PlayerInput")
 			auto view = m_Registry.view<PlayerInputComponent>();
 
 			for (auto e : view)
@@ -872,8 +1043,28 @@ namespace Proof {
 		if (HasWorldCamera())
 		{
 		}
+
+		{
+
+			auto group = m_Registry.group<WaterComponent>(entt::get<TransformComponent>);
+			for (auto entity : group)
+			{
+				auto [transformComponent, waterComponent] = group.get<TransformComponent, WaterComponent>(entity);
+
+
+				Entity e = Entity(entity, this);
+				auto transform = GetWorldSpaceTransform(e);
+
+				waterComponent.Water->Update(DeltaTime, transform);
+
+			}
+		}
 		m_PhysicsWorld->Simulate(DeltaTime);
 
+		{
+			PF_PROFILE_FUNC("World::OnUpdate - C# OnPostUpdate");
+			m_ScriptWorld->OnPostUpdate(DeltaTime);
+		}
 		DeleteEntitiesfromQeue();
 	}
 
@@ -902,6 +1093,7 @@ namespace Proof {
 		for (auto entity : view)
 		{
 			const auto& camera = view.get<CameraComponent>(entity);
+			if(camera.ActiveForRendering)
 				return Entity{ entity, this };
 		}
 		return {};
@@ -932,7 +1124,8 @@ namespace Proof {
 		//	cameraComp.UseLocalRotation ? worldCameraEntity.GetComponent<TransformComponent>().GetRotationEuler(): GetWorldSpaceRotation(worldCameraEntity));
 
 		sceneCamera.SetData(cameraComp.FovDeg, cameraComp.NearPlane, cameraComp.FarPlane,
-			renderer->GetScreenData().FullResolution.x, renderer->GetScreenData().FullResolution.y, glm::inverse(GetWorldSpaceTransform(worldCameraEntity)));
+			renderer->GetScreenData().FullResolution.x, renderer->GetScreenData().FullResolution.y, 
+			glm::inverse(cameraComp.UseLocalRotation  ? GetWorldSpaceTransformUsingLocalRotation(worldCameraEntity) :  GetWorldSpaceTransform(worldCameraEntity)));
 
 		OnRender(renderer, time, sceneCamera, GetWorldSpaceLocation(worldCameraEntity), cameraComp.NearPlane, cameraComp.FarPlane, cameraComp.FovDeg);
 	}
@@ -949,7 +1142,7 @@ namespace Proof {
 		entity.AddComponent<IDComponent>(ID);
 		entity.AddComponent<TagComponent>().Tag = EntName;
 		entity.AddComponent<HierarchyComponent>();
-		entity.AddComponent<TransformComponent>();
+		entity.AddComponent<TransformComponent>() = {};
 
 		m_EntitiesMap[ID] = entity;
 		return entity;
@@ -1067,8 +1260,12 @@ namespace Proof {
 		if (includeChildren == true)
 		{
 			entity.EachChild([&](Entity childEntity) {
+
 				Entity newChild = CreateEntity(childEntity, true);
+				TransformComponent transform = newChild.GetComponent<TransformComponent>();
 				newEntity.AddChild(newChild);
+				newChild.GetComponent<TransformComponent>() = transform;
+
 				entitySwapID[childEntity.GetUUID()] = newChild.GetUUID();
 				});
 		}
@@ -1089,8 +1286,12 @@ namespace Proof {
 	{
 		PF_PROFILE_FUNC();
 		Entity entity = CreateEntity(name);
+
 		if (parent)
+		{
+			entity.GetComponent<TransformComponent>().Scale = glm::vec3{ 1.0f };
 			entity.SetParent(parent);
+		}
 		return entity;
 	}
 	#if 0
@@ -1133,7 +1334,11 @@ namespace Proof {
 		{
 			prefabSource.EachChild([&](Entity child) {
 				Entity newChild = CreateEntityPrefabStatic(prefab, world, child, true);
+
+				TransformComponent transform = newChild.GetComponent<TransformComponent>();
 				newChild.SetParent(newEntity);
+				// setting because with children set parent changes to local so can messup
+				newChild.GetComponent<TransformComponent>() = transform;
 			});
 		}
 		return newEntity;
@@ -1146,7 +1351,7 @@ namespace Proof {
 		 * it could be a problem with the emplace or replace in the copy compoentnt single
 		 * 
 		 */
-		Entity prefabBaseEntity = prefab->m_BaseEntity;
+		Entity prefabBaseEntity = prefab->GetBaseEntity();
 		if (!prefabBaseEntity)return {};
 		Entity newEntity = CreateEntityPrefabStatic(prefab, this, prefabBaseEntity, true);
 		newEntity.SetName(name);
@@ -1213,7 +1418,8 @@ namespace Proof {
 
 	
 
-	void World::StartRuntime() {
+	void World::StartRuntime() 
+	{
 		m_CurrentState = WorldState::Play;
 		int numPlayrs = 1;
 		numPlayrs += Application::Get()->GetWindow()->GetControllers().size();
@@ -1227,7 +1433,9 @@ namespace Proof {
 
 		Count<World> instance = this;
 		AudioEngine::BeginContext(instance);
+		m_ScriptWorld->BeginRuntime();
 
+	#if 0
 		m_Registry.on_construct<ScriptComponent>().connect<&World::OnScriptAdded>(this);
 		m_Registry.on_destroy<ScriptComponent>().connect<&World::OnScriptDelete>(this);
 		{
@@ -1246,7 +1454,6 @@ namespace Proof {
 				}			
 			}
 			{
-				m_ScriptWorld->BeginRuntime();
 				//auto view = m_Registry.view<ScriptComponent>();
 				//for (auto e : view)
 				//{
@@ -1256,6 +1463,7 @@ namespace Proof {
 				//}
 			}
 		}
+	#endif
 		///
 		///
 		//PhysicsWorldConfig config;
@@ -1317,73 +1525,100 @@ namespace Proof {
 
 		return Entity{};
 	}
-
-	glm::vec3 World::GetWorldSpaceLocation(Entity entity) const {
+#define  CaluclateTransformationWithStep 0
+	glm::vec3 World::GetWorldSpaceLocation(Entity entity) const 
+	{
+	#if CaluclateTransformationWithStep
+		auto& transformComp = entity.GetComponent<TransformComponent>();
+		if (entity.HasParent())
+			return transformComp.Location + GetWorldSpaceLocation(entity.GetParent());
+		return transformComp.Location;
+	#else
 		return GetWorldSpaceTransformComponent(entity).Location;
 
-		//auto& transformComp = entity.GetComponent<TransformComponent>();
-		//if (entity.HasParent())
-		//	return transformComp.Location + GetWorldSpaceLocation(entity.GetParent());
-		//return transformComp.Location;
+	#endif
 	}
 
-	glm::vec3 World::GetWorldSpaceRotation(Entity entity) const {
+	glm::vec3 World::GetWorldSpaceRotation(Entity entity) const 
+	{
+	#if CaluclateTransformationWithStep
+
+		auto& transformComp = entity.GetComponent<TransformComponent>();
+		if (entity.HasParent())
+			return transformComp.GetRotationEuler() + GetWorldSpaceRotation(entity.GetParent());
+		return transformComp.GetRotationEuler();
+	#else
 		return GetWorldSpaceTransformComponent(entity).GetRotationEuler();
-		
-		//auto& transformComp = entity.GetComponent<TransformComponent>();
-		//if (entity.HasParent())
-		//	return transformComp.GetRotationEuler() + GetWorldSpaceRotation(entity.GetParent());
-		//return transformComp.GetRotationEuler();
+	#endif
 	}
 
 	glm::vec3 World::GetWorldSpaceScale(Entity entity) const 
 	{
+	#if CaluclateTransformationWithStep
+
+		auto& transformComp = entity.GetComponent<TransformComponent>();
+		if (entity.HasParent())
+			return transformComp.Scale + GetWorldSpaceScale(entity.GetParent());
+		return transformComp.Scale;
+	#else
 		return GetWorldSpaceTransformComponent(entity).Scale;
-		//auto& transformComp = entity.GetComponent<TransformComponent>();
-		//if (entity.HasParent())
-		//	return transformComp.Scale + GetWorldSpaceScale(entity.GetParent());
-		//return transformComp.Scale;
+	#endif
 	}
 
 	TransformComponent World::GetWorldSpaceTransformComponent(Entity entity) const
 	{
-		//TransformComponent component;
-		//component.Scale = GetWorldSpaceScale(entity);
-		//component.Location = GetWorldSpaceScale(entity);
-		//component.SetRotationEuler(GetWorldSpaceRotation(entity));
-		//
-		//return component;
+	#if CaluclateTransformationWithStep
+
+		TransformComponent component;
+		component.Scale = GetWorldSpaceScale(entity);
+		component.Location = GetWorldSpaceScale(entity);
+		component.SetRotationEuler(GetWorldSpaceRotation(entity));
+		
+		return component;
+	#else
 		glm::mat4 transform = GetWorldSpaceTransform(entity);
 		TransformComponent transformComponent;
 		transformComponent.SetTransform(transform);
 		return transformComponent;
+	#endif
 	}
 	
 	glm::mat4 World::GetWorldSpaceTransform(Entity entity) const {
+	#if CaluclateTransformationWithStep
+		auto rotation = GetWorldSpaceRotation(entity);
+		return glm::translate(glm::mat4(1.0f), { GetWorldSpaceLocation(entity) }) *
+			glm::rotate(glm::mat4(1.0f), rotation.x, { 1,0,0 })
+			* glm::rotate(glm::mat4(1.0f), rotation.y, { 0,1,0 })
+			* glm::rotate(glm::mat4(1.0f), rotation.z, { 0,0,1 })
+			* glm::scale(glm::mat4(1.0f), { GetWorldSpaceScale(entity)});
 
-		//auto rotation = GetWorldSpaceRotation(entity);
-		//return glm::translate(glm::mat4(1.0f), { GetWorldSpaceLocation(entity) }) *
-		//	glm::rotate(glm::mat4(1.0f), rotation.x, { 1,0,0 })
-		//	* glm::rotate(glm::mat4(1.0f), rotation.y, { 0,1,0 })
-		//	* glm::rotate(glm::mat4(1.0f), rotation.z, { 0,0,1 })
-		//	* glm::scale(glm::mat4(1.0f), { GetWorldSpaceScale(entity)});
-
+	#else
 		glm::mat4 transform(1.0f);
 		Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
 		if (parent)
 			transform = GetWorldSpaceTransform(parent);
 		
 		return transform * entity.Transform().GetTransform();
+	#endif
 	}
 
 	glm::mat4 World::GetWorldSpaceTransformUsingLocalRotation(Entity entity) const
 	{
+	#if CaluclateTransformationWithStep
+
 		auto rotation = entity.GetComponent<TransformComponent>().GetRotation();
 		return glm::translate(glm::mat4(1.0f), { GetWorldSpaceLocation(entity) }) *
 			glm::rotate(glm::mat4(1.0f), rotation.x, { 1,0,0 })
 			* glm::rotate(glm::mat4(1.0f), rotation.y, { 0,1,0 })
 			* glm::rotate(glm::mat4(1.0f), rotation.z, { 0,0,1 })
 			* glm::scale(glm::mat4(1.0f), { GetWorldSpaceScale(entity) });
+	#else
+		auto rotation = entity.GetComponent<TransformComponent>().GetRotation();
+		return glm::translate(glm::mat4(1.0f), { GetWorldSpaceLocation(entity) }) *
+			glm::toMat4(rotation)
+			* glm::scale(glm::mat4(1.0f), { GetWorldSpaceScale(entity) });
+
+	#endif
 	}
 
 	TransformComponent World::GetWorldSpaceTransformComponentUsingLocalRotation(Entity entity) const
@@ -1406,7 +1641,7 @@ namespace Proof {
 
 		auto& transform = entity.Transform();
 		glm::mat4 parentTransform = GetWorldSpaceTransform(parent);
-		glm::mat4 localTransform = glm::inverse(parentTransform) * transform.GetTransform();
+		glm::mat4 localTransform = glm::inverse(parentTransform) * GetWorldSpaceTransform(entity);
 		transform.SetTransform(localTransform);
 	}
 

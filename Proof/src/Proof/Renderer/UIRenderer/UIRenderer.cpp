@@ -1,9 +1,13 @@
 #include "Proofprch.h"
 #include "UIRenderer.h"
 #include "UIPanel.h"
+#include "UIMenu.h"
 #include "Proof/Renderer/Renderer2D.h"
+#include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/RenderPass.h"
+
 #include "Proof/Renderer/CommandBuffer.h"
+#include "Proof/Asset/AssetManager.h"
 namespace Proof {
 
     static Count<Renderer2D> s_Renderer2D = nullptr;
@@ -69,4 +73,53 @@ namespace Proof {
         return s_ScreenFrameBuffer->GetImage();
     }
     #endif
+    void UIRenderer::DrawUI(Count<class UIPanel> panel, Count<class Renderer2D> renderer, const glm::mat4& projectionMatrix, const glm::mat4 viewProjection, uint32_t screenWidth, uint32_t screenHeight)
+    {
+        glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)screenWidth, 0.0f, (float)screenHeight, -1.0f, 1.0f);
+        //glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f,-1.f,1.0f);
+        //glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)screenWidth, 0.0f, (float)screenHeight, -1.0f, 1.0f);
+        //glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f, -1.0f, 1.0f);
+
+        //orthoMatrix = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f, -1.0f, 1.0f);
+
+        renderer->BeginContext(orthoMatrix, glm::mat4(1.0f), Vector(0.0f), { true });
+
+        auto menu = panel->Menu;
+
+
+        for (auto& [uiElementId,uiElement] : menu->m_UIElementsMap)
+        {
+            //if (element->Parent != nullptr)
+                    //continue;
+            DrawElement(panel, renderer, projectionMatrix, viewProjection, screenWidth, screenHeight, uiElement);
+
+        }
+
+        renderer->EndContext();
+    }
+    void UIRenderer::DrawElement(Count<class UIPanel> panel, Count<class Renderer2D> renderer, const glm::mat4& projectionMatrix, const glm::mat4 viewProjection, uint32_t screenWidth, uint32_t screenHeight, class UIElement element)
+    {
+
+        switch (element.GetElementType())
+        {
+            case UIElementType::Button:
+            {
+                auto button = element.GetComponent< UIButtonComponent>();
+                renderer->DrawQuad(element.GetTransform(), button.TintColor,button.Texture == nullptr ? Renderer::GetWhiteTexture() : button.Texture);
+                break;
+            }
+            case UIElementType::Image:
+            {
+                auto image = element.GetComponent< UIImageComponent>();
+                renderer->DrawQuad(element.GetTransform(), image.TintColor,image.Texture == nullptr ? Renderer::GetWhiteTexture() : image.Texture);
+                break;
+            }
+            case UIElementType::Text:
+            {
+                auto text = element.GetComponent<UITextComponent>();
+                renderer->DrawString(text.Text, text.Font, text.TextConfig, element.GetTransform());
+                break;
+            }
+        }
+    }
 }

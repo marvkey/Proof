@@ -53,6 +53,7 @@
 #include "Proof/ImGui/SelectionManager.h"
 #include "Proof/ImGui/Editors/EditorWorkspace/EditorWorkspace.h"
 #include "Proof/ImGui/Editors/EditorWorkspace/ViewPortEditorWorkspace.h"
+#include "Proof/Renderer/Image.h"
 
 #include "Proof/Input/ElevatedInputSystem/ElevatedInputDevices/ElevatedInputDeviceManager.h"
 
@@ -689,6 +690,8 @@ namespace Proof
 		s_EditorData->EditorWorkspaceManager->OnImGuiRender();
 
 		AssetEditorPanel::OnImGuiRender();
+
+		
 		// handlepop
 		{
 
@@ -733,17 +736,7 @@ namespace Proof
 			return false;
 		switch (e.GetKey())
 		{
-			case KeyBoardKey::Escape:
-				{
-					if (m_ActiveWorld->IsPlaying())
-					{
-						//Mouse::CaptureMouse(false);
-						//s_DetachPlayer = true;
-						return true;
-						break;
-					}
-					break;
-				}
+			
 			case KeyBoardKey::F:
 				{
 					//m_EditorCamera.SetPosition(	s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->GetSelectedEntity().Transform().Location);
@@ -1527,7 +1520,7 @@ namespace Proof
 		if (state == "Stop")
 		{
 			ImGui::SameLine();
-			ImGui::Checkbox("Detach Player", &s_DetachPlayer);
+			ImGui::Checkbox("Detach Player", &s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>("Viewport")->m_PlayMode.EjectFromPlayer);
 		}
 		ImGui::End();
 
@@ -1944,7 +1937,7 @@ namespace Proof
 				else if (info.Type == AssetType::DynamicMesh)
 				{
 					Count<DynamicMesh> mesh = AssetManager::GetAsset<DynamicMesh>(info.ID);
-					Entity rootEntity = m_ActiveWorld->CreateEntity(mesh);
+					Entity rootEntity = m_ActiveWorld->CreateEntity(mesh,false);
 					SelectionManager::Select(SelectionContext::Scene, rootEntity.GetUUID());
 				}
 				else if (info.Type == AssetType::Prefab)

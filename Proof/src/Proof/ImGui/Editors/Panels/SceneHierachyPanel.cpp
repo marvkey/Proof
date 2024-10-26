@@ -36,7 +36,11 @@
 #include "Proof/Utils/StringUtils.h"
 #include "Proof/Scripting/ScriptField.h"
 #include "Proof/ImGui/SelectionManager.h"
+#include "Proof/Scene/WaterSystem/Water.h"
+#include "Proof/Scene/WaterSystem/GerstnerWave.h"
 //include those before stdlig.h
+#include "Proof/Renderer/UIRenderer/UIPanel.h"
+#include "Proof/Renderer/ParticleSystem.h"
 
 #include "misc/cpp/imgui_stdlib.h"
 #include "Proof/Scene/Mesh.h"
@@ -350,6 +354,10 @@ namespace Proof
 			return true;
 		return false;
 	}
+	bool SceneHierachyPanel::CreateEntityMenu()
+	{
+		return CreateEntityMenu({});
+	}
 	void SceneHierachyPanel::DrawEntityNode(Entity entity) {
 		auto& tc = entity.GetComponent<TagComponent>().Tag;
 		//PF_ENGINE_TRACE("Name:{} X:{} Y:{} Z:{}", tc, entity.GetComponent<TransformComponent>().GetRotationEuler().x,
@@ -489,8 +497,10 @@ namespace Proof
 
 		if (opened) {
 			for (const UUID& I : entity.GetComponent<HierarchyComponent>().Children) {
-				;
-				DrawEntityNode(m_ActiveWorld->GetEntity(I));
+				if (m_ActiveWorld->HasEntity(I))
+					DrawEntityNode(m_ActiveWorld->GetEntity(I));
+				else
+					PF_INFO("Entity {} no child {}", entity.GetName(), I);
 			}
 			ImGui::TreePop();
 		}
@@ -498,7 +508,8 @@ namespace Proof
 	}
 	static bool DynamicMeshUseSlider = false;
 	template<typename T, typename UIFunction>
-	void SceneHierachyPanel::DrawComponents(const std::string& name, Entity& entity, UIFunction Uifunction, const std::string& toolTip) {
+	void SceneHierachyPanel::DrawComponents(const std::string& name, Entity& entity, UIFunction Uifunction, const std::string& toolTip) 
+	{
 		if (entity.HasComponent<T>() == false)
 			return;
 
@@ -638,12 +649,13 @@ namespace Proof
 
 			AddComponentGui<ScriptComponent>(entity, "Scripts");
 			AddComponentGui<PlayerInputComponent>(entity, "Player Input");
-			//AddComponentGui<PlayerHUDComponent>(entity, "Player HUD");
+			AddComponentGui<PlayerHUDComponent>(entity, "Player HUD");
 
 			AddComponentGui<ParticleSystemComponent>(entity, "Particle System");
 
 			AddComponentGui<AudioComponent>(entity, "Audio");
 			AddComponentGui<WaterComponent>(entity, "Water");
+			AddComponentGui<BuoyancyComponent>(entity, "Buoyancy");
 			ImGui::EndPopup();
 		}
 		DrawComponents<TagComponent>("Tag", entity, [](TagComponent& subTag) {
@@ -957,6 +969,7 @@ namespace Proof
 			UI::EnumCombo< ProjectionType>("ProjectionType", cameraComp.Projection, { ProjectionType::None });
 
 			UI::AttributeBool("UseLocalRotation", cameraComp.UseLocalRotation);
+			UI::AttributeBool("ActiveForRendering", cameraComp.ActiveForRendering);
 			/*
 			if (cameraComp.m_AutoSetDimension == false) {
 				int tempWidth = (int)cameraComp.m_Width;
@@ -1676,7 +1689,56 @@ namespace Proof
 
 			UI::AttributeDrag("Kernng", textComponent.Kerning, 0.025);
 			UI::AttributeDrag("Line Spacing", textComponent.LineSpacing, 0.025);
+			UI::AttributeBool("Visible", textComponent.Visible);
+			UI::AttributeBool("UseLocalRotation", textComponent.UseLocalRotation);
+			UI::AttributeBool("RenderInViewSpace", textComponent.RenderInViewSpace);
 			UI::EndPropertyGrid();
+			});
+
+		DrawComponents<BuoyancyComponent>("Buoyancy Component", entity, [&](BuoyancyComponent& buoyancyComponent) 
+			{
+
+				if (UI::AttributeButton("", "AddFloater"))
+				{
+					auto floater = m_ActiveWorld->CreateChildEntity(entity, "Floater");
+					buoyancyComponent.Floaters.emplace_back(BuoyancyComponent::EntityFloater{ floater.GetUUID(),{} });
+
+					if (m_IsWorld)
+						SelectionManager::Select(SelectionContext::Scene, floater.GetUUID());
+					else
+						AssetSelectionManager::Select(AssetSelectionContext::Prefab, m_PrefabID, floater.GetUUID());
+				}
+				uint32_t i = 0;
+				for (auto& [entityId, floater] : buoyancyComponent.Floaters)
+				{
+					UI::PushID();
+
+					UI::BeginPropertyGrid();
+
+					UI::AttributeEntity("FloaterEntity", m_ActiveWorld, entityId);
+					UI::EndPropertyGrid();
+					UI::ShiftCursorX(2.f);
+
+					if (UI::AttributeTreeNode(fmt::format("Attributes ##{}",i), true, 3, 3))
+					{
+						ImGui::PushID(fmt::format("Floater {}", i).c_str());
+						UI::BeginPropertyGrid();
+
+						UI::AttributeDrag("SubmersionDepth", floater.SubmersionDepth, 0.01, 0);
+						UI::AttributeDrag("Drag", floater.Drag, 0.25, 0);
+						UI::AttributeDrag("Angular Drag", floater.AngularDrag, 0.25);
+						UI::AttributeDrag("Buoyancy Strength", floater.BuoyancyStrength, 0.5, 0);
+
+						UI::EndPropertyGrid();
+						ImGui::PopID();
+
+						UI::EndTreeNode();
+					}
+					UI::PopID();
+					i++;
+				}
+			
+
 			});
 
 		DrawComponents<PlayerInputComponent>("Player Input", entity, [](PlayerInputComponent& player) {
@@ -1718,16 +1780,16 @@ namespace Proof
 				UI::PopID();
 			}
 			});
-
-		/*
+	#if 1
 		DrawComponents<PlayerHUDComponent>("Player HUD", entity, [](PlayerHUDComponent& playerHud){
+			/*
 			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
 			bool open = ImGui::TreeNodeEx("HudCadfasd", treeNodeFlags, "HUd Table");
 			if (!open)return;
 			ImGui::SameLine();
 			if(ImGui::Button("+")) {
-				playerHud.HudTable->SetUI(playerHud.HudTable->GetPanelSize(), nullptr);
+				playerHud.HudTable->Panels(playerHud, nullptr);
 			}
 			for (auto& [index, hud] : playerHud.HudTable->GetPanels())
 			{
@@ -1754,14 +1816,58 @@ namespace Proof
 				}
 			}
 			ImGui::TreePop();
+			*/
 		});
-		*/
-
+	#endif
 		DrawComponents<WaterComponent>("Water Component", entity, [](WaterComponent& waterComponent)
 			{
+			#if 1
 				UI::BeginPropertyGrid();
-				WaterSystem::WaterDataInfo& waterData = waterComponent.WaterSystem->WaterData;
 
+				//WaterSystem::WaterDataInfo& waterData = waterComponent.WaterSystem->WaterData;
+
+				if (waterComponent.Water->GetWaveType() == WaveType::GerstnerWave)
+				{
+					GerstnerWave::GerstnerWaveInfo& gerstnerData = waterComponent.Water->GetWave().As<GerstnerWave>()->GerstnerData;
+					UI::AttributeDrag("Wave Count", gerstnerData.WaveCount, 0.2f, 0, gerstnerData.MaxGerstnerWavesCount);
+					ImGui::Separator();
+
+					UI::AttributeColor("Color", gerstnerData.Color);
+					UI::AttributeDrag("Speed", gerstnerData.Speed, 0.25f);
+					UI::AttributeDrag("Direction", gerstnerData.WaveDirection, 0.01f);
+					UI::AttributeSlider("Distribution", gerstnerData.WaveDistribution, 0, 10);
+					UI::AttributeSlider("Spread", gerstnerData.WaveSpread, 0, 1);
+
+					ImGui::Separator();
+
+					UI::AttributeDrag("Min Max Wavelength", gerstnerData.MinMaxWavelength, 0.25, 0.0001, 10000);
+					UI::AttributeSlider("WavelengthFallOff", gerstnerData.WavelengthFalloff, 0, 1);
+					ImGui::Separator();
+
+					UI::AttributeDrag("Min Max Amplitude", gerstnerData.MinMaxAmplitude, 0.25, 0.0001, 10);
+					UI::AttributeSlider("AmplitudeFallOff", gerstnerData.AmplitudeFallOff, 0, 1);
+					ImGui::Separator();
+
+					UI::AttributeDrag("Min Max Steepness", gerstnerData.MinMaxSteepness, 0.01, 0, 1);
+					UI::AttributeSlider("SteepnessFallOff", gerstnerData.SteepnessFallOff, 0, 1);
+					ImGui::Separator();
+
+
+					UI::AttributeBool("RandomizeSeed", gerstnerData.RandomSeed);
+
+					if (!gerstnerData.RandomSeed)
+						UI::AttributeDrag("Seed", gerstnerData.Seed);
+
+					ImGui::Separator();
+					UI::AttributeSlider("PlaneSize", gerstnerData.PlaneSize, 1, 1000);
+					if (UI::AttributeButton("", "RecomputePlaneSize"))
+						waterComponent.Water->GetWave().As<GerstnerWave>()->RegeneratePlane();
+					ImGui::Separator();
+
+					UI::AttributeBool("VisualizeWaveHeight", waterComponent.Water->GetWave().As<GerstnerWave>()->VisualizeWaveHeight);
+					UI::EndPropertyGrid();
+				}
+				/**
 				UI::AttributeDrag("Wave Count", waterData.WaveCount, 0.2f, 0, 100);
 				ImGui::Separator();
 				
@@ -1773,8 +1879,9 @@ namespace Proof
 
 				UI::AttributeDrag("Min Max Wavelength", waterData.MinMaxWavelength);
 				UI::AttributeDrag("Min Max Steepness", waterData.MinMaxSteepness,0.01,0,1);
-
-				UI::EndPropertyGrid();
+				*/
+				
+			#endif
 
 			});
 		DrawComponents<AudioComponent>("Audio", entity, [](AudioComponent& audio)

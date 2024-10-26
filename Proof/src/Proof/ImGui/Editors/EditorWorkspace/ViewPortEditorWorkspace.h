@@ -53,6 +53,11 @@ namespace Proof
 		void DrawIcons();
 		void DrawBoundingBoxes();
 	private:
+
+		struct PlayMode
+		{
+			bool EjectFromPlayer = false;
+		} m_PlayMode;
 		Count<class WorldRenderer> m_WorldRenderer = nullptr;
 		Count<class World> m_WorldContext = nullptr;
 		class EditorCamera m_Camera;
@@ -74,5 +79,7 @@ namespace Proof
 		//
 		bool m_ShowBoundingBoxes = false;
 		glm::vec4 m_BoundingBoxColor = { 1.0f, 0.9f, 0.2f, 1.0f };
+
+		friend class Editore3D;
 	};
 }

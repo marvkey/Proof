@@ -1,38 +1,39 @@
 #pragma once
 #include "AssetEditor.h"
-#include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Scene/Camera/EditorCamera.h"
 
 namespace Proof
 {
+	class UIElement;
 	class GuiEditorPanel : public AssetEditor 
 	{
 	public:
 		GuiEditorPanel();
 		virtual void OnImGuiRender()override;
-		virtual void OnUpdate(FrameTime deltaTime);
+		virtual void OnUpdate(FrameTime ts);
 		virtual void SetAsset(const Count<class Asset>& asset);
-
-	private:
-		Count<class UIPanel> m_UIPanel;
-		void DrawButtonNode(const std::string& name, UIButton& button);
-		void DrawImageButtonNode(const std::string& name, UIButtonImage& button);
-		void DrawTextNode(const std::string& name, UIText& text);
-
-		void DrawButtonComponent(const std::string& name, UIButton& button);
-		void DrawImageButtonComponent(const std::string& name, UIButtonImage& button);
-		void DrawTextComponent(const std::string& name, UIText& text);
-		bool AddElementMenu();
-	private:
-		EditorCamera2D m_Camera;
-		bool m_IsViewportFocused = false;
-		std::string m_SelectedName;
-		enum class Selected{
-			None, 
-			Button,
-			ImageButton, 
-			Text
+		virtual bool IsSubWindowsHovered() { return false; };
+		virtual bool IsSubWindowsFocused() {
+			return false;
 		};
-		Selected m_SelectedType = Selected::None;
+	protected:
+		virtual void OnEvent(class Event& e);
+		virtual bool IsSaved() { return !m_NeedsSaving; }
+		virtual void Save();
+	private:
+		void AddItemMenu();
+		void RenderHierarchyPanel();
+		void DrawElementNode(class UIElement element);
+		void DrawElementProperty(class UIElement element);
+		void RenderViewPortPanel();
+		template<typename T, typename UIFunction>
+		void DrawElementType(class UIElement element, UIFunction function);
+
+	private:
+		glm::vec2 m_WindowSize = { 0,0 };
+		EditorCamera m_Camera;
+		Count<class Renderer2D> m_Renderer;
+		bool m_NeedsSaving = true;
+		Count<class UIPanel> m_UIPanel = nullptr;
 	};
 }

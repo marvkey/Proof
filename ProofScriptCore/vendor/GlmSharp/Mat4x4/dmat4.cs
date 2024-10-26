@@ -16,7 +16,7 @@ namespace Proof
     /// <summary>
     /// A Matrix of type double with 4 columns and 4 rows.
     /// </summary>
-    [RegisterCoreClassStruct]
+    
     
     [StructLayout(LayoutKind.Sequential)]
     public struct dMatrix4 : IReadOnlyList<double>, IEquatable<dMatrix4>

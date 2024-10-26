@@ -6,7 +6,7 @@ World:
         Tag: Cone4
         tags: []
       TransformComponent:
-        Location: [0.0898538232, -14.1384888, -30.4673958]
+        Location: [0.0898538232, -38.2383614, -82.1497726]
         Rotation: [-0.436332375, 0, 0]
         Scale: [1, 0.99999994, 0.99999994]
       HierarchyComponent:
@@ -14,6 +14,21 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 54
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 13091815555637216436
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 14488969478667641579
       TagComponent:
         Tag: SceneController
@@ -51,7 +66,9 @@ World:
         Kerning: 0
         LineSpacing: 1
         Text: 0
+        Visible: true
         UseLocalRotation: false
+        RenderInViewSpace: false
     - Entity: 1588504503923654943
       TagComponent:
         Tag: Sky Light
@@ -78,7 +95,7 @@ World:
         Tag: Player
         tags: []
       TransformComponent:
-        Location: [0.100000001, -1.51800001, -12.0860004]
+        Location: [0.100000001, -4.01000023, -12.0860004]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -108,7 +125,7 @@ World:
             Fields:
               - NameID: AltoDemo.PlayerControllerScript.JumpForce
                 Type: Float
-                Data: 20
+                Data: 16
               - NameID: AltoDemo.PlayerControllerScript.MaxRayLength
                 Type: Float
                 Data: 10
@@ -140,6 +157,21 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 54
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 13091815555637216436
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 4913334159009506177
       TagComponent:
         Tag: Directional Light
@@ -187,7 +219,7 @@ World:
         Tag: Camera
         tags: []
       TransformComponent:
-        Location: [26.5, 6, -8.19999981]
+        Location: [38.4000015, 4.19999981, -5.19999981]
         Rotation: [0, 1.22871184, 0.104719758]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -213,12 +245,13 @@ World:
         FarPlane: 2000
         FOV: 45
         UseLocalRotation: false
+        ActiveForRendering: true
     - Entity: 13614558237164741409
       TagComponent:
         Tag: Cone2
         tags: []
       TransformComponent:
-        Location: [0.174086004, -9.98593044, -21.5296288]
+        Location: [0.174086004, -16.4810295, -35.4584122]
         Rotation: [-0.436332375, 0, 0]
         Scale: [1, 0.99999994, 0.99999994]
       HierarchyComponent:
@@ -226,12 +259,27 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 54
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 13091815555637216436
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 2652499902574570684
       TagComponent:
         Tag: Cone3
         tags: []
       TransformComponent:
-        Location: [-0.106053948, -11.9992256, -25.7705631]
+        Location: [-0.106053948, -26.1873245, -56.1970291]
         Rotation: [-0.436332375, 0, 0]
         Scale: [1, 0.99999994, 0.99999994]
       HierarchyComponent:
@@ -239,12 +287,27 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 54
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 13091815555637216436
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 6834549486774056282
       TagComponent:
         Tag: Cone5
         tags: []
       TransformComponent:
-        Location: [0.0898538232, -18.3379993, -39.3670006]
+        Location: [0.0898538232, -56.3252869, -120.983383]
         Rotation: [-0.436332375, 0, 0]
         Scale: [1, 0.99999994, 0.99999994]
       HierarchyComponent:
@@ -252,6 +315,21 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 54
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 13091815555637216436
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 8616929413447809998
       TagComponent:
         Tag: PBRGun

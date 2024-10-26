@@ -1,12 +1,11 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "PhysicsUtils.h"
-#include "Proof/Scene/Entity.h"
 #include "MeshCollider.h"
+#include "Proof/Scene/Entity.h"
 namespace Proof
 {
-	
-
+	class Entity;
 	class ColliderShape : public RefCounted
 	{
 	protected:
@@ -45,17 +44,16 @@ namespace Proof
 		ColliderType m_Type;
 		bool m_IsShared = false;
 		Count<class PhysicsMaterial> m_Material;
-		Entity m_Entity;
+		class Entity m_Entity;
 	private:
 		void Release();
 	};
 
 	class PhysicsActor;
-	struct BoxColliderComponent;
 	class BoxColliderShape : public ColliderShape
 	{
 	public:
-		BoxColliderShape(const BoxColliderComponent& component, const PhysicsActor& actor,Entity entity);
+		BoxColliderShape(const struct BoxColliderComponent& component, const PhysicsActor& actor, class Entity entity);
 		~BoxColliderShape();
 
 		const glm::vec3& GetSize();
@@ -89,16 +87,16 @@ namespace Proof
 	class SphereColliderShape : public ColliderShape
 	{
 	public:
-		SphereColliderShape(const SphereColliderComponent& component, const PhysicsActor& actor, Entity entity);
+		SphereColliderShape(const struct SphereColliderComponent& component, const PhysicsActor& actor, class Entity entity);
 		~SphereColliderShape();
 
-		float GetRadius() const { return m_Entity.GetComponent<SphereColliderComponent>().Radius; }
+		float GetRadius() const;
 		void SetRadius(float radius);
 
-		const glm::vec3& GetCenter() const override { return m_Entity.GetComponent<SphereColliderComponent>().Center; }
+		const glm::vec3& GetCenter() const override;
 		void SetCenter(const glm::vec3& offset) override;
 
-		virtual bool IsTrigger() const override { return m_Entity.GetComponent<SphereColliderComponent>().IsTrigger; }
+		virtual bool IsTrigger() const override;
 		virtual void SetTrigger(bool isTrigger) override;
 
 		virtual void SetFilterData(const physx::PxFilterData& filterData) override;
@@ -125,65 +123,30 @@ namespace Proof
 		float radiusScale;
 		float scaleDirection;
 	};
-	static CapusleData GetCapsuleData(CapsuleDirection direction, const TransformComponent& worldTransform)
-	{
-		glm::vec3 scaleabs = glm::abs(worldTransform.Scale);
+	enum class CapsuleDirection;
 
-		float radiusScale = 0;
+	CapusleData GetCapsuleData(CapsuleDirection direction, const TransformComponent& worldTransform);
 
-		float scaleDirection;
-		glm::vec3 offsetRotation;
-		switch (direction)
-		{
-		case CapsuleDirection::X:
-		{
-			scaleDirection = glm::max(glm::max(scaleabs.y, scaleabs.z) / 2, scaleabs.x);
-			offsetRotation = glm::vec3{ 0,0,0 };
-			radiusScale = glm::max(scaleabs.y, scaleabs.z);
-		}
-		break;
-		case CapsuleDirection::Y:
-		{
-			offsetRotation = glm::vec3{ 0,0,physx::PxHalfPi };
-			scaleDirection = glm::max(glm::max(scaleabs.x, scaleabs.z)/2, scaleabs.y);
-			radiusScale = glm::max(scaleabs.x, scaleabs.z);
-		}
-		break;
-		case CapsuleDirection::Z:
-		{
-			offsetRotation = glm::vec3{ 0,physx::PxHalfPi,0 };
-			scaleDirection = glm::max(glm::max(scaleabs.y, scaleabs.x) / 2, scaleabs.z);
-			radiusScale = glm::max(scaleabs.y, scaleabs.x);
-		}
-		break;
-		default:
-			break;
-		}
-
-		
-
-		return { offsetRotation,radiusScale,scaleDirection };
-	}
 	class CapsuleColliderShape : public ColliderShape
 	{
 	public:
-		CapsuleColliderShape(const CapsuleColliderComponent& component, const PhysicsActor& actor, Entity entity);
+		CapsuleColliderShape(const struct CapsuleColliderComponent& component, const PhysicsActor& actor, class Entity entity);
 		~CapsuleColliderShape();
 
-		float GetRadius() const { return m_Entity.GetComponent<CapsuleColliderComponent>().Radius; }
+		float GetRadius() const;
 		void SetRadius(float radius);
 
 
-		CapsuleDirection GetDirection()const { return m_Entity.GetComponent<CapsuleColliderComponent>().Direction; }
+		CapsuleDirection GetDirection()const;
 		void SetDirection(CapsuleDirection direction);
 
-		float GetHeight() const { return m_Entity.GetComponent<CapsuleColliderComponent>().Height; }
+		float GetHeight() const;
 		void SetHeight(float height);
 
-		const glm::vec3& GetCenter() const override { return m_Entity.GetComponent<CapsuleColliderComponent>().Center; }
+		const glm::vec3& GetCenter() const override;
 		void SetCenter(const glm::vec3& offset) override;
 
-		virtual bool IsTrigger() const override { return m_Entity.GetComponent<CapsuleColliderComponent>().IsTrigger; }
+		virtual bool IsTrigger() const override;
 		virtual void SetTrigger(bool isTrigger) override;
 
 		virtual void SetFilterData(const physx::PxFilterData& filterData) override;
@@ -210,10 +173,10 @@ namespace Proof
 	class ConvexMeshShape : public ColliderShape
 	{
 	public:
-		ConvexMeshShape(MeshColliderComponent& component, const PhysicsActor& actor, Entity entity);
+		ConvexMeshShape(struct MeshColliderComponent& component, const PhysicsActor& actor, class Entity entity);
 		virtual ~ConvexMeshShape();
 
-		AssetID GetColliderHandle() const { return m_Entity.GetComponent<MeshColliderComponent>().ColliderID; }
+		AssetID GetColliderHandle() const;
 
 		virtual const glm::vec3& GetOffset() const
 		{
@@ -222,7 +185,7 @@ namespace Proof
 		}
 		virtual void SetOffset(const glm::vec3& offset) {}
 
-		virtual bool IsTrigger() const override { return m_Entity.GetComponent<MeshColliderComponent>().IsTrigger; }
+		virtual bool IsTrigger() const override;
 		virtual void SetTrigger(bool isTrigger) override;
 
 		virtual void SetFilterData(const physx::PxFilterData& filterData) override;
@@ -253,15 +216,15 @@ namespace Proof
 	class TriangleMeshShape : public ColliderShape
 	{
 	public:
-		TriangleMeshShape(MeshColliderComponent& component, const PhysicsActor& actor, Entity entity);
+		TriangleMeshShape(struct MeshColliderComponent& component, const PhysicsActor& actor, class Entity entity);
 		~TriangleMeshShape();
 
-		AssetID GetColliderHandle() const { return m_Entity.GetComponent<MeshColliderComponent>().ColliderID; }
+		AssetID GetColliderHandle() const;
 
 		const glm::vec3& GetCenter() const override { return glm::vec3{ 0 }; }
 		void SetCenter(const glm::vec3& offset) override {};
 
-		virtual bool IsTrigger() const override { return m_Entity.GetComponent<MeshColliderComponent>().IsTrigger; }
+		virtual bool IsTrigger() const override;
 		virtual void SetTrigger(bool isTrigger) override;
 
 		virtual void SetFilterData(const physx::PxFilterData& filterData) override;

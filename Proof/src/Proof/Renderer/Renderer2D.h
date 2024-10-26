@@ -34,6 +34,13 @@ namespace Proof {
 		//(tex background)
 		float TexIndex;
 	};
+
+	struct PointVertex
+	{
+		glm::vec3 Position;
+		glm::vec4 Color;
+		float PointSize;
+	};
 	struct SpriteComponent;
 	struct TransformComponent;
 	struct AABB;
@@ -74,16 +81,17 @@ namespace Proof {
 	struct Renderer2DContextSettings
 	{
 		bool RenderOnTop = false;
+
 	};
 	class Renderer2D : RefCounted {
 		friend class Camera;
 	public:
 		Renderer2D();
 		~Renderer2D();
-		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Renderer2DContextSettings settigs = Renderer2DContextSettings());
+		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Renderer2DContextSettings settigs = Renderer2DContextSettings(),bool clearFrameBuffer = false);
+	#if 0
 		void DrawQuad(const glm::vec3& Location);
 		void DrawQuad(const glm::vec3& Location,const glm::vec3& Size);
-		void DrawQuad(const glm::vec3& Location,const glm::vec3& RotationRadians,const glm::vec4& Color);
 		void DrawQuad(const glm::vec3& Location, const glm::vec4& Color);
 		void DrawQuad(const glm::vec3& Location, Count<class Texture2D> texture);
 		void DrawQuad(const glm::vec3& Location, const glm::vec4& TintColor,Count<Texture2D> texture);
@@ -91,6 +99,12 @@ namespace Proof {
 		void DrawQuad(const glm::vec3& Location,const glm::vec3& RotationRadians,const glm::vec3& Size,const glm::vec4& Color);
 
 		void DrawQuad(const glm::vec3& Location, const glm::vec3& RotationRadians, const glm::vec3& Size, const glm::vec4& Color, const Count<Texture2D>& texture2D);
+		void DrawQuad(const glm::mat4& transform, const glm::vec4& Color, const Count<Texture2D>& texture2D);
+	#endif
+
+		void DrawQuad(glm::vec3 location, glm::vec3 size = { 1.0f,1.0f,1.0f }, const glm::vec4& Color = { 1,1,1,1 });
+		void DrawQuad(glm::vec3 location, glm::vec3 size, const glm::vec4& Color, Count<class Texture2D> texture);
+		void DrawRotatedQuad(const glm::vec3& Location, const glm::vec3& RotationRadians, const glm::vec3& Size, const glm::vec4& Color, const Count<Texture2D>& texture2D);
 		void DrawQuad(const glm::mat4& transform, const glm::vec4& Color, const Count<Texture2D>& texture2D);
 		void DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform);
 
@@ -110,6 +124,7 @@ namespace Proof {
 		void DrawArc(float startAngleRadians, float endAngleRadians, glm::vec3 position, glm::vec3 rotationRadians, float radius, glm::vec4 color = glm::vec4(1.0f), bool drawChord = false, bool drawSector = false,uint32_t arcSegments = 32);
 		void DrawCircle(const glm::vec3& p0, const glm::vec3& rotation, float radius, const glm::vec4& color);
 		void DrawCircle(const glm::mat4& transform, const glm::vec4& color);
+		void DrawPoint(const glm::vec3& position, float size = 20, const glm::vec4& color = glm::vec4(1.0f));
 
 		//not working
 		void DrawHalfCircle(const glm::vec3& p0, const glm::vec3& rotation, float radius, const glm::vec4& color);
@@ -127,8 +142,9 @@ namespace Proof {
 		//void DrawDebugHemisphereFlatBase(const glm::vec3& position, const glm::vec3& rotation, float radius, const glm::vec4& color = glm::vec4(1.0f));
 		
 		// Thickness is between 0 and 1
-		void FillCircle(const glm::vec2& p0, float radius, const glm::vec4& color, float thickness = 0.05f);
-		void FillCircle(const glm::vec3& p0, float radius, const glm::vec4& color, float thickness = 0.05f);
+		void FillCircle(const glm::vec2& p0, float radius = 1.0f, const glm::vec4& color = glm::vec4(1), float thickness = 1);
+		void FillCircle(const glm::vec3& p0, float radius = 1.0f, const glm::vec4& color = glm::vec4(1), float thickness = 1);
+		void FillCircle(const glm::vec3& position, const glm::vec3& rotation, float radius = 1.0f, const glm::vec4& color = glm::vec4(1), float  thickness = 1);
 
 		void DrawQuadBillboard(const glm::vec3& position, const glm::vec3& rotation = glm::vec3(0,0,0),const glm::vec2& size = glm::vec2(1), const glm::vec4& color = glm::vec4(1));
 		void DrawQuadBillboard(const Count<class Texture2D>& texture, glm::vec3 position, const glm::vec3& rotation = glm::vec3(0, 0, 0), const glm::vec2& size = glm::vec2(1), const glm::vec4& tintColor = glm::vec4(1), float tilingFactor = 1.0f);
@@ -164,9 +180,16 @@ namespace Proof {
 		const uint32_t c_MaxVertexCount = c_MaxQuadCount * 4; // times 4 cause each quad holds 4 vertices
 		const uint32_t c_MaxIndexCount = c_MaxQuadCount * 6;
 
-		const uint32_t c_MaxLines = 2000;
+		const uint32_t c_MaxLines = 10000;
 		const uint32_t c_MaxLineVertices = c_MaxLines * 2;
 		const uint32_t c_MaxLineIndices = c_MaxLines * 6;
+
+
+		const uint32_t c_MaxPoints = 10000;
+		const uint32_t c_MaxPointVertices = c_MaxPoints * 3;
+		const uint32_t c_MaxPointIndices = c_MaxPoints * 6;
+
+
 		static inline const uint32_t c_MaxTextureSlots = 32; //1-31slots
 
 		std::array<Count<Texture2D>, c_MaxTextureSlots> m_QuadTextures;
@@ -202,6 +225,18 @@ namespace Proof {
 		uint32_t m_CircleIndexCount = 0;
 		RendererCustomTypeSet<CircleVertex*> m_CircleVertexBufferBase = nullptr;
 		CircleVertex* m_CircleVertexBufferPtr = nullptr;
+
+
+
+		Count<RenderPass> m_PointRenderPass;
+		Count<RenderPass> m_PointonTopRenderPass;
+		Count<VertexBufferSet> m_PointVertexBuffer;
+		Count<IndexBuffer> m_PointIndexBuffer;
+
+		uint32_t m_PointIndexCount = 0;
+		RendererCustomTypeSet<PointVertex*> m_PointVertexBufferBase = nullptr;
+		PointVertex* m_PointVertexBufferPtr = nullptr;
+
 
 		Count<UniformBufferSet> m_UBCamera = nullptr;
 		Renderer2DContextSettings m_ContextSettings;

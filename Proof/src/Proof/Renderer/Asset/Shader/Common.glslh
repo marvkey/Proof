@@ -1,7 +1,7 @@
 #ifndef COMMON_GLSL_H
 #define COMMON_GLSL_H
 
-const float PI = 3.1415926535897932384626433832795f;
+const float PI = 3.14159265358979323846264338327950288f;
 const float TWO_PI = 2 * PI;
 const float Epsilon = 0.00001;
 layout(set = 3, binding = 0) uniform FrameData
@@ -9,6 +9,11 @@ layout(set = 3, binding = 0) uniform FrameData
 	uint FrameCount;
 	float AppTimeSeconds;
 }u_FrameData;
+
+float Log10(float x) 
+{
+    return log(x) / log(10.0);
+}
 layout(set = 3, binding = 1) uniform CameraData
 {
   	mat4 Projection;
@@ -21,7 +26,7 @@ layout(set = 3, binding = 1) uniform CameraData
 
 	mat4 PrevViewProjectionMatrix; // project * view from last frame
 
-	vec3 Position;
+	vec3 Position; //world space
 	float NearPlane;
 
 	float FarPlane;
@@ -95,6 +100,16 @@ vec4 ClipToView(vec4 clip)
     return view;
 }
 
+vec4 WorldPositionToClipPosition(vec3 worldPosition)
+{
+      // Transform the world space position to view space
+    vec4 viewPosition = u_Camera.View * vec4(worldPosition,1.0);
+
+    // Transform the view space position to clip space
+    vec4 clipPosition = u_Camera.Projection * viewPosition;
+
+    return clipPosition;
+}
 // Convert screen space coordinates to view space.
 vec4 ScreenToView(vec4 screen)
 {
@@ -111,6 +126,56 @@ vec4 ScreenToView(vec4 screen)
 //{
 //	return u_Camera.FarPlane / (u_Camera.FarPlane + z * (u_Camera.NearPlane - u_Camera.FarPlane));
 //}
+
+// GLSL equivalent for Linear01Depth
+float Linear01Depth(float z) {
+    return (u_Camera.FarPlane / (u_Camera.FarPlane - u_Camera.NearPlane)) * (z - u_Camera.NearPlane);
+}
+
+mat4 GetWorldToObjectMatrix(mat4 modelMatrix) 
+{
+    return inverse(modelMatrix);
+}
+
+vec4 TransformWorldToObject(mat4 modelMatrix,vec4 positionWS)
+{
+    return vec4(GetWorldToObjectMatrix(modelMatrix) * positionWS);
+}
+
+vec4 TransformObjectToWorld(mat4 modelMatrix,vec4 positionWS)
+{
+    return modelMatrix * positionWS;
+}
+
+vec4 TransformWorldToView(vec4 positionWS) 
+{
+    return u_Camera.View * positionWS;
+}
+
+vec4 TransformWorldToHClip(vec4 positionWS) 
+{
+    return u_Camera.Projection * positionWS;
+}
+
+// Overloaded functions for vec3 positions
+vec3 TransformObjectToWorld(mat4 modelMatrix,vec3 positionOS) 
+{
+    return TransformObjectToWorld(modelMatrix,vec4(positionOS, 1.0)).xyz;
+}
+
+vec3 TransformWorldToView(vec3 positionWS) 
+{
+    return TransformWorldToView(vec4(positionWS, 1.0)).xyz;
+}
+
+vec4 TransformWorldToHClip(vec3 positionWS) 
+{
+    return TransformWorldToHClip(vec4(positionWS, 1.0));
+}
+vec3 TransformWorldToObject(mat4 modelMatrix,vec3 positionWS)
+{
+    return vec4(GetWorldToObjectMatrix(modelMatrix) * vec4(positionWS,1.0)).xyz;
+}
 vec3 GetViewPosition(vec2 texcoord, float depth)
 {
 	vec4 clipSpaceLocation;
@@ -182,6 +247,82 @@ mat3 CreateTBN(vec3 N)
 
     mat3 TBN = mat3(U, cross(N, U), N);
     return transpose(TBN);
+}
+
+void SinCos(float angle, out float sine, out float cosine) 
+{
+    sine = sin(angle);
+    cosine = cos(angle);
+}
+
+float DotClamped(vec3 a, vec3 b) 
+{
+    float dotProduct = dot(a, b);
+    return clamp(dotProduct, 0.0, dotProduct);
+}
+
+struct VertexPositionInputs
+{
+    vec3 PositionWS; // World space position
+    vec3 PositionVS; // View space position
+    vec4 PositionCS; // Homogeneous clip space position
+    vec4 PositionNDC;// Homogeneous normalized device coordinates
+};
+ 
+struct VertexNormalInputs
+{
+    vec3 tangentWS;
+    vec3 bitangentWS;
+    vec3 normalWS;
+};
+VertexPositionInputs GetVertexPositionInputs(mat4 modelMatrix,vec3 positionOS) 
+{
+    VertexPositionInputs inputt;
+    
+    // Transform position from object space to world space
+    inputt.PositionWS = TransformObjectToWorld(modelMatrix,positionOS);
+    
+    // Transform position from world space to view space
+    inputt.PositionVS = TransformWorldToView(inputt.PositionWS);
+    
+    // Transform position from world space to clip space
+    inputt.PositionCS = TransformWorldToHClip(inputt.PositionWS);
+    
+    // Perspective division to convert from clip space to NDC
+    vec4 ndc = inputt.PositionCS * 0.5f;
+    
+    // Apply projection parameters
+    float projectionParamsX = 1.0f; //not sure check unity cause dont understad
+    inputt.PositionNDC.xy = vec2(ndc.x, ndc.y * projectionParamsX) + ndc.w;
+    inputt.PositionNDC.zw = inputt.PositionCS.zw;
+    
+    return inputt;
+}
+vec2 TransformTex(vec2 uv, vec4 st)
+{
+    return uv * st.xy + st.zw;
+}
+
+vec4 GetZBufferParams()
+{
+    // Compute the parameters based on the near and far plane distances
+    float x = 1.0 / (u_Camera.FarPlane - u_Camera.NearPlane);
+    float y = u_Camera.FarPlane * u_Camera.NearPlane / (u_Camera.NearPlane - u_Camera.FarPlane);
+    float z = (1.0 - u_Camera.FarPlane / u_Camera.NearPlane) / u_Camera.FarPlane;
+    float w = (u_Camera.FarPlane / u_Camera.NearPlane) / u_Camera.FarPlane;
+    
+    // Return as vec4
+    return vec4(x, y, z, w);
+}
+float LinearEyeDepth( float z,vec4 zBuffer )
+{
+	//(n * f) / (f - z * (f - n))
+	return 1.0 / (zBuffer.z * z + zBuffer.w);
+}
+
+float Saturate(float val)
+{
+    return clamp(val,0,1);
 }
 
 

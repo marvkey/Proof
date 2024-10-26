@@ -363,15 +363,15 @@ namespace Proof
     {
         m_MeshSource = meshSource;
         m_Name = m_MeshSource->GetName();
-        SetSubMeshes(subMeshes);
         m_MaterialTable = Count<MaterialTable>::CreateFrom(meshSource->GetMaterials());
+        SetSubMeshes(subMeshes);
     }
     void Mesh::Reset(const std::string& name, std::vector<Vertex> vertices, std::vector<Index>indices)
     {
         m_MeshSource = Count<MeshSource>::Create(name, vertices, indices);
         m_MaterialTable = Count<MaterialTable>::Create();
-        SetSubMeshes({});
         m_MaterialTable = Count<MaterialTable>::CreateFrom(m_MeshSource->GetMaterials());
+        SetSubMeshes({});
     }
     void Mesh::SetSubMeshes(const std::vector<uint32_t>& submesh)
     {
@@ -400,6 +400,9 @@ namespace Proof
         m_SubMeshes.resize(submeshes.size());
         for (uint32_t i = 0; i < submeshes.size(); i++)
             m_SubMeshes[i] = i;
+
+        std::sort(m_SubMeshes.begin(), m_SubMeshes.end());
+        ArrangeMaterialTable();
     }
 
     bool Mesh::HasSubMesh(uint32_t subMeshIndex)
@@ -418,8 +421,8 @@ namespace Proof
 
         m_MeshSource = meshSource;
         m_Name = m_MeshSource->GetName();
-        SetSubMeshes(subMeshes);
         m_MaterialTable = Count<MaterialTable>::CreateFrom(meshSource->GetMaterials());
+        SetSubMeshes(subMeshes);
     }
     void DynamicMesh::SetSubMeshes(const std::vector<uint32_t>& submesh)
     {
@@ -447,10 +450,64 @@ namespace Proof
         m_SubMeshes.resize(submeshes.size());
         for (uint32_t i = 0; i < submeshes.size(); i++)
             m_SubMeshes[i] = i;
+
+        std::sort(m_SubMeshes.begin(), m_SubMeshes.end());
+        ArrangeMaterialTable();
+
+    }
+    Count<MaterialTable> DynamicMesh::GetMaterialTableBasedOnSubMeshIndex(uint32_t index)
+    {
+        if (!HasSubMesh(index))
+            return m_MaterialTable;
+
+        auto newTable = Count<MaterialTable>::Create(false);
+        newTable->SetMaterial(GetMeshSource()->GetSubMesh(index).MaterialIndex, m_MaterialTable->GetMaterial(GetMeshSource()->GetSubMesh(index).MaterialIndex));
+
+        return newTable;
     }
     bool DynamicMesh::HasSubMesh(uint32_t subMeshIndex)
     {
         return std::find(m_SubMeshes.begin(), m_SubMeshes.end(), subMeshIndex) != m_SubMeshes.end();
+    }
+
+
+    std::vector<SubMesh> MeshBase::GetSubMeshesAsSubMesh() 
+    {
+        std::vector<SubMesh> subMeshes;
+        subMeshes.resize(GetSubMeshes().size());
+
+        int index = 0;
+        for (auto subMeshIndex : GetSubMeshes())
+        {
+            subMeshes[index] = GetMeshSource()->GetSubMesh(subMeshIndex);
+            index++;
+        }
+        return subMeshes;
+    }
+
+    void MeshBase::ArrangeMaterialTable()
+    {
+        auto materialTable = GetMaterialTable();
+        std::vector<SubMesh> subMeshes = GetSubMeshesAsSubMesh();
+
+        if (materialTable == nullptr)
+            return;
+
+        std::unordered_set<uint32_t> materialIndexes;
+        for (auto& subMesh : subMeshes)
+            materialIndexes.insert({ subMesh.MaterialIndex });
+
+        std::vector<uint32_t> unusedIndex;
+        for (auto& [materialIndex, material] : materialTable->GetMaterials())
+        {
+            if (!materialIndexes.contains(materialIndex))
+                unusedIndex.emplace_back(materialIndex);
+        }
+
+        for (auto& index : unusedIndex)
+        {
+            materialTable->RemoveMaterial(index);
+        }
     }
 
 }

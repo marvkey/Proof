@@ -1,0 +1,19 @@
+AssetType: InputBindingContext
+ID: 17819033342336243331
+InputBindings:
+  - InputActionID: 14119781984078702474
+    KeyBindings:
+      - InputKeyBindingType: Key
+        InputKeyName: SpaceBar
+      - InputKeyBindingType: Key
+        InputKeyName: LeftMouseButton
+    InputInteractions:
+      - InputInteractionType: ClickRelease
+        InteractionThreshold: 0.5
+        Mode: Click
+  - InputActionID: 4337114102758531292
+    KeyBindings:
+      - InputKeyBindingType: Key
+        InputKeyName: RightMouseButton
+      - InputKeyBindingType: Key
+        InputKeyName: 1

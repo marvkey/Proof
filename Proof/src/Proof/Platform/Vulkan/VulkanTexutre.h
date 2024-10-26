@@ -50,7 +50,7 @@ namespace Proof
 				1, &imageBarrier
 			);
 		}
-
+	#if 0
 		inline VkFilter VulkanSamplerFilter(TextureFilter filter)
 		{
 			switch (filter)
@@ -91,38 +91,38 @@ namespace Proof
 			PF_CORE_ASSERT(false, "Not supported");
 			return (VkSamplerAddressMode)0;
 		}
+	#endif
 	}
+	class RenderSampler;
 	class VulkanTexture2D : public Texture2D
 	{
 	public:
 
-		VulkanTexture2D(const TextureConfiguration& config, Buffer buffer);
-		VulkanTexture2D(const std::filesystem::path& path, const TextureConfiguration& config);
-		VulkanTexture2D(const TextureConfiguration& config);
+		VulkanTexture2D(const TextureConfiguration& config, Buffer buffer,Count< RenderSampler> sampler);
+		VulkanTexture2D(const std::filesystem::path& path, const TextureConfiguration& config, Count< RenderSampler> sampler);
+		VulkanTexture2D(const TextureConfiguration& config, Count<RenderSampler> sampler);
 		virtual ~VulkanTexture2D();
 
 		virtual Count<Image2D> GetImage() { return m_Image; };
 
 		virtual void Resize(uint32_t width, uint32_t height) override;
-		virtual void Resize(Vector2U size) override { Resize(size.X, size.Y); }
+		virtual void Resize(glm::uvec2 size) override { Resize(size.x, size.y); }
 		virtual void Resize(uint32_t width, uint32_t height, Buffer buffer)override;
 
 		virtual uint32_t GetWidth()const override { return m_Config.Width; };
 		virtual uint32_t GetHeight() const override { return m_Config.Height; };
-		virtual Vector2U GetSize()const override { return {m_Config.Width, m_Config.Height }; }
+		virtual glm::uvec2 GetSize()const override { return {m_Config.Width, m_Config.Height }; }
 		
 		virtual float GetAspectRatio()const override { return (float)GetWidth() / (float)GetHeight(); };
 		uint32_t GetMipLevelCount() 
 		{ 
-			/*
 			if (m_Config.GenerateMips)
 			{
 				return Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
 			}
 			else
 				return 1;
-				*/
-			return Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
+			//return Utils::GetMipLevelCount(m_Config.Width, m_Config.Height);
 		}
 
 		const std::filesystem::path& GetPath()const override { return m_Path; };
@@ -139,6 +139,7 @@ namespace Proof
 		Count<ImageView> GetImageMip(uint32_t mip, uint32_t layer = 0);
 
 		Buffer GetStoredDataAsBuffer();
+		virtual Count<class RenderSampler> GetSampler();
 	private:
 		void Build();
 		void RT_Build();
@@ -148,24 +149,27 @@ namespace Proof
 		TextureConfiguration m_Config;
 		Count<Image2D> m_Image;
 		Buffer m_ImageData;
+		Count<class VulkanRenderSampler> m_RenderSampler;
 	};
-	class VulkanTextureCube : public TextureCube {
+	class VulkanTextureCube : public TextureCube 
+	{
 	public:
-		VulkanTextureCube(const TextureConfiguration& config, const std::filesystem::path& path);
-		VulkanTextureCube(const void* data, const TextureConfiguration& config);
-		VulkanTextureCube(const TextureConfiguration& config);
-		VulkanTextureCube(const TextureConfiguration& config,Count<Texture2D> texture);
+		VulkanTextureCube(const TextureConfiguration& config, const std::filesystem::path& path, Count< RenderSampler> sampler);
+		VulkanTextureCube(const TextureConfiguration& config,Buffer data, Count<RenderSampler> sampler);
+		VulkanTextureCube(const TextureConfiguration& config, Count<RenderSampler> sampler);
+		VulkanTextureCube(const TextureConfiguration& config,Count<Texture2D> texture, Count<RenderSampler> sampler);
 		~VulkanTextureCube();
+		const TextureConfiguration& GetSpecification()const override { return m_Config; };
 		virtual Count<Image2D> GetImage()const { return m_Image; };
 		const VkDescriptorImageInfo& GetDescriptorInfoVulkan()const { return *(VkDescriptorImageInfo*)GetResourceDescriptorInfo(); };
 		virtual ResourceDescriptorInfo GetResourceDescriptorInfo()const ;
 
 		virtual void Resize(uint32_t width, uint32_t height) ;
-		virtual void Resize(Vector2U size)  { Resize(size.X, size.Y); }
+		virtual void Resize(glm::uvec2 size)  { Resize(size.x, size.y); }
 
 		virtual uint32_t GetWidth()const { return m_Config.Width; };
 		virtual uint32_t GetHeight() const { return m_Config.Height; };
-		virtual Vector2U GetSize()const { return { m_Config.Width, m_Config.Height }; }
+		virtual glm::uvec2 GetSize()const { return { m_Config.Width, m_Config.Height }; }
 
 		virtual float GetAspectRatio()const { return (float)GetWidth() / (float)GetHeight(); };
 		uint32_t GetMipLevelCount() {
@@ -176,19 +180,19 @@ namespace Proof
 		};
 		void RT_GenerateMips();
 		void GenerateMips();
-
+		virtual Count<class RenderSampler> GetSampler();
+	private:
+		void Build();
+		void RT_Build();
+		void Release();
 	private:
 
 	
 		TextureConfiguration m_Config;
 		std::filesystem::path m_Path;
-
 		//texture we load
 		Count<VulkanTexture2D> m_Texture;
 		Count<Image2D> m_Image;
-		void Build();
-		void RT_Build();
-		void Release();
-
+		Count<class VulkanRenderSampler> m_RenderSampler;
 	};
 }
