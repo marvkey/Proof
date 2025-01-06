@@ -50,7 +50,7 @@ namespace Proof
 	class VulkanCommandPool : public RefCounted
 	{
 	public:
-		VulkanCommandPool();
+		VulkanCommandPool(Count<VulkanDevice> device);
 		virtual ~VulkanCommandPool();
 
 		VkCommandBuffer AllocateCommandBuffer(bool begin, bool compute = false);
@@ -61,6 +61,7 @@ namespace Proof
 		VkCommandPool GetComputeCommandPool() const { return m_ComputeCommandPool; }
 	private:
 		VkCommandPool m_GraphicsCommandPool, m_ComputeCommandPool;
+		Count < VulkanDevice> m_Device;
 	};
 
 
@@ -69,9 +70,8 @@ namespace Proof
 	{
 	public:
 		VulkanDevice(const Count<VulkanPhysicalDevice>& physicalDevice, VkPhysicalDeviceFeatures enabledFeatures);
-		~VulkanDevice();
+		virtual ~VulkanDevice();
 
-		void Destroy();
 
 		VkQueue GetGraphicsQueue() { return m_GraphicsQueue; }
 		VkQueue GetComputeQueue() { return m_ComputeQueue; }
@@ -87,6 +87,7 @@ namespace Proof
 	private:
 		Count<VulkanCommandPool> GetThreadLocalCommandPool();
 		Count<VulkanCommandPool> GetOrCreateThreadLocalCommandPool();
+		void Destroy();
 	private:
 		VkDevice m_LogicalDevice = nullptr;
 		Count<VulkanPhysicalDevice> m_PhysicalDevice;

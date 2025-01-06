@@ -9,7 +9,7 @@
 #include "VulkanImage.h"
 #include "VulkanCommandBuffer.h"
 #include "Proof/Core/Application.h"
-
+#include "VulkanSwapChain.h"
 #include <vector>
 
 namespace Proof
@@ -46,9 +46,30 @@ namespace Proof
 
         Build();
     }
+    VulkanFrameBuffer::VulkanFrameBuffer(const std::string& name)
+    {
+        m_SwapChainFrameBuffer = true;
+
+        m_Config.DebugName = name;
+        m_Config.ClearColor = { 0.8f, 0.1f, 0.1f, 1.0f };
+        m_Config.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetColorFormat()};
+    }
     VulkanFrameBuffer::~VulkanFrameBuffer()
     {
         Release();
+    }
+    uint32_t VulkanFrameBuffer::GetWidth() const
+    {
+        if (m_SwapChainFrameBuffer)
+            return Application::Get()->GetWindow()->GetSwapChain()->GetSize().x;
+        return m_Config.Width;
+    }
+    uint32_t VulkanFrameBuffer::GetHeight() const
+    {
+        if (m_SwapChainFrameBuffer)
+            return Application::Get()->GetWindow()->GetSwapChain()->GetSize().y;
+        return m_Config.Height;
+
     }
     void VulkanFrameBuffer::RT_Build()
     {
@@ -440,6 +461,8 @@ namespace Proof
 
     VkFramebuffer VulkanFrameBuffer::GetFrameBuffer()
     {
+        if(m_SwapChainFrameBuffer)
+            return Application::Get()->GetWindow()->GetSwapChain().As<VulkanSwapChain>()->GetCurrentFramebuffer();
         return m_FrameBuffer;
     }
     Count<Image> VulkanFrameBuffer::GetOutput(uint32_t imageIndex)
@@ -653,18 +676,31 @@ namespace Proof
         }
         */
     }
+   
+
+    VkRenderPass VulkanFrameBuffer::GetRenderPass()
+    {
+        if(m_SwapChainFrameBuffer)
+            return Application::Get()->GetWindow()->GetSwapChain().As<VulkanSwapChain>()->GetRenderPass();
+
+        return m_CompatibilityRenderPass;
+    }
     void VulkanFrameBuffer::Release()
     {
-        // dont destroy images and depth images attached because we may need to resize
-        Renderer::SubmitResourceFree([buffer = m_FrameBuffer]() 
-            {
-            const auto& device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
-            vkDestroyFramebuffer(device, buffer, nullptr);
-        });
-        Renderer::SubmitResourceFree([renderPass = m_CompatibilityRenderPass]() 
+        if (!m_SwapChainFrameBuffer)
         {
-            vkDestroyRenderPass(VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice(), renderPass, nullptr);
-        });
-        m_CompatibilityRenderPass = nullptr;
+
+            // dont destroy images and depth images attached because we may need to resize
+            Renderer::SubmitResourceFree([buffer = m_FrameBuffer]()
+                {
+                    const auto& device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
+                    vkDestroyFramebuffer(device, buffer, nullptr);
+                });
+            Renderer::SubmitResourceFree([renderPass = m_CompatibilityRenderPass]()
+                {
+                    vkDestroyRenderPass(VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice(), renderPass, nullptr);
+                });
+            m_CompatibilityRenderPass = nullptr;
+        }
     }
 }

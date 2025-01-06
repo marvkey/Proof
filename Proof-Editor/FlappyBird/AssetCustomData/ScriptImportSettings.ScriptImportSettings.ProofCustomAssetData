@@ -3,6 +3,9 @@ ScriptImportSettings:
     - Script: FlappyBird.BirdMovement
       ScriptName: FlappyBird.BirdMovement
       Fields:
+        - NameID: FlappyBird.BirdMovement.FracturedBird
+          Type: Prefab
+          Data: 0
         - NameID: FlappyBird.BirdMovement.ChangeCameraAction
           Type: InputAction
           Data: 0
@@ -20,5 +23,11 @@ ScriptImportSettings:
       ScriptName: FlappyBird.ObstacleSpawner
       Fields:
         - NameID: FlappyBird.ObstacleSpawner.Obstacle
+          Type: Prefab
+          Data: 0
+    - Script: FlappyBird.PlatformSpawn
+      ScriptName: FlappyBird.PlatformSpawn
+      Fields:
+        - NameID: FlappyBird.PlatformSpawn.Obstacle
           Type: Prefab
           Data: 0

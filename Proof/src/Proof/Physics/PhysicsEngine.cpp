@@ -45,6 +45,11 @@ namespace Proof {
 		return s_PhysicsSettings;
 	}
 
+	bool PhysicsEngine::IsInitialize()
+	{
+		return s_Foundation != nullptr;
+	}
+
 	Count<MeshCollider> PhysicsEngine::GetOrCreateColliderAsset(Entity entity, MeshColliderComponent& component)
 	{
 		Count<MeshCollider> colliderAsset =nullptr;
@@ -127,6 +132,7 @@ namespace Proof {
 		s_Dispatcher->release();
 		s_Pvd->release();
 		s_Foundation->release();
+		s_Foundation = nullptr;
 		delete s_PhysXData;
 		PF_ENGINE_INFO("Physics Engine Shutdown {}m/s", time.ElapsedMillis());
 	}

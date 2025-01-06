@@ -362,10 +362,22 @@ namespace Proof {
 		SharedShapeManager::SharedShapeData* sharedData = SharedShapeManager::FindSuitableSharedShape(ColliderType::ConvexMesh, colliderAsset);
 		if (component.UseSharedShape && sharedData != nullptr && sharedData->Shapes.find(component.SubMeshIndex) != sharedData->Shapes.end())
 		{
-			for (auto [submeshIndex, shape] : sharedData->Shapes)
+			if (entity.HasComponent<DynamicMeshComponent>())
 			{
-				actor.GetPhysXActor().attachShape(*shape);
-				m_Shapes.push_back(shape);
+				uint32_t subMeshIndex = entity.GetComponent<DynamicMeshComponent>().GetSubMeshIndex();
+				if (sharedData->Shapes.contains(subMeshIndex))
+				{
+					actor.GetPhysXActor().attachShape(*sharedData->Shapes[subMeshIndex]);
+					m_Shapes.push_back(sharedData->Shapes[subMeshIndex]);
+				}
+			}
+			else
+			{
+				for (auto [submeshIndex, shape] : sharedData->Shapes)
+				{
+					actor.GetPhysXActor().attachShape(*shape);
+					m_Shapes.push_back(shape);
+				}
 			}
 			m_BlockSetMaterial = true;
 		}
@@ -529,11 +541,25 @@ namespace Proof {
 		SharedShapeManager::SharedShapeData* sharedData = SharedShapeManager::FindSuitableSharedShape(ColliderType::TriangleMesh, colliderAsset);
 		if (component.UseSharedShape && sharedData != nullptr)
 		{
-			for (auto [submeshIndex, shape] : sharedData->Shapes)
+			if (entity.HasComponent<DynamicMeshComponent>())
 			{
-				actor.GetPhysXActor().attachShape(*shape);
-				m_Shapes.push_back(shape);
+				uint32_t subMeshIndex = entity.GetComponent<DynamicMeshComponent>().GetSubMeshIndex();
+				if (sharedData->Shapes.contains(subMeshIndex))
+				{
+					actor.GetPhysXActor().attachShape(*sharedData->Shapes[subMeshIndex]);
+					m_Shapes.push_back(sharedData->Shapes[subMeshIndex]);
+				}
 			}
+			else
+			{
+
+				for (auto [submeshIndex, shape] : sharedData->Shapes)
+				{
+					actor.GetPhysXActor().attachShape(*shape);
+					m_Shapes.push_back(shape);
+				}
+			}
+
 			m_BlockSetMaterial = true;
 		}
 		else
@@ -560,7 +586,12 @@ namespace Proof {
 			for (size_t i = 0; i < meshData.SubMeshes.size(); i++)
 			{
 				const SubMeshColliderData& submeshData = meshData.SubMeshes[i];
-
+				if (entity.HasComponent<DynamicMeshComponent>())
+				{
+					uint32_t subMeshIndex = entity.GetComponent<DynamicMeshComponent>().GetSubMeshIndex();
+					if (subMeshIndex != i)
+						continue;
+				}
 				glm::vec3 submeshTranslation;
 				glm::quat submeshRotation;
 				glm::vec3 submeshScale;

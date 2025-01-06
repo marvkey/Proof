@@ -16,6 +16,19 @@ namespace Proof
 		Count<class UIMenu> Menu;
 	///	Count<class VariableRegistry> m_VariableTable;
 	};
+
+	class UIPanelInstance
+	{
+	public:
+		UIPanelInstance(Count<UIPanel> panel);
+		UIPanelInstance();
+	private:
+		void SetPanelInstance(Count<UIPanel> panel);
+	private:
+
+		Count<UIPanel> m_UIPanel;
+		Count<class VariableRegistry> m_VariableTable;
+	};
 	class UILayer
 	{
 	public:

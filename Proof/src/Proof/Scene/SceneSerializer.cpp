@@ -182,15 +182,29 @@ namespace Proof
 					//if (*dynamicMeshComponent.GetMesh()->GetMaterialTable() == *dynamicMeshComponent.MaterialTable)
 					//	goto leavedynamic;
 
+					bool canSaveMaterialTable = false;
 					auto meshMaterialTable = dynamicMeshComponent.GetMesh()->GetMaterialTable();
 					for (auto [index, material] : dynamicMeshComponent.MaterialTable->GetMaterials())
 					{
-						if(!meshMaterialTable->HasMaterial(index))
-							goto leavedynamic;
+						//if(!meshMaterialTable->HasMaterial(index))
+							//goto leavedynamic;
 
-						if(meshMaterialTable->GetMaterial(index) != material)
-							goto leavedynamic;
-
+						if (meshMaterialTable->HasMaterial(index))
+						{
+							if (meshMaterialTable->GetMaterial(index) != material)
+							{
+								canSaveMaterialTable = true;
+								break;
+							}
+							else
+								canSaveMaterialTable = false;
+						}
+						else
+						{
+							canSaveMaterialTable = true;
+							break;
+						}
+							
 
 					}
 					out << YAML::Key << "MaterialTable";

@@ -2,7 +2,7 @@ Project:
   Name: FlappyBird
   AssetDirectory: Assets
   AssetManager: Assets/AssetManager.ProofAssetManager
-  StartWorld: 0
+  StartWorld: 1727338198408425826
   ScriptModuleDirectory: Binaries/ScriptApp
   OnCloseStartWorldEditLastOpen: true
   StartWorldEdit: 1727338198408425826

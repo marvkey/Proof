@@ -223,7 +223,7 @@ namespace Proof
 
 		const glm::uvec2 viewportSize = m_UBScreenData.FullResolution;
 		m_CommandBuffer = RenderCommandBuffer::Create("WorldRenderer");
-		m_Renderer2D = Count<Renderer2D>::Create();
+		m_Renderer2D = Count<Renderer2D>::Create("World2DRenderer");
 		m_Cube = MeshWorkShop::GenerateCube();
 		m_Environment = Count<Environment>::Create(EnvironmentTextureData());
 
@@ -1975,7 +1975,7 @@ namespace Proof
 			SetPasses();
 			ShadowPass();
 			PreDepthPass();
-			HZBPass();
+			//HZBPass();
 			//PreIntegrationPass();
 			LightFrustrumAndCullingPass();
 			GeometryPass();
@@ -3982,7 +3982,6 @@ namespace Proof
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
 		const auto& submeshData = meshSource->GetSubMeshes();
 		const auto& subMesh = meshSource->GetSubMeshes().at(subMeshIndex);
-
 		glm::mat4 subMeshTransform = transform * mesh->GetTransform() ; // dont multiply by submesh transform
 
 		uint32_t materialIndex = subMesh.MaterialIndex;
@@ -4071,7 +4070,7 @@ namespace Proof
 		const auto& submeshData = meshSource->GetSubMesh(subMeshIndex);
 		const auto& subMesh = meshSource->GetSubMeshes().at(subMeshIndex);
 
-		glm::mat4 subMeshTransform = transform * mesh->GetTransform() * subMesh.Transform;
+		glm::mat4 subMeshTransform = transform * mesh->GetTransform() ;
 
 		uint32_t materialIndex = subMesh.MaterialIndex;
 

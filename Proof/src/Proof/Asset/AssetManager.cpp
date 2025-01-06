@@ -342,8 +342,19 @@ namespace Proof
 		Timer time;
 
 		//SaveAllAssets();
-		s_AssetManagerData->Assets.clear();
-		
+
+		// initilize this in case in teh future we have a situation where 
+		// erasing assets causes error
+	#if 0
+		for (auto [type, listAsset] : s_AssetManagerData->AllAssetTypes)
+		{
+			for (auto id : listAsset)
+			{
+				PF_ENGINE_TRACE("Erasing asset ID:{} Name: {}", id, AssetManager::GetAssetInfo(id).GetName());
+				s_AssetManagerData->Assets.erase(id);
+			}
+		}
+	#endif
 		s_AssetManagerData = nullptr;
 		AssetCustomDataManager::ShutDown();
 		PF_ENGINE_INFO("Asset Manager Shutdown {}m/s", time.ElapsedMillis());

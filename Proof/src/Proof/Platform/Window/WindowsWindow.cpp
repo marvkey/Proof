@@ -27,8 +27,8 @@ namespace Proof {
     WindowsWindow::WindowsWindow(const WindowConfiguration& configuration) :
         Window(configuration)
     {
-        Init();
         s_lastWindow = this;
+        Init();
 
         int gamepadCount = 0;
         GLFWgamepadstate gamepadState;
@@ -264,7 +264,9 @@ namespace Proof {
 
             s_Controllers.insert({ jid,  controller });
             ControllerConnectEvent ctEvent(jid);
-            s_lastWindow->EventCallback(ctEvent);
+            PF_ENGINE_INFO(ctEvent.ToString());
+            if(s_lastWindow->EventCallback != nullptr)
+                s_lastWindow->EventCallback(ctEvent);
         }
         else if (event == GLFW_DISCONNECTED)
         {
@@ -273,7 +275,9 @@ namespace Proof {
                 return;
 
             ControllerDisconnectEvent ctEvent(jid);
-            s_lastWindow->EventCallback(ctEvent);
+            PF_ENGINE_INFO(ctEvent.ToString());
+            if(s_lastWindow->EventCallback != nullptr)
+                s_lastWindow->EventCallback(ctEvent);
 
             s_Controllers.erase(jid);
             s_ControllerLastKeyClicked.erase(jid);
@@ -312,6 +316,8 @@ namespace Proof {
     void WindowsWindow::ControllerEventCallback() {
         for (auto& [ID, controller] : s_Controllers)
         {
+            // make sure buttons always before axis keep this order dont change 
+            // classes that use the controller need it to be in this order like enhanced controller input device
             ContollerButtonCallback(controller);
             ContollerAxisCallback(controller);
         }
@@ -796,7 +802,7 @@ namespace Proof {
 
         m_SwapChain = SwapChain::Create(this);
         SetVsync(m_WindowConfiguration.Vsync);
-        PF_ENGINE_INFO("Window created widht {} height {}", m_WindowConfiguration.Width, m_WindowConfiguration.Height);
+        PF_ENGINE_INFO("Window created width {} height {}", m_WindowConfiguration.Width, m_WindowConfiguration.Height);
         return 0;
     }
 

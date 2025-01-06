@@ -258,11 +258,7 @@ namespace Proof
 
 	struct MeshComponent{
 		MeshComponent() = default;
-		MeshComponent(const MeshComponent&other):
-		m_MeshID(other.m_MeshID)
-			,MaterialTable(Count<class MaterialTable>::CreateFrom(other.MaterialTable))
-		{
-		}
+		MeshComponent(const MeshComponent& other);
 
 		void SetMesh(UUID ID,bool takeMaterialTable = true);
 		void RemoveMesh();
@@ -288,11 +284,7 @@ namespace Proof
 	struct DynamicMeshComponent {
 	public:
 		DynamicMeshComponent() = default;
-		DynamicMeshComponent(const DynamicMeshComponent& other) :
-			m_MeshID(other.m_MeshID)
-			, MaterialTable(Count<class MaterialTable>::CreateFrom(other.MaterialTable))
-		{
-		}
+		DynamicMeshComponent(const DynamicMeshComponent& other);
 		Count<MaterialTable> MaterialTable = Count<class MaterialTable>::Create();
 		void SetMesh(AssetID ID, bool takeMaterialTable = true);
 		void RemoveMesh();

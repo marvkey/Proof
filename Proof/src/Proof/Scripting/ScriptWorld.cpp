@@ -311,7 +311,8 @@ namespace Proof
                 }
             }
         }
-        ScriptEngine::CallMethod(instanceHandle, "OnCreate");
+        m_CallOnCreate.insert({ instanceHandle });
+        //ScriptEngine::CallMethod(instanceHandle, "OnCreate");
 
 	}
     void ScriptWorld::ScriptEntityDeleteScript(Entity entity, const std::string& classFullName)
@@ -666,6 +667,9 @@ namespace Proof
 
         auto view = m_World->GetAllEntitiesWith<ScriptComponent>();
 
+        for(auto instanceHandle : m_CallOnCreate)
+            ScriptEngine::CallMethod(instanceHandle, "OnCreate");
+        m_CallOnCreate.clear();
         for (auto& [enityID, classes] : m_RuntimeEntityClassStorage)
         {
             if (!RuntimeIsEntityScriptInstantiated(m_World->GetEntity(enityID)))continue;

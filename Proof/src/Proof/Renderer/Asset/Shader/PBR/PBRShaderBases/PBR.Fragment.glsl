@@ -186,7 +186,7 @@ vec3 PBR_CalculateIBL()
 
         //TODO Fix why brdf is causing shader bug
         //of a grey dot
-		vec3 specularIBL = specularIrradiance * (m_PBRParams.F0 * specularBRDF.x + specularBRDF.y) ; 
+		vec3 specularIBL = specularIrradiance * (F * specularBRDF.x + specularBRDF.y) ; 
 		//vec3 specularIBL = specularIrradiance * (m_PBRParams.F0 ) ; 
 
         iblEfeect += kd * diffuseIBL + specularIBL;

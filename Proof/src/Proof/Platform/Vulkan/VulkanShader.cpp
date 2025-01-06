@@ -159,6 +159,7 @@ namespace Proof
         Compile(m_SourceCode);
         CreateShader();
         m_InitialCompile = false;
+
     }
 
     VulkanShader::VulkanShader(const std::string& name, const std::unordered_map<ShaderStage, std::string> shaders) {
@@ -185,6 +186,7 @@ namespace Proof
         Compile(m_SourceCode);
         CreateShader();
         m_InitialCompile = false;
+
     }
     VulkanShader::~VulkanShader() {
         Release();
@@ -1038,6 +1040,13 @@ namespace Proof
             allocInfo.descriptorSetCount = 1;
            // VK_CHECK_RESULT(vkAllocateDescriptorSets(device, &allocInfo, &m_DescriptorResource[set].Set));
         }
+        VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
+        bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+
+        VkDescriptorBindingFlags bindingFlags[] = { VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT };
+
+        bindingFlagsInfo.bindingCount = 1;
+        bindingFlagsInfo.pBindingFlags = bindingFlags;
         // we need every descriptor to have a layout for shader reasons 
         for (int set = 0; set < 4; set++)
         {
@@ -1045,9 +1054,11 @@ namespace Proof
             {
                 VkDescriptorSetLayoutCreateInfo descriptorLayoutInfo{};
                 descriptorLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-                descriptorLayoutInfo.pNext = nullptr;
+                descriptorLayoutInfo.pNext = &bindingFlagsInfo;
                 descriptorLayoutInfo.bindingCount = 0;
                 descriptorLayoutInfo.pBindings = nullptr;
+                descriptorLayoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
+
                 VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device, &descriptorLayoutInfo, nullptr, &m_DescriptorResource[set].Layout));
                 VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT, fmt::format("{} descriptorLayout set: {}",m_Name,set), m_DescriptorResource[set].Layout);
             }

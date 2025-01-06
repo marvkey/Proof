@@ -86,7 +86,7 @@ namespace Proof {
 	class Renderer2D : RefCounted {
 		friend class Camera;
 	public:
-		Renderer2D();
+		Renderer2D(const std::string& debugName);
 		~Renderer2D();
 		void BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Renderer2DContextSettings settigs = Renderer2DContextSettings(),bool clearFrameBuffer = false);
 	#if 0
@@ -176,16 +176,16 @@ namespace Proof {
 
 		Count<class IndexBuffer> m_IndexBuffer;
 		glm::vec4 m_QuadVertexPositions[4];
-		const uint32_t c_MaxQuadCount = 10000;
+		const uint32_t c_MaxQuadCount = 1000;
 		const uint32_t c_MaxVertexCount = c_MaxQuadCount * 4; // times 4 cause each quad holds 4 vertices
 		const uint32_t c_MaxIndexCount = c_MaxQuadCount * 6;
 
-		const uint32_t c_MaxLines = 10000;
+		const uint32_t c_MaxLines = 1000;
 		const uint32_t c_MaxLineVertices = c_MaxLines * 2;
 		const uint32_t c_MaxLineIndices = c_MaxLines * 6;
 
 
-		const uint32_t c_MaxPoints = 10000;
+		const uint32_t c_MaxPoints = 1000;
 		const uint32_t c_MaxPointVertices = c_MaxPoints * 3;
 		const uint32_t c_MaxPointIndices = c_MaxPoints * 6;
 
@@ -240,6 +240,13 @@ namespace Proof {
 
 		Count<UniformBufferSet> m_UBCamera = nullptr;
 		Renderer2DContextSettings m_ContextSettings;
+
+		std::string m_DebugName;
+		bool m_NeedsToSubmitCommandBuffer = false;
+
+		static inline std::vector<WeakCount<Renderer2D>> s_Instances;
+		friend class World;
+		friend class Renderer;
 	};
 }
 

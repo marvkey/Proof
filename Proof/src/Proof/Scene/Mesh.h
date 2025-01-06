@@ -132,6 +132,7 @@ namespace Proof
     {
     public:
         MeshSource();
+        virtual ~MeshSource();
         MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices);
         MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable>, AABB boundingBox);
         MeshSource(const std::string& name,const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& submeshes);

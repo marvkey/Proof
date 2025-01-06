@@ -86,8 +86,8 @@ namespace Proof {
 				};
 				VkDescriptorPoolCreateInfo pool_info = {};
 				pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-				pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
-				pool_info.maxSets = 100 * IM_ARRAYSIZE(pool_sizes);
+				pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT | VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT;
+				pool_info.maxSets = 100 * IM_ARRAYSIZE(pool_sizes); 
 				pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
 				pool_info.pPoolSizes = pool_sizes;
 				VK_CHECK_RESULT(vkCreateDescriptorPool(device, &pool_info, nullptr, &descriptorPool));
@@ -294,6 +294,7 @@ namespace Proof {
 		}
 
 		m_ImagesDescriptors[memLocation].first = ImGui_ImplVulkan_AddTexture(imageDescriptorInfo->sampler, imageDescriptorInfo->imageView, imageDescriptorInfo->imageLayout);
+		VulkanUtils::SetDebugUtilsObjectName(VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice(), VK_OBJECT_TYPE_DESCRIPTOR_SET, fmt::format("ImguiVulkanImage"), m_ImagesDescriptors[memLocation].first);
 		m_ImagesDescriptors[memLocation].second = image.Get();
 		return (ImTextureID)m_ImagesDescriptors[memLocation].first;
 	}

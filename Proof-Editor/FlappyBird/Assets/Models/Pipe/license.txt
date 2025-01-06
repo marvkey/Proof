@@ -1,0 +1,11 @@
+Model Information:
+* title:	Flappy Bird 3D
+* source:	https://sketchfab.com/3d-models/flappy-bird-3d-13942e273d6148babe51f1fed4952e0f
+* author:	wifqo.akroma (https://sketchfab.com/wifqo.akroma)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Flappy Bird 3D" (https://sketchfab.com/3d-models/flappy-bird-3d-13942e273d6148babe51f1fed4952e0f) by wifqo.akroma (https://sketchfab.com/wifqo.akroma) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

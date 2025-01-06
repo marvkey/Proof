@@ -1,0 +1,81 @@
+World:
+  ID: 15802927782469401077
+  Entities:
+    - Entity: 18320901087392238441
+      TagComponent:
+        Tag: p_Platform
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [12611173100223212822]
+    - Entity: 1592908217011438749
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [1.39626336, 0.17453292, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+    - Entity: 2362280823514790440
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.565486729, 1.72438538, -0.731292963]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 3.148
+    - Entity: 12611173100223212822
+      TagComponent:
+        Tag: Platform
+        tags: []
+      TransformComponent:
+        Location: [0, -11.3000002, 0]
+        Rotation: [0, -0, 0]
+        Scale: [112, 10, 112]
+      HierarchyComponent:
+        ParentHandle: 18320901087392238441
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        MaterialTable:
+          - Material: ""
+            AssetID: 1279727863603567063
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete

@@ -80,6 +80,7 @@
     <Compile Include="Src\Proof\Scene\Component.cs" />
     <Compile Include="Src\Proof\Scene\Entity.cs" />
     <Compile Include="Src\Proof\Scene\Mesh.cs" />
+    <Compile Include="Src\Proof\Scene\PersistentDataStorage.cs" />
     <Compile Include="Src\Proof\Scene\Prefab.cs" />
     <Compile Include="Src\Proof\Scene\World.cs" />
     <Compile Include="Src\Proof\UI\UIComponent.cs" />

@@ -139,13 +139,28 @@ namespace Proof{
 		{
 			Release();
 		}
+	};
 
-		static ScopeBuffer Copy(const void* data, uint64_t size)
+	struct RefBuffer : public Buffer, public RefCounted
+	{
+		RefBuffer() = default;
+		RefBuffer(uint64_t size)
 		{
-			ScopeBuffer buffer;
-			buffer.Allocate(size);
-			memcpy(buffer.Data, data, size);
-			return buffer;
+			Allocate(size);
+		}
+		//data is in (uint8_t*) just using void* so user can avoid casitng
+		RefBuffer(const void* data, uint64_t size, bool copyData = false)
+		{
+			Size = size;
+			if (copyData && data && size > 0)
+			{
+				Allocate(size);
+				memcpy(Data, data, Size);
+			}
+			else
+			{
+				Data = (uint8_t*)data;
+			}
 		}
 	};
 

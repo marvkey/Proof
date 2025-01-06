@@ -156,8 +156,8 @@ namespace Proof
 	const ElevatedInputKey ElevatedInputKeys::C_Cedille(ElevatedInputKeyDeviceType::KeyBoard, std::string(1, char(231)));
 	const ElevatedInputKey ElevatedInputKeys::Section(ElevatedInputKeyDeviceType::KeyBoard, std::string(1, char(167)));
 
-	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStick2D(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStick2D",ElevatedInputKeyFlags::Axis1D );
-	const ElevatedInputKey ElevatedInputKeys::ControllerRightStick2D(ElevatedInputKeyDeviceType::Controller, "ControllerRightStick2D", ElevatedInputKeyFlags::Axis1D );
+	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStick2D(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStick2D",ElevatedInputKeyFlags::Axis2D );
+	const ElevatedInputKey ElevatedInputKeys::ControllerRightStick2D(ElevatedInputKeyDeviceType::Controller, "ControllerRightStick2D", ElevatedInputKeyFlags::Axis2D );
 	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickX(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickX", ElevatedInputKeyFlags::Axis1D );
 	const ElevatedInputKey ElevatedInputKeys::ControllerLeftStickY(ElevatedInputKeyDeviceType::Controller, "ControllerLeftStickY", ElevatedInputKeyFlags::Axis1D );
 	const ElevatedInputKey ElevatedInputKeys::ControllerRightStickX(ElevatedInputKeyDeviceType::Controller, "ControllerRightStickX", ElevatedInputKeyFlags::Axis1D );
@@ -165,8 +165,8 @@ namespace Proof
 	const ElevatedInputKey ElevatedInputKeys::ControllerLeftTriggerAxis(ElevatedInputKeyDeviceType::Controller, "ControllerLeftTriggerAxis", ElevatedInputKeyFlags::Axis1D );
 	const ElevatedInputKey ElevatedInputKeys::ControllerRightTriggerAxis(ElevatedInputKeyDeviceType::Controller, "ControllerRightTriggerAxis", ElevatedInputKeyFlags::Axis1D );
 
-	const ElevatedInputKey ElevatedInputKeys::ControllerLeftThumbstick(ElevatedInputKeyDeviceType::Controller, "ControllerLeftThumbstick", ElevatedInputKeyFlags::Axis2D);
-	const ElevatedInputKey ElevatedInputKeys::ControllerRightThumbstick(ElevatedInputKeyDeviceType::Controller, "ControllerRightThumbstick", ElevatedInputKeyFlags::Axis2D);
+	const ElevatedInputKey ElevatedInputKeys::ControllerLeftThumbstickButton(ElevatedInputKeyDeviceType::Controller, "ControllerLeftThumbstickButton");
+	const ElevatedInputKey ElevatedInputKeys::ControllerRightThumbstickButton(ElevatedInputKeyDeviceType::Controller, "ControllerRightThumbstickButton");
 
 	const ElevatedInputKey ElevatedInputKeys::ControllerBack(ElevatedInputKeyDeviceType::Controller, "ControllerBack");
 	const ElevatedInputKey ElevatedInputKeys::ControllerStart(ElevatedInputKeyDeviceType::Controller, "ControllerStart");
@@ -433,6 +433,54 @@ namespace Proof
 		AddKey(&E_AccentAigu);
 		AddKey(&C_Cedille);
 		AddKey(&Section);
+
+
+		// Controller
+		AddKey(&ControllerLeftStickX);
+		AddKey(&ControllerLeftStickY);
+		AddPairedKey(&ControllerLeftStick2D, &ControllerLeftStickX, &ControllerLeftStickY);
+
+		AddKey(&ControllerRightStickX);
+		AddKey(&ControllerRightStickY);
+		AddPairedKey(&ControllerRightStick2D, &ControllerRightStickX, &ControllerRightStickY);
+
+		AddKey(&ControllerLeftTriggerAxis);
+		AddKey(&ControllerRightTriggerAxis);
+
+		AddKey(&ControllerLeftThumbstickButton);
+		AddKey(&ControllerRightThumbstickButton);
+
+		AddKey(&ControllerBack);
+		AddKey(&ControllerStart);
+		AddKey(&ControllerGuide);
+		AddKey(&ControllerSpecialRight);
+		AddKey(&ControllerFaceButtonBottom);
+		AddKey(&ControllerFaceButtonRight);
+		AddKey(&ControllerFaceButtonLeft);
+		AddKey(&ControllerFaceButtonTop);
+
+		AddKey(&ControllerLeftShoulder);
+		AddKey(&ControllerRightShoulder);
+		AddKey(&ControllerLeftTrigger);
+		AddKey(&ControllerRightTrigger);
+
+		AddKey(&ControllerDPadUp);
+		AddKey(&ControllerDPadDown);
+		AddKey(&ControllerDPadRight);
+		AddKey(&ControllerDPadLeft);
+		AddKey(&ControllerDPad);
+
+		AddKey(&ControllerLeftStickUp);
+		AddKey(&ControllerLeftStickDown);
+		AddKey(&ControllerLeftStickRight);
+		AddKey(&ControllerLeftStickLeft);
+
+		AddKey(&ControllerRightStickUp);
+		AddKey(&ControllerRightStickDown);
+		AddKey(&ControllerRightStickRight);
+		AddKey(&ControllerRightStickLeft);
+
+		
 	}
 	void ElevatedInputKeys::ShutDown()
 	{

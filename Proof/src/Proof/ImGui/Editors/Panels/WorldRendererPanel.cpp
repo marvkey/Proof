@@ -54,6 +54,52 @@ namespace Proof
 			ImGui::Text("%f m/s", FrameTime::GetFrameMS());
 			ImGui::Text("%f FPS", FrameTime::GetFrameFPS());
 
+				
+			if (UI::AttributeTreeNode("Stats", true))
+			{
+
+				const WorldRendererStatistics& stats = m_WorldRenderer->GetStats();
+				UI::AttributeText(fmt::format("Total Mesh Processed CPU {}", stats.TotalMeshProcessedCpu));
+				UI::AttributeText(fmt::format("Total Mesh Sent GPU {}", stats.TotalMeshSentToGpu));
+				UI::AttributeText(fmt::format("Saved Meshes {}", stats.TotalMeshProcessedCpu - stats.TotalMeshSentToGpu));
+
+				ImGui::Separator();
+
+				const WorldRendererTimers& timers = stats.Timers;
+
+				UI::AttributeText(fmt::format("Set Passes: {:.3f} ms", timers.SetPasses));
+				UI::AttributeText(fmt::format("Shadow Pass: {:.3f} ms", timers.ShadowPass));
+				UI::AttributeText(fmt::format("Pre Depth Pass: {:.3f} ms", timers.PreDepthPass));
+
+				ImGui::Separator();
+
+				// Geometry Pass
+				UI::AttributeText(fmt::format("Geometry Pass: {:.3f} ms", timers.GeometryPass));
+				UI::AttributeText(fmt::format("Geometry Mesh Pass: {:.3f} ms", timers.GeometryMeshPass));
+				UI::AttributeText(fmt::format("Geometry Dynamic Mesh Pass: {:.3f} ms", timers.GeometryDynamicMeshPass));
+				UI::AttributeText(fmt::format("Geometry SkyBox Pass: {:.3f} ms", timers.GeometrySkyBoxPass));
+
+				ImGui::Separator();
+
+				// Lighting
+				UI::AttributeText(fmt::format("Light Calculate Grid Frustum: {:.3f} ms", timers.LightCalculateGridFrustum));
+				UI::AttributeText(fmt::format("Light Culling: {:.3f} ms", timers.LightCulling));
+
+				ImGui::Separator();
+
+				// Composite Pass
+				UI::AttributeText(fmt::format("Composite Pass: {:.3f} ms", timers.CompositePass));
+				UI::AttributeText(fmt::format("Draw Physics Colliders: {:.3f} ms", timers.DrawPhysicsColliders));
+
+				ImGui::Separator();
+
+				// Total Render Time
+				UI::AttributeText(fmt::format("Total Draw Scene: {:.3f} ms", timers.TotalDrawScene));
+				UI::EndTreeNode();
+
+			}
+
+
 			if (UI::AttributeTreeNode("Shaders", false))
 			{
 				if (UI::AttributeButton("", "ReloadAll"))

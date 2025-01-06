@@ -278,6 +278,7 @@ namespace Proof
 
 	VulkanDevice::~VulkanDevice()
 	{
+		Destroy();
 	}
 
 	void VulkanDevice::Destroy()
@@ -333,15 +334,15 @@ namespace Proof
 		if (commandPoolIt != m_CommandPools.end())
 			return commandPoolIt->second;
 
-		Count<VulkanCommandPool> commandPool = Count<VulkanCommandPool>::Create();
+		Count<VulkanCommandPool> commandPool = Count<VulkanCommandPool>::Create(this);
 		m_CommandPools[threadID] = commandPool;
 		return commandPool;
 	}
 
-	VulkanCommandPool::VulkanCommandPool()
+	VulkanCommandPool::VulkanCommandPool(Count<VulkanDevice> device)
 	{
-		auto device = VulkanGraphicsContext::Get()->GetDevice();
-		auto vulkanDevice = device->GetVulkanDevice();
+		m_Device = device;
+		auto vulkanDevice = m_Device->GetVulkanDevice();
 
 		VkCommandPoolCreateInfo cmdPoolInfo = {};
 		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -355,10 +356,11 @@ namespace Proof
 
 	VulkanCommandPool::~VulkanCommandPool()
 	{
-		auto device = VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice();
+		auto vulkanDevice = m_Device->GetVulkanDevice();
 
-		vkDestroyCommandPool(device, m_GraphicsCommandPool, nullptr);
-		vkDestroyCommandPool(device, m_ComputeCommandPool, nullptr);
+		vkDestroyCommandPool(vulkanDevice, m_GraphicsCommandPool, nullptr);
+		vkDestroyCommandPool(vulkanDevice, m_ComputeCommandPool, nullptr);
+		m_Device = nullptr;
 	}
 
 	VkCommandBuffer VulkanCommandPool::AllocateCommandBuffer(bool begin, bool compute)

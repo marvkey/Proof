@@ -10,6 +10,8 @@ namespace Proof
 	class VulkanFrameBuffer : public FrameBuffer {
 	public:
 		VulkanFrameBuffer(const FrameBufferConfig& attachments);
+		// creates swapchain framebuffer
+		VulkanFrameBuffer(const std::string& name);
 		virtual ~VulkanFrameBuffer();
 		VkFramebuffer GetFrameBuffer();
 		const FrameBufferConfig& GetConfig() const  
@@ -29,11 +31,13 @@ namespace Proof
 
 		virtual void Copy(Count<FrameBuffer> framebUFFer);
 
-		VkRenderPass GetRenderPass() { return m_CompatibilityRenderPass; }
+		VkRenderPass GetRenderPass();
 		ImageFormat GetDepthFormat() { return m_DepthFormat; }
 
-		virtual uint32_t GetWidth() const { return m_Config.Width; }
-		virtual uint32_t GetHeight() const {return m_Config.Height;}
+		virtual uint32_t GetWidth() const;
+		virtual uint32_t GetHeight() const;
+
+		bool IsSwapChainFrameBuffer() const { return m_SwapChainFrameBuffer; }
 	private:
 
 		void RT_Build();
@@ -46,6 +50,7 @@ namespace Proof
 		void CreateFramebuffer();
 		void Release();
 	private:
+		bool m_SwapChainFrameBuffer = false;
 		FrameBufferConfig m_Config;
 
 		//only one depth buffer allowed

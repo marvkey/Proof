@@ -76,7 +76,7 @@ namespace Proof
         Fine-tuning the InteractionThreshold enables developers to tailor interaction sensitivity to the unique demands of 
         their application or game, ensuring a seamless and intuitive user experience.
     */
-        float InteractionThreshold = 0.5f;
+        float InteractionThreshold = 0.25f;
 
         const InputActionOutput& GetLastActionValue()const { return m_LastValue; }
         

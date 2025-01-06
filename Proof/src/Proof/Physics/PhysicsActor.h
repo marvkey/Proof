@@ -44,6 +44,8 @@ namespace Proof
 		glm::quat GetRotation() const { return PhysXUtils::FromPhysXQuat(m_RigidActor->getGlobalPose().q); }
 		glm::vec3 GetRotationEuler() const { return glm::eulerAngles(GetRotation()); }
 
+		void SetTransform(const glm::mat4& transform);
+
 		void SetRotation(const glm::quat& rotation, bool autowake = true);
 		void Rotate(const glm::quat& rotation, bool autowake = true);
 
@@ -119,6 +121,8 @@ namespace Proof
 		void Release();
 		void Build();
 	private:
+		glm::vec3 m_LastLocation;
+		glm::quat m_LastRotation;
 		physx::PxRigidActor* m_RigidActor = nullptr;
 		physx::PxFilterData m_FilterData;
 

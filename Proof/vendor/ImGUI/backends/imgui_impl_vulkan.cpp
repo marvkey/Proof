@@ -787,27 +787,61 @@ static void ImGui_ImplVulkan_CreateFontSampler(VkDevice device, const VkAllocati
     VkResult err = vkCreateSampler(device, &info, allocator, &bd->FontSampler);
     check_vk_result(err);
 }
+inline PFN_vkSetDebugUtilsObjectNameEXT fpSetDebugUtilsObjectNameEXT; //Making it static randomly sets it to nullptr for some reason.
 
+//EDITED BY PROOF
 static void ImGui_ImplVulkan_CreateDescriptorSetLayout(VkDevice device, const VkAllocationCallbacks* allocator)
 {
     ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
     if (bd->DescriptorSetLayout)
         return;
+    VkDebugUtilsObjectNameInfoEXT nameInfo;
+    nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+    nameInfo.objectType = VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
+    nameInfo.pObjectName = "VulkanImguiDescritporLayout";
+    nameInfo.objectHandle = (uint64_t)bd->DescriptorSetLayout;
+    nameInfo.pNext = VK_NULL_HANDLE;
+
+    fpSetDebugUtilsObjectNameEXT = (PFN_vkSetDebugUtilsObjectNameEXT)(vkGetInstanceProcAddr(bd->VulkanInitInfo.Instance, "vkSetDebugUtilsObjectNameEXT"));
+    if (fpSetDebugUtilsObjectNameEXT == nullptr)
+        fpSetDebugUtilsObjectNameEXT = [](VkDevice device, const VkDebugUtilsObjectNameInfoEXT* pNameInfo) { return VK_SUCCESS; };
+    fpSetDebugUtilsObjectNameEXT(device, &nameInfo);
 
     ImGui_ImplVulkan_CreateFontSampler(device, allocator);
     VkSampler sampler[1] = { bd->FontSampler };
+
+    // Descriptor set layout binding
     VkDescriptorSetLayoutBinding binding[1] = {};
     binding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     binding[0].descriptorCount = 1;
     binding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
     binding[0].pImmutableSamplers = sampler;
+
+    // Enable update-after-bind for the layout
+    VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
+    bindingFlagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+
+    VkDescriptorBindingFlags bindingFlags[] = { VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT | VK_DESCRIPTOR_BINDING_UPDATE_UNUSED_WHILE_PENDING_BIT };
+    bindingFlagsInfo.bindingCount = 1;
+    bindingFlagsInfo.pBindingFlags = bindingFlags;
+
+    // Create descriptor set layout
     VkDescriptorSetLayoutCreateInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
     info.bindingCount = 1;
     info.pBindings = binding;
+    info.pNext = &bindingFlagsInfo;
+    // Note: The `VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT` is not valid for layouts; this flag applies to pools, not layouts.
+    info.flags = 0;
+
     VkResult err = vkCreateDescriptorSetLayout(device, &info, allocator, &bd->DescriptorSetLayout);
     check_vk_result(err);
+
+    // Ensure the descriptor pool supports `UPDATE_AFTER_BIND` if necessary
+    // This is likely implemented elsewhere in your code, but make sure:
+    // - VkDescriptorPoolCreateInfo::flags includes `VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT`.
 }
+
 
 static void ImGui_ImplVulkan_CreatePipelineLayout(VkDevice device, const VkAllocationCallbacks* allocator)
 {
@@ -963,6 +997,8 @@ bool ImGui_ImplVulkan_CreateDeviceObjects()
 
     if (!bd->DescriptorSetLayout)
     {
+
+        /*
         VkSampler sampler[1] = {bd->FontSampler};
         VkDescriptorSetLayoutBinding binding[1] = {};
         binding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -975,6 +1011,9 @@ bool ImGui_ImplVulkan_CreateDeviceObjects()
         info.pBindings = binding;
         err = vkCreateDescriptorSetLayout(v->Device, &info, v->Allocator, &bd->DescriptorSetLayout);
         check_vk_result(err);
+        */
+        // EDITED BY PROOF
+        ImGui_ImplVulkan_CreateDescriptorSetLayout(v->Device, v->Allocator);
     }
 
     if (!bd->PipelineLayout)
@@ -1150,6 +1189,7 @@ VkDescriptorSet ImGui_ImplVulkan_AddTexture(VkSampler sampler, VkImageView image
     // Create Descriptor Set:
     VkDescriptorSet descriptor_set;
     {
+        // EDITED BY PROOF
         VkDescriptorSetAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         alloc_info.descriptorPool = v->DescriptorPool;

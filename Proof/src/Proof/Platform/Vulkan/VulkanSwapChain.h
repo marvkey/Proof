@@ -26,6 +26,8 @@ namespace Proof
 
 		RendererConfig GetRenderConfig();
 		virtual uint32_t GetFrameIndex() { return m_CurrentBufferIndex; }
+		virtual uint32_t GetPREVIOUSFrameIndex() { return m_PREVIOUSBufferIndex; }
+		
 		virtual uint32_t GetImageIndex() { return m_CurrentImageIndex; }
 
 		size_t GetImageCount() const { return m_ImageCount; }
@@ -66,6 +68,7 @@ namespace Proof
 		void FindImageFormatAndColorSpace();
 		void Build();
 	private:
+
 		bool m_InFrame = false;
 		VkInstance m_Instance = nullptr;
 		bool m_VSync = false;
@@ -115,6 +118,7 @@ namespace Proof
 		VkRenderPass m_RenderPass = nullptr;
 		uint32_t m_CurrentBufferIndex = 0;
 		uint32_t m_CurrentImageIndex = 0;
+		uint32_t m_PREVIOUSBufferIndex = 0;
 
 		uint32_t m_QueueNodeIndex = UINT32_MAX;
 		uint32_t m_Width = 0, m_Height = 0;

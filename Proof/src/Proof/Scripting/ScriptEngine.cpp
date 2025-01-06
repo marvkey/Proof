@@ -393,6 +393,9 @@ namespace Proof
             for (auto& [entityID, scriptClasses] : scriptWorld->m_EntityClassesStorage)
             {
                 Entity entity = scriptWorld->GetWorld()->TryGetEntityWithUUID(entityID);
+                if (!entity)
+                    continue;
+
                 if (!entity.HasComponent<ScriptComponent>())
                     continue;
 

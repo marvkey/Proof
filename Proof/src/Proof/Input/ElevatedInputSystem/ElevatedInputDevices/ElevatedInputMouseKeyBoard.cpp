@@ -134,7 +134,7 @@ namespace Proof
 				invokeValue |= InvokeStep(params);
 
 				m_MousePosSetToRelease = false;
-				return true;
+				return invokeValue;
 
 				//UpdateCachePosition({ mouseMovedEvent.GetMovedX(),mouseMovedEvent.GetMovedY() });
 				//return false;

@@ -1,12 +1,19 @@
 #include "Proofprch.h"
 #include "ElevatedInputDeviceManager.h"
 #include "ElevatedInputMouseKeyBoard.h"
+#include "ElevatedInputController.h"
 #include "Proof/Events/ControllerEvent.h"
+#include "Proof/Core/Application.h"
+
 namespace Proof
 {
 	ElevatedInputDeviceManager::ElevatedInputDeviceManager()
 	{
 		m_InputDevices.push_back(Count<ElevatedInputDeviceMouseKeyboard>::Create());
+
+		for(auto& [index,controller] : Application::Get()->GetWindow()->GetControllers())
+			m_InputDevices.push_back(Count<ElevatedInputDeviceController>::Create(index));
+
 	}
 	ElevatedInputDeviceManager::~ElevatedInputDeviceManager()
 	{

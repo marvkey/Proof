@@ -93,7 +93,18 @@ layout(set = 2, binding = 8) buffer VisibleSpotLightIndicesBuffer
 
 vec3 CalculateSkyLight(samplerCube environmentMap,vec3 coords)
 {
-	vec3 envColor = textureLod(environmentMap, coords,u_SkyBoxInfo.Lod).rgb;
+    float angle = u_SkyBoxInfo.Roation;
+    float cosAngle = cos(angle);
+    float sinAngle = sin(angle);
+    
+    // Apply rotation around the Y-axis
+    vec3 rotatedCoords = vec3(
+        cosAngle * coords.x + sinAngle * coords.z,
+        coords.y,
+        -sinAngle * coords.x + cosAngle * coords.z
+    );
+
+	vec3 envColor = textureLod(environmentMap, rotatedCoords,u_SkyBoxInfo.Lod).rgb;
     envColor *= u_SkyBoxInfo.TintColor; 
     envColor *= u_SkyBoxInfo.Intensity;
 

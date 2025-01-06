@@ -4,6 +4,13 @@
 #include "VariableStorage.h"
 namespace Proof
 {
+	template<typename T>
+	struct VariableFieldUse
+	{
+		T Data;
+		bool UseAsVariable = false;
+		UUID VariableID;
+	};
 	struct Variable
 	{
 	public:
@@ -37,9 +44,9 @@ namespace Proof
 		VariableTypes Type = VariableTypes::Float;
 		bool IsArray = false;
 	private:
-		
-	private:
+		UUID m_UUID = 0;
 		Count<class VariableStorage> m_VariableField = nullptr;
+		friend class VariableRegistry;
 	};
 
 	class VariableRegistry : RefCounted
@@ -57,5 +64,6 @@ namespace Proof
 
 	private:
 		std::unordered_map<std::string, Variable> m_Variables;
+		std::unordered_map<UUID, std::string> m_VariableIds;
 	};
 }

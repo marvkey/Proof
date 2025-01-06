@@ -2,6 +2,7 @@
 #include "BasicCollision.h"
 #include "AABB.h"
 #include "Ray.h"
+#include "Proof/Scene/Camera/Camera.h"
 
 namespace Proof {
     bool BasicCollision::PointInAABB(const AABB& collison, const glm::vec3& point)
@@ -237,5 +238,118 @@ namespace Proof {
         t = tminf;
 
         return (tminf <= tmaxf);
+    }
+    bool BasicCollision::AAABIsOnOrForwardPlane(const AABB& aabb, const Plane& plane)
+    {
+    #if 0
+        auto extents = aabb.GetExtents();
+        // Compute the projection interval radius of b onto L(t) = b.c + t * p.n
+        const float r = extents.x * std::abs(plane.Normal.x) + extents.y * std::abs(plane.Normal.y) +
+            extents.z * std::abs(plane.Normal.z);
+
+        return -r <= plane.GetSignedDistanceToPlane(aabb.GetCenter());
+    #else
+
+        // Find the positive and negative vertices relative to the plane
+        glm::vec3 positiveVertex = aabb.Min;
+        glm::vec3 negativeVertex = aabb.Max;
+
+        if (plane.Normal.x >= 0) 
+        {
+            positiveVertex.x = aabb.Max.x;
+            negativeVertex.x = aabb.Min.x;
+        }
+        if (plane.Normal.y >= 0) 
+        {
+            positiveVertex.y = aabb.Max.y;
+            negativeVertex.y = aabb.Min.y;
+        }
+        if (plane.Normal.z >= 0) 
+        {
+            positiveVertex.z = aabb.Max.z;
+            negativeVertex.z = aabb.Min.z;
+        }
+
+        // If the positive vertex is in front of the plane, the box is at least partially visible
+        return glm::dot(plane.Normal, positiveVertex) + plane.Distance >= 0.0f;
+    #endif
+
+
+    }
+    bool BasicCollision::AABBIsOnFrustum(const AABB& aabb,const Frustum& camFrustum)
+    {
+        //https://learnopengl.com/code_viewer_gh.php?code=includes/learnopengl/entity.h
+        return AAABIsOnOrForwardPlane(aabb,camFrustum.LeftFace) &&
+            AAABIsOnOrForwardPlane(aabb,camFrustum.RightFace) &&
+            AAABIsOnOrForwardPlane(aabb,camFrustum.TopFace) &&
+            AAABIsOnOrForwardPlane(aabb,camFrustum.BottomFace) &&
+            AAABIsOnOrForwardPlane(aabb,camFrustum.NearFace) &&
+            AAABIsOnOrForwardPlane(aabb,camFrustum.FarFace);
+    }
+    Frustum Frustum::CreateFrustrum(const Camera* camera)
+    {
+        Frustum frustum;
+
+        // Calculate the View-Projection matrix
+        glm::mat4 viewProjectionMatrix = camera->GetProjectionMatrix() * camera->GetViewMatrix();
+
+        // Extract planes
+        // Each plane is derived from the View-Projection matrix
+
+        // Right Plane
+        frustum.RightFace.Normal.x = viewProjectionMatrix[0][3] - viewProjectionMatrix[0][0];
+        frustum.RightFace.Normal.y = viewProjectionMatrix[1][3] - viewProjectionMatrix[1][0];
+        frustum.RightFace.Normal.z = viewProjectionMatrix[2][3] - viewProjectionMatrix[2][0];
+        frustum.RightFace.Distance = viewProjectionMatrix[3][3] - viewProjectionMatrix[3][0];
+
+        // Left Plane
+        frustum.LeftFace.Normal.x = viewProjectionMatrix[0][3] + viewProjectionMatrix[0][0];
+        frustum.LeftFace.Normal.y = viewProjectionMatrix[1][3] + viewProjectionMatrix[1][0];
+        frustum.LeftFace.Normal.z = viewProjectionMatrix[2][3] + viewProjectionMatrix[2][0];
+        frustum.LeftFace.Distance = viewProjectionMatrix[3][3] + viewProjectionMatrix[3][0];
+
+        // Top Plane
+        frustum.TopFace.Normal.x = viewProjectionMatrix[0][3] - viewProjectionMatrix[0][1];
+        frustum.TopFace.Normal.y = viewProjectionMatrix[1][3] - viewProjectionMatrix[1][1];
+        frustum.TopFace.Normal.z = viewProjectionMatrix[2][3] - viewProjectionMatrix[2][1];
+        frustum.TopFace.Distance = viewProjectionMatrix[3][3] - viewProjectionMatrix[3][1];
+
+        // Bottom Plane
+        frustum.BottomFace.Normal.x = viewProjectionMatrix[0][3] + viewProjectionMatrix[0][1];
+        frustum.BottomFace.Normal.y = viewProjectionMatrix[1][3] + viewProjectionMatrix[1][1];
+        frustum.BottomFace.Normal.z = viewProjectionMatrix[2][3] + viewProjectionMatrix[2][1];
+        frustum.BottomFace.Distance = viewProjectionMatrix[3][3] + viewProjectionMatrix[3][1];
+
+        // Far Plane
+        frustum.FarFace.Normal.x = viewProjectionMatrix[0][3] - viewProjectionMatrix[0][2];
+        frustum.FarFace.Normal.y = viewProjectionMatrix[1][3] - viewProjectionMatrix[1][2];
+        frustum.FarFace.Normal.z = viewProjectionMatrix[2][3] - viewProjectionMatrix[2][2];
+        frustum.FarFace.Distance = viewProjectionMatrix[3][3] - viewProjectionMatrix[3][2];
+
+        // Near Plane
+        frustum.NearFace.Normal.x = viewProjectionMatrix[0][3] + viewProjectionMatrix[0][2];
+        frustum.NearFace.Normal.y = viewProjectionMatrix[1][3] + viewProjectionMatrix[1][2];
+        frustum.NearFace.Normal.z = viewProjectionMatrix[2][3] + viewProjectionMatrix[2][2];
+        frustum.NearFace.Distance = viewProjectionMatrix[3][3] + viewProjectionMatrix[3][2];
+
+        // Normalize all planes
+        auto NormalizePlane = [](Plane& plane) {
+            float length = glm::length(plane.Normal);
+            plane.Normal /= length;
+            plane.Distance /= length;
+        };
+
+        NormalizePlane(frustum.RightFace);
+        NormalizePlane(frustum.LeftFace);
+        NormalizePlane(frustum.TopFace);
+        NormalizePlane(frustum.BottomFace);
+        NormalizePlane(frustum.FarFace);
+        NormalizePlane(frustum.NearFace);
+
+        return frustum;
+    }
+    float Plane::GetSignedDistanceToPlane(const glm::vec3& point) const
+    {
+        return glm::dot(Normal, point) - Distance;
     }
 }

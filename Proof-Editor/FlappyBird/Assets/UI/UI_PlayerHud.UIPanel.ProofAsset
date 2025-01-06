@@ -10,7 +10,7 @@ UIElements:
       Rotation: [0, 0]
       Size: [100, 100]
     UITextComponent:
-      Text: 2
+      Text: 21
       Color: [1, 1, 1, 1]
       Kerning: 0
       LineSpacing: 1

@@ -309,8 +309,8 @@ namespace Proof
 		static const ElevatedInputKey ControllerLeftTriggerAxis;
 		static const ElevatedInputKey ControllerRightTriggerAxis;
 
-		static const ElevatedInputKey ControllerLeftThumbstick;
-		static const ElevatedInputKey ControllerRightThumbstick;
+		static const ElevatedInputKey ControllerLeftThumbstickButton;
+		static const ElevatedInputKey ControllerRightThumbstickButton;
 		static const ElevatedInputKey ControllerBack;
 		static const ElevatedInputKey ControllerStart;
 		static const ElevatedInputKey ControllerGuide;

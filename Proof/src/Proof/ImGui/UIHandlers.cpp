@@ -303,7 +303,7 @@ namespace Proof::UI
 
 				//UI::AttributeLabel(GenerateLabelID(buttonText));
 				//ImGui::SameLine();
-				auto texture = AssetManager::HasAsset(outHandle) ? AssetManager::GetAsset<Texture2D>(outHandle) : EditorResources::CheckerBoardWhiteGrey;
+				auto texture = AssetManager::HasAsset(outHandle) && AssetManager::IsAssetLoaded(outHandle) ? AssetManager::GetAsset<Texture2D>(outHandle) : EditorResources::CheckerBoardWhiteGrey;
 				UI::ImageButton(texture, { width,itemHeight });
 				const bool isHovered = ImGui::IsItemHovered();
 				{

@@ -22,6 +22,7 @@ namespace Proof{
 
 		virtual RendererConfig GetRenderConfig() = 0;
 		virtual uint32_t GetFrameIndex() = 0;
+		virtual uint32_t GetPREVIOUSFrameIndex() = 0;
 		virtual uint32_t GetImageIndex() = 0;
 
 		virtual void SetVsync(bool vsync) = 0;

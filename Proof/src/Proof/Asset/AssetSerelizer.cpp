@@ -10,6 +10,8 @@
 #include "Proof/Scene/World.h"
 #include "Proof/Renderer/ParticleSystem.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
+#include "Proof/Renderer/RenderMaterial.h"
+#include "Proof/Renderer/Shader.h"
 #include "Proof/Renderer/UIRenderer/UIMenu.h"
 #include "Proof/Scene/SceneSerializer.h"
 #include "Proof/Renderer/Renderer.h"
@@ -79,6 +81,7 @@ namespace Proof {
 		out << YAML::BeginMap;
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(material->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << material->GetID();
+		out << YAML::Key << "ShaderName" << YAML::Value << material->GetRenderMaterial()->GetConfig().Shader->GetName();
 
 		out << YAML::Key << "AlbedoColour" << YAML::Value << material->GetAlbedoColor();
 		out << YAML::Key << "Roughness" << YAML::Value << material->GetRoughness();
@@ -119,7 +122,15 @@ namespace Proof {
 		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
 		if (!data["AssetType"])
 			return nullptr;
-		Count<Material> material = Count<Material>::Create(assetData.GetName());
+
+		std::string shaderName;
+		Count<Material> material;
+
+		if (data["ShaderName"] && Renderer::GetShaderLibrary()->HasShader(data["ShaderName"].as<std::string>()))
+			material = Count<Material>::Create(assetData.GetName(), Renderer::GetShaderLibrary()->GetShader(data["ShaderName"].as<std::string>()));
+		else
+			material = Count<Material>::Create(assetData.GetName());
+
 		material->GetAlbedoColor() = data["AlbedoColour"].as<glm::vec3>();
 
 		material->GetMetalness() = data["Metallness"].as<float>();
@@ -471,7 +482,7 @@ namespace Proof {
 			out << YAML::Key << "UICoreComponent";
 			out << YAML::BeginMap; // CoreComponent
 			out << YAML::Key << "ElementID" << YAML::Value << coreComponent.GetElementID();
-			out << YAML::Key << "Name" << YAML::Value << coreComponent.Name;
+			out << YAML::Key << "Name" << YAML::Value << coreComponent.GetName();
 			out << YAML::Key << "UIElementType" << YAML::Value << EnumReflection::EnumString(coreComponent.ElementType);
 			out << YAML::Key << "Position" << YAML::Value << coreComponent.Transform.Position;
 			out << YAML::Key << "Rotation" << YAML::Value << coreComponent.Transform.Rotation;

@@ -109,5 +109,6 @@ namespace Proof {
 		void UI_ShowCreateNewMeshPopup();
 		void UI_ShowInvalidAssetMetadataPopup();
 		void UI_SaveWorldAs();
+		void UI_DragDynamicMeshPopup();
 	};
 }

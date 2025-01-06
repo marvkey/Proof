@@ -81,7 +81,7 @@ namespace Proof
 
 		float m_Accumulator = 0.0f;
 		// needs to be changed have a way to figure this out
-		float m_SubStepSize = 1.0f / 60.0f;
+		float m_SubStepSize = 1.0f / 100.0f;
 		uint32_t m_NumSubSteps = 0;
 		const uint32_t c_MaxSubSteps = 8;
 

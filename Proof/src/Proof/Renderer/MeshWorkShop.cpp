@@ -16,7 +16,7 @@ namespace Proof {
     //TODO ADD ALready have smooth shading implement flat shading https://www.songho.ca/opengl/gl_cylinder.html  already has flat shaidng for cylinder, cone and sphere
     Count<Mesh> MeshWorkShop::GenerateCube(const glm::vec3& size)
     {
-
+    #if 1
         //https://github.com/kidrigger/Blaze/blob/7e76de71e2e22f3b5e8c4c2c50c58e6d205646c6/Blaze/Primitives.cpp
         std::vector<Vertex> vertices;
         vertices.resize(8);
@@ -38,6 +38,16 @@ namespace Proof {
         vertices[6].Normal = { 1.0F,  1.0F, -1.0F };
         vertices[7].Normal = { -1.0F,  1.0F, -1.0F };
 
+        // Texture Coordinates (UVs)
+        vertices[0].TexCoord = { 0.0f, 0.0f };
+        vertices[1].TexCoord = { 1.0f, 0.0f };
+        vertices[2].TexCoord = { 1.0f, 1.0f };
+        vertices[3].TexCoord = { 0.0f, 1.0f };
+        vertices[4].TexCoord = { 0.0f, 0.0f };
+        vertices[5].TexCoord = { 1.0f, 0.0f };
+        vertices[6].TexCoord = { 1.0f, 1.0f };
+        vertices[7].TexCoord = { 0.0f, 1.0f };
+
         std::vector<Index> indices =
         {
             {0, 1, 2,}, {2, 3, 0,},
@@ -47,6 +57,56 @@ namespace Proof {
             {4, 5, 1,}, {1, 0, 4,},
             {3, 2, 6,}, {6, 7, 3},
         };
+    #else
+        std::vector<Vertex> vertices;
+
+
+        // Front face
+        vertices.push_back({ {-size.x, -size.y,  size.z}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f} });
+        vertices.push_back({ { size.x, -size.y,  size.z}, {0.0f, 0.0f, 1.0f}, {1.0f, 0.0f} });
+        vertices.push_back({ { size.x,  size.y,  size.z}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f} });
+        vertices.push_back({ {-size.x,  size.y,  size.z}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f} });
+
+        // Back face
+        vertices.push_back({ {-size.x, -size.y, -size.z}, {0.0f, 0.0f, -1.0f}, {1.0f, 0.0f} });
+        vertices.push_back({ { size.x, -size.y, -size.z}, {0.0f, 0.0f, -1.0f}, {0.0f, 0.0f} });
+        vertices.push_back({ { size.x,  size.y, -size.z}, {0.0f, 0.0f, -1.0f}, {0.0f, 1.0f} });
+        vertices.push_back({ {-size.x,  size.y, -size.z}, {0.0f, 0.0f, -1.0f}, {1.0f, 1.0f} });
+
+        // Left face
+        vertices.push_back({ {-size.x, -size.y, -size.z}, {-1.0f, 0.0f, 0.0f}, {0.0f, 0.0f} });
+        vertices.push_back({ {-size.x, -size.y,  size.z}, {-1.0f, 0.0f, 0.0f}, {1.0f, 0.0f} });
+        vertices.push_back({ {-size.x,  size.y,  size.z}, {-1.0f, 0.0f, 0.0f}, {1.0f, 1.0f} });
+        vertices.push_back({ {-size.x,  size.y, -size.z}, {-1.0f, 0.0f, 0.0f}, {0.0f, 1.0f} });
+
+        // Right face
+        vertices.push_back({ { size.x, -size.y, -size.z}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f} });
+        vertices.push_back({ { size.x, -size.y,  size.z}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f} });
+        vertices.push_back({ { size.x,  size.y,  size.z}, {1.0f, 0.0f, 0.0f}, {0.0f, 1.0f} });
+        vertices.push_back({ { size.x,  size.y, -size.z}, {1.0f, 0.0f, 0.0f}, {1.0f, 1.0f} });
+
+        // Top face
+        vertices.push_back({ {-size.x,  size.y,  size.z}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f} });
+        vertices.push_back({ { size.x,  size.y,  size.z}, {0.0f, 1.0f, 0.0f}, {1.0f, 1.0f} });
+        vertices.push_back({ { size.x,  size.y, -size.z}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f} });
+        vertices.push_back({ {-size.x,  size.y, -size.z}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f} });
+
+        // Bottom face
+        vertices.push_back({ {-size.x, -size.y,  size.z}, {0.0f, -1.0f, 0.0f}, {0.0f, 0.0f} });
+        vertices.push_back({ { size.x, -size.y,  size.z}, {0.0f, -1.0f, 0.0f}, {1.0f, 0.0f} });
+        vertices.push_back({ { size.x, -size.y, -size.z}, {0.0f, -1.0f, 0.0f}, {1.0f, 1.0f} });
+        vertices.push_back({ {-size.x, -size.y, -size.z}, {0.0f, -1.0f, 0.0f}, {0.0f, 1.0f} });
+
+        // Indices
+        std::vector<Index> indices = {
+            {0, 1, 2}, {2, 3, 0},   // Front
+            {4, 5, 6}, {6, 7, 4},   // Back
+            {8, 9, 10}, {10, 11, 8}, // Left
+            {12, 13, 14}, {14, 15, 12}, // Right
+            {16, 17, 18}, {18, 19, 16}, // Top
+            {20, 21, 22}, {22, 23, 20}  // Bottom
+        };
+    #endif
         return Count<Mesh>::Create("Cube", vertices, indices);
 
     }

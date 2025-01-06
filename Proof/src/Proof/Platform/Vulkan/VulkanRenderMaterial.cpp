@@ -289,8 +289,8 @@ namespace Proof {
 
 	void VulkanRenderMaterial::RT_Bind(Count<class VulkanRenderCommandBuffer> commandBuffer, Count<VulkanComputePass> computePass)
 	{
-		PF_PROFILE_FUNC();
-		PF_PROFILE_TAG("",m_Config.DebugName.c_str());
+		PF_PROFILE_FUNC(fmt::format("{} RT_Bind Compute", m_Config.DebugName.c_str()).c_str());
+
 		auto vk_Shader = m_Config.Shader.As<VulkanShader>();
 		m_DescritptorSetManager->RT_Bind();
 
@@ -353,8 +353,8 @@ namespace Proof {
 
 	void VulkanRenderMaterial::RT_Bind(Count<VulkanRenderCommandBuffer> commandBuffer, Count<VulkanRenderPass> renderPass)
 	{
-		PF_PROFILE_FUNC();
-		PF_PROFILE_TAG("", m_Config.DebugName.c_str());
+		PF_PROFILE_FUNC(fmt::format("{} RT_Bind ", m_Config.DebugName.c_str()).c_str());
+
 		auto vk_Shader = m_Config.Shader.As<VulkanShader>();
 		m_DescritptorSetManager->RT_Bind();
 

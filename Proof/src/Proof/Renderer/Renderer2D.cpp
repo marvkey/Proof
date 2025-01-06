@@ -19,6 +19,7 @@
 #include "MSDFData.h"
 #include "Proof/Math/MathInclude.h"
 #include <glm/gtc/matrix_access.hpp>
+#include "Proof/Utils/ContainerUtils.h"
 
 namespace Proof {
 
@@ -28,11 +29,11 @@ namespace Proof {
 		framebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 		framebufferSpec.ClearColorOnLoad = false;
 		framebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
-		framebufferSpec.DebugName = "Renderer2D Framebuffer";
+		framebufferSpec.DebugName = fmt::format("{} Renderer2D Framebuffer", m_DebugName);
 		m_FrameBuffer = FrameBuffer::Create(framebufferSpec);
 
 
-		m_CommandBuffer = RenderCommandBuffer::Create("Renderer2D");
+		m_CommandBuffer = RenderCommandBuffer::Create(m_DebugName);
 		m_UBCamera = UniformBufferSet::Create(sizeof(CameraData));
 
 		m_QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
@@ -77,7 +78,7 @@ namespace Proof {
 
 			GraphicsPipelineConfiguration graphicsPipelineConfig;
 			graphicsPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
-			graphicsPipelineConfig.DebugName = "Quad";
+			graphicsPipelineConfig.DebugName = fmt::format("{} Quad", m_DebugName);
 			graphicsPipelineConfig.Shader = Renderer::GetShader("Base2D");
 			graphicsPipelineConfig.VertexArray = vertexArray;
 			graphicsPipelineConfig.CullMode = CullMode::None;
@@ -87,16 +88,19 @@ namespace Proof {
 
 			RenderPassConfig renderPassConfig;
 			renderPassConfig.DebugName = "Quad";
+			renderPassConfig.DebugName = fmt::format("{} Quad", m_DebugName);
 			renderPassConfig.Pipeline = graphicsPipeline;
 			renderPassConfig.TargetFrameBuffer = m_FrameBuffer;
 			m_QuadPass = RenderPass::Create(renderPassConfig);
 			m_QuadPass->SetInput("CameraData", m_UBCamera);
 
 			graphicsPipelineConfig.DebugName = "QuadOnTop";
+			graphicsPipelineConfig.DebugName = fmt::format("{} Quad", m_DebugName);
 			graphicsPipelineConfig.DepthTest = false;
 			auto graphicsPipelineOnTop = GraphicsPipeline::Create(graphicsPipelineConfig);
 
 			renderPassConfig.DebugName = "QuadOnTop";
+			renderPassConfig.DebugName = fmt::format("{} Quad", m_DebugName);
 			renderPassConfig.Pipeline = graphicsPipelineOnTop;
 			m_QuadOnTopPass = RenderPass::Create(renderPassConfig);
 			m_QuadOnTopPass->SetInput("CameraData", m_UBCamera);
@@ -123,6 +127,7 @@ namespace Proof {
 
 			GraphicsPipelineConfiguration graphicsPipelineConfig;
 			graphicsPipelineConfig.DebugName = "Text Pipeline";
+			graphicsPipelineConfig.DebugName = fmt::format("{} Text Pipeline", m_DebugName);
 			graphicsPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 			graphicsPipelineConfig.Shader = Renderer::GetShader("Text2D");
 			graphicsPipelineConfig.VertexArray = vertexArray;
@@ -136,10 +141,11 @@ namespace Proof {
 			m_TextPass->SetInput("CameraData", m_UBCamera);
 
 			graphicsPipelineConfig.DebugName = "TextOnTop";
+			graphicsPipelineConfig.DebugName = fmt::format("{} Text Pipeline", m_DebugName);
 			graphicsPipelineConfig.DepthTest = false;
 			auto graphicsPipelineOnTop = GraphicsPipeline::Create(graphicsPipelineConfig);
 
-			renderPassConfig.DebugName = "TextOnTop";
+			renderPassConfig.DebugName = fmt::format("{} TextOnTop", m_DebugName);
 			renderPassConfig.Pipeline = graphicsPipelineOnTop;
 			m_TextOnTopPass = RenderPass::Create(renderPassConfig);
 			m_TextOnTopPass->SetInput("CameraData", m_UBCamera);
@@ -151,7 +157,7 @@ namespace Proof {
 			vertexArray->AddData(1, DataType::Vec4, offsetof(LineVertex, LineVertex::Color));
 
 			GraphicsPipelineConfiguration graphicsPipelineConfig;
-			graphicsPipelineConfig.DebugName = "Line";
+			graphicsPipelineConfig.DebugName = fmt::format("{} Line", m_DebugName);
 			graphicsPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 			graphicsPipelineConfig.Shader = Renderer::GetShader("Line2D");
 			graphicsPipelineConfig.VertexArray = vertexArray;
@@ -166,11 +172,11 @@ namespace Proof {
 			m_LinePass = RenderPass::Create(renderPassConfig);
 			m_LinePass->SetInput("CameraData", m_UBCamera);
 
-			graphicsPipelineConfig.DebugName = "LineOnTop";
+			graphicsPipelineConfig.DebugName = fmt::format("{} LineOnTop", m_DebugName);
 			graphicsPipelineConfig.DepthTest = false;
 			auto graphicsPipelineOnTop = GraphicsPipeline::Create(graphicsPipelineConfig);
 
-			renderPassConfig.DebugName = "LineOnTop";
+			renderPassConfig.DebugName = fmt::format("{} LineOnTop", m_DebugName);
 			renderPassConfig.Pipeline = graphicsPipelineOnTop;
 			m_LineOnTopPass = RenderPass::Create(renderPassConfig);
 			m_LineOnTopPass->SetInput("CameraData", m_UBCamera);
@@ -198,7 +204,7 @@ namespace Proof {
 
 
 			GraphicsPipelineConfiguration graphicsPipelineConfig;
-			graphicsPipelineConfig.DebugName = "Cirlce";
+			graphicsPipelineConfig.DebugName = fmt::format("{} Circle", m_DebugName);
 			graphicsPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 			graphicsPipelineConfig.Shader = Renderer::GetShader("Circle2D");
 			graphicsPipelineConfig.VertexArray = vertexArray;
@@ -211,11 +217,11 @@ namespace Proof {
 			m_CircleRenderPass = RenderPass::Create(renderPassConfig);
 			m_CircleRenderPass->SetInput("CameraData", m_UBCamera);
 
-			graphicsPipelineConfig.DebugName = "CircleOnTop";
+			graphicsPipelineConfig.DebugName = fmt::format("{} CircleOnTop", m_DebugName);
 			graphicsPipelineConfig.DepthTest = false;
 			auto graphicsPipelineOnTop = GraphicsPipeline::Create(graphicsPipelineConfig);
 
-			renderPassConfig.DebugName = "CircleOnTop";
+			renderPassConfig.DebugName = fmt::format("{} CircleOnTop", m_DebugName);
 			renderPassConfig.Pipeline = graphicsPipelineOnTop;
 			m_CircleOnTopRenderPass = RenderPass::Create(renderPassConfig);
 			m_CircleOnTopRenderPass->SetInput("CameraData", m_UBCamera);
@@ -236,7 +242,7 @@ namespace Proof {
 			vertexArray->AddData(2, DataType::Float, offsetof(PointVertex, PointVertex::PointSize));
 
 			GraphicsPipelineConfiguration graphicsPipelineConfig;
-			graphicsPipelineConfig.DebugName = "Point";
+			graphicsPipelineConfig.DebugName = fmt::format("{} Point", m_DebugName);
 			graphicsPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
 			graphicsPipelineConfig.Shader = Renderer::GetShader("Point2D");
 			graphicsPipelineConfig.VertexArray = vertexArray;
@@ -251,11 +257,11 @@ namespace Proof {
 			m_PointRenderPass = RenderPass::Create(renderPassConfig);
 			m_PointRenderPass->SetInput("CameraData", m_UBCamera);
 
-			graphicsPipelineConfig.DebugName = "PointOnTop";
+			graphicsPipelineConfig.DebugName = fmt::format("{} PointOnTop", m_DebugName);
 			graphicsPipelineConfig.DepthTest = false;
 			auto graphicsPipelineOnTop = GraphicsPipeline::Create(graphicsPipelineConfig);
 
-			renderPassConfig.DebugName = "PointOnTop";
+			renderPassConfig.DebugName = fmt::format("{} PointOnTop", m_DebugName);
 			renderPassConfig.Pipeline = graphicsPipelineOnTop;
 			m_PointonTopRenderPass = RenderPass::Create(renderPassConfig);
 			m_PointonTopRenderPass->SetInput("CameraData", m_UBCamera);
@@ -283,8 +289,10 @@ namespace Proof {
 		Buffer buffer(&m_Camera, sizeof(CameraData));
 		m_UBCamera->SetData(Renderer::GetCurrentFrameInFlight(), buffer);
 		m_Stats = {};
+		if(!m_NeedsToSubmitCommandBuffer)
+			Renderer::BeginCommandBuffer(m_CommandBuffer);
+
 		Reset();
-		Renderer::BeginCommandBuffer(m_CommandBuffer);
 		if (clearFrameBuffer)
 		{
 			Renderer::BeginRenderPass(m_CommandBuffer, m_QuadPass, true);
@@ -294,8 +302,10 @@ namespace Proof {
 		m_ContextSettings = contextSettings;
 
 	}
-	Renderer2D::Renderer2D()
+	Renderer2D::Renderer2D(const std::string& debugName)
 	{
+		m_DebugName = debugName;
+		s_Instances.push_back(this);
 		Init();
 	}
 	Renderer2D::~Renderer2D()
@@ -306,6 +316,8 @@ namespace Proof {
 			pdelete[] m_TextVertexBufferBase.GetByIndex(i);
 			pdelete[] m_LineVertexBufferBase.GetByIndex(i);
 		}
+		PF_CORE_ASSERT(Utils::Remove(s_Instances, WeakCount<Renderer2D>(this)), "This should exist");
+
 	}
 #if 0
 	void Renderer2D::DrawQuad(const glm::vec3& Location) {
@@ -379,9 +391,11 @@ namespace Proof {
 
 	void Renderer2D::DrawAABB(const AABB& aabb, const glm::mat4& transform, const glm::vec4& color)
 	{
-		glm::vec4 min = { aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f };
-		glm::vec4 max = { aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f };
+		AABB scaled = aabb.ScaleAABB(transform);
+		//glm::vec4 min = { aabb.Min.x, aabb.Min.y, aabb.Min.z, 1.0f };
+		//glm::vec4 max = { aabb.Max.x, aabb.Max.y, aabb.Max.z, 1.0f };
 
+	#if 0
 		glm::vec4 corners[8] =
 		{
 			transform * glm::vec4 { aabb.Min.x, aabb.Min.y, aabb.Max.z, 1.0f },
@@ -394,7 +408,20 @@ namespace Proof {
 			transform * glm::vec4 { aabb.Max.x, aabb.Max.y, aabb.Min.z, 1.0f },
 			transform * glm::vec4 { aabb.Max.x, aabb.Min.y, aabb.Min.z, 1.0f }
 		};
+	#else
+		glm::vec4 corners[8] =
+		{
+			glm::vec4 { scaled.Min.x, scaled.Min.y, scaled.Max.z, 1.0f },
+			glm::vec4 { scaled.Min.x, scaled.Max.y, scaled.Max.z, 1.0f },
+			glm::vec4 { scaled.Max.x, scaled.Max.y, scaled.Max.z, 1.0f },
+			glm::vec4 { scaled.Max.x, scaled.Min.y, scaled.Max.z, 1.0f },
 
+			glm::vec4 { scaled.Min.x, scaled.Min.y, scaled.Min.z, 1.0f },
+			glm::vec4 { scaled.Min.x, scaled.Max.y, scaled.Min.z, 1.0f },
+			glm::vec4 { scaled.Max.x, scaled.Max.y, scaled.Min.z, 1.0f },
+			glm::vec4 { scaled.Max.x, scaled.Min.y, scaled.Min.z, 1.0f }
+		};
+#endif
 		for (uint32_t i = 0; i < 4; i++)
 			DrawLine(corners[i], corners[(i + 1) % 4], color);
 
@@ -1156,9 +1183,9 @@ namespace Proof {
 	void Renderer2D::EndContext() {
 		Render();
 		Reset();
-
-		Renderer::EndCommandBuffer(m_CommandBuffer);
-		Renderer::SubmitCommandBuffer(m_CommandBuffer);
+		//Renderer::EndCommandBuffer(m_CommandBuffer);
+		//Renderer::SubmitCommandBuffer(m_CommandBuffer);
+		m_NeedsToSubmitCommandBuffer = true;
 		m_ContextSettings = {};
 	}
 

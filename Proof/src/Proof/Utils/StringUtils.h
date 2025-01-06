@@ -2,6 +2,8 @@
 #include <string>
 #include<map>
 #include <chrono>
+#include <algorithm>
+
 namespace Proof::Utils::String
 {
 	static inline bool ContainsWhitespace(const std::string& str) {
@@ -53,4 +55,37 @@ namespace Proof::Utils::String
 	std::string DurationToString(float durationMilisecond);
 
 	std::string ReplaceInString(const std::string& templateScript, const std::map<std::string, std::string>& replacements);
+
+	template <typename T>
+	static inline std::string GenerateUniqueName(const std::string& baseName,
+		const T& container) {
+		int counter = 0;
+
+		// Generate name with padded counter if less than 10
+		auto generateName = [&baseName, &counter]() {
+			std::string counterStr = (counter < 10)
+				? "0" + std::to_string(counter)
+				: std::to_string(counter);
+			return baseName + "_" + counterStr;
+		};
+
+		// Check if the generated name is unique within the container
+		auto isUnique = [&container](const std::string& name) {
+			if constexpr (std::is_same_v<T, std::unordered_set<std::string>> ||
+				(std::is_same_v<T, std::unordered_map<std::string, typename T::mapped_type>>)) {
+				return container.find(name) == container.end();
+			}
+			else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+				return std::find(container.begin(), container.end(), name) == container.end();
+			}
+		};
+
+		std::string uniqueName = baseName;
+		while (!isUnique(uniqueName)) {
+			uniqueName = generateName();
+			counter++;
+		}
+
+		return uniqueName;
+	}
 }

@@ -65,7 +65,7 @@ namespace Proof
 
 	void PrimitiveVariableStorage::SetValueBuffer(const ScopeBuffer& buffer)
 	{
-		m_VariableBuffer = ScopeBuffer::Copy(buffer.Data, buffer.Size);
+		m_VariableBuffer.Copy(buffer.Data,buffer.Size);
 	}
 
 }

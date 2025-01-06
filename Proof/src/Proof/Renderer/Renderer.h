@@ -65,6 +65,7 @@ namespace Proof {
 
 		static uint32_t GetCurrentFrameInFlight();
 		static uint32_t RT_GetCurrentFrameInFlight();
+		static uint32_t RT_GetCurrentPREVIOUSFrameInFlight();// leave the previous capitlized
 		static const RendererConfig GetConfig();
 		static Count<class GraphicsContext> GetGraphicsContext();
 		static Renderer::API GetAPI();

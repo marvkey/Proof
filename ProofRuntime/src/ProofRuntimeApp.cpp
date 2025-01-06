@@ -5,21 +5,49 @@
 #include "Proof/Project/Project.h"
 #include "Proof/Utils/FileSystem.h"
 namespace Proof {
-    class ProofEditor : public Application {
+    class RuntimeApplication : public Application {
     public:
-        ProofEditor(const ApplicationConfiguration& configuration, std::string_view projectPath) :
+        RuntimeApplication(const ApplicationConfiguration& configuration, std::string_view projectPath) :
             Application(configuration)
         {
+
+            if (m_ApplicationConfiguration.ProjectPath.empty())
+            {
+                const std::string newProjectPath = "SandboxProject/SandboxProject.ProofProject";
+            #if 0
+                if (!std::filesystem::exists("SandboxProject"))
+                {
+                    std::filesystem::create_directory("SandboxProject");
+
+                }
+
+                if (!std::filesystem::exists(newProjectPath))
+                {
+                    ProjectConfig config(std::filesystem::path(newProjectPath), "SandboxProject");
+                    Count<Project> sandBoxProject = Project::New(config);
+                }
+            #endif
+                m_ApplicationConfiguration.ProjectPath = newProjectPath;
+            }
             // filesyste
             {
+
                 std::filesystem::path workingDirectory = std::filesystem::current_path();
-                (FileSystem::SetAnEnvironmentVariable)("PROOF_DIR", workingDirectory.string());
+                const std::string stemOfdire = workingDirectory.stem().string();
+                //if (stemOfdire == "Proof-Editor")
+                workingDirectory = workingDirectory.parent_path();
+                FileSystem::SetEnvironmentVariable("PROOF_DIR", workingDirectory.string());
+                //PF_ENGINE_TRACE("     PROOF_DIR {}", (FileSystem::GetEnvironmentVariable)("PROOF_DIR"));
+
             }
             PushLayer(new class RuntimeLayer());
         }
     };
     Application* CreateApplication(int argc, char** argv) {
         std::string_view projectPath = "../Proof-Editor/Proof/Proof.ProofProject";
+        ///projectPath = "Driftwood/Driftwood.ProofProject";
+        //projectPath = "PacMan3D/PacMan3D.ProofProject";
+        //projectPath = "../Proof-Editor/FlappyBird/FlappyBird.ProofProject";
         if (argc > 1)
             projectPath = argv[1];
 
@@ -30,7 +58,7 @@ namespace Proof {
         configuration.WindowConfiguration.Height = 500;
         configuration.WindowConfiguration.Width = 800;
         configuration.WindowConfiguration.Vsync = true;
-        configuration.WindowConfiguration.Title = "Proof";
+        configuration.WindowConfiguration.Title = FileSystem::GetFileName(projectPath);
 
         //when set to true
         // a bug happens when we change to another apllication while running proof
@@ -38,6 +66,6 @@ namespace Proof {
         configuration.WindowConfiguration.startWindowedFullScreen = false;
         configuration.WindowConfiguration.startFullScreen = true;
         configuration.WindowConfiguration.Decorated = true;
-        return new ProofEditor(configuration, projectPath);
+        return pnew RuntimeApplication(configuration, projectPath);
     }
 }

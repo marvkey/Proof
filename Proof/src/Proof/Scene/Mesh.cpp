@@ -80,6 +80,9 @@ namespace Proof
     {
         m_Materials = Count<MaterialTable>::Create();
     }
+    MeshSource::~MeshSource()
+    {
+    }
     MeshSource::MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices)
     {
         Reset(name, vertices, indices);

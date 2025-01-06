@@ -93,6 +93,9 @@
     <Compile Include="..\..\Assets\Scripts\ObstacleSpawner.cs">
       <Link>Assets\Scripts\ObstacleSpawner.cs</Link>
     </Compile>
+    <Compile Include="..\..\Assets\Scripts\PlatformSpawn.cs">
+      <Link>Assets\Scripts\PlatformSpawn.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\ProofScriptCore\ProofScriptCore.csproj">

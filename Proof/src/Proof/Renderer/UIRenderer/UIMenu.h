@@ -18,28 +18,88 @@ namespace Proof
 		Text
 	};
 
+	enum class UIPositionAnchor
+	{
+		TopLeft = 0,
+		TopMiddle,
+		TopRight,
+		MiddleLeft,
+		MiddleMiddle,
+		MiddleRight,
+		BottomLeft,
+		BottomMiddle,
+		BottomRight
+	};
+
+	inline glm::vec4 GenerateAnchorMinMax(UIPositionAnchor anchor) {
+		switch (anchor) 
+		{
+			case UIPositionAnchor::TopLeft:
+				return glm::vec4(0.0f, 0.0f, 0.0f, 0.0f); // min (0,0), max (0,0)
+			case UIPositionAnchor::TopMiddle:
+				return glm::vec4(0.5f, 0.0f, 0.5f, 0.0f); // min (0.5,0), max (0.5,0)
+			case UIPositionAnchor::TopRight:
+				return glm::vec4(1.0f, 0.0f, 1.0f, 0.0f); // min (1,0), max (1,0)
+
+			case UIPositionAnchor::MiddleLeft:
+				return glm::vec4(0.0f, 0.5f, 0.0f, 0.5f); // min (0,0.5), max (0,0.5)
+			case UIPositionAnchor::MiddleMiddle:
+				return glm::vec4(0.5f, 0.5f, 0.5f, 0.5f); // min (0.5,0.5), max (0.5,0.5)
+			case UIPositionAnchor::MiddleRight:
+				return glm::vec4(1.0f, 0.5f, 1.0f, 0.5f); // min (1,0.5), max (1,0.5)
+
+			case UIPositionAnchor::BottomLeft:
+				return glm::vec4(0.0f, 1.0f, 0.0f, 1.0f); // min (0,1), max (0,1)
+			case UIPositionAnchor::BottomMiddle:
+				return glm::vec4(0.5f, 1.0f, 0.5f, 1.0f); // min (0.5,1), max (0.5,1)
+			case UIPositionAnchor::BottomRight:
+				return glm::vec4(1.0f, 1.0f, 1.0f, 1.0f); // min (1,1), max (1,1)
+			default:
+				return glm::vec4(0.5f, 0.5f, 0.5f, 0.5f); // Default to MiddleMiddle
+		}
+	}
+	struct UIAnchor
+	{
+		UIAnchor()
+		{
+
+		}
+		glm::vec2 Minimum = glm::vec2(0); // Holds Top left 
+		glm::vec2 Maximum = glm::vec2(0); // holds bottom right
+		UIAnchor(UIPositionAnchor anchor) 
+		{
+			glm::vec4 minMax = GenerateAnchorMinMax(anchor);
+			Minimum = glm::vec2(minMax.x, minMax.y); // Extract min (x, y)
+			Maximum = glm::vec2(minMax.z, minMax.w); // Extract max (z, w)
+		}
+	};
+
 	using UIElementID = UUID;
 
 	struct UITransform
 	{
+		UIAnchor Anchor;
+		glm::vec2 Alignment = glm::vec2(0); // default align top left of square
 		glm::vec2 Position = { 0,0 };
 		glm::vec2 Rotation = { 0,0 }; // radians
 		glm::vec2 Size = { 1, 1};
 
-		glm::mat4 GetTransform() const
-		{
-			return glm::translate(glm::mat4(1.0f), glm::vec3{ Position,0.0f })
-				* glm::toMat4(glm::quat(glm::vec3(Rotation, 0.0f)))
-				* glm::scale(glm::mat4(1.0f), { Size,1.0 });
-		}
+		
 	};
 	struct UICoreComponent
 	{
-		std::string Name;
+		const std::string& GetName()const
+		{
+			return m_Name;
+		}
+
 		UITransform Transform;
 		UIElementType ElementType;
 		UIElementID GetElementID() const { return m_ElementID; }
+
+
 	private:
+		std::string m_Name;
 		UIElementID m_ElementID;
 		friend class UIMenu;
 		friend class UIElement;
@@ -95,8 +155,10 @@ namespace Proof
 		};
 		UIElement GetUIElement(UIElementID id);
 		UIElement GetUIElement(UIElementID id)const;
+		void SetName(UIElement element, const std::string& name);
 	private:
 		std::unordered_map<UIElementID, UIElement> m_UIElementsMap;
+		std::unordered_map<std::string, UIElementID> m_UIElementsNameMap;
 		entt::registry m_Registry;
 		friend class UIElement;
 		friend class UIRenderer;
@@ -137,15 +199,22 @@ namespace Proof
 			return GetComponent<UICoreComponent>().ElementType;
 		}
 
-		glm::mat4 GetTransform()const
-		{
-			return GetComponent<UICoreComponent>().Transform.GetTransform();
-		}
+		//glm::mat4 GetTransform()const
+		//{
+		//	return GetComponent<UICoreComponent>().Transform.GetTransform();
+		//}
 
 		const std::string& GetName()const 
 		{
-			return GetComponent<UICoreComponent>().Name;
+			return GetComponent<UICoreComponent>().GetName();
 		}
+
+		void SetName(std::string& name)
+		{
+			if (*this)
+				m_Menu->SetName(*this, name);
+		}
+
 		entt::entity GetenttID() { return m_UIElementHandle; }
 		operator entt::entity() const {
 			return m_UIElementHandle;

@@ -36,6 +36,7 @@
 #include "Proof/Events/MouseEvent.h"
 
 #include "Proof/ImGui/UI.h"
+#include "Proof/ImGui/UIHandlers.h"
 #include "Proof/ImGui/UiUtilities.h"
 #include <imgui.h>
 #include <ImGuizmo.h>
@@ -111,7 +112,7 @@ namespace Proof
 		struct CreateNewMeshPopupData
 		{
 			Count<MeshSource> MeshToCreate;
-			std::string CreateMeshFilenameBuffer = "Mesh/";
+			std::string CreateMeshFilenameBuffer = "Meshes/";
 			std::string CreateSkeletonFilenameBuffer;
 			std::string CreateAnimationFilenameBuffer;
 			Entity TargetEntity;
@@ -133,6 +134,14 @@ namespace Proof
 			bool SaveAssetManager = true;
 			std::string CreateWorldFile = "Scenes/";
 		}CreateNewWorldPopupData;
+
+		struct CreateNewDynamicMeshComponentPopupData
+		{
+			Count<DynamicMesh> MeshToCreate = nullptr;
+			bool RigidBody = true;
+			bool DynamicRigidBody = true;
+			AssetID ColliderID; // if 0 will generate 
+		} CreateNewDynamicMeshPopupData;
 	};
 	enum class PopupState
 	{
@@ -520,6 +529,8 @@ namespace Proof
 			dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
 		}
 	}
+	bool openNewWorld = false;
+	AssetID newWorldID = 0;
 	void Editore3D::OnAttach() 
 	{
 		EditorResources::Init();
@@ -538,6 +549,8 @@ namespace Proof
 		//ScriptEngine::ReloadAssembly(m_ActiveWorld.Get());
 		SceneSerializer scerelizer(m_ActiveWorld.Get());
 		m_EditorWorld = m_ActiveWorld;
+
+		m_ActiveWorld->SetWorldTransitionCallback([this](AssetID id) { openNewWorld = true; newWorldID = id; });
 
 		s_EditorData->PanelManager->AddPanel< SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID, "Scene Hierarchy", true);
 		s_EditorData->PanelManager->AddPanel<PhysicsStatsPanel>(PHYSICS_DEBUG_PANEL_ID, "Physics Stats", false);
@@ -669,6 +682,13 @@ namespace Proof
 				break;
 		}
 		*/
+		if (openNewWorld)
+		{
+			openNewWorld = false;
+			SetWorldEdit();
+			OpenWorld(newWorldID);
+			PlayWorld();
+		}
 	}
 	void Editore3D::OnImGuiDraw() 
 	{
@@ -1046,25 +1066,34 @@ namespace Proof
 			return;
 		PF_PROFILE_FUNC();
 
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 		if (ImGui::Begin("Log", &s_EditorData->ShowLogger, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar))
 		{
 			ImGui::BeginMenuBar();
 			{
-				UI::AttributeBool("pause logging", Log::m_PauseLog);
-				UI::AttributeBool("Clear On Play", s_EditorData->ClearLogOnPlay);
-				if (ImGui::Button("Clear log"))
+				if (ImGui::BeginMenu("Settings"))
 				{
-					Log::Logs.clear();
-					ImGui::SetScrollHereY();
-				}
-				if (ImGui::Button("Settings"))
-				{
+					ImGui::Checkbox("pause logging", &Log::m_PauseLog);
+					ImGui::SameLine();
+					ImGui::Checkbox("Clear On Play", &s_EditorData->ClearLogOnPlay);
+					ImGui::SameLine();
+					if (ImGui::Button("Clear log"))
+					{
+						Log::Logs.clear();
+						ImGui::SetScrollHereY();
+					}
+					ImGui::SameLine();
+					if (ImGui::Button("Settings"))
+					{
 
-					Math::ChangeBool(s_EditorData->ShowLogSettings);
+						Math::ChangeBool(s_EditorData->ShowLogSettings);
+					}
+					ImGui::EndMenu();
 				}
 			}
 			ImGui::EndMenuBar();
+
+			
 			int pos = 0;
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 1);
 			for (auto& it : Log::Logs)
@@ -1609,6 +1638,35 @@ namespace Proof
 				{
 					Save();
 				}
+
+				if (ImGui::MenuItem("APply"))
+				{
+					std::string defaultnameCoin = "Coin";
+
+					uint32_t spawnPosCounter = 0;
+					Entity SpawnPositionsEntity = m_ActiveWorld->CreateEntity("SpawnPositions");
+					m_ActiveWorld->ForEachEnitityWith<TagComponent>([&](Entity e) 
+						{
+							if (e.GetName().size() >= defaultnameCoin.size())
+							{
+								if (e.GetName().substr(0, defaultnameCoin.size()) == defaultnameCoin.substr(0, defaultnameCoin.size()))
+								{
+									e.AddComponent<RigidBodyComponent>();
+									e.AddComponent<BoxColliderComponent>().Size = glm::vec3{ 1.2f };
+									e.GetComponent<BoxColliderComponent>().IsTrigger = true;
+									if(e.HasComponent< DynamicMeshComponent>())
+										e.GetComponent<DynamicMeshComponent>().MaterialTable->SetMaterial(0, AssetManager::GetAsset<Material>(14572677565861703317));
+
+									auto spawnEntity = m_ActiveWorld->CreateChildEntity(SpawnPositionsEntity,fmt::format("SpawnPos {}", spawnPosCounter));
+
+									e.AddComponent<RigidBodyComponent>();
+									spawnEntity.AddComponent<BoxColliderComponent>().IsTrigger = true;
+									spawnPosCounter++;
+
+								}
+							}
+						});
+				}
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Edit"))
@@ -1768,6 +1826,8 @@ namespace Proof
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
 		SelectionManager::DeselectAll();
+
+		m_ActiveWorld->SetWorldTransitionCallback([this](AssetID id) { openNewWorld = true; newWorldID = id; });
 
 	}
 	void Editore3D::UI_StatisticsPanel()
@@ -1936,9 +1996,13 @@ namespace Proof
 				}
 				else if (info.Type == AssetType::DynamicMesh)
 				{
-					Count<DynamicMesh> mesh = AssetManager::GetAsset<DynamicMesh>(info.ID);
-					Entity rootEntity = m_ActiveWorld->CreateEntity(mesh,false);
-					SelectionManager::Select(SelectionContext::Scene, rootEntity.GetUUID());
+					//Count<DynamicMesh> mesh = AssetManager::GetAsset<DynamicMesh>(info.ID);
+					//Entity rootEntity = m_ActiveWorld->CreateEntity(mesh,true);
+					//SelectionManager::Select(SelectionContext::Scene, rootEntity.GetUUID());
+
+					s_EditorData->CreateNewDynamicMeshPopupData.MeshToCreate = AssetManager::GetAsset<DynamicMesh>(info.ID);
+
+					UI_DragDynamicMeshPopup();
 				}
 				else if (info.Type == AssetType::Prefab)
 				{
@@ -1991,6 +2055,49 @@ namespace Proof
 			});
 
 	}
+	void Editore3D::UI_DragDynamicMeshPopup()
+	{
+		UI::ShowMessageBox("New Dynamic Mesh", [this]()
+			{
+				auto& popUpData = s_EditorData->CreateNewDynamicMeshPopupData;
+				UI::AttributeBool("RigidBody", popUpData.RigidBody);
+
+				if (popUpData.RigidBody)
+				{
+					//UI::AttributeBool("DynamicRigidBody", popUpData.DynamicRigidBody);
+					UI::AttributeAssetReference("MeshCollider", AssetType::MeshCollider, popUpData.ColliderID);
+
+				}
+				if (ImGui::Button("Create"))
+				{
+					bool generateColliders = false;
+
+					if (popUpData.RigidBody)
+						generateColliders = true;
+
+					Entity rootEntity = m_ActiveWorld->CreateEntity(popUpData.MeshToCreate, generateColliders);
+					SelectionManager::Select(SelectionContext::Scene, rootEntity.GetUUID());
+
+					if (AssetManager::HasAsset(popUpData.ColliderID))
+					{
+						rootEntity.EachChild([&](Entity entity) 
+							{
+								if(entity.HasComponent<MeshColliderComponent>())
+									entity.GetComponent<MeshColliderComponent>().ColliderID = popUpData.ColliderID;
+							});
+					}
+					s_EditorData->CreateNewDynamicMeshPopupData = {};
+					ImGui::CloseCurrentPopup();
+
+				}
+				if (ImGui::Button("Cancel"))
+				{
+					s_EditorData->CreateNewDynamicMeshPopupData = {};
+					ImGui::CloseCurrentPopup();
+				}
+			});
+	}
+
 	void Editore3D::UI_ShowCreateNewMeshPopup()
 	{
 		UI::ShowMessageBox("Create New Mesh", [this]()
@@ -2145,12 +2252,13 @@ namespace Proof
 
 		const std::string oldState = EnumReflection::EnumString(m_ActiveWorld->GetState());
 		//s_EditorData->GuizmoType = 0;
-		m_ActiveWorld->EndRuntime();
+		m_ActiveWorld->EndRuntime();      
 		m_ActiveWorld = m_EditorWorld;
 		s_PlayWorldData = nullptr;
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
 		s_DetachPlayer = false;
+		tenareaxWorld = nullptr;
 
 		PF_EC_INFO("World Edit {} {} ElapsedTime: {}", m_ActiveWorld->GetName(), oldState,Utils::String::DurationToString(s_PlayTimer.ElapsedMillis()));
 

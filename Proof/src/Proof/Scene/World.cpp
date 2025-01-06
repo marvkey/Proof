@@ -32,13 +32,20 @@
 #include "Proof/Renderer/Font.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/UIRenderer/UIRenderer.h"
+#include "Proof/Renderer/CommandBuffer.h"
 #include "Proof/Renderer/ParticleSystem.h"
+#include "Proof/Math/BasicCollision.h"
 #include "WaterSystem/WaterSystem.h"
 #include "WaterSystem/Water.h"
 
 #include "Proof/Scripting/ScriptWorld.h"
 #include <glm/gtx/euler_angles.hpp>
 namespace Proof {
+
+	struct RuntimeSavedData
+	{
+		std::unordered_map<std::string, ScopeBuffer> m_datas;
+	};
 	World::World(const std::string& name, UUID ID):
 		Name(name)
 	{
@@ -308,13 +315,15 @@ namespace Proof {
 				}
 			}
 		}
+
+		Frustum cameraFrustrum = Frustum::CreateFrustrum(&camera);
+		WorldRendererStatistics& rendererStats = worldRenderer->m_Stats;
 		// render meshes
 		{
 			{
 				//static Count<Material> transparentMaterial = Count<Material>::Create("Test Transparent", Renderer::GetShader("ProofPBRTransparent_Static"));
 				//
-				//if (!AssetManager::HasAsset(transparentMaterial))
-				//{
+ 				//{
 				//	AssetManager::CreateRuntimeAsset(transparentMaterial);
 				//}
 				//static Count<MaterialTable> transparentMaterialTable = Count<MaterialTable>::Create();
@@ -329,19 +338,17 @@ namespace Proof {
 					auto mesh = staticMeshComponent.GetMesh();
 					if (mesh)
 					{
+						rendererStats.TotalMeshProcessedCpu++;
 						Entity e = Entity(entity, this);
 						glm::mat4 transform = GetWorldSpaceTransform(e);
 
-						//if (SelectionManager::IsEntityOrAncestorSelected(e))
-						//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
-						//else
-						//worldRenderer->SubmitMesh(mesh, staticMeshComponent.MaterialTable, transform, staticMeshComponent.CastShadow);
+						auto aabb = mesh->GetMeshSource()->GetBoundingBox().ScaleAABB(transform);
 
-						//if(e.GetName() == "Cube")
-						//	worldRenderer->SubmitMesh(mesh, transparentMaterialTable, transform, staticMeshComponent.CastShadow);
-						//else
+						if (BasicCollision::AABBIsOnFrustum(aabb, cameraFrustrum))
+						{
+							rendererStats.TotalMeshSentToGpu++;
 							worldRenderer->SubmitMesh(mesh, staticMeshComponent.MaterialTable, transform, staticMeshComponent.CastShadow);
-
+						}
 					}
 				}
 
@@ -360,13 +367,19 @@ namespace Proof {
 					Count<DynamicMesh> mesh = dynamicMeshComponent.GetMesh();
 					if (mesh)
 					{
+						rendererStats.TotalMeshProcessedCpu++;
+
 						Entity e = Entity(entity, this);
 						glm::mat4 transform = GetWorldSpaceTransform(e);
+						auto aabb = mesh->GetMeshSource()->GetSubMesh(dynamicMeshComponent.GetSubMeshIndex()).BoundingBox.ScaleAABB(transform);
 
-						//if (SelectionManager::IsEntityOrAncestorSelected(e))
-						//	renderer->SubmitSelectedStaticMesh(entityUUID, staticMesh, staticMeshComponent.MaterialTable, transform);
-						//else
-						worldRenderer->SubmitDynamicMesh(mesh, dynamicMeshComponent.MaterialTable, dynamicMeshComponent.GetSubMeshIndex(), transform, dynamicMeshComponent.CastShadow);
+						if (BasicCollision::AABBIsOnFrustum(aabb, cameraFrustrum))
+						{
+							rendererStats.TotalMeshSentToGpu++;
+							worldRenderer->SubmitDynamicMesh(mesh, dynamicMeshComponent.MaterialTable, dynamicMeshComponent.GetSubMeshIndex(), transform, dynamicMeshComponent.CastShadow);
+						}
+
+
 					}
 				}
 			}
@@ -390,6 +403,7 @@ namespace Proof {
 		worldRenderer->EndScene();
 		// render 2d
 		Count<Renderer2D> renderer2D = worldRenderer->GetRenderer2D();
+
 		RenderPhysicsDebug2D(worldRenderer, false);
 		renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(), GlmVecToProof(cameraLocation));
 
@@ -489,6 +503,7 @@ namespace Proof {
 		}
 
 		renderer2D->EndContext();
+
 		
 		{
 			auto view = m_Registry.view<PlayerHUDComponent>();
@@ -504,41 +519,8 @@ namespace Proof {
 			}
 
 		}
-	#if 0
-		// for scren space
-		{
-
-			Count<Renderer2D> renderer2D = worldRenderer->GetRenderer2D();
-
-			Camera screenSpaceCamera = Camera(glm::ortho(0.0f, screenDimensions.x, screenDimensions.y, 0.0f, -1.0f, 1.0f),glm::mat4(1.0f),glm::mat4(1.0f));
-			renderer2D->BeginContext(glm::mat4(1), glm::mat4(1), GlmVecToProof(cameraLocation));
-			{
-				auto view = m_Registry.view<TransformComponent, TextComponent>();
-
-				for (auto entity : view)
-				{
-					auto [transformComponenteerafa, textComponent] = view.get<TransformComponent, TextComponent>(entity);
-					Entity e = Entity(entity, this);
-					auto font = Font::GetDefault();
-
-					if (textComponent.RenderInViewSpace == false)
-						continue;
-
-					auto transformComponent = textComponent.UseLocalRotation ? GetWorldSpaceTransformComponentUsingLocalRotation(e) : GetWorldSpaceTransformComponent(e);
-					
-					transformComponent.Location =glm::vec3( WorldToScreenSpace(transformComponent.Location, camera, screenDimensions),-10);
-					TextParams params;
-					params.Color = textComponent.Colour;
-					params.Kerning = textComponent.Kerning;
-					params.LineSpacing = textComponent.LineSpacing;
-					renderer2D->DrawString(textComponent.Text, font, params, transformComponent.GetTransform());
-				}
-
-			}
-
-			renderer2D->EndContext();
-		}
-	#endif
+	
+	
 	}
 	void World::RenderPhysicsDebug(Count<WorldRenderer> renderer, bool runtime)
 	{
@@ -798,6 +780,12 @@ namespace Proof {
 	void World::OnRigidBodyComponentCreate(entt::registry& component, entt::entity entityID)
 	{
 		Entity e = { entityID, this };
+		if (!m_RigidBodyOnConstruct)
+		{
+			m_RigidBodyWaitingList.push_back(e);
+			return;
+		}
+		
 		m_PhysicsWorld->CreateActor(e);
 	}
 
@@ -860,7 +848,8 @@ namespace Proof {
 				colliderComponent.ColliderID = colliderAsset->GetID();
 				colliderComponent.SubMeshIndex = submeshIndex;
 				colliderComponent.UseSharedShape = colliderAsset->AlwaysShareShape;
-				nodeEntity.AddComponent<RigidBodyComponent>();
+				nodeEntity.AddComponent<RigidBodyComponent>().RigidBodyType = RigidBodyType::Dynamic;
+
 			}
 		}
 		else if (node.Submeshes.size() > 1)
@@ -884,7 +873,7 @@ namespace Proof {
 					colliderComponent.ColliderID = colliderAsset->GetID();
 					colliderComponent.SubMeshIndex = submeshIndex;
 					colliderComponent.UseSharedShape = colliderAsset->AlwaysShareShape;
-					childEntity.AddComponent<RigidBodyComponent>();
+					childEntity.AddComponent<RigidBodyComponent>().RigidBodyType = RigidBodyType::Dynamic;
 				}
 			}
 		}
@@ -940,6 +929,8 @@ namespace Proof {
 		}
 
 		{
+			// let this go first so that it can also initilize scripts
+			// things like physics update physcsi component so if scripts not initilized may crash
 			PF_PROFILE_FUNC("World::OnUpdate - C# OnUpdate");
 			m_ScriptWorld->OnUpdate(DeltaTime);
 		}
@@ -1207,6 +1198,18 @@ namespace Proof {
 		return returnValue;
 	}
 
+	void World::OnWorldTransition(AssetID id)
+	{
+		if (!AssetManager::HasAssetAndAssetType(id, AssetType::World))
+			return;
+
+		if (m_OnWorldTransitionCallback)
+			m_OnWorldTransitionCallback(id);
+		else
+			PF_ENGINE_WARN("Cannot Transition World - no callback set");
+
+	}
+
 	void World::PrefabCopyEntity(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity,bool includeChildren)
 	{
 		// first id is the src, second is dstEntity
@@ -1238,12 +1241,16 @@ namespace Proof {
 		m_ScriptWorld->PostDuplicateScriptInstance(srcEntity, parentEntity, entitySwapID);
 	}
 
-
-
-	Entity World::CreateEntity(Entity entity, bool includeChildren) {
+	Entity World::CreateEntity(Entity entity, bool includeChildren) 
+	{
+		PauseRigidBodyOnConstruct();
 		// first id is the src, second is dstEntity
 		std::unordered_map<UUID, UUID> entitySwapIDs;
-		return CreateEntityFromOtherReal(entity,entitySwapIDs, includeChildren);
+		Entity newEntity = CreateEntityFromOtherReal(entity,entitySwapIDs, includeChildren);
+
+		UnPauseRigidBodyOnConstruct();
+
+		return entity;
 	}
 	Entity World::CreateEntityFromOtherReal(Entity entity, std::unordered_map<UUID, UUID>& entitySwapID,bool includeChildren)
 	{
@@ -1259,14 +1266,24 @@ namespace Proof {
 
 		if (includeChildren == true)
 		{
-			entity.EachChild([&](Entity childEntity) {
+			entity.EachChild([&](Entity childEntity) 
+				{
 
-				Entity newChild = CreateEntity(childEntity, true);
-				TransformComponent transform = newChild.GetComponent<TransformComponent>();
-				newEntity.AddChild(newChild);
-				newChild.GetComponent<TransformComponent>() = transform;
-
-				entitySwapID[childEntity.GetUUID()] = newChild.GetUUID();
+					Entity newChild = CreateEntity(childEntity, true);
+					TransformComponent transform = newChild.GetComponent<TransformComponent>();
+					newEntity.AddChild(newChild);
+					newChild.GetComponent<TransformComponent>() = transform;
+					/*
+					if (m_PhysicsWorld)
+					{
+						if (m_PhysicsWorld->HasActor(newChild))
+						{
+							auto physicsActor = m_PhysicsWorld->GetActor(newChild);
+							physicsActor->SetTransform(GetWorldSpaceTransform(newChild));
+						}
+					}
+					*/
+					entitySwapID[childEntity.GetUUID()] = newChild.GetUUID();
 				});
 		}
 
@@ -1274,6 +1291,17 @@ namespace Proof {
 
 		return newEntity;
 	}
+
+	void World::UnPauseRigidBodyOnConstruct()
+	{
+		m_RigidBodyOnConstruct = true;
+
+		for(auto& e : m_RigidBodyWaitingList)
+			m_PhysicsWorld->CreateActor(e);
+
+		m_RigidBodyWaitingList.clear();
+	}
+
 	Entity World::CreateEntity(Count<class DynamicMesh> mesh, bool generateCollider)
 	{
 		PF_CORE_ASSERT(mesh->GetID());
@@ -1332,13 +1360,27 @@ namespace Proof {
 
 		if (includeChildren)
 		{
-			prefabSource.EachChild([&](Entity child) {
+
+			prefabSource.EachChild([&](Entity child) 
+				{
 				Entity newChild = CreateEntityPrefabStatic(prefab, world, child, true);
 
 				TransformComponent transform = newChild.GetComponent<TransformComponent>();
 				newChild.SetParent(newEntity);
 				// setting because with children set parent changes to local so can messup
 				newChild.GetComponent<TransformComponent>() = transform;
+
+
+				/*
+				if (newChild.GetCurrentWorld()->GetPhysicsWorld())
+				{
+					if (newChild.GetCurrentWorld()->GetPhysicsWorld()->HasActor(newChild))
+					{
+						auto physicsActor = newChild.GetCurrentWorld()->GetPhysicsWorld()->GetActor(newChild);
+						physicsActor->SetTransform(newChild.GetCurrentWorld()->GetWorldSpaceTransform(newChild));
+					}
+				}
+				*/
 			});
 		}
 		return newEntity;
@@ -1351,11 +1393,15 @@ namespace Proof {
 		 * it could be a problem with the emplace or replace in the copy compoentnt single
 		 * 
 		 */
+		PauseRigidBodyOnConstruct();
+
 		Entity prefabBaseEntity = prefab->GetBaseEntity();
 		if (!prefabBaseEntity)return {};
 		Entity newEntity = CreateEntityPrefabStatic(prefab, this, prefabBaseEntity, true);
 		newEntity.SetName(name);
 		newEntity.GetComponent<TransformComponent>() = transfom;
+
+		UnPauseRigidBodyOnConstruct();
 		return newEntity;
 	}
 	template<typename... Component>
@@ -1392,7 +1438,7 @@ namespace Proof {
 		Count<World> newWorld = Count<World>::Create();
 		
 		newWorld->Name = worldToCopy->Name;
-		///newWorld->m_WorldID = other->m_WorldID;
+		//newWorld->m_ID = worldToCopy->GetID();
 	
 		auto& srcSceneRegistry = worldToCopy->m_Registry;
 		auto& dstSceneRegistry = newWorld->m_Registry;
@@ -1415,8 +1461,6 @@ namespace Proof {
 
 		return newWorld;
 	}
-
-	
 
 	void World::StartRuntime() 
 	{
@@ -1639,9 +1683,9 @@ namespace Proof {
 		if (!parent)
 			return;
 
-		auto& transform = entity.Transform();
+		TransformComponent& transform = entity.Transform();
 		glm::mat4 parentTransform = GetWorldSpaceTransform(parent);
-		glm::mat4 localTransform = glm::inverse(parentTransform) * GetWorldSpaceTransform(entity);
+		glm::mat4 localTransform = glm::inverse(parentTransform) * transform.GetTransform(); // keep this it works, the other way was taking
 		transform.SetTransform(localTransform);
 	}
 

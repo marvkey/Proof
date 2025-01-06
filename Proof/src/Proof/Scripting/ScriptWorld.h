@@ -130,6 +130,7 @@ namespace Proof
 		Count<class World> m_World;
 		mutable ScriptEntityClassStorage m_EntityClassesStorage;
 		mutable ScriptInstanceMap m_RuntimeEntityClassStorage;
+		std::unordered_set<ScriptGCHandle> m_CallOnCreate;// dont wanna call excactly when created because other entity systems might still be not created yet
 		UUID m_SpecificID;
 		friend class ScriptEngine;
 		friend class World;

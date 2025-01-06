@@ -161,6 +161,7 @@ namespace Proof {
     }
     void Material::SetMetalnessMap(Count<class Texture2D> texture)
     {
+
         m_RenderMaterial->Set("u_MetallicMap", texture);
     }
     void Material::SetRoughnessMap(Count<class Texture2D> texture)

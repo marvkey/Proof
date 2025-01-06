@@ -4,7 +4,10 @@
 #include <memory>
 #include <sstream>
 #include "Proof/Input/KeyCodes.h"
-namespace Proof {
+namespace Proof 
+{
+
+    
     class Proof_API ControllerConnectEvent : public Event {
     public:
             EVENT_CLASS_CATEGORY(EventCategoryInput | EventController)
@@ -46,6 +49,7 @@ namespace Proof {
     class Proof_API ControllerButtonEvent : public Event {
         EVENT_CLASS_CATEGORY(EventCategoryInput | EventController)
     public:
+        std::string GetButtonName(ControllerButton button)const;
         ControllerButtonEvent(int index,ControllerButton button) :
         m_Button(button),m_Index(index)
         {
@@ -65,7 +69,7 @@ namespace Proof {
 
         std::string ToString() const override {
             std::stringstream ss;
-            ss << "Controller " << m_Index<<" ButtonClickedEvent: " << EnumReflection::EnumString(m_Button);
+            ss << "Controller " << m_Index<<" ButtonClickedEvent: " << GetButtonName(m_Button);
             return ss.str();
         }
     };
@@ -78,7 +82,7 @@ namespace Proof {
 
         std::string ToString() const override {
             std::stringstream ss;
-            ss << "Controller " << m_Index << " ButtonPressedEvent: " << EnumReflection::EnumString(m_Button);
+            ss << "Controller " << m_Index << " ButtonPressedEvent: " << GetButtonName(m_Button);
             return ss.str();
         }
     };
@@ -91,7 +95,7 @@ namespace Proof {
 
         std::string ToString() const override {
             std::stringstream ss;
-            ss << "Controller " << m_Index << " ButtonReleasedEvent: " << EnumReflection::EnumString(m_Button);
+            ss << "Controller " << m_Index << " ButtonReleasedEvent: " << GetButtonName(m_Button);
             return ss.str();
         }
     };
@@ -103,7 +107,7 @@ namespace Proof {
 
         std::string ToString() const override {
             std::stringstream ss;
-            ss << "Controller " << m_Index << " ButtonDoubleClickEvent: " << EnumReflection::EnumString(m_Button);
+            ss << "Controller " << m_Index << " ButtonDoubleClickEvent: " << GetButtonName(m_Button);
             return ss.str();
         }
     };

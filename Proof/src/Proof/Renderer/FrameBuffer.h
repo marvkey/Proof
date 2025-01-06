@@ -57,6 +57,7 @@ namespace Proof
 	class FrameBuffer : public RefCounted {
 	public:
 		static Count<FrameBuffer> Create(const FrameBufferConfig& config);
+		static Count<FrameBuffer> CreateSwapChainFrameBuffer(const std::string& debugName);
 		virtual ~FrameBuffer() = default;
 
 		virtual const FrameBufferConfig& GetConfig() const = 0;

@@ -32,5 +32,6 @@ namespace Proof{
 		virtual const RenderPassConfig& GetConfig() const = 0;
 		virtual ~RenderPass() =default;
 		static	Count<RenderPass> Create(const RenderPassConfig& config);
+		static	Count<RenderPass> CreateSwapChain(const std::string& debugName, Count<GraphicsPipeline>pipeline);
 	};
 }

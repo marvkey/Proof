@@ -123,11 +123,10 @@ namespace Proof {
         Font::ShutDown();
 
         m_Project = nullptr;
-        m_Window->m_SwapChain = nullptr;
-        m_Window = nullptr;
 
         AssetManager::ShutDown();
         Renderer::Shutdown();
+        m_Window = nullptr;
         ElevatedInputKeys::ShutDown();
         InputManager::Destroy();
 

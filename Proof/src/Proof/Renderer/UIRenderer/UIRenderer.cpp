@@ -73,14 +73,13 @@ namespace Proof {
         return s_ScreenFrameBuffer->GetImage();
     }
     #endif
+
+ 
     void UIRenderer::DrawUI(Count<class UIPanel> panel, Count<class Renderer2D> renderer, const glm::mat4& projectionMatrix, const glm::mat4 viewProjection, uint32_t screenWidth, uint32_t screenHeight)
     {
-        glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)screenWidth, 0.0f, (float)screenHeight, -1.0f, 1.0f);
-        //glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f,-1.f,1.0f);
-        //glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)screenWidth, 0.0f, (float)screenHeight, -1.0f, 1.0f);
-        //glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f, -1.0f, 1.0f);
 
-        //orthoMatrix = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f, -1.0f, 1.0f);
+      //  glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f);
+        glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)screenWidth, 0.0f, (float)screenHeight, -1.0f, 1.0f);
 
         renderer->BeginContext(orthoMatrix, glm::mat4(1.0f), Vector(0.0f), { true });
 
@@ -94,30 +93,102 @@ namespace Proof {
             DrawElement(panel, renderer, projectionMatrix, viewProjection, screenWidth, screenHeight, uiElement);
 
         }
-
+          
         renderer->EndContext();
     }
+
+    struct UIRenderFinalData 
+    {
+        glm::vec2 Position; // Top-left corner in pixels
+        glm::vec2 Size;     // Width and height in pixels
+    };
+
+    UIRenderFinalData  CalculateRenderData(const UITransform& renderData, glm::vec2 screenSize, glm::vec2 elementSize)
+    {
+        /*
+        const auto& anchor = renderData.Anchor;
+        // Calculate the top-left and bottom-right positions from the anchor
+        glm::vec2 topLeft = glm::vec2(
+            anchor.Minimum.x * screenSize.x, // Scale anchor min.x by screen width
+            anchor.Minimum.y * screenSize.y  // Scale anchor min.y by screen height
+        );
+
+        glm::vec2 bottomRight = glm::vec2(
+            anchor.Maximum.x * screenSize.x, // Scale anchor max.x by screen width
+            anchor.Maximum.y * screenSize.y  // Scale anchor max.y by screen height
+        );
+
+        // Calculate the center of the anchor rectangle
+        glm::vec2 anchorCenter = (topLeft + bottomRight) * 0.5f;
+
+        // Calculate the size of the element (using the anchor bounds for scaling)
+        glm::vec2 scaledSize = bottomRight - topLeft;
+
+        // Apply alignment offset
+        glm::vec2 alignmentOffset = glm::vec2(
+            renderData.Alignment.x * elementSize.x, // Scale alignment.x by element width
+            renderData.Alignment.y * elementSize.y  // Scale alignment.y by element height
+        );
+
+        // Calculate the final position (anchorCenter adjusted by alignment offset)
+        glm::vec2 position = anchorCenter - alignmentOffset;
+        glm::vec2 size = bottomRight - topLeft;
+        */
+
+        // Step 1: Calculate the anchor rectangle in screen space
+        glm::vec2 anchorTopLeft = screenSize * renderData.Anchor.Minimum;
+        glm::vec2 anchorBottomRight = screenSize * renderData.Anchor.Maximum;
+        glm::vec2 anchorSize = anchorBottomRight - anchorTopLeft;
+
+        // Step 2: Apply alignment within the anchor rectangle
+        glm::vec2 alignedPosition = anchorTopLeft + anchorSize * renderData.Alignment;
+
+        // Step 3: Add offset position
+        glm::vec2 finalPosition = alignedPosition + renderData.Position;
+
+     
+        return UIRenderFinalData{ finalPosition, elementSize };
+    }
+
     void UIRenderer::DrawElement(Count<class UIPanel> panel, Count<class Renderer2D> renderer, const glm::mat4& projectionMatrix, const glm::mat4 viewProjection, uint32_t screenWidth, uint32_t screenHeight, class UIElement element)
     {
+
+        glm::vec2 elementSize = element.GetComponent<UICoreComponent>().Transform.Size;     // Element size in pixels
+
+        // Calculate the transform based on the anchor
+        UIRenderFinalData renderData = CalculateRenderData(element.GetComponent<UICoreComponent>().Transform, glm::vec2{screenWidth,screenHeight}, elementSize);
+
+        glm::mat4 rotation = glm::toMat4(glm::quat(glm::vec3(element.GetComponent<UICoreComponent>().Transform.Rotation, 1.0)));
+
+        glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+
+        // Create a transformation matrix for this elemecv nt
+        glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(renderData.Position, 0.0f)) 
+            *  glm::scale(glm::mat4(1.0f), glm::vec3(renderData.Size, 1.0f));
+
+  
+
+        // 6. Combine both matrices
+        glm::mat4 finalTransform = transform;
 
         switch (element.GetElementType())
         {
             case UIElementType::Button:
             {
                 auto button = element.GetComponent< UIButtonComponent>();
-                renderer->DrawQuad(element.GetTransform(), button.TintColor,button.Texture == nullptr ? Renderer::GetWhiteTexture() : button.Texture);
+                renderer->DrawQuad(finalTransform, button.TintColor,button.Texture == nullptr ? Renderer::GetWhiteTexture() : button.Texture);
                 break;
             }
             case UIElementType::Image:
             {
                 auto image = element.GetComponent< UIImageComponent>();
-                renderer->DrawQuad(element.GetTransform(), image.TintColor,image.Texture == nullptr ? Renderer::GetWhiteTexture() : image.Texture);
+                renderer->DrawQuad(finalTransform, image.TintColor,image.Texture == nullptr ? Renderer::GetWhiteTexture() : image.Texture);
                 break;
             }
             case UIElementType::Text:
             {
                 auto text = element.GetComponent<UITextComponent>();
-                renderer->DrawString(text.Text, text.Font, text.TextConfig, element.GetTransform());
+                renderer->DrawString(text.Text, text.Font, text.TextConfig, finalTransform);
                 break;
             }
         }

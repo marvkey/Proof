@@ -1,10 +1,10 @@
 Assets:
-  - Asset: 4620423415291113911
-    Type: Texture
-    Path: Models\PacManMap\textures\nes_bldg_pacmanmaze_ghosts.png
   - Asset: 4053659276955609160
     Type: Mesh
     Path: Meshes\Map.Mesh.ProofAsset
+  - Asset: 4620423415291113911
+    Type: Texture
+    Path: Models\PacManMap\textures\nes_bldg_pacmanmaze_ghosts.png
   - Asset: 15755887837939528469
     Type: MeshCollider
     Path: Colliders\NewMeshCollider.MeshCollider.ProofAsset
@@ -14,9 +14,6 @@ Assets:
   - Asset: 14146562526640298986
     Type: Texture
     Path: Models\PacManMap\source\pacman\nes_bldg_pacmanmaze_ghosts.png
-  - Asset: 10195873243354819264
-    Type: DynamicMesh
-    Path: Meshes\OtherPacmanMapDynamic.DynamicMesh.ProofAsset
   - Asset: 3306638049626419248
     Type: MeshSourceFile
     Path: Models\PacmanGhost\source\PacmanGhost.fbx
@@ -26,6 +23,9 @@ Assets:
   - Asset: 13844665725823832464
     Type: Texture
     Path: Models\PacManMap\textures\nes_bldg_pacmanmaze_main.png
+  - Asset: 10819770967532892221
+    Type: Mesh
+    Path: Meshes\coinMap.Mesh.ProofAsset
   - Asset: 10425816024388560322
     Type: UIPanel
     Path: New UI.UIPanel.ProofAsset
@@ -50,6 +50,9 @@ Assets:
   - Asset: 18068755671753633870
     Type: Texture
     Path: Models\PacManMap\source\pacman\nes_bldg_pacmanmaze_top.png
+  - Asset: 5120314001672147608
+    Type: DynamicMesh
+    Path: Meshes\ghostMapDybnamic.DynamicMesh.ProofAsset
   - Asset: 1809675169706098863
     Type: MeshSourceFile
     Path: Models\PacManMap\source\pacman\pacman.fbx
@@ -59,12 +62,12 @@ Assets:
   - Asset: 18194615169976015386
     Type: Prefab
     Path: Prefabs\Coin.Prefab.ProofAsset
-  - Asset: 5196314860968098635
-    Type: Material
-    Path: Materials\Gold.Material.ProofAsset
   - Asset: 16111162952041682780
     Type: MeshSourceFile
     Path: Models\PacManCoinmap\CoinMap.fbx
+  - Asset: 5196314860968098635
+    Type: Material
+    Path: Materials\Gold.Material.ProofAsset
   - Asset: 18362338234243716043
     Type: DynamicMesh
     Path: Meshes\CoinMap.DynamicMesh.ProofAsset
@@ -77,3 +80,15 @@ Assets:
   - Asset: 8979710663574227750
     Type: DynamicMesh
     Path: Meshes\PacMan.DynamicMesh.ProofAsset
+  - Asset: 11115250335648081084
+    Type: Mesh
+    Path: Meshes\ghostMap.Mesh.ProofAsset
+  - Asset: 13178070383712979572
+    Type: DynamicMesh
+    Path: Meshes\actuaalPacmandunaimc.DynamicMesh.ProofAsset
+  - Asset: 17635217802492171689
+    Type: InputBindingContext
+    Path: InputBindingContext.InputBindingContext.ProofAsset
+  - Asset: 9523648869734481217
+    Type: InputAction
+    Path: InputAction.InputAction.ProofAsset

@@ -673,10 +673,12 @@ namespace Proof {
 			VulkanAllocator allocator("VulkanImage2DRelease");
 			allocator.DestroyImage(info.ImageAlloc);
 		});
+
 		m_Info.ImageAlloc.Image = nullptr;
 		m_Info.ImageAlloc.Allocation = nullptr;
 		m_Info.Sampler = nullptr;
 		m_Info.ImageView = nullptr;
+		m_ImageData.Release();
 		//auto graphics = VulkanRenderer::GetGraphicsContext();
 		//graphics->DeleteSampler(m_SamplerHash);
 	}
@@ -818,6 +820,7 @@ namespace Proof {
 	VulkanImageView::~VulkanImageView()
 	{
 		Release();
+
 	}
 
 	void VulkanImageView::RT_Build()

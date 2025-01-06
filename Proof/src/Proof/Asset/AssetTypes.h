@@ -33,7 +33,8 @@ namespace Proof
 		InputBindingContext,
 		Skeleton,
 		Animation,
-		AnimationController
+		AnimationController,
+		EnvironmentMap
 	};
 	enum class AssetState 
 	{

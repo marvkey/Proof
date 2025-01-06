@@ -289,7 +289,7 @@ namespace Proof
         public void SetText(string text)
 		{
             InternalCalls.PlayerHUDComponent_SetText(Entity.ID, text);
-        }
+        } 
     }
 
     [RegisterCoreClassStruct]
@@ -394,10 +394,10 @@ namespace Proof
 			set => InternalCalls.RigidBodyComponent_SetBodyType(Entity.ID, value);
 		}
 
-		public bool IsKineMatrixic
-		{
-			get => InternalCalls.RigidBodyComponent_IsKineMatrixic(Entity.ID);
-			set => InternalCalls.RigidBodyComponent_SetIsKineMatrixic(Entity.ID, value);
+		public bool IsKinematic
+        {
+			get => InternalCalls.RigidBodyComponent_IsKinematic(Entity.ID);
+			set => InternalCalls.RigidBodyComponent_SetIsKinematic(Entity.ID, value);
 		}
 
 		public Proof.Vector3 Location

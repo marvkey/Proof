@@ -571,8 +571,8 @@ namespace Proof
 		VkDevice device = VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice();
 
 		// Resource release queue
-		auto& queue = Renderer::GetRenderResourceReleaseQueue(m_CurrentBufferIndex);
-		queue.Execute();
+		//auto& queue = Renderer::GetRenderResourceReleaseQueue(m_CurrentBufferIndex);
+		//queue.Execute();
 		m_CurrentImageIndex = AcquireNextImage();
 
 		VK_CHECK_RESULT(vkResetCommandPool(device, m_CommandBuffers[m_CurrentBufferIndex].CommandPool, 0));
@@ -603,8 +603,8 @@ namespace Proof
 		submitInfo.commandBufferCount = 1;
 		VkDevice device = VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice();
 
-		VK_CHECK_RESULT(vkResetFences(VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]));
-		VK_CHECK_RESULT(vkQueueSubmit(VulkanGraphicsContext::Get()->GetDevice()->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]));
+		vkResetFences(VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]);
+		vkQueueSubmit(VulkanGraphicsContext::Get()->GetDevice()->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]);
 
 		// Present the current buffer to the swap chain
 		// Pass the semaphore signaled by the command buffer submission from the submit info as the wait semaphore for swap chain presentation
@@ -612,7 +612,6 @@ namespace Proof
 		VkResult result;
 
 		{
-			//ANT_SCOPE_PERF("VulkanSwapChain::Present - QueuePresent");
 
 			VkPresentInfoKHR presentInfo = {};
 			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -641,9 +640,13 @@ namespace Proof
 		{
 			PF_PROFILE_FUNC("VulkanSwapChain::Present - WaitForFences");
 			const auto& config = Renderer::GetConfig();
+			m_PREVIOUSBufferIndex = m_CurrentBufferIndex;
 			m_CurrentBufferIndex = (m_CurrentBufferIndex + 1) % config.FramesFlight;
 			// Make sure the frame we're requesting has finished rendering
-			VK_CHECK_RESULT(vkWaitForFences(VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
+			VK_CHECK_RESULT(vkWaitForFences(VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, DEFAULT_FENCE_TIMEOUT));
+
+			auto& queue = Renderer::GetRenderResourceReleaseQueue(m_CurrentBufferIndex);
+			queue.Execute();
 		}
 
 	}

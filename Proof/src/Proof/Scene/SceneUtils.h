@@ -39,4 +39,38 @@ namespace Proof
             return value;
         }
     };
+
+    enum class VisibilityState
+    {
+        VisibleToAll = 1,
+        VisiblePlayerOnly, // only player can see it 
+        HiddenFromPlayer,// everyne else can see it apart from player
+        VisibleSelecedPlayers,// only selected players can see it
+        HiddenToAll, // no one can see it
+    };
+    DEFINE_ENUM_CLASS_FLAGS(VisibilityState);
+
+    struct Visibility
+    {
+        
+        VisibilityState State;
+        // Overload the bool operator
+        operator bool() const 
+        {
+            return State == VisibilityState::VisibleToAll;
+        }
+
+        // Set the visibility using a boolean
+        void operator=(bool isVisible) 
+        {
+            State = isVisible ? VisibilityState::VisibleToAll : VisibilityState::HiddenToAll;
+        }
+
+        // Overload the cast to VisibilityState
+        operator VisibilityState() const 
+        {
+            return State;
+        }
+
+    };
 }

@@ -72,13 +72,14 @@ namespace Proof
 		const float width = (float)icon->GetWidth() / (float)icon->GetHeight() * height;
 		const bool clicked = ImGui::InvisibleButton(UI::GenerateID(), ImVec2(width, height));
 		UI::DrawButtonImage(icon,
-			tint,
-			tint,
-			tint,
+			borderTint,
+			borderTint,
+			borderTint,
 			UI::RectOffset(UI::GetItemRect(), 0.0f, paddingY));
 
 		return clicked;
-#endif
+
+#else
 		const float edgeOffset = 4.0f;
 
 		UI::ScopedStyleVar enableSpacing(ImGuiStyleVar_ItemSpacing, ImVec2(edgeOffset , 0));
@@ -111,6 +112,8 @@ namespace Proof
 		);
 		if (ImGui::IsItemClicked())
 			return true;
+
+#endif
 		return false;
 	}
 	enum class UIToolbarAlign
@@ -321,7 +324,7 @@ namespace Proof
 
 		//left toolbar
 		{
-			auto data = BeginTollBarWindow(("##DropwDown" + m_TitleAndID).c_str(), 1, UIToolbarAlign::Left, 14.0f);
+			auto data = BeginTollBarWindow(("##DropDown" + m_TitleAndID).c_str(), 1, UIToolbarAlign::Left, 14.0f);
 			TollbarButton(EditorResources::DropdownIcon);
 			EndToolbarWindow();
 
@@ -347,6 +350,7 @@ namespace Proof
 					UI::AttributeBool("ShadowCascades", m_WorldRenderer->DebugOptions.ShadowDebugOptions.ShowCascades);
 					UI::AttributeBool("Icons", m_ShowComponentsIcon);
 
+					UI::AttributeBool("Show Bounding Boxes", m_ShowBoundingBoxes);
 					UI::EndPropertyGrid();
 
 					UI::EndPopup();
@@ -733,6 +737,7 @@ namespace Proof
 	}
 	void ViewPortEditorWorkspace::OnRender2D()
 	{
+
 		Count<Renderer2D> renderer2D =  m_WorldRenderer->GetRenderer2D();
 		renderer2D->SetTargetFrameBuffer(m_WorldRenderer->GetExternalCompositePassFrameBuffer());
 		

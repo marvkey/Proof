@@ -14,6 +14,9 @@ namespace Proof{
 	class VulkanRenderPass : public RenderPass {
 	public:
 		VulkanRenderPass(const RenderPassConfig& config);
+
+		// creates from swapchain
+		VulkanRenderPass(const std::string& debugName,Count<GraphicsPipeline> pipeline);
 		virtual ~VulkanRenderPass();
 		//virtual void SetTargetFrameBuffer(Count<FrameBuffer> frame) { PF_CORE_ASSERT(frame, "Cannot be null"); m_Config.TargetBuffer = frame; }
 		Count<class Image> GetOutput(uint32_t imageIndex);
@@ -73,6 +76,7 @@ namespace Proof{
 		bool m_RenderPassEnabled = false;
 		bool m_MaterialRenderPass = false;
 		Count<VulkanDescriptorManager> m_DescritptorSetManager;
+		bool m_SwapChain = false;
 		friend class VulkanRenderer;
 		friend class VulkanRendererAPI;
 	};

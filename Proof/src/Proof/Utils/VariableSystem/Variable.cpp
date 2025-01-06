@@ -7,12 +7,15 @@ namespace Proof
 	void VariableRegistry::SetVariable(std::string_view name, Variable var)
 	{
 		m_Variables[name.data()] = var;
+		var.m_UUID = UUID();
+		m_VariableIds[var.m_UUID] = name.data();
 	}
 
 	void VariableRegistry::RemoveVariable(std::string_view name)
 	{
 		PF_CORE_ASSERT(HasVariable(name), "Does not contain the variable");
 
+		m_VariableIds.erase(GetVariable(name).m_UUID);
 		m_Variables.erase(name.data());
 	}
 	bool VariableRegistry::HasVariable(std::string_view name)const

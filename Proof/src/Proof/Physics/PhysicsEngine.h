@@ -17,6 +17,7 @@ namespace Proof {
 		static PhysicsSettings& GetSettings(); 
 		static std::string GetLastErrorMessage(); 
 
+		static bool IsInitialize();
 		static Count<class MeshCollider> GetOrCreateColliderAsset(class  Entity entity, struct MeshColliderComponent& component);
 	private:
 		static void Init();

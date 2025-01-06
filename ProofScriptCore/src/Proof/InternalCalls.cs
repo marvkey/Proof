@@ -222,9 +222,9 @@ namespace Proof
         internal extern static RigidBodyType RigidBodyComponent_GetBodyType(ulong entityID);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool RigidBodyComponent_IsKineMatrixic(ulong entityID);
+        internal extern static bool RigidBodyComponent_IsKinematic(ulong entityID);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBodyComponent_SetIsKineMatrixic(ulong entityID,bool state);
+        internal extern static void RigidBodyComponent_SetIsKinematic(ulong entityID,bool state);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool RigidBodyComponent_IsSleeping(ulong entityID);
@@ -531,6 +531,16 @@ namespace Proof
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool AssetID_IsValid(ref AssetID AssetID);
+        #endregion
+
+        #region PersistentDataSorage
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void PersistentDataStorage_SaveData(string name, IntPtr data, ulong size);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static IntPtr PersistentDataStorage_LoadData(string name, int size);
+        internal extern static bool PersistentDataStorage_HasData(string name);
+        internal extern static void PersistentDataStorage_ClearData(string name);
+
         #endregion
     }
 }

@@ -138,6 +138,9 @@ namespace Proof
 	{
 		WorldRendererTimers Timers;
 		UBLightScene LightSene;
+		uint32_t TotalMeshProcessedCpu = 0;
+		uint32_t TotalMeshSentToGpu = 0;
+
 	};
 
 
@@ -470,6 +473,7 @@ namespace Proof
 		friend class Editore3D;
 		friend class WorldRendererPanel;
 		friend class ViewPortEditorWorkspace;
+		friend class World;
 	};
 }
 

@@ -1,12 +1,18 @@
 
 using System;
+using System.Runtime.InteropServices;
+using System.Threading;
 using Proof;
+using static FlappyBird.BirdMovement;
 
 namespace FlappyBird
 {
 	public class BirdMovement : Entity
 	{
-		
+		public struct TestData
+		{
+			int score;
+		}
 		PlayerInputComponent m_PlayerInputComponent;
 		
 		public enum BirdState
@@ -35,13 +41,40 @@ namespace FlappyBird
 		public Entity ScoreEntity;
 
 		int m_CurrentCameraIndex = 0;
+		public Prefab FracturedBird;
 		// first camera is the default
 		public Entity[] Cameras;
 		public Entity[] TextCameras;
 		PlayerHUDComponent m_HudComponent;
-		// OnCreate is called once when the Entity that this script is attached to
-		// is instantiated in the world at runtime
-		void OnCreate()
+		private float m_WorldEndTimer = 5.0f;// seconds
+		[StructLayout(LayoutKind.Sequential)]
+
+        public struct PlayerData
+        {
+            public int Score;
+            public float Time;
+        }
+        private byte[] StructToByteArray<T>(T structData) where T : struct
+        {
+            int size = Marshal.SizeOf(typeof(T));
+            byte[] byteArray = new byte[size];
+
+            IntPtr ptr = Marshal.AllocHGlobal(size);
+            try
+            {
+                Marshal.StructureToPtr(structData, ptr, true);
+                Marshal.Copy(ptr, byteArray, 0, size);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(ptr);
+            }
+
+            return byteArray;
+        }
+        // OnCreate is called once when the Entity that this script is attached to
+        // is instantiated in the world at runtime
+        void OnCreate()
 		{
             m_PlayerInputComponent = GetComponent<PlayerInputComponent>();
             m_HudComponent = GetComponent<PlayerHUDComponent>();
@@ -58,6 +91,11 @@ namespace FlappyBird
 
 			m_IncreaseSpeedTimer = IncreaseSpeedIntervalSeconds;
             m_HudComponent.SetText("0");
+            PlayerData playerData = new PlayerData { Score = 100, Time = 12.5f };
+
+			PersistentDataStorage.SaveData("Score", 10);
+
+			//PersistentDataStorage.SaveDataRaw("Score", StructToByteArray(playerData));
         }
 
         // OnUpdate is called once every frame while this script is active in the world
@@ -69,16 +107,21 @@ namespace FlappyBird
 			/// TextCameras[m_CurrentCameraIndex].GetComponent<TextComponent>().Text = m_Score.ToString();
 
 			m_IncreaseSpeedTimer -= deltaTime;
-			if(m_IncreaseSpeedTimer <=0)
+			if(m_IncreaseSpeedTimer <=0)  
 			{
 				IncreaseSpeed();
 				m_IncreaseSpeedTimer = IncreaseSpeedIntervalSeconds;
             }
+			RotateBird();
 
+			if (m_State == BirdState.Dead)
+				m_WorldEndTimer -= deltaTime;
+
+			if (m_WorldEndTimer <= 0)
+				World.Restart();
         }
-
-		void IncreaseSpeed()
-		{
+        void IncreaseSpeed()
+        {
 			ForwardSpeed += IncreaseSpeedValue;
 			JumpForce += IncreaseSpeedValue;
         }
@@ -94,15 +137,64 @@ namespace FlappyBird
 			}
 		}
 
+		void Fracture()
+		{
+			if (FracturedBird == null)
+				return;
+
+			Entity fractureBirdEntity = World.Instantiate(FracturedBird, GetComponent<TransformComponent>().Location);
+
+			/*
+			fractureBirdEntity.Scale = Scale;
+
+			Log.Info($"{fractureBirdEntity.Location}");
+			Log.Info($"{Location}");
+            foreach (Entity child in fractureBirdEntity.GetChildren())
+			{
+				//Vector3 impulse = Proof.Random.Vector(0,2);
+
+				//child.GetComponent<RigidBodyComponent>().LinearVelocity = GetComponent<RigidBodyComponent>().LinearVelocity;
+				//child.GetComponent<RigidBodyComponent>().AddForce(impulse, ForceMode.Impulse);
+            }
+			*/
+			//Destroy();
+		}
 		void OnCollisionEnter(Entity other)
 		{
+			if (m_State == BirdState.Dead)
+				return;
+
 			if(other.Name == "Obstacle")
 			{
 				m_State = BirdState.Dead;
                 Log.Info("Dead");
+				//World.Restart();
+				Fracture();
+				GetComponent<MeshComponent>().Visible = false;
+				GetComponent<BoxColliderComponent>().IsTrigger = true;
+                m_RigidBody.LinearVelocity = new Vector3(0.0f);
+                m_RigidBody.Gravity =false;
+                m_RigidBody.IsKinematic = true;
+				Log.Info("Stop player");
             }
         }
+        public float maxTiltAngle = 60f; // Maximum angle to tilt up or down
+        public float tiltSmooth = 5f; // Speed of rotation smoothing
 
+        void RotateBird()
+		{
+			switch (m_State)
+
+			{
+				case BirdState.Playing:
+					// Calculate the target angle based on the y-velocity
+					float targetAngle = Mathf.Clamp(-m_RigidBody.Velocity.y * maxTiltAngle / JumpForce, -maxTiltAngle, maxTiltAngle);
+
+					// Set the x-axis rotation directly
+					Rotation = Vector3.Lerp(Rotation, new Vector3(0, 0, targetAngle), tiltSmooth * World.GetDeltaTime());
+					break;
+			}
+        }
 		void PlayerJump(InputActionOutput actionOutput)
 		{
 			switch(m_State)

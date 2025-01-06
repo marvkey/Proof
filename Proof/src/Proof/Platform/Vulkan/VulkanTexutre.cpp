@@ -567,6 +567,7 @@ namespace Proof
 	{
 		Release();
 		PF_ENGINE_TRACE("Vulkan Texture Deleted {}", m_Config.DebugName);
+
 	}
 
 	void VulkanTexture2D::Resize(uint32_t width, uint32_t height)

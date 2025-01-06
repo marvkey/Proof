@@ -176,13 +176,83 @@ namespace Proof {
 		physx::PxRigidDynamic* rigidBody = (physx::PxRigidDynamic*)m_RigidActor;
 		return rigidBody->isSleeping();
 	}
+
+	float QuaternionScalarDifference(const glm::quat& q1, const glm::quat& q2) {
+		// Ensure both quaternions are normalized (just in case)
+		glm::quat normQ1 = glm::normalize(q1);
+		glm::quat normQ2 = glm::normalize(q2);
+
+		// Calculate the absolute value of the dot product
+		float dotProduct = glm::dot(normQ1, normQ2);
+
+		// Clamp the dot product to avoid numerical inaccuracies
+		dotProduct = glm::clamp(dotProduct, -1.0f, 1.0f);
+
+		// Compute the scalar difference
+		return 1.0f - std::abs(dotProduct);
+	}
+	bool IsRotationSignificant(const glm::quat& q1, const glm::quat& q2, float thresholdRadians) {
+		// Normalize the quaternions to ensure they represent rotations
+		glm::quat normQ1 = glm::normalize(q1);
+		glm::quat normQ2 = glm::normalize(q2);
+
+		// Calculate the dot product
+		float dotProduct = glm::dot(normQ1, normQ2);
+
+		// Clamp the dot product to avoid numerical issues
+		dotProduct = glm::clamp(dotProduct, -1.0f, 1.0f);
+
+		// Calculate the angle difference (in radians)
+		float angle = 2.0f * std::acos(std::abs(dotProduct));
+
+		// Check if the angle exceeds the threshold
+		return angle > thresholdRadians;
+	}
+
+
+
+	bool AreSameAxisDifferentAngles(const glm::quat& q1, const glm::quat& q2, float tolerance = 1e-6f) {
+		// Normalize both quaternions
+		glm::quat normQ1 = glm::normalize(q1);
+		glm::quat normQ2 = glm::normalize(q2);
+
+		// Compare vector parts (x, y, z)
+		glm::vec3 axisQ1 = glm::vec3(normQ1.x, normQ1.y, normQ1.z);
+		glm::vec3 axisQ2 = glm::vec3(normQ2.x, normQ2.y, normQ2.z);
+
+		if (glm::length(axisQ1) > 0.0f && glm::length(axisQ2) > 0.0f) {
+			axisQ1 = glm::normalize(axisQ1);
+			axisQ2 = glm::normalize(axisQ2);
+		}
+
+		if (!glm::all(glm::epsilonEqual(axisQ1, axisQ2, tolerance))) {
+			return false; // Different axes
+		}
+
+		// Check if w components are different
+		return std::abs(normQ1.w - normQ2.w) > tolerance;
+	}
+
+
 	void PhysicsActor::OnFixedUpdate(float deltaTime)
 	{
+		physx::PxTransform currentGlobalPos = m_RigidActor->getGlobalPose();
 		TransformComponent transform = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
-		physx::PxTransform newPos(PhysXUtils::ToPhysXVector(transform.Location), PhysXUtils::ToPhysXQuat(transform.GetRotation()));
+		physx::PxTransform newTransform = PhysXUtils::ToPhysXTransform(transform);
 
-		if(transform.Location != GetLocation() || transform.GetRotationEuler() != GetRotationEuler())
-			m_RigidActor->setGlobalPose(newPos, false);
+	#if 1
+		// Update global pose only if location or rotation has changed
+		if (m_LastLocation != transform.Location)
+		{
+			SetLocation(transform.Location, false);
+		}
+		constexpr float epsilon = 1e-6f;
+
+		if (transform.GetRotation() != m_LastRotation)
+		{
+			SetRotation(transform.GetRotation(), false);
+		}
+	#endif
 
 		//if (!ScriptEngine::IsEntityInstantiated(m_Entity))
 		//	return;
@@ -498,6 +568,13 @@ namespace Proof {
 			SyncTransform();
 	}
 
+	void PhysicsActor::SetTransform(const glm::mat4& transform)
+	{
+		physx::PxTransform physxTransform = PhysXUtils::ToPhysXTransform(transform);
+
+		m_RigidActor->setGlobalPose(physxTransform);
+	}
+
 	void PhysicsActor::SetRotation(const glm::quat& rotation, bool autowake)
 	{
 		physx::PxTransform transform = m_RigidActor->getGlobalPose();
@@ -615,7 +692,6 @@ namespace Proof {
 			m_RigidActor = body;
 
 			const PhysicsSettings& settings = PhysicsEngine::GetSettings();
-			//m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlags((physx::PxRigidDynamicLockFlags)m_LockFlags);
 			body->setSolverIterationCounts(settings.SolverIterations, settings.SolverVelocityIterations);
 			body->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, rigidBodyComponent.CollisionDetection == CollisionDetectionType::Continuous);
 			body->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, rigidBodyComponent.CollisionDetection == CollisionDetectionType::ContinuousSpeculative);
@@ -631,6 +707,9 @@ namespace Proof {
 		{
 			m_Entity.GetComponent<RigidBodyComponent>().PhysicsLayerID = 0;
 		}
+
+		m_LastLocation = transformComponent.Location;
+		m_LastRotation = transformComponent.GetRotation();
 		m_PhysicsWorld->GetPhysicsScene()->addActor(*m_RigidActor);
 		SetSimulationData(rigidBodyComponent.PhysicsLayerID);
 	}
@@ -645,8 +724,13 @@ namespace Proof {
 			transform.SetRotation(PhysXUtils::FromPhysXQuat(actorPose.q));
 
 		auto world = m_PhysicsWorld->GetWorld();
+		m_LastLocation = transform.Location;
 		world->ConvertToLocalSpace(m_Entity);
 		transform.Scale = scale;
-
+		{
+			auto newTrasform=m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
+			m_LastRotation = newTrasform.GetRotation();
+			m_LastLocation = newTrasform.Location;
+		}
 	}
 }

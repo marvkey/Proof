@@ -165,9 +165,11 @@ namespace Proof
 		PreethamSky,
 		EnvironmentTexture
 	};
-	class Environment : public RefCounted
+	class Environment : public Asset
 	{
 	public:
+		ASSET_CLASS_TYPE(EnvironmentMap);
+
 		Environment();
 		Environment(HosekWilkieSkyData data);
 		Environment(PreethamSkyData data);

@@ -1,38 +1,6 @@
 World:
   ID: 1727338198408425826
   Entities:
-    - Entity: 1906796830639401264
-      TagComponent:
-        Tag: Plane
-        tags: []
-      TransformComponent:
-        Location: [0, -1.60000002, 0]
-        Rotation: [0, 0, 0]
-        Scale: [82.6786957, 1, 13.3999996]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        MaterialTable:
-          - Material: ""
-            AssetID: 21111461629328851
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
     - Entity: 6735317338095580548
       TagComponent:
         Tag: Directional Light
@@ -52,36 +20,38 @@ World:
         Tag: Bird
         tags: []
       TransformComponent:
-        Location: [0, 6.19999981, 0]
-        Rotation: [0, -0, 0]
+        Location: [0, 6, 0]
+        Rotation: [0, 0, 0]
         Scale: [0.800000012, 0.800000012, 0.800000012]
       HierarchyComponent:
         ParentHandle: 230703648228711441
         Children: []
       MeshComponent:
-        MeshAssetPointerID: 14323665009738248236
-        MaterialTable:
-          - Material: ""
-            AssetID: 21111461629328851
-            Index: 1
+        MeshAssetPointerID: 3078368524365667147
       ScriptComponent:
         Scripts:
           - Script: FlappyBird.BirdMovement
             ScriptClassName: FlappyBird.BirdMovement
             ScriptName: FlappyBird.BirdMovement
             Fields:
+              - NameID: FlappyBird.BirdMovement.FracturedBird
+                Type: Prefab
+                Data: 16451095300668606735
               - NameID: FlappyBird.BirdMovement.ChangeCameraAction
                 Type: InputAction
                 Data: 4337114102758531292
               - NameID: FlappyBird.BirdMovement.PlayerScorePanel
                 Type: UIPanel
                 Data: 35420920226295225
+              - NameID: FlappyBird.BirdMovement.maxTiltAngle
+                Type: Float
+                Data: 60
               - NameID: FlappyBird.BirdMovement.IncreaseSpeedValue
                 Type: Float
                 Data: 0.25
               - NameID: FlappyBird.BirdMovement.ForwardSpeed
                 Type: Float
-                Data: 3
+                Data: 4
               - NameID: FlappyBird.BirdMovement.MaxForwardSpeed
                 Type: Float
                 Data: 10
@@ -93,7 +63,7 @@ World:
                 Data: 5
               - NameID: FlappyBird.BirdMovement.JumpForce
                 Type: Float
-                Data: 6
+                Data: 4.25
               - NameID: FlappyBird.BirdMovement.ScoreEntity
                 Type: Entity
                 Data: 10047144193988509295
@@ -111,6 +81,9 @@ World:
                   - 15045088149692351039
                   - 10047144193988509295
                   - 6541340304331375578
+              - NameID: FlappyBird.BirdMovement.tiltSmooth
+                Type: Float
+                Data: 5
       BoxColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
@@ -172,6 +145,74 @@ World:
         FOV: 45
         UseLocalRotation: false
         ActiveForRendering: false
+    - Entity: 13463117570048839208
+      TagComponent:
+        Tag: p_Platform
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [17468590031491286107]
+    - Entity: 4913491707922800382
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.0174532924, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [0.637037039, 0.637037039, 0.637037039]
+        SkyBoxLod: 0.5
+        MapRotation: 0.25
+        Intensity: 0.5
+        EnvironmentState: EnvironmentTexture
+        TextureDataImage: 3152980911532530012
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 8170577130468737619
+      TagComponent:
+        Tag: SpawnObstacle
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: FlappyBird.ObstacleSpawner
+            ScriptClassName: FlappyBird.ObstacleSpawner
+            ScriptName: FlappyBird.ObstacleSpawner
+            Fields:
+              - NameID: FlappyBird.ObstacleSpawner.Bird
+                Type: Entity
+                Data: 9349092802385242280
+              - NameID: FlappyBird.ObstacleSpawner.DistanceFromPlayer
+                Type: Float
+                Data: -10
+              - NameID: FlappyBird.ObstacleSpawner.Frequency
+                Type: Float
+                Data: 0.5
+              - NameID: FlappyBird.ObstacleSpawner.Obstacle
+                Type: Prefab
+                Data: 13311740954232371865
+          - Script: FlappyBird.PlatformSpawn
+            ScriptClassName: FlappyBird.PlatformSpawn
+            ScriptName: FlappyBird.PlatformSpawn
+            Fields:
+              - NameID: FlappyBird.PlatformSpawn.Obstacle
+                Type: Prefab
+                Data: 9412958720818837739
     - Entity: 12917521485709972632
       TagComponent:
         Tag: BehindCamera
@@ -210,56 +251,6 @@ World:
         FOV: 45
         UseLocalRotation: false
         ActiveForRendering: false
-    - Entity: 8170577130468737619
-      TagComponent:
-        Tag: SpawnObstacle
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      ScriptComponent:
-        Scripts:
-          - Script: FlappyBird.ObstacleSpawner
-            ScriptClassName: FlappyBird.ObstacleSpawner
-            ScriptName: FlappyBird.ObstacleSpawner
-            Fields:
-              - NameID: FlappyBird.ObstacleSpawner.Bird
-                Type: Entity
-                Data: 9349092802385242280
-              - NameID: FlappyBird.ObstacleSpawner.DistanceFromPlayer
-                Type: Float
-                Data: -10
-              - NameID: FlappyBird.ObstacleSpawner.Frequency
-                Type: Float
-                Data: 0.5
-              - NameID: FlappyBird.ObstacleSpawner.Obstacle
-                Type: Prefab
-                Data: 17336988028706640135
-    - Entity: 4913491707922800382
-      TagComponent:
-        Tag: Sky Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0.0349065848, 0.0174532924, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      SkyLightComponent:
-        TintColor: [1, 1, 1]
-        SkyBoxLod: 0
-        MapRotation: 0
-        Intensity: 1
-        EnvironmentState: PreethamSky
-        TextureDataImage: 0
-        HosekWilkieTurbidity: 4
-        HosekWilkieGroundReflectance: 0.100000001
-        PreethamTurbidity: 4
     - Entity: 230703648228711441
       TagComponent:
         Tag: Player
@@ -309,3 +300,35 @@ World:
         FOV: 45
         UseLocalRotation: false
         ActiveForRendering: true
+    - Entity: 17468590031491286107
+      TagComponent:
+        Tag: Platform
+        tags: []
+      TransformComponent:
+        Location: [0, -11.3000002, 0]
+        Rotation: [0, -0, 0]
+        Scale: [112, 10, 112]
+      HierarchyComponent:
+        ParentHandle: 13463117570048839208
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        MaterialTable:
+          - Material: ""
+            AssetID: 1279727863603567063
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete

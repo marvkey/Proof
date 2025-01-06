@@ -119,12 +119,15 @@ namespace Proof
 				}
 			}
 
-			#ifndef ANT_DIST
+			#ifndef PF_DIST
 			if (!found)
 				PF_ENGINE_WARN("[Memory] Memory block {0} not present in alloc map", memory);
 			#endif
+
+			if(found)
+				free(memory);
+
 		}
-		free(memory);
 	}
 
 	namespace Memory {

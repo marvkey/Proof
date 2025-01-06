@@ -7,7 +7,7 @@ namespace Proof
 	
 	class VulkanVertexBuffer : public VertexBuffer {
 	public:
-		~VulkanVertexBuffer();
+		virtual ~VulkanVertexBuffer();
 		VulkanVertexBuffer(const void* data, uint64_t size);
 		VulkanVertexBuffer(uint64_t size);
 
@@ -36,7 +36,7 @@ namespace Proof
 	public:
 		VulkanIndexBuffer(uint32_t size);
 		VulkanIndexBuffer(const void* data, uint32_t size);
-		~VulkanIndexBuffer();
+		virtual ~VulkanIndexBuffer();
 		virtual void Bind(Count<RenderCommandBuffer> commandBuffer);
 		virtual void RT_SetData(const void* data, uint32_t size, uint32_t offsetSize = 0);
 		virtual void SetData(const void* data, uint32_t size, uint32_t offsetSize = 0);

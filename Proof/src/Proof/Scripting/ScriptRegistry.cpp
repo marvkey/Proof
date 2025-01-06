@@ -347,8 +347,8 @@ namespace Proof
 
 		if (method == nullptr && !ignoreParent && managedClass->ParentName.size() > 0)
 			method = GetSpecificManagedMethod(&s_ScriptRegistryData->Classes.at(managedClass->ParentName), name, parameterCount);
-		if (method == nullptr)
-			PF_ENGINE_WARN("ScriptEngine Failed to find method with name: {0} and parameter count: {1} in class {2}", name, parameterCount, managedClass->FullName);
+		//if (method == nullptr)
+			//PF_ENGINE_WARN("ScriptEngine Failed to find method with name: {0} and parameter count: {1} in class {2}", name, parameterCount, managedClass->FullName);
 
 		return method;
 	}

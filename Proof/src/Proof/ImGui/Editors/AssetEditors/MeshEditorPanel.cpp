@@ -153,6 +153,26 @@ namespace Proof
 	}
 	void MeshEditorPanel::RenderSettingsPanel()
 	{
+
+		{
+			auto location = m_MeshBase->GetTranslation();
+			if (UI::AttributeDrag("Translation", location, 0.25))
+				m_MeshBase->SetTranslation(location);
+
+
+			auto rotation = m_MeshBase->GetRotationDeg();
+			if (UI::AttributeDrag("RotationDeg", rotation, 0.25))
+				m_MeshBase->SetRotationDeg(rotation);
+
+			auto scale = m_MeshBase->GetScale();
+			if (UI::AttributeDrag("Scale", scale))
+				m_MeshBase->SetScale(scale);
+		}
+
+
+		DrawMeshNode();
+		UI::AttributeDrawMaterialTable(m_MeshBase->GetMaterialTable(), m_MeshBase->GetMeshSource()->GetMaterials());
+
 		if (m_MeshBase->GetAssetType() == AssetType::Mesh)
 			RenderStaticMeshPanel();
 		else
@@ -160,29 +180,10 @@ namespace Proof
 	}
 	void MeshEditorPanel::RenderStaticMeshPanel()
 	{
-		auto staticMesh = m_MeshBase.As<Mesh>();
-
-		{
-			auto location = staticMesh->GetTranslation();
-			if (UI::AttributeDrag("Translation", location, 0.25))
-				staticMesh->SetTranslation(location);
-
-
-			auto rotation = staticMesh->GetRotationDeg();
-			if (UI::AttributeDrag("RotationDeg", rotation, 0.25))
-				staticMesh->SetRotationDeg(rotation);
-
-			auto scale = staticMesh->GetScale();
-			if (UI::AttributeDrag("Scale", scale))
-				staticMesh->SetScale(scale);
-		}
-
-		DrawMeshNode();
-		UI::AttributeDrawMaterialTable(m_MeshBase->GetMaterialTable(), m_MeshBase->GetMeshSource()->GetMaterials());
+		
 	}
 	void MeshEditorPanel::RenderDynamicMeshPanel()
 	{
-
 
 	}
 

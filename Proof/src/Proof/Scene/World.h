@@ -130,6 +130,9 @@ namespace Proof {
 		const std::unordered_map<UUID, Entity>& GetEntities() { return m_EntitiesMap; };
 
 		bool OnElevatedKeyEvent(const ElevatedInputKeyParams& keyParams);
+		void OnWorldTransition(AssetID id);
+		void SetWorldTransitionCallback(const std::function<void(AssetID)>& callback) { m_OnWorldTransitionCallback = callback; }
+
 	private:
 		Camera m_Camera;
 		glm::vec3 m_CameraPositon;
@@ -168,7 +171,17 @@ namespace Proof {
 		// first id is the dstEntity, second is srcEntity
 		class Entity CreateEntityFromOtherReal(Entity entity, std::unordered_map<UUID, UUID>& entitySwapID,bool includeChildren = true);
 
+		void PauseRigidBodyOnConstruct()
+		{
+			m_RigidBodyOnConstruct = false;
+		}
+		void UnPauseRigidBodyOnConstruct();
+
 	private:
+
+		std::vector<Entity> m_RigidBodyWaitingList;
+		bool m_RigidBodyOnConstruct = true;
+		std::function<void(AssetID)> m_OnWorldTransitionCallback;
 		std::unordered_set< UUID> m_EntityDeleteQueue;
 		Count<class ScriptWorld> m_ScriptWorld;
 		entt::registry m_Registry;
@@ -176,6 +189,7 @@ namespace Proof {
 		WorldState m_CurrentState = WorldState::Edit;
 		std::string Name = "DefaultWorld";
 		std::unordered_map<UUID, Entity>m_EntitiesMap ;
+
 		friend class SceneHierachyPanel;
 		friend class Entity;
 		friend class SceneSerializer;

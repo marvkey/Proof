@@ -117,6 +117,7 @@ namespace Proof
 
 			return new Entity(owenrId);
         }
+
         public T GetComponent<T>() where T : Component, new()
 		{
 			if (!HasComponent<T>())
@@ -146,6 +147,12 @@ namespace Proof
         {
             World.DeleteEntity(this,includeChildren);   
         }
+
+        protected virtual void OnCreate() { }
+        protected virtual void OnUpdate(float ts) { }
+        protected virtual void OnPostUpdate(float ts) { }
+        protected virtual void OnDestroy() { }
+
         private void OnCollisionEnterInternal(ulong id) => CollisionEnterEvent?.Invoke(new Entity(id));
         private void OnCollisionStayInternal(ulong id) => CollisionStayEvent?.Invoke(new Entity(id));
         private void OnCollisionLeaveInternal(ulong id) => CollisionLeaveEvent?.Invoke(new Entity(id));

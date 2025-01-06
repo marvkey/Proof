@@ -45,7 +45,10 @@ namespace Proof
 
     PhysicsMaterial::~PhysicsMaterial()
     {
-        m_PhysxMaterial->release(); // make sure
+        if (PhysicsEngine::IsInitialize())
+            m_PhysxMaterial->release();
+        else
+            PF_ENGINE_WARN("Physics Material deleted while physics engine has been untilzed ");
     }
 
     float PhysicsMaterial::GetStaticFriction()
@@ -56,7 +59,6 @@ namespace Proof
     {
         return m_PhysxMaterial->getDynamicFriction();
     }
-
 
     float PhysicsMaterial::GetBounciness()
     {

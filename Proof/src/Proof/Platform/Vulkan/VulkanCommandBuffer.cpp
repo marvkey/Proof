@@ -8,6 +8,7 @@
 #include "Vulkan.h"
 #include "VulkanRenderer.h"
 #include "VulkanDevice.h"
+#include "Proof/Core/Application.h"
 namespace Proof
 {
 	VulkanCommandBuffer::VulkanCommandBuffer()
@@ -56,6 +57,11 @@ namespace Proof
 
 	VkCommandBuffer VulkanRenderCommandBuffer::GetActiveCommandBuffer()
 	{
+		if (m_Swapcahin)
+		{
+			 return Application::Get()->GetWindow()->GetSwapChain().As<VulkanSwapChain>()->GetCurrentDrawCommandBuffer();
+		}
+
 		return m_CommandBuffers[Renderer::RT_GetCurrentFrameInFlight()];
 	}
 
@@ -195,23 +201,30 @@ namespace Proof
 		Count<VulkanRenderCommandBuffer> instance = this;
 		Renderer::Submit([instance]()
 		{
+				PF_PROFILE_SCOPE_DYNAMIC(fmt::format("CommandBufferSubmit {} ", instance->m_DebugName.c_str()).c_str());
 
 			auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
 
 			uint32_t frameIndex = Renderer::RT_GetCurrentFrameInFlight();
+			VkCommandBuffer commandBuffer = instance->GetActiveCommandBuffer();
 
 			VkSubmitInfo submitInfo{};
 			submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-			submitInfo.commandBufferCount = 1;
-			VkCommandBuffer commandBuffer = instance->m_CommandBuffers[frameIndex];
 			submitInfo.pCommandBuffers = &commandBuffer;
-
-			VK_CHECK_RESULT(vkWaitForFences(device, 1, &instance->m_WaitFences[frameIndex], VK_TRUE, UINT64_MAX));
-			VK_CHECK_RESULT(vkResetFences(device, 1, &instance->m_WaitFences[frameIndex]));
-
-
-			VK_CHECK_RESULT(vkQueueSubmit(VulkanRenderer::GetGraphicsContext()->GetDevice()->GetGraphicsQueue(), 1, &submitInfo, instance->m_WaitFences[frameIndex]));
-
+			submitInfo.commandBufferCount = 1;
+			submitInfo.pWaitDstStageMask = nullptr;
+			submitInfo.pWaitSemaphores = nullptr;
+			submitInfo.waitSemaphoreCount = 0;
+			submitInfo.pSignalSemaphores = nullptr;
+			submitInfo.signalSemaphoreCount = 0;
+			{
+				PF_PROFILE_FUNC("ResetFences");
+				VK_CHECK_RESULT(vkResetFences(device, 1, &instance->m_WaitFences[frameIndex]));
+			}
+			{
+				PF_PROFILE_FUNC("vkQueueSubmit");
+				VK_CHECK_RESULT(vkQueueSubmit(VulkanRenderer::GetGraphicsContext()->GetDevice()->GetGraphicsQueue(), 1, &submitInfo, instance->m_WaitFences[frameIndex]));
+			}
 #if 0
 			vkGetQueryPoolResults(device, instance->m_TimestampQueryPools[frameIndex], 0, instance->m_TimestampNextAvailableQuery,
 				instance->m_TimestampNextAvailableQuery * sizeof(uint64_t), instance->m_TimestampQueryResults[frameIndex].data(), sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
@@ -228,27 +241,51 @@ namespace Proof
 			vkGetQueryPoolResults(device, instance->m_PipelineStatisticsQueryPools[frameIndex], 0, 1,
 				sizeof(PipelineStatistics), &instance->m_PipelineStatisticsQueryResults[frameIndex], sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
 #endif
-			vkDeviceWaitIdle(device);
-			vkResetCommandBuffer(instance->m_CommandBuffers[frameIndex], 0);
+			{
+				//PF_PROFILE_FUNC("WaitDeviceIdle");
+				//vkDeviceWaitIdle(device);
+			}
+			
+			
 		});
 	}
 
 	void VulkanRenderCommandBuffer::BeginRecord()
 	{
-		if (m_Swapcahin == true || m_NormalCommandBuffer != nullptr)
-			return;
 		Count<VulkanRenderCommandBuffer> instance = this;
-		Renderer::Submit([instance]()
-		{
-			PF_CORE_ASSERT(instance->m_Recording == false, "cannot start recoridng when command buffer is still recording");
-			instance->m_Recording = true;
 
-			instance->m_ActiveCommandBufferIndex = Renderer::RT_GetCurrentFrameInFlight();
-			VkCommandBufferBeginInfo beginInfo{};
-			beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-			beginInfo.pNext = nullptr;
-			beginInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
-			if (vkBeginCommandBuffer(instance->m_CommandBuffers[instance->m_ActiveCommandBufferIndex], &beginInfo) != VK_SUCCESS)
+		Renderer::Submit([instance]()
+			{
+				PF_PROFILE_SCOPE_DYNAMIC(fmt::format("CommandBufferBeginRecord {} ", instance->m_DebugName.c_str()).c_str());
+
+				PF_CORE_ASSERT(instance->m_Recording == false, "cannot start recoridng when command buffer is still recording");
+				instance->m_Recording = true;
+
+				instance->m_ActiveCommandBufferIndex = Renderer::RT_GetCurrentFrameInFlight();
+				VkCommandBufferBeginInfo beginInfo{};
+				beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+				beginInfo.pNext = nullptr;
+				beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+			VkCommandBuffer cmdBuffer = instance->GetActiveCommandBuffer();
+
+			auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
+
+			uint32_t frameIndex = Renderer::RT_GetCurrentFrameInFlight();
+			if (instance->m_Swapcahin == false&& instance->m_NormalCommandBuffer== nullptr)
+			{
+				// waitign to see if we can start recording in these frame
+				{
+					PF_PROFILE_FUNC("WaitFences");
+					VK_CHECK_RESULT(vkWaitForFences(device, 1, &instance->m_WaitFences[frameIndex], VK_TRUE, UINT64_MAX));
+					
+				}
+				{
+					//PF_PROFILE_FUNC("ResetCommandBuffer");
+					//vkResetCommandBuffer(cmdBuffer, 0);
+				}
+			}
+			if (vkBeginCommandBuffer(cmdBuffer, &beginInfo) != VK_SUCCESS)
 				PF_CORE_ASSERT(false, "Failed to begin recording command buffer");
 		});
 	}
@@ -256,13 +293,15 @@ namespace Proof
 	void VulkanRenderCommandBuffer::EndRecord()
 	{
 
-		if (m_Swapcahin == true || m_NormalCommandBuffer != nullptr)
-			return;
 		Count<VulkanRenderCommandBuffer> instance = this;
 		Renderer::Submit([instance]()
 		{
+			PF_PROFILE_SCOPE_DYNAMIC(fmt::format("CommandBufferEndRecord {} ", instance->m_DebugName.c_str()).c_str());
+
+			VkCommandBuffer cmdBuffer = instance->GetActiveCommandBuffer();
+
 			PF_CORE_ASSERT(instance->m_Recording == true, "cannot End recording when recording never started");
-			if (vkEndCommandBuffer(instance->m_CommandBuffers[instance->m_ActiveCommandBufferIndex]) != VK_SUCCESS)
+			if (vkEndCommandBuffer(cmdBuffer) != VK_SUCCESS)
 				PF_CORE_ASSERT(false, "Faied to record command Buffers");
 			instance->m_Recording = false;
 		});

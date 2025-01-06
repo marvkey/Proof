@@ -16,6 +16,7 @@
 #include "MeshWorkShop.h"
 #include "Vertex.h"
 #include "Proof/Scene/Mesh.h"
+#include "Renderer2D.h"
 #include "Buffer.h"
 #include "SwapChain.h"
 #include "Proof/Platform/Vulkan/VulkanRenderer.h"
@@ -23,6 +24,7 @@
 #include "Proof/Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Proof/Platform/Vulkan/VulkanImage.h"
 #include "Proof/Platform/Vulkan/VulkanTexutre.h"
+#include "Proof/Platform/Vulkan/VulkanSwapChain.h"
 #include "vulkan/vulkan.h"
 #include "Proof/Core/Application.h"
 #include "Proof/Platform/Window/WindowsWindow.h"
@@ -127,6 +129,8 @@ namespace Proof {
 		ShaderLibrary->LoadShader("DebugShadowMap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Shadow/DebugShadowMap.glsl");
 		ShaderLibrary->LoadShader("ShadowDepthPass", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Shadow/ShadowDepthPass.glsl");
 		
+		ShaderLibrary->LoadShader("TextPass", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/TextPass.glsl");
+
 		//IBL
 		ShaderLibrary->LoadShader("CubeMapToEquirectangular", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/CubeMapToEquirectangular.glsl");
 		ShaderLibrary->LoadShader("BRDFLUT", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/BRDFLut.glsl");
@@ -322,23 +326,27 @@ namespace Proof {
 			BRDFPass = nullptr;
 		}
 
-		pdelete s_CommandQueue[0];
-		pdelete s_CommandQueue[1];
+		
 
 		pdelete s_BaseTextures;
+		s_BaseTextures = nullptr;
 		ShaderLibrary = nullptr;
 		pdelete s_Data;
+		s_Data = nullptr;
 		SamplerFactory::ShutDown();
 
 		s_RendererAPI->ShutDown();
 		pdelete s_RendererAPI;
 
+		Application::Get()->GetWindow()->m_SwapChain.As<VulkanSwapChain>()->Destroy();;
 		for (uint32_t i = 0; i < GetConfig().FramesFlight; i++)
 		{
 			auto& queue = Renderer::GetRenderResourceReleaseQueue(i);
 			queue.Execute();
 		}
 
+		pdelete s_CommandQueue[0];
+		pdelete s_CommandQueue[1];
 		PF_ENGINE_INFO("Renderer Shutdown {}m/s", time.ElapsedMillis());
 	}
 	void Renderer::RenderThreadFunc(RenderThread* renderThread)
@@ -443,7 +451,7 @@ namespace Proof {
 			if(buffer)
 				pass->PushData(name, buffer.Get());
 		}
-		Renderer::DrawElementIndexed(renderCOmmandBuffer, s_Data->QuadIndexBuffer->GetSize() /sizeof(uint32_t));
+		Renderer::DrawElementIndexed(renderCOmmandBuffer, s_Data->QuadIndexBuffer->GetSize() /sizeof(uint32_t),1);
 	}
 
 	void Renderer::SubmitFullScreenQuad(Count<RenderCommandBuffer> renderCOmmandBuffer, Count<RenderPass> pass, Count<RenderMaterial> material)
@@ -455,7 +463,7 @@ namespace Proof {
 		s_Data->QuadIndexBuffer->Bind(renderCOmmandBuffer);
 
 		Renderer::RenderPassPushRenderMaterial(pass, material);
-		Renderer::DrawElementIndexed(renderCOmmandBuffer, s_Data->QuadIndexBuffer->GetSize() / sizeof(uint32_t));
+		Renderer::DrawElementIndexed(renderCOmmandBuffer, s_Data->QuadIndexBuffer->GetSize() / sizeof(uint32_t),1);
 	}
 	void Renderer::DrawElementIndexed(Count<RenderCommandBuffer> commandBuffer, uint32_t indexCount,uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
 	{
@@ -531,6 +539,11 @@ namespace Proof {
 	uint32_t Renderer::RT_GetCurrentFrameInFlight()
 	{
 		return Application::Get()->GetWindow()->GetSwapChain()->GetFrameIndex();
+	}
+
+	uint32_t Renderer::RT_GetCurrentPREVIOUSFrameInFlight()
+	{
+		return Application::Get()->GetWindow()->GetSwapChain()->GetPREVIOUSFrameIndex();
 	}
 
 	const RendererConfig Renderer::GetConfig()
@@ -918,10 +931,34 @@ namespace Proof {
 					environment->m_EnvironmentTexture.Image = 0;
 					continue;
 				}
-				auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(AssetManager::GetAsset<Texture2D>(environment->m_EnvironmentTexture.Image)->GetPath()).Path);
+
+				const std::unordered_set<AssetID>& allAssetEnvironmentMap = AssetManager::GetAllAssetType(AssetType::EnvironmentMap);
+
+				bool foundInAssetManager = false;
+				for (auto environmentID : allAssetEnvironmentMap)
+				{
+					auto assetEnvironment = AssetManager::GetAsset<Environment>(environmentID);
+
+					if (assetEnvironment->m_EnvironmentTexture.Image == environment->m_EnvironmentTexture.Image)
+					{
+						environment->m_PrefilterMap = assetEnvironment->m_PrefilterMap;
+						environment->m_IrradianceMap = assetEnvironment->m_IrradianceMap;
+						environment->m_PrefilterMap2D = assetEnvironment->m_PrefilterMap2D;
+						foundInAssetManager = true;
+						break;
+					}
+				}
+
+				if (foundInAssetManager)
+					break;
+
+				
+				auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(environment->m_EnvironmentTexture.Image).Path);
+				//auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(AssetManager::GetAsset<Texture2D>(environment->m_EnvironmentTexture.Image)->GetPath()).Path);
 				auto [irradiance, prefilter] = Renderer::CreateEnvironmentMap(path);
 				environment->m_PrefilterMap = prefilter;
 				environment->m_IrradianceMap = irradiance;
+				AssetManager::CreateRuntimeAsset(environment,fmt::format("environment {}",FileSystem::GetFileName(path)));
 			}
 			break;
 			default:
@@ -1036,6 +1073,17 @@ namespace Proof {
 
 	void Renderer::EndFrame()
 	{
+		for (auto renderer : Renderer2D::s_Instances)
+		{
+			if (!renderer.IsValid())continue;
+			auto rendererCount = renderer.Lock();
+			if (rendererCount->m_NeedsToSubmitCommandBuffer)
+			{
+				Renderer::EndCommandBuffer(rendererCount->m_CommandBuffer);
+				Renderer::SubmitCommandBuffer(rendererCount->m_CommandBuffer);
+				rendererCount->m_NeedsToSubmitCommandBuffer = false;
+			}
+		}
 		UpdateAllEnvironment();
 		Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
 		Renderer::SubmitCommandBuffer(s_Data->RenderCommandBuffer);

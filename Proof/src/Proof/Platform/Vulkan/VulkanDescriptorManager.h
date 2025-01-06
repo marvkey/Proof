@@ -6,9 +6,10 @@
 #include "VulkanTexutre.h"
 #include "VulkanImage.h"
 #include "VulkanSampler.h"
+#include "Proof/Renderer/RenderereCustomTypeSet.h"
 
 #include <map>
-
+#include <set>
 namespace Proof
 {
 
@@ -210,7 +211,7 @@ namespace Proof
 	private:
 		void SetGlobalInput(Count<GlobalBufferSet> set);
 		void AllocateDescriptorSet(uint32_t frame,uint32_t set);
-		void InvalidateDescriptors();
+		void InvalidateDescriptors(uint32_t set);
 	private:
 		VulkanDescriptorManagerConfig m_Config;
 		std::vector<Count< GlobalBufferSet>> m_GlobalSets;
@@ -220,7 +221,9 @@ namespace Proof
 		uint32_t m_ShaderReloadCallbackIndex;
 		//set,binding,
 		std::map<uint32_t, std::map<uint32_t, RenderPassInput>> m_Inputs ;
-		std::vector<bool> m_DirtyDescriptorSets;
+
+		//  set index
+		RendererCustomTypeSet<std::set<uint32_t>> m_DirtyDescriptorSets;
 		VkDescriptorPool m_DescriptorPool;
 
 		uint64_t m_FrameCounter = 0;

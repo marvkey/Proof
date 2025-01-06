@@ -30,7 +30,7 @@
 #include "Proof/Renderer/UIRenderer/UIMenu.h"
 #include "Proof/Renderer/ParticleSystem.h"
 #include "Proof/Asset/AssetManager.h"
-
+#include "Proof/Utils/PersistentDataManager.h"
 
 #include "ScriptUtils.h"
 //(IMPORTPF)
@@ -274,15 +274,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 	{
 		Count<World> world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world, "world is nullptr");
-		world->EnableRestart = true;
-		///Count<World> world = ScriptEngine::GetWorldContext();
-		///PF_CORE_ASSERT(world, "world is nullptr");
-		///SceneSerializer scerelizer(world);
-		///auto path = AssetManager::GetAssetInfo(world->GetID()).Path;
-		///if (scerelizer.DeSerilizeText(AssetManager::GetAssetFileSystemPath(path).string()) == true)
-		///{
-		///	AssetManager::LoadMultipleAsset(scerelizer.GetAssetLoadID());
-		///}
+		world->OnWorldTransition(world->GetID());
 
 	}
 	static uint64_t World_TryFindEntityByTag(MonoString* classFullName)
@@ -3474,7 +3466,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		{
 			PF_ERROR("PlayerHUDComponent.GetVisible entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetUUID());
 			return {};
-		}
+		}    
 		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
 		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
 		{
@@ -3873,6 +3865,37 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		entity.GetComponent<PlayerHUDComponent>().HudTable->Panel->Menu->GetUIElement(11749623098364570259).GetComponent<UITextComponent>().Text = text;
 	}
 
+#pragma region PersistentDataSorage
+
+	Count< PersistentDataManager> dataManager = Count< PersistentDataManager>::Create();
+	static void PersistentDataStorage_SaveData(MonoString* textData, uint8_t* data, size_t size)
+	{
+		Buffer buffer;
+		buffer.Data = data;
+		buffer.Size = size;
+
+		dataManager->SaveData(ScriptUtils::MonoStringToUTF8(textData), buffer);
+	}
+	static uint8_t* PersistentDataStorage_LoadData(MonoString* textData)
+	{
+		// Convert MonoString to a standard C++ string
+		std::string name = mono_string_to_utf8(textData);
+
+		// Check if the data exists
+		if (!dataManager->HasData(name))
+		{
+			return nullptr; // Data not found
+		}
+
+		// Retrieve the buffer by name
+		const ScopeBuffer& buffer = dataManager->LoadData(name);
+
+		// Return a pointer to the data
+		return buffer.Data;
+	}
+
+	
+#pragma endregion
 
 #pragma region ScriptFunc
 
@@ -4208,6 +4231,12 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_GetState);
 
 			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_GetParticles);
+		}
+
+		//persistent data storage
+		{
+			PF_ADD_INTERNAL_CALL(PersistentDataStorage_LoadData);;
+			PF_ADD_INTERNAL_CALL(PersistentDataStorage_SaveData)
 		}
 	}
 }

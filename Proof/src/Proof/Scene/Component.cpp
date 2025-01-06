@@ -79,6 +79,15 @@ namespace Proof
 		return a;
 	}
 
+	MeshComponent::MeshComponent(const MeshComponent& other)
+		:
+		m_MeshID(other.m_MeshID)
+		, Visible(other.Visible)
+		, CastShadow(other.CastShadow)
+		, MaterialTable(Count<class MaterialTable>::CreateFrom(other.MaterialTable))
+	{
+	}
+
 	void MeshComponent::SetMesh(UUID ID, bool copyMaterialTable )
 	{
 		#ifdef PF_ENABLE_DEBUG
@@ -104,8 +113,15 @@ namespace Proof
 		//#endif 
 		return AssetManager::GetAsset<Mesh>(m_MeshID);
 	}
-	
 
+	DynamicMeshComponent::DynamicMeshComponent(const DynamicMeshComponent& other):
+		m_MeshID(other.m_MeshID)
+		,Visible(other.Visible)
+		, CastShadow(other.CastShadow)
+		,m_SubmeshIndex(other.m_SubmeshIndex)
+		, MaterialTable(Count<class MaterialTable>::CreateFrom(other.MaterialTable))
+	{
+	}
 
 	void DynamicMeshComponent::SetMesh(AssetID ID, bool copyMaterialTable)
 	{

@@ -163,7 +163,7 @@ namespace Proof
 			return;
 		}
 		m_UIPanel = asset.As<UIPanel>();
-		m_Renderer = Count<Renderer2D>::Create();
+		m_Renderer = Count<Renderer2D>::Create("GuiPanel2DRenderer");
 	}
 
 	void GuiEditorPanel::OnEvent(Event& e)
@@ -387,10 +387,39 @@ namespace Proof
 	}
 	void GuiEditorPanel::DrawElementProperty(UIElement element)
 	{
-		UI::BeginPropertyGrid();
 
+		static std::string nameCopy;
 		UICoreComponent& coreComponent = element.GetComponent<UICoreComponent>();
-		UI::AttributeInputText("Name", coreComponent.Name);
+
+		{
+			UI::BeginPropertyGrid();
+
+			nameCopy = coreComponent.GetName();
+			if (UI::AttributeInputText("Name", nameCopy))
+			{
+				element.SetName(nameCopy);
+			}
+
+			ImGui::Separator();
+			UI::EndPropertyGrid();
+
+			if(UI::AttributeTreeNode("Anchor", false, 2, 2))
+			{
+					UI::BeginPropertyGrid();
+					UIPositionAnchor positionAnchor;
+				 	if (UI::EnumCombo("Anchor type", positionAnchor))
+					{
+						coreComponent.Transform.Anchor = UIAnchor(positionAnchor);
+					}
+
+				UI::AttributeDrag("Min", coreComponent.Transform.Anchor.Minimum);
+				UI::AttributeDrag("Max", coreComponent.Transform.Anchor.Maximum);
+				UI::AttributeDrag("Alignment", coreComponent.Transform.Alignment);
+				UI::EndPropertyGrid();
+
+				UI::EndTreeNode();
+			}
+		}
 
 		UI::AttributeDrag("Position", coreComponent.Transform.Position, 0.25);
 		{
@@ -405,7 +434,6 @@ namespace Proof
 		UI::AttributeDrag("Size", coreComponent.Transform.Size, 0.25);
 
 		//UI::AttributeBool("Visible", element->Visible);
-		UI::EndPropertyGrid();
 
 		DrawElementType<UIButtonComponent>(element, [](UIButtonComponent& button)
 			{
@@ -420,7 +448,7 @@ namespace Proof
 				if (image.Texture != nullptr)
 					id = image.Texture->GetID();
 
-				if(UI::AttributeTextureAssetReference("Texture", id));
+				if(UI::AttributeTextureAssetReference("Texture", id))
 				{
 					image.Texture = AssetManager::GetAsset<Texture2D>(id);
 				}
@@ -443,155 +471,4 @@ namespace Proof
 	void GuiEditorPanel::RenderViewPortPanel()
 	{
 	}
-#if 0
-	void GuiEditorPanel::DrawButtonNode(const std::string& name, UIButton& button) {
-		UI::ScopedID id(name);
-		bool selcted = false;
-		if (name == m_SelectedName && m_SelectedType == Selected::Button)
-			selcted = true;
-		ImGuiTreeNodeFlags flags = ((selcted == true) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-		flags |= ImGuiTreeNodeFlags_SpanFullWidth;
-		flags |= ImGuiTreeNodeFlags_Leaf;//makes the tree not use an arrow
-
-		auto uniqueId = (uint64_t)name.c_str() + (uint64_t)Selected::Button;
-		bool opened = ImGui::TreeNodeEx((void*)uniqueId, flags, name.c_str());
-		if (ImGui::IsItemClicked())
-		{
-			m_SelectedName = name;
-			m_SelectedType = Selected::Button;
-		}
-		if (opened)
-		{
-			ImGui::TreePop();
-		}
-	}
-	void GuiEditorPanel::DrawImageButtonNode(const std::string& name, UIButtonImage& button)
-	{
-		UI::ScopedID id(name);
-		bool selcted = false;
-		if (name == m_SelectedName && m_SelectedType == Selected::ImageButton)
-			selcted = true;
-		ImGuiTreeNodeFlags flags = ((selcted == true) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-		flags |= ImGuiTreeNodeFlags_SpanFullWidth;
-		flags |= ImGuiTreeNodeFlags_Leaf;//makes the tree not use an arrow
-
-		auto uniqueId = (uint64_t)name.c_str() + (uint64_t)Selected::ImageButton;
-		bool opened = ImGui::TreeNodeEx((void*)uniqueId, flags, name.c_str());
-		if (ImGui::IsItemClicked())
-		{
-			m_SelectedName = name;
-			m_SelectedType = Selected::ImageButton;
-		}
-		if (opened)
-		{
-			ImGui::TreePop();
-		}
-	}
-	void GuiEditorPanel::DrawTextNode(const std::string& name, UIText& text)
-	{
-		UI::ScopedID id(name);
-		bool selcted = false;
-		if (name == m_SelectedName && m_SelectedType == Selected::Text)
-			selcted = true;
-		ImGuiTreeNodeFlags flags = ((selcted == true) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow;
-		flags |= ImGuiTreeNodeFlags_SpanFullWidth;
-		flags |= ImGuiTreeNodeFlags_Leaf;//makes the tree not use an arrow
-
-		auto uniqueId = (uint64_t)name.c_str() + (uint64_t)Selected::Text;
-		bool opened = ImGui::TreeNodeEx((void*)uniqueId, flags, name.c_str());
-		if (ImGui::IsItemClicked())
-		{
-			m_SelectedName = name;
-			m_SelectedType = Selected::Text;
-		}
-		if (opened)
-		{
-			ImGui::TreePop();
-		}
-	}
-	void GuiEditorPanel::DrawButtonComponent(const std::string& name, UIButton& button)
-	{
-		if (AssetManager::HasAsset(m_UIPanel))
-			AssetManager::SaveAsset(m_UIPanel->GetID());
-		ImGui::ColorEdit4("TintColor", glm::value_ptr(button.TintColour));
-		//SceneHierachyPanel::DrawVector2Control("Position", button.Postion);
-		//SceneHierachyPanel::DrawVector2Control("Rotation", button.Rotation, 0.0f);
-		//SceneHierachyPanel::DrawVector2Control("Size", button.Size, 1.0f);
-		ImGui::Checkbox("Visible", &button.Visible);
-		ImGui::InputTextMultiline("Text", &button.Text);
-	}
-	void GuiEditorPanel::DrawImageButtonComponent(const std::string& name, UIButtonImage& button)
-	{
-		if (AssetManager::HasAsset(m_UIPanel))
-			AssetManager::SaveAsset(m_UIPanel->GetID());
-		ImGui::ColorEdit4("TintCOlor", glm::value_ptr(button.TintColor));
-		//SceneHierachyPanel::DrawVector2Control("Position", button.Postion);
-		//SceneHierachyPanel::DrawVector2Control("Rotation", button.Rotation, 0.0f);
-		//SceneHierachyPanel::DrawVector2Control("Size", button.Size, 1.0f);
-		ImGui::Checkbox("Visible", &button.Visible);
-
-		if (button.Texture != nullptr)
-		{
-			bool fdasf = true;
-			ImGui::Checkbox("##x", &fdasf);
-			ImGui::SameLine();
-			UI::Image(Renderer::GetWhiteTexture()->GetImage(), {30,30});
-		}
-		else
-		{
-			UI::Image(Renderer::GetWhiteTexture()->GetImage(), { 30,30 });
-		}
-
-		if (ImGui::BeginDragDropTarget())
-		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str()))
-			{
-				uint64_t Data = *(const uint64_t*)payload->Data;
-				if (AssetManager::HasAsset(Data))
-				{
-					button.Texture = AssetManager::GetAsset<Texture2D>(Data);
-				}
-			}
-			ImGui::EndDragDropTarget();
-		}
-
-	}
-	void GuiEditorPanel::DrawTextComponent(const std::string& name, UIText& text)
-	{
-		if (AssetManager::HasAsset(m_UIPanel))
-			AssetManager::SaveAsset(m_UIPanel->GetID());
-		//SceneHierachyPanel::DrawVector2Control("Position", text.Postion);
-		//SceneHierachyPanel::DrawVector2Control("Rotation", text.Rotation, 0.0f);
-		//SceneHierachyPanel::DrawVector2Control("Size", text.Size, 1.0f);
-		ImGui::DragFloat("Kernng", &text.Param.Kerning, 0.025);
-		ImGui::DragFloat("Line Spacing", &text.Param.LineSpacing, 0.025);
-		ImGui::ColorEdit4("Color", glm::value_ptr(text.Param.Color));
-		ImGui::Checkbox("Visible", &text.Visible);
-
-		ImGui::InputTextMultiline("Text", &text.Text);
-
-	}
-	bool GuiEditorPanel::AddElementMenu()
-	{
-		if (ImGui::MenuItem("Button"))
-		{
-			std::string buttonName = fmt::format("Button{}", m_UIPanel->GetButtons().size());
-			m_UIPanel->SetButton(UIButton(), buttonName);
-			return true;
-		}
-		else if (ImGui::MenuItem("ImageButton"))
-		{
-			std::string buttonName = fmt::format("ImageButton{}", m_UIPanel->GetImageButtons().size());
-			m_UIPanel->SetButtonImage(UIButtonImage(),buttonName );
-			return true;
-		}
-		else if (ImGui::MenuItem("Text"))
-		{
-			std::string textName = fmt::format("Text{}", m_UIPanel->GetTexts().size());
-			m_UIPanel->SetText(UIText(), textName);
-			return true;
-		}
-		return false;
-	}
-#endif
 }

@@ -7,9 +7,13 @@ InputBindings:
         InputKeyName: SpaceBar
       - InputKeyBindingType: Key
         InputKeyName: LeftMouseButton
+      - InputKeyBindingType: Key
+        InputKeyName: ControllerLeftStickUp
+      - InputKeyBindingType: Key
+        InputKeyName: ControllerFaceButtonBottom
     InputInteractions:
       - InputInteractionType: ClickRelease
-        InteractionThreshold: 0.5
+        InteractionThreshold: 0.25
         Mode: Click
   - InputActionID: 4337114102758531292
     KeyBindings:

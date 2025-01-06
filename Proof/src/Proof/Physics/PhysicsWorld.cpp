@@ -114,11 +114,11 @@ namespace Proof {
 	PhysicsWorld::~PhysicsWorld()
 	{
 	}
-
+	bool lastAdvance = true;
 	void PhysicsWorld::Simulate(float deltaTime)
 	{
 		PF_PROFILE_FUNC();
-		if (m_World->IsPlaying())
+		if (m_World->IsPlaying() && lastAdvance)
 		{
 			// not actually on update
 			for (auto& [Id, actor] : m_Actors)
@@ -130,6 +130,7 @@ namespace Proof {
 
 		bool advance = Advance(deltaTime);
 
+		lastAdvance = advance;
 		if (advance)
 		{
 			uint32_t numberActors = 0;
@@ -257,7 +258,6 @@ namespace Proof {
 	}
 	bool PhysicsWorld::Advance(float deltaTime)
 	{
-		SubStepStrategy(deltaTime);
 
 		static auto callTriggerMethod = [](const char* methodName, Entity mainEntity, Entity b)
 		{
@@ -281,6 +281,23 @@ namespace Proof {
 				}
 			}
 		};
+
+		//SubStepStrategy(deltaTime);
+
+		if (m_Accumulator > m_SubStepSize)
+			m_Accumulator = 0.0f;
+
+		m_Accumulator += deltaTime;
+		if (m_Accumulator < m_SubStepSize)
+		{
+			m_NumSubSteps = 0;
+		}
+		else
+		{
+			m_NumSubSteps = glm::min(static_cast<uint32_t>(m_Accumulator / m_SubStepSize), c_MaxSubSteps);
+			m_Accumulator -= (float)m_NumSubSteps * m_SubStepSize;
+
+		}
 		for (uint32_t i = 0; i < m_NumSubSteps; i++)
 		{
 			m_PhysXScene->simulate(m_SubStepSize);

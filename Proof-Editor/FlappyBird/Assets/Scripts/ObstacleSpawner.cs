@@ -27,7 +27,7 @@ namespace FlappyBird
 				SpawnObstacle();
 			}
 
-        }
+        } 
 
 		// OnUpdate is called once every frame while this script is active in the world
 		void OnUpdate(float deltaTime)
@@ -38,6 +38,8 @@ namespace FlappyBird
             if (Obstacle == null)
                 return;
 
+			if (Bird.GetScript<BirdMovement>().GetState() == BirdMovement.BirdState.Dead)
+				return;
 			m_Timer -= deltaTime;
 
 			if(m_Timer <= 0)
@@ -79,7 +81,7 @@ namespace FlappyBird
 				m_LastPositionSpawn = Bird.Transform.Location.x + DistanceFromPlayer;
 			else
 				m_LastPositionSpawn += DistanceFromPlayer;
-            Vector3 spawnPos = new Vector3(m_LastPositionSpawn, Proof.Random.Float(3,10), 0);
+            Vector3 spawnPos = new Vector3(m_LastPositionSpawn, Proof.Random.Float(5,15), 0);
 			Entity newObstacle = World.Instantiate(Obstacle, spawnPos);
             m_SpawnObstacles.Add(newObstacle);
         }

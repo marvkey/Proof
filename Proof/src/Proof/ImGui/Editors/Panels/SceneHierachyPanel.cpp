@@ -208,6 +208,9 @@ namespace Proof
 			*/
 			ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0,0,0,1 });
 			ImGui::BeginChild("Child Herieachy", { ImGui::GetContentRegionAvail().x,ImGui::GetWindowHeight() / 2 });
+		
+
+		
 			if (ImGui::BeginPopupContextWindow(0)) { // right click adn open a new entitiy
 				CreateEntityMenu();
 				ImGui::EndPopup();
@@ -233,7 +236,8 @@ namespace Proof
 			}
 			ImGui::EndChild();
 			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("EntityNewOwner")) {
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity"))
+				{
 
 					Entity Data = *(const Entity*)payload->Data;
 					Data.Unparent();
@@ -444,6 +448,29 @@ namespace Proof
 						}
 					}
 				}
+				if (entity.HasChildren())
+				{
+					if (ImGui::MenuItem("Delete Keep Children"))
+					{
+						m_ActiveWorld->DeleteEntity(entity, false);
+
+						if (m_IsWorld)
+						{
+							SelectionManager::DeselectAll();
+						}
+						else
+						{
+							AssetSelectionManager::DeselectAll(AssetSelectionContext::Prefab, m_PrefabID);
+						}
+						if (opened) {
+							ImGui::EndPopup();
+							ImGui::TreePop();
+							ImGui::PopID();
+							return;
+						}
+					}
+				}
+
 			}
 			else
 			{
@@ -465,6 +492,28 @@ namespace Proof
 						ImGui::TreePop();
 						ImGui::PopID();
 						return;
+					}
+				}
+				if (entity.HasChildren())
+				{
+					if (ImGui::MenuItem("Delete Keep Children"))
+					{
+						m_ActiveWorld->DeleteEntity(entity, false);
+
+						if (m_IsWorld)
+						{
+							SelectionManager::DeselectAll();
+						}
+						else
+						{
+							AssetSelectionManager::DeselectAll(AssetSelectionContext::Prefab, m_PrefabID);
+						}
+						if (opened) {
+							ImGui::EndPopup();
+							ImGui::TreePop();
+							ImGui::PopID();
+							return;
+						}
 					}
 				}
 			}

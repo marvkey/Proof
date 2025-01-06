@@ -285,6 +285,9 @@ namespace Proof
 				meshSourceBoundingBox.Max.y = glm::max(meshSourceBoundingBox.Max.y, max.y);
 				meshSourceBoundingBox.Max.z = glm::max(meshSourceBoundingBox.Max.z, max.z);
 			}
+			PF_ENGINE_INFO("Bounding Box: ");
+			PF_ENGINE_INFO("	Min:  {}", Vector(*reinterpret_cast<Vector*>(&meshSourceBoundingBox.Min)).ToString());
+			PF_ENGINE_INFO("	Max:  {}", Vector(*reinterpret_cast<Vector*>(&meshSourceBoundingBox.Max)).ToString());
 
 		}
 		Count<Texture2D> whiteTexture = Renderer::GetWhiteTexture();
