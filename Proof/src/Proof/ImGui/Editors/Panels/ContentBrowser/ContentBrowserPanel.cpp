@@ -12,7 +12,7 @@
 #include "Proof/ImGui/UIWidgets.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
-
+#include "Proof/Scene/Material.h"
 #include "Proof/ImGui/SelectionManager.h"
 #include "Proof/Input/Input.h"
 #include "Proof/Input/ElevatedInputSystem/InputAction.h"

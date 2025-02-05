@@ -6,11 +6,11 @@ namespace Proof
 	{
 		enum class PhysicsColliderView
 		{
-			None = 0, Normal = 1, OnTop = 2
+			None = 0,Selected = 1, Normal = 1, OnTop = 2
 		};
 		struct PhysicsDebugOptions
 		{
-			PhysicsColliderView ShowPhysicsColliders = PhysicsColliderView::None;
+			PhysicsColliderView ShowPhysicsColliders = PhysicsColliderView::Selected;
 			glm::vec4 PhysicsColliderColor = glm::vec4{ 0.2f, 1.0f, 0.2f, 1.0f };
 
 		} PhysicsDebugOptions;

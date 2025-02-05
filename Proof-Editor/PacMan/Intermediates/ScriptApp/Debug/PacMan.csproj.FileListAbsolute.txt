@@ -1,0 +1,7 @@
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\PacMan\Binaries\ScriptApp\PacMan.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\PacMan\Binaries\ScriptApp\PacMan.pdb
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\PacMan\Intermediates\ScriptApp\Debug\PacMan.csproj.AssemblyReference.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\PacMan\Intermediates\ScriptApp\Debug\PacMan.csproj.CoreCompileInputs.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\PacMan\Intermediates\ScriptApp\Debug\PacMan.csproj.CopyComplete
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\PacMan\Intermediates\ScriptApp\Debug\PacMan.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\PacMan\Intermediates\ScriptApp\Debug\PacMan.pdb

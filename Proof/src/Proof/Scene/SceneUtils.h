@@ -18,6 +18,37 @@ namespace Proof
 		}
 	};
 
+    // for c# cause glm some stupid reason starts with w
+    struct QuaternionProper
+    {
+        float X, Y, Z, W; 
+
+    };
+    namespace Utils
+    {
+
+        inline glm::quat QuaternionProperToGlm(QuaternionProper proper)
+        {
+            glm::quat quat;
+            quat.x = proper.X;
+            quat.y = proper.Y;
+            quat.z = proper.Z;
+            quat.w = proper.W;
+
+            return quat;
+        }
+
+        inline QuaternionProper GlmToQuaternionProper(glm::quat quat)
+        {
+            QuaternionProper proper;
+            proper.X = quat.x ;
+            proper.Y = quat.y ;
+            proper.Z = quat.z ;
+            proper.W = quat.w ;
+
+            return proper;
+        }
+    };
     // still neeeds some work to be ready
     // able to edit the min and  max at runtime could be a positibily
     template<typename T, T MinVal = std::numeric_limits<T>::min(), T MaxVal = std::numeric_limits<T>::max()>

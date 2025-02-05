@@ -87,7 +87,7 @@ namespace Proof
 
     void FFTSimulation::InitializeRenderTextures(uint32_t size, uint32_t cascadesNumber, uint32_t anisoLevel)
 	{
-        
+    #if 0
         TextureConfiguration initialsDescriptor;
         initialsDescriptor.Height = size;
         initialsDescriptor.Width = size;
@@ -121,6 +121,7 @@ namespace Proof
 
         Textures.Turbulence = Texture2D::Create(initialsDescriptor, turbulenceAndFFTinOutSampler);
         Textures.WavesData = Texture2D::Create(initialsDescriptor, turbulenceAndFFTinOutSampler);
+    #endif
 	}
 
     void FFTSimulation::CalculateInitialCascade()

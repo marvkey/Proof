@@ -17,6 +17,9 @@ namespace Proof {
 	struct DynamicMeshComponent;
 	struct MeshNode;
 	struct ElevatedInputKeyParams;
+
+
+
 	enum class WorldState
 	{
 		Play,
@@ -25,7 +28,22 @@ namespace Proof {
 		Edit
 	};
 
-	class Proof_API World : public Asset{
+	struct RuntimeConfiguration
+	{
+		uint32_t PlayerInputCount = 1; // only the amount of players that can use input
+		UUID WorldCameraEntity = 0;
+
+		// TODO add unity type of multpile camera https://www.youtube.com/watch?v=rw2VKAdTdgQ&ab_channel=bendux
+		// only applies to multiplayer
+		enum class CameraSettings
+		{
+			PerPlayer,
+			SingleCamera,
+		};
+		CameraSettings CameraOptions = CameraSettings::PerPlayer;
+	};
+	class Proof_API World : public Asset
+	{
 	public:
 		using EntityID = UUID;
 
@@ -60,9 +78,10 @@ namespace Proof {
 
 		virtual void OnRenderEditor(Count<class WorldRenderer> renderer, FrameTime time, const class EditorCamera& camera);
 		virtual void OnRenderRuntime(Count<class WorldRenderer> renderer, FrameTime time);
+		void OnRender(Count<class WorldRenderer> renderer, FrameTime timestep, const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane, float Fov);
 
 		// using scripts
-		virtual void StartRuntime();
+		virtual void StartRuntime(RuntimeConfiguration runtimeConfig = RuntimeConfiguration());
 		// using scripts
 		virtual void EndRuntime();
 		void OnUpdateRuntime(FrameTime DeltaTime);
@@ -132,17 +151,24 @@ namespace Proof {
 		bool OnElevatedKeyEvent(const ElevatedInputKeyParams& keyParams);
 		void OnWorldTransition(AssetID id);
 		void SetWorldTransitionCallback(const std::function<void(AssetID)>& callback) { m_OnWorldTransitionCallback = callback; }
+		Count<class DebugRenderer> GetDebugRenderer() { return m_DebugRenderer; }
 
+		const RuntimeConfiguration& GetRuntimeConfig()const { return m_RuntimeConfig; }
+		Count<class GameMode> GetGameMode()
+		{
+			return m_GameMode;
+		}
 	private:
-		Camera m_Camera;
-		glm::vec3 m_CameraPositon;
+		RuntimeConfiguration m_RuntimeConfig;
+
+		Count<class DebugRenderer>  m_DebugRenderer;
+
 		// the parent entity shoudl be the prefab base entity 
 		void PrefabCopyEntity(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity,bool includeChildren = true);
 
-		void OnRender(Count<class WorldRenderer> renderer, FrameTime timestep,const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane,float Fov);
 
 		void RenderPhysicsDebug(Count<class WorldRenderer> renderer, bool runtime);
-		void RenderPhysicsDebug2D(Count<class WorldRenderer> renderer, bool runtime);
+		void RenderPhysicsDebug2D(Count<class WorldRenderer> renderer, const Camera& camera, const glm::vec3& cameraLocation,bool runtime);
 		void Init();
 		void DeleteEntitiesfromQeue();
 		
@@ -176,6 +202,7 @@ namespace Proof {
 			m_RigidBodyOnConstruct = false;
 		}
 		void UnPauseRigidBodyOnConstruct();
+		
 
 	private:
 
@@ -187,6 +214,8 @@ namespace Proof {
 		entt::registry m_Registry;
 		Count<class PhysicsWorld> m_PhysicsWorld = nullptr;
 		WorldState m_CurrentState = WorldState::Edit;
+
+		Count<class GameMode> m_GameMode;
 		std::string Name = "DefaultWorld";
 		std::unordered_map<UUID, Entity>m_EntitiesMap ;
 

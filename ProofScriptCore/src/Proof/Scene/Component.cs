@@ -74,6 +74,8 @@ namespace Proof
 				InternalCalls.TransformComponent_SetScale(Entity.ID, ref value);
 			}
 		}
+
+		// local space
 		public Proof.Vector3 Forward
 		{
 			get
@@ -83,7 +85,7 @@ namespace Proof
                 return foward;
             }
 		}
-
+        // local space
         public Proof.Vector3 Right
         {
             get
@@ -93,7 +95,7 @@ namespace Proof
                 return foward;
             }
         }
-
+        // local space
         public Proof.Vector3 Up
         {
             get
@@ -412,11 +414,11 @@ namespace Proof
 		}
 
 		//Radians
-		public Proof.Vector3 Rotation
+		public Proof.Quaternion Rotation
 		{
 			get
 			{
-				InternalCalls.RigidBodyComponent_GetRotation(Entity.ID, out Proof.Vector3 rotationRadians);
+				InternalCalls.RigidBodyComponent_GetRotation(Entity.ID, out Quaternion rotationRadians);
 				return rotationRadians;
 			}
 
@@ -511,7 +513,16 @@ namespace Proof
 			InternalCalls.RigidBodyComponent_AddForceAtLocation(Entity.ID, ref force, ref location, forceMode);
 		}
 
-	}
+		public void Translate(Proof.Vector3 translation)   
+		{
+			InternalCalls.RigidBodyComponent_Translate(Entity.ID, ref translation);
+		}
+
+        public void Rotate(Proof.Quaternion quat)
+        {
+            InternalCalls.RigidBodyComponent_Rotate(Entity.ID, ref quat);
+        }
+    }
     [RegisterCoreClassStruct]
     public class BoxColliderComponent : Component
     {

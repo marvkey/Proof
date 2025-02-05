@@ -144,7 +144,7 @@ namespace Proof
 			m_Renderer->EndContext();
 
 			//UI::Image()
-			UIRenderer::DrawUI(m_UIPanel, m_Renderer, glm::mat4(1.0f), glm::mat4(1.0f), m_WindowSize.x, m_WindowSize.y);
+			UIRenderer::DrawUI(m_UIPanel->Menu, m_Renderer, m_WindowSize.x, m_WindowSize.y);
 
 			//m_Renderer->EndContext();
 

@@ -66,24 +66,24 @@ namespace Proof
 								continue;
 
 							Count<FieldStorageBase> field = classMetaData.Fields.at(fieldName);
-							std::string fieldName = field->GetFieldInfo()->DisplayName.empty() ? Utils::String::SubStr(field->GetFieldInfo()->Name, field->GetFieldInfo()->Name.find(':') + 1) : field->GetFieldInfo()->DisplayName;
+							std::string actualFieldName = field->GetFieldInfo()->DisplayName.empty() ? Utils::String::SubStr(field->GetFieldInfo()->Name, field->GetFieldInfo()->Name.find(':') + 1) : field->GetFieldInfo()->DisplayName;
 
 							// the draw field value is null as because
 							// it would need if we are using entities but this does not set entities
 							if (field->GetFieldInfo()->IsArray())
 							{
 								Count<ArrayFieldStorage> storage = field.As<ArrayFieldStorage>();
-								UI::DrawFieldValue(nullptr, fieldName, storage);
+								UI::DrawFieldValue(nullptr, actualFieldName, storage);
 							}
 							else if (field->GetFieldInfo()->IsEnum())
 							{
 								Count<EnumFieldStorage> storage = field.As<EnumFieldStorage>();
-								UI::DrawFieldValue(nullptr, fieldName, storage);
+								UI::DrawFieldValue(nullptr, actualFieldName, storage);
 							}
 							else
 							{
 								Count<FieldStorage> storage = field.As<FieldStorage>();
-								UI::DrawFieldValue(nullptr, fieldName, storage);
+								UI::DrawFieldValue(nullptr, actualFieldName, storage);
 							}
 						}
 

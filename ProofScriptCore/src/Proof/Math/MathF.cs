@@ -15,9 +15,18 @@ namespace Proof
         public const float PI = (float)Math.PI;
         public const float PIonTwo = (float)(Math.PI / 2.0f);
         public const float TwoPI = (float)(Math.PI * 2.0);
-
         public const float Deg2Rad = PI / 180.0f;
         public const float Rad2Deg = 180.0f / PI;
+        public static float DegreesToRadians(float degrees)
+        {
+            return degrees * Mathf.PI / 180f;
+        }
+
+        // Converts radians to degrees
+        public static float RadiansToDegrees(float radians)
+        {
+            return radians * 180f / Mathf.PI;
+        }
 
         public static float Sin(float value) => (float)Math.Sin(value);
         public static float Cos(float value) => (float)Math.Cos(value);
@@ -31,7 +40,15 @@ namespace Proof
                 return min;
             return value > max ? max : value;
         }
+      
+        public static float Lerp(float start, float end, float t)
+        {
+            // Clamp t to the range [0, 1]
+            t = Mathf.Clamp(t,0,1);
 
+            // Perform the linear interpolation
+            return start + (end - start) * t;
+        }
         public static float Asin(float x) => (float)Math.Asin(x);
         public static float Atan(float x) => (float)Math.Atan(x);
         public static float Atan2(float y, float x) => (float)Math.Atan2(y, x);

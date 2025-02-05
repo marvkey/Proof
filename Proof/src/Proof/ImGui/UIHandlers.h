@@ -10,6 +10,7 @@ namespace Proof
 {
 	class World;
 	class MaterialTable;
+	class UITable;
 }
 namespace Proof::UI
 {
@@ -28,8 +29,20 @@ namespace Proof::UI
 	bool AttributeAssetReference(const std::string& label, AssetType type, AssetID& id, const PropertyAssetReferenceSettings& settings = {});
 	bool AttributeMultiAssetReference(const std::string& label,std::initializer_list< AssetType> assetTypes, AssetID& id, const PropertyAssetReferenceSettings& settings = {});
 
+	template <AssetType Type>
+	bool AttributeAssetKeyReference(const std::string& label, AssetKey<Type>& assetKey, const PropertyAssetReferenceSettings& settings = {}) {
+		AssetID id = assetKey.GetAssetID();
+		if (AttributeAssetReference(label, Type, id, settings)) {
+			assetKey.SetAssetID(id);
+			return true;
+		}
+		return false;
+	}
+	
+
 	bool AttributeTextureAssetReference(const std::string& label, AssetID& id, const PropertyAssetReferenceSettings& settings = {});
 	bool AttributeDrawMaterialTable(Count<MaterialTable> materialTable, Count<MaterialTable> sourceMaterialTable);
+	bool AttributeDrawUITable(Count<UITable> UITable);
 
 	enum class AttributeVectorSupportedItemTypes
 	{

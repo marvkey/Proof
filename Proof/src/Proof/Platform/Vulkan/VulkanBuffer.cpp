@@ -50,7 +50,7 @@ namespace Proof
 		vertexBufferInfo.pNext = nullptr;
 		vertexBufferInfo.size = m_VertexSize;
 		if(m_Usage == VulkanMemmoryUsage::CpuToGpU)
-			vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+			vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 		else
 			vertexBufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 		// host VMA_ALLOCATION_CREATE_MAPPED_BIT so we can map it if the memory is GPU only
@@ -99,14 +99,19 @@ namespace Proof
 		{
 			m_LocalBuffer.Allocate(m_VertexSize);
 		}
-		PF_CORE_ASSERT(size <= m_LocalBuffer.Size);
-		memcpy(m_LocalBuffer.Data, (uint8_t*)data + offset, size);;
+		PF_CORE_ASSERT(size <= m_VertexSize);
+		Buffer buffer;
+		buffer.Allocate(size);
+		memcpy(buffer.Data, (uint8_t*)data + offset, size);;
+
+		//memcpy(m_LocalBuffer.Data, (uint8_t*)data + offset, size);;
 
 		Count<VulkanVertexBuffer> instance = this;
 
-		Renderer::Submit([instance]() mutable
+		Renderer::Submit([instance, buffer]() mutable
 			{
-				instance->RT_SetData(instance->m_LocalBuffer.Data, instance->m_LocalBuffer.Size);
+				instance->RT_SetData(buffer.Data, buffer.Size);
+				buffer.Release();
 			});
 	}
 	void VulkanVertexBuffer::RT_SetData(const void* data, uint64_t size, uint64_t offset)

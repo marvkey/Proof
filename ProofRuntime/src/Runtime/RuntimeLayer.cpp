@@ -104,15 +104,12 @@ namespace Proof {
 
 		m_WorldRenderer->ShadowSetting.SoftShadows = false;
 		m_InputManager = Count<ElevatedInputDeviceManager>::Create();
+		m_InputManager->OnEventDelegate.Bind<&RuntimeLayer::InputBindElevatedDelegate>(this);
 
-		for (auto& inputDevice :  m_InputManager->GetInputDevices())
-		{
-			inputDevice->BindToEventDelegate<&RuntimeLayer::InputBindElevatedDelegate>(this);
-		}
 		m_World->StartRuntime();
 
 		Application::Get()->GetWindow()->SetWindowInputEvent(true);
-
+		m_WorldRenderer->SetViewportSize(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 	}
 	void RuntimeLayer::OnDetach()
 	{
@@ -125,7 +122,6 @@ namespace Proof {
 	{
 		PF_PROFILE_FUNC();
 		m_InputManager->OnUpdate(DeltaTime);
-		m_WorldRenderer->SetViewportSize(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 
 		if (m_World->HasWorldCamera())
 		{
@@ -219,7 +215,9 @@ namespace Proof {
 	void RuntimeLayer::DrawDebugStats()
 	{
 		m_Renderer2D->SetTargetFrameBuffer(m_WorldRenderer->GetExternalCompositePassFrameBuffer());
-		m_Renderer2D->BeginContext(glm::ortho(0.0f, (float)m_WorldRenderer->GetScreenData().FullResolution.x, 0.0f, (float)m_WorldRenderer->GetScreenData().FullResolution.y), glm::mat4(1.0f),Vector(0));
+		Renderer2DContextSettings settings;
+		settings.RenderOnTop = true;
+		m_Renderer2D->BeginContext(glm::ortho(0.0f, (float)m_WorldRenderer->GetScreenData().FullResolution.x, 0.0f, (float)m_WorldRenderer->GetScreenData().FullResolution.y), glm::mat4(1.0f),Vector(0), settings);
 
 		// Add font size to this after each line
 		float y = 30.0f;
@@ -271,7 +269,8 @@ namespace Proof {
 		m_InputManager->OnEvent(e);
 		dispatcher.Dispatch<WindowResizeEvent>([&](WindowResizeEvent& e) 
 		{
-			m_WindowResize = true;
+
+			m_WorldRenderer->SetViewportSize(e.GetWhidt(), e.GetHeight());
 			return false;
 		});
 

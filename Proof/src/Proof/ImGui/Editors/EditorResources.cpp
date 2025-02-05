@@ -33,6 +33,7 @@ namespace Proof {
 		UniversalTransformIcon = Texture2D::Create(TextureConfiguration("UniversalTransformIcon"), "Resources/Icons/Viewport/UniversalTransform.png");
 		PointerIcon = Texture2D::Create(TextureConfiguration("PointerIcon"), "Resources/Icons/Viewport/Pointer.png");
 		ViewIcon = Texture2D::Create(TextureConfiguration("ViewIcon"), "Resources/Icons/Viewport/View.png");
+		PlayerStartIcon = Texture2D::Create(TextureConfiguration("PlayerStartICon"), "Resources/Icons/Viewport/PlayerStart.png");
 
 	}
 	void EditorResources::Unizilize()
@@ -42,5 +43,6 @@ namespace Proof {
 		FileIcon = nullptr;
 		BackArrowIcon = nullptr;
 		FowardArrowIcon = nullptr;
+		PlayerStartIcon = nullptr;
 	}
 }

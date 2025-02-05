@@ -25,7 +25,7 @@
 #include <ImGuizmo.h>
 namespace Proof
 {
-	using IconComponents = ComponentGroup < SkyLightComponent, DirectionalLightComponent, PointLightComponent, SpotLightComponent >;
+	using IconComponents = ComponentGroup < SkyLightComponent, DirectionalLightComponent, PointLightComponent, SpotLightComponent,PlayerStartComponent >;
 
 	std::pair<float, float> GetMouseViewportSpace(glm::vec2 viewportBounds[2])
 	{
@@ -287,6 +287,9 @@ namespace Proof
 		{
 			case Proof::ViewportEditorImage::FinalImage:
 				currentImage = m_WorldRenderer->GetFinalPassImage();
+				break;
+			case Proof::ViewportEditorImage::Color:
+				currentImage = m_WorldRenderer->m_GeometryPass->GetOutput(0);
 				break;
 			case Proof::ViewportEditorImage::Normal:
 				currentImage = m_WorldRenderer->m_GeometryPass->GetOutput(1);
@@ -818,6 +821,15 @@ namespace Proof
 			{
 				Entity entity = { e, m_WorldContext.Get() };
 				renderer2D->DrawQuadBillboard(EditorResources::SpotLightIcon, m_WorldContext->GetWorldSpaceLocation(entity));
+			}
+		}
+
+		{
+			auto entities = m_WorldContext->GetAllEntitiesWith<PlayerStartComponent>();
+			for (auto e : entities)
+			{
+				Entity entity = { e, m_WorldContext.Get() };
+				renderer2D->DrawQuadBillboard(EditorResources::PlayerStartIcon, m_WorldContext->GetWorldSpaceLocation(entity));
 			}
 		}
 	}

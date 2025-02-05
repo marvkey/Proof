@@ -84,7 +84,7 @@ namespace Proof
             m_DescritptorSetManager = Count<VulkanDescriptorManager>::Create(descr);
         }
 
-        SetTargetFrameBuffer(config.TargetFrameBuffer);
+     //   SetTargetFrameBuffer(config.TargetFrameBuffer);
 
         //Build();
     }

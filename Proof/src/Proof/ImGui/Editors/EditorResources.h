@@ -33,6 +33,7 @@ namespace Proof
 		static inline Count<Texture2D> UniversalTransformIcon;
 		static inline Count<Texture2D> PointerIcon;
 		static inline Count<Texture2D> ViewIcon;
+		static inline Count<Texture2D> PlayerStartIcon;
 
 	private:
 		static void Init();

@@ -14,7 +14,6 @@
 #include "Proof/Physics/PhysicsEngine.h"
 #include "Proof/Physics/PhysicsWorld.h"
 #include "Proof/Asset/AssetManager.h"
-#include "Proof/Input/InputManager.h"
 #include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Scene/Prefab.h"
 #include "Proof/Renderer/Renderer.h"
@@ -27,6 +26,7 @@
 #include "Proof/Physics/MeshCollider.h"
 #include "Proof/Physics/PhysicsShapes.h"
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
+#include "Proof/Input/ElevatedInputSystem/ElevatedInputDevices/ElevatedInputDevice.h"
 #include "Proof/Input/ElevatedInputSystem/InputAction.h"
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 #include "Proof/Renderer/Font.h"
@@ -37,7 +37,10 @@
 #include "Proof/Math/BasicCollision.h"
 #include "WaterSystem/WaterSystem.h"
 #include "WaterSystem/Water.h"
+#include "Proof/ImGui/SelectionManager.h"
+#include "Proof/Renderer/DebugRenderer.h"
 
+#include "GameMode/LocalGameMode.h"
 #include "Proof/Scripting/ScriptWorld.h"
 #include <glm/gtx/euler_angles.hpp>
 namespace Proof {
@@ -51,7 +54,7 @@ namespace Proof {
 	{
 		m_ScriptWorld = Count<ScriptWorld>::Create(this);
 		Init();
-
+		m_DebugRenderer = Count<DebugRenderer>::Create();
 		//m_Registry.on_destroy<ChildComponent>().connect<&World::OnChildComponentDestroy>(this);
 
 	}
@@ -166,8 +169,6 @@ namespace Proof {
 	void World::OnRender(Count<class WorldRenderer> worldRenderer, FrameTime timestep, const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane, float fov)
 	{
 		PF_PROFILE_FUNC();
-		m_Camera = camera;
-		m_CameraPositon = cameraLocation;
 
 		glm::vec2 screenDimensions = worldRenderer->GetScreenData().FullResolution;
 		worldRenderer->SetContext(this);
@@ -404,7 +405,7 @@ namespace Proof {
 		// render 2d
 		Count<Renderer2D> renderer2D = worldRenderer->GetRenderer2D();
 
-		RenderPhysicsDebug2D(worldRenderer, false);
+		RenderPhysicsDebug2D(worldRenderer, camera, cameraLocation,false);
 		renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(), GlmVecToProof(cameraLocation));
 
 		renderer2D->SetTargetFrameBuffer(worldRenderer->GetExternalCompositePassFrameBuffer());
@@ -429,7 +430,7 @@ namespace Proof {
 			{
 				Entity e = Entity(entity, this);
 				auto [transformComponent, spriteRendererComponent] = view.get<TransformComponent, SpriteComponent>(entity);
-				spriteRendererComponent.Texture = prefilter2D;
+				spriteRendererComponent.Texture = prefilter2D->GetID();
 				/*
 				if (spriteRendererComponent.Texture)
 				{
@@ -505,27 +506,26 @@ namespace Proof {
 		renderer2D->EndContext();
 
 		
+		// Debug Renderer
 		{
-			auto view = m_Registry.view<PlayerHUDComponent>();
+			renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(), GlmVecToProof(cameraLocation));
 
-			for (auto entity : view)
-			{
-				Entity e = { entity, this };
-				auto& hudComponent = e.GetComponent<PlayerHUDComponent>();
+			auto& renderQueue = m_DebugRenderer->GetRenderQueue();
+			for (auto&& func : renderQueue)
+				func(renderer2D);
 
-				if (hudComponent.HudTable->Panel != nullptr)
-					UIRenderer::DrawUI(hudComponent.HudTable->Panel, renderer2D, glm::mat4(1.0f), glm::mat4(1.0f), worldRenderer->GetScreenData().FullResolution.x,
-						worldRenderer->GetScreenData().FullResolution.y);
-			}
+			m_DebugRenderer->ClearRenderQueue();
+
+			renderer2D->EndContext();
 
 		}
-	
-	
+
 	}
 	void World::RenderPhysicsDebug(Count<WorldRenderer> renderer, bool runtime)
 	{
 		if (renderer->DebugOptions.PhysicsDebugOptions.ShowPhysicsColliders == WorldRendererDebugOptions::PhysicsColliderView::None)
 			return;
+		bool selectedOnly = renderer->DebugOptions.PhysicsDebugOptions.ShowPhysicsColliders == WorldRendererDebugOptions::PhysicsColliderView::Selected;
 
 #if 0
 		{
@@ -567,11 +567,16 @@ namespace Proof {
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
+				if (selectedOnly)
+				{
+					if (!SelectionManager::IsEntityOrAncestorSelected(SelectionContext::Scene, e))
+						continue;
+				}
 				auto& collider = e.GetComponent<MeshColliderComponent>();
 				Count<MeshCollider> colliderAsset = nullptr;
 
-				if (AssetManager::HasAsset(collider.ColliderID))
-					colliderAsset = AssetManager::GetAsset<MeshCollider>(collider.ColliderID);
+				if (collider.ColliderKey.IsValid())
+					colliderAsset = AssetManager::GetAsset<MeshCollider>(collider.ColliderKey.GetAssetID());
 
 				if (colliderAsset)
 				{
@@ -588,33 +593,45 @@ namespace Proof {
 			}
 		}
 	}
-	void World::RenderPhysicsDebug2D(Count<WorldRenderer> renderer, bool runtime)
+	void World::RenderPhysicsDebug2D(Count<WorldRenderer> renderer, const Camera& camera, const glm::vec3& cameraLocation, bool runtime)
 	{
 		if (renderer->DebugOptions.PhysicsDebugOptions.ShowPhysicsColliders == WorldRendererDebugOptions::PhysicsColliderView::None)
 			return;
+
+
+		bool selectedOnly = renderer->DebugOptions.PhysicsDebugOptions.ShowPhysicsColliders == WorldRendererDebugOptions::PhysicsColliderView::Selected;
 
 		Count<Renderer2D> renderer2D = renderer->GetRenderer2D();
 		Renderer2DContextSettings settings;
 		if (renderer->DebugOptions.PhysicsDebugOptions.ShowPhysicsColliders == WorldRendererDebugOptions::PhysicsColliderView::OnTop)
 			settings.RenderOnTop = true;
 
-		renderer2D->BeginContext(m_Camera.GetProjectionMatrix(), m_Camera.GetViewMatrix(), GlmVecToProof(m_CameraPositon), settings);
+		renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(), GlmVecToProof(cameraLocation), settings);
 
 		renderer2D->SetTargetFrameBuffer(renderer->GetExternalCompositePassFrameBuffer());
 		//box colliders
+
+		
 		{
 
 			auto view = m_Registry.view<BoxColliderComponent>();
 
 			for (auto entity : view)
 			{
+				
 				Entity e = { entity, this };
+				if (selectedOnly)
+				{
+					if (!SelectionManager::IsEntityOrAncestorSelected(SelectionContext::Scene, e))
+						continue;
+				}
 				const auto& collider = e.GetComponent<BoxColliderComponent>();
 				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
 				renderer2D->DrawDebugCube(collider.Center + worldTransformComp.Location, worldTransformComp.GetRotationEuler(),
 					(collider.Size/2.f) * worldTransformComp.Scale
 					, renderer->DebugOptions.PhysicsDebugOptions.PhysicsColliderColor);
 			}
+
 		}
 		// sphere colliders
 		{
@@ -622,6 +639,11 @@ namespace Proof {
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
+				if (selectedOnly)
+				{
+					if (!SelectionManager::IsEntityOrAncestorSelected(SelectionContext::Scene, e))
+						continue;
+				}
 				const auto& collider = e.GetComponent<SphereColliderComponent>();
 				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
 
@@ -639,6 +661,11 @@ namespace Proof {
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
+				if (selectedOnly)
+				{
+					if (!SelectionManager::IsEntityOrAncestorSelected(SelectionContext::Scene, e))
+						continue;
+				}
 				const auto& collider = e.GetComponent<CapsuleColliderComponent>();
 				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
 
@@ -666,6 +693,11 @@ namespace Proof {
 			{
 
 				Entity e = { entity, this };
+				if (selectedOnly)
+				{
+					if (!SelectionManager::IsEntityOrAncestorSelected(SelectionContext::Scene, e))
+						continue;
+				}
 				const auto& collider = e.GetComponent<CharacterControllerComponent>();
 				TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
 
@@ -721,7 +753,11 @@ namespace Proof {
 			for (auto e : buoyancyEntities)
 			{
 				Entity buoyancyEntity = { e, this };
-
+				if (selectedOnly)
+				{
+					if (!SelectionManager::IsEntityOrAncestorSelected(SelectionContext::Scene, buoyancyEntity))
+						continue;
+				}
 				BuoyancyComponent& buoyancyComponent = buoyancyEntity.GetComponent<BuoyancyComponent>();
 				for (auto& [entityID, floater] : buoyancyComponent.Floaters)
 				{
@@ -845,7 +881,7 @@ namespace Proof {
 			{
 				auto& colliderComponent = nodeEntity.AddComponent<MeshColliderComponent>();
 				Count<MeshCollider> colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(nodeEntity, colliderComponent);
-				colliderComponent.ColliderID = colliderAsset->GetID();
+				colliderComponent.ColliderKey = colliderAsset->GetID();
 				colliderComponent.SubMeshIndex = submeshIndex;
 				colliderComponent.UseSharedShape = colliderAsset->AlwaysShareShape;
 				nodeEntity.AddComponent<RigidBodyComponent>().RigidBodyType = RigidBodyType::Dynamic;
@@ -870,7 +906,7 @@ namespace Proof {
 				{
 					auto& colliderComponent = childEntity.AddComponent<MeshColliderComponent>();
 					Count<MeshCollider> colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(childEntity, colliderComponent);
-					colliderComponent.ColliderID = colliderAsset->GetID();
+					colliderComponent.ColliderKey = colliderAsset->GetID();
 					colliderComponent.SubMeshIndex = submeshIndex;
 					colliderComponent.UseSharedShape = colliderAsset->AlwaysShareShape;
 					childEntity.AddComponent<RigidBodyComponent>().RigidBodyType = RigidBodyType::Dynamic;
@@ -906,6 +942,7 @@ namespace Proof {
 			}
 		}
 		*/
+		m_RuntimeConfig.PlayerInputCount = m_Registry.view<PlayerInputComponent>().size();
 		if (m_CurrentState == WorldState::Pause)
 			return;
 		{
@@ -989,7 +1026,7 @@ namespace Proof {
 
 					}
 				}
-
+			#if 0
 				// we are going to remove this soon just for now testing
 				if (!listener)
 				{
@@ -1001,6 +1038,7 @@ namespace Proof {
 					AudioListenerComponent defaultSettings;
 					AudioEngine::UpdateListenerConeAttenuation(defaultSettings.ConeInnerAngleInRadians, defaultSettings.ConeOuterAngleInRadians, defaultSettings.ConeOuterGain);
 				}
+			#endif
 			}
 
 
@@ -1079,7 +1117,13 @@ namespace Proof {
 		return cameraGroup.size() > 0;
 	}
 
-	Entity World::GetWorldCameraEntity() {
+	Entity World::GetWorldCameraEntity() 
+	{
+		if (HasEntity(m_RuntimeConfig.WorldCameraEntity))
+		{
+			Entity camera = GetEntity(m_RuntimeConfig.WorldCameraEntity).GetCamera();
+			if (camera)return camera;
+		}
 		auto view = m_Registry.view<CameraComponent>();
 		for (auto entity : view)
 		{
@@ -1098,6 +1142,8 @@ namespace Proof {
 
 	void World::OnRenderRuntime(Count<class WorldRenderer> renderer, FrameTime time)
 	{
+		m_GameMode->RenderRuntime(renderer, time);
+	#if 0 
 		PF_CORE_ASSERT(renderer);
 
 		if (!HasWorldCamera())
@@ -1119,6 +1165,7 @@ namespace Proof {
 			glm::inverse(cameraComp.UseLocalRotation  ? GetWorldSpaceTransformUsingLocalRotation(worldCameraEntity) :  GetWorldSpaceTransform(worldCameraEntity)));
 
 		OnRender(renderer, time, sceneCamera, GetWorldSpaceLocation(worldCameraEntity), cameraComp.NearPlane, cameraComp.FarPlane, cameraComp.FovDeg);
+	#endif
 	}
 
 	Entity World::CreateEntity(const std::string& EntName) {
@@ -1148,11 +1195,15 @@ namespace Proof {
 			{
 				return;
 			}
+			if (typeid(Componnents) == typeid(InternalPlayerInputComponent))
+				return;
 
 			if (src.HasComponent<Componnents>())
 				dst.AddorReplaceComponent<Componnents>(src.GetComponent<Componnents>());
 			else
 				return;
+
+			
 			if(typeid(Componnents) == typeid(ScriptComponent))
 				dst.GetCurrentWorld()->GetScriptWorld()->DuplicateScriptInstance(src, dst);
 
@@ -1177,13 +1228,14 @@ namespace Proof {
 
 		PF_PROFILE_FUNC();
 		{
-			auto view = m_Registry.view<PlayerInputComponent>();
+			auto view = m_Registry.group<InternalPlayerInputComponent,PlayerInputComponent>();
 
 
 			for (auto e : view)
 			{
 
 				Entity entity = { e,this };
+				auto& internalPlayerInputComponent = entity.GetComponent<InternalPlayerInputComponent>();
 				auto& playerInputComponent = entity.GetComponent<PlayerInputComponent>();
 
 				auto player = playerInputComponent.Player;
@@ -1191,6 +1243,8 @@ namespace Proof {
 				if (player == nullptr)
 					continue;
 
+				if (internalPlayerInputComponent.GetPlayer() != keyParams.InputDevice->GetPlayer())
+					continue;
 				returnValue |= player->InputKey(keyParams);
 			}
 		}
@@ -1355,7 +1409,7 @@ namespace Proof {
 		Entity newEntity = world->CreateEntity();
 		CopyComponentIfExistsEntity(AllComponents{}, newEntity, prefabSource, false, true);
 		newEntity.AddComponent<PrefabComponent>();
-		newEntity.GetComponent<PrefabComponent>().PrefabID = prefab->GetID();
+		newEntity.GetComponent<PrefabComponent>().PrefabKey.SetAssetID(prefab->GetID());
 		newEntity.GetComponent<PrefabComponent>().PrefabEntityID = prefabSource.GetUUID();
 
 		if (includeChildren)
@@ -1462,13 +1516,16 @@ namespace Proof {
 		return newWorld;
 	}
 
-	void World::StartRuntime() 
+	void World::StartRuntime(RuntimeConfiguration runtimeConfig)
 	{
+		m_RuntimeConfig = runtimeConfig;
+		
 		m_CurrentState = WorldState::Play;
-		int numPlayrs = 1;
-		numPlayrs += Application::Get()->GetWindow()->GetControllers().size();
-		InputManager::StartRuntime(numPlayrs);
+		m_GameMode = Count<LocalGameMode>::Create(this);
 
+
+	
+		m_GameMode->Start();
 
 		m_PhysicsWorld = Count<PhysicsWorld>::Create(this);
 		m_PhysicsWorld->StartWorld();
@@ -1517,7 +1574,6 @@ namespace Proof {
 	}
 	void World::EndRuntime() {
 
-		InputManager::EndRuntime();
 
 		m_ScriptWorld->EndRuntime();
 
@@ -1530,6 +1586,9 @@ namespace Proof {
 		AudioEngine::EndContext();
 		m_PhysicsWorld->EndWorld();
 		m_PhysicsWorld = nullptr;
+		m_GameMode->End();
+
+		m_GameMode = nullptr;
 	}
 	void World::DeleteEntity(Entity ent, bool deleteChildren) {
 		if(!m_EntitiesMap.contains(ent.GetUUID()))
@@ -1744,9 +1803,9 @@ namespace Proof {
 		auto& component = e.GetComponent<MeshColliderComponent>();
 		PhysicsEngine::GetOrCreateColliderAsset(e, component);
 
-		if (AssetManager::HasAsset(component.ColliderID))
+		if (component.ColliderKey.IsValid())
 		{
-			Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+			Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderKey.GetAssetID());
 			if (colliderAsset && AssetManager::HasAsset(colliderAsset->ColliderMesh) && !PhysicsMeshCache::Exists(colliderAsset))
 				PhysicsMeshCooker::CookMesh(colliderAsset);
 		}

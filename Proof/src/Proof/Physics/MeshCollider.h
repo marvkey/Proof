@@ -38,6 +38,7 @@ namespace Proof
 			: ColliderMesh(colliderMesh)
 		{
 		}
-		ASSET_CLASS_TYPE(MeshCollider);
+		static AssetType GetStaticType() { return AssetType::MeshCollider; };
+		virtual AssetType GetAssetType() const override { return GetStaticType(); }
 	};
 }

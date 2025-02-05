@@ -13,9 +13,10 @@ namespace Proof
 	class ElevatedInputDeviceMouseKeyboard : public ElevatedInputDevice
 	{
 	public:
-		ElevatedInputDeviceMouseKeyboard();
+		ElevatedInputDeviceMouseKeyboard(Count<ElevatedInputDeviceManager> deviceManager,Players player);
 		virtual void OnEvent(Event& event);
 		virtual void OnUpdate(float deltaTime);
+		virtual std::string GetDeviceName() { return "Mouse and KeyBoard"; }
 
 	private:
 		void UpdateCachePosition(glm::vec2 data);
@@ -34,6 +35,7 @@ namespace Proof
 
 		ElevatedInputDeviceMouseKeyboardMouseAxisDispatch m_MouseAxisDispatch;
 		bool m_MousePosSetToRelease = true;// using the mouseAxisDispacth is not workign so using the viariable to track;
+
 	};
 	DEFINE_ENUM_CLASS_FLAGS(ElevatedInputDeviceMouseKeyboardMouseAxisDispatch);
 }

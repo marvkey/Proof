@@ -4,10 +4,7 @@
 #include "AssetTypes.h"
 namespace Proof
 {
-
-
-	#define ASSET_CLASS_TYPE(type) static AssetType GetStaticType() { return AssetType::type; }\
-								virtual AssetType GetAssetType() const override { return GetStaticType(); }
+	
 	class Asset : public RefCounted
 	{
 	public:

@@ -69,14 +69,24 @@ namespace Proof
         public static void AddRadialImpulse(Proof.Vector3 origin, float radius, float strength, EFalloffMode falloff = EFalloffMode.Constant, bool velocityChange = false)
             => InternalCalls.Physics_AddRadialImpulse(ref origin, radius, strength, falloff, velocityChange);
 
-        public static bool Raycast(RaycastData raycastData, out RaycastHit hit) => InternalCalls.Physics_Raycast(ref raycastData, out hit);
-        public static bool Raycast(Proof.Vector3 origin, Proof.Vector3 direction, float maxDistance, out RaycastHit hit, params Type[] componentFilters)
+        public static bool RayCast(RaycastData raycastData, out RaycastHit hit) => InternalCalls.Physics_RayCast(ref raycastData, out hit);
+        public static bool RayCast(Proof.Vector3 origin, Proof.Vector3 direction, float maxDistance, out RaycastHit hit, params Type[] componentFilters)
         {
             s_RaycastData.Origin = origin;
             s_RaycastData.Direction = direction;
             s_RaycastData.MaxDistance = maxDistance;
             s_RaycastData.RequiredComponents = componentFilters;
-            return InternalCalls.Physics_Raycast(ref s_RaycastData, out hit);
+            return InternalCalls.Physics_RayCast(ref s_RaycastData, out hit);
+        }
+
+        public static bool RayCastLayer(RaycastData raycastData, string layerName,out RaycastHit hit) => InternalCalls.Physics_RayCastLayer(ref raycastData, out hit, layerName);
+        public static bool RayCastLayer(Proof.Vector3 origin, Proof.Vector3 direction, float maxDistance, string layerName,out RaycastHit hit, params Type[] componentFilters)
+        {
+            s_RaycastData.Origin = origin;
+            s_RaycastData.Direction = direction;
+            s_RaycastData.MaxDistance = maxDistance;
+            s_RaycastData.RequiredComponents = componentFilters;
+            return InternalCalls.Physics_RayCastLayer(ref s_RaycastData, out hit, layerName);
         }
 
         public static bool SphereCast(SphereCastData spherecastData, out RaycastHit hit) => InternalCalls.Physics_SphereCast(ref spherecastData, out hit);

@@ -3,53 +3,33 @@
 #include "../InputTypes.h"
 #include "Proof/Events/Event.h"
 #include "Proof/Core/Delegate.h"
-
+#
 namespace Proof
 {
-	class ElevatedInputDevice : RefCounted
-	{
-	public:
-		virtual void OnEvent(Event& event) {};
+    class ElevatedInputDevice : RefCounted
+    {
+    public:
+        ElevatedInputDevice(Count<class ElevatedInputDeviceManager> deviceManager, Players player)
+            : m_Player(player), m_DeviceManager(deviceManager)
+        {
+
+        }
+        virtual void OnEvent(Event& event) {};
         virtual void OnUpdate(float deltaTime) {};
-        // Function to bind to the multicast delegate
-        template <bool(*TFunction)(const ElevatedInputKeyParams&)>
-        void BindToEventDelegate()
+
+        Players GetPlayer()
         {
-            m_EventDelegate.Bind<TFunction>();
+            return m_Player;
         }
 
-        // Lambda binding
-        template <class TLambda>
-        void BindToEventDelegate(const TLambda& lambda) 
-        {
-            m_EventDelegate.Bind(lambda);
-        }
 
-        // Member function binding
-        template <auto TFunction, class TClass>
-        void BindToEventDelegate(TClass* object) 
-        {
-            m_EventDelegate.Bind<TFunction>(object);
-        }
+        virtual std::string GetDeviceName() = 0;
+        friend class ElevatedInputDeviceManagerPanel;
+        Count<class ElevatedInputDeviceManager> GetDeviceManager() { return m_DeviceManager; }
 
-        // Const member function binding
-        template <class TClass, auto TFunction>
-        void BindToEventDelegate(const TClass* object)
-        {
-            m_EventDelegate.Bind<TFunction>(object);
-        }
-	protected:
-		MulticastDelegate<bool(const ElevatedInputKeyParams&)> m_EventDelegate;
-
-	protected:
-		bool InvokeStep(const ElevatedInputKeyParams& params)
-		{
-			for (uint32_t index = 0; index < m_EventDelegate.GetNumberInvocation(); index++)
-			{
-				if (m_EventDelegate.InvokeByStep(index, params))
-					return true;
-			}
-            return false;
-		}
-	};
+    private:
+        Players m_Player;
+        Count<class ElevatedInputDeviceManager> m_DeviceManager;
+    };
 }
+		

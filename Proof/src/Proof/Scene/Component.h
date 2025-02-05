@@ -3,9 +3,7 @@
 #include "Proof/Math/Math.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "Proof/Renderer/Texture.h"
 #include <unordered_set>
-#include "Material.h"
 #include "Proof/Math/MathResource.h"
 #include "Proof/Math/Vector.h"
 #include "Camera/SceneCamera.h"
@@ -16,7 +14,6 @@
 #include "Proof/Physics/PhysicsTypes.h"
 #include "Proof/Asset/AssetTypes.h"
 #include "Proof/Scripting/ScriptRawTypes.h"
-#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/quaternion.hpp>
 #include<vector>
 #include <string>
@@ -27,7 +24,8 @@
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof
 {
-	struct Proof_API IDComponent {
+	struct IDComponent 
+	{
 		const UUID& GetID() const {
 			return m_ID;
 		}
@@ -47,7 +45,7 @@ namespace Proof
 		friend class SceneHierachyPanel;
 		friend class SceneSerializer;
 	};
-	struct Proof_API TagComponent{
+	struct  TagComponent{
 		TagComponent() = default;
 		TagComponent(const TagComponent&) = default;
 
@@ -106,7 +104,8 @@ namespace Proof
 	private:
 
 	};
-	struct TransformComponent {
+	struct TransformComponent 
+	{
 		glm::vec3 Location = {0.0f,0.0f,0.0f};
 		glm::vec3 Scale = {1.0f,1.0f,1.0f};
 		TransformComponent() = default;
@@ -220,13 +219,14 @@ namespace Proof
 	};
 	struct PrefabComponent
 	{
-		AssetID PrefabID = 0;
+		AssetKey<AssetType::Prefab> PrefabKey;
 		UUID PrefabEntityID = 0; // wich enitty this prefab matches to int eh prefab asset
 
 		PrefabComponent() = default;
 		PrefabComponent(const PrefabComponent& other) = default;
 	};
-	struct Proof_API NativeScriptComponent{
+	struct NativeScriptComponent
+	{
 		NativeScriptComponent(const NativeScriptComponent& other) {
 			this->Instance = other.Instance;
 			this->InstantiateScript = other.InstantiateScript;
@@ -256,8 +256,9 @@ namespace Proof
 		bool m_HasScriptAttached = false;
 	};
 
-	struct MeshComponent{
-		MeshComponent() = default;
+	struct MeshComponent
+	{
+		MeshComponent();
 		MeshComponent(const MeshComponent& other);
 
 		void SetMesh(UUID ID,bool takeMaterialTable = true);
@@ -266,7 +267,7 @@ namespace Proof
 		// we could do  check and compare if these material table equls the meshes material table when serilizing
 		// if they do match then we just store in serilize using hte meshes
 		//if no mathc then we save the material table
-		Count<MaterialTable> MaterialTable = Count<class MaterialTable>::Create();
+		Count<class MaterialTable> MaterialTable;
 		Count<class Mesh> GetMesh();
 		bool Visible = true;
 		bool CastShadow = true;
@@ -281,11 +282,12 @@ namespace Proof
 		AssetID m_MeshID = 0;
 	};
 
-	struct DynamicMeshComponent {
+	struct DynamicMeshComponent 
+	{
 	public:
-		DynamicMeshComponent() = default;
+		DynamicMeshComponent();
 		DynamicMeshComponent(const DynamicMeshComponent& other);
-		Count<MaterialTable> MaterialTable = Count<class MaterialTable>::Create();
+		Count<class MaterialTable> MaterialTable;
 		void SetMesh(AssetID ID, bool takeMaterialTable = true);
 		void RemoveMesh();
 
@@ -308,11 +310,12 @@ namespace Proof
 		AssetID m_MeshID;
 		uint32_t m_SubmeshIndex = 0;
 	};
-	struct Proof_API SpriteComponent{
+	struct SpriteComponent
+	{
 		SpriteComponent(const SpriteComponent&) = default;
 		SpriteComponent() = default;
 		glm::vec4 Colour = {1.0f,1.0f,1.0f,1.0f};
-		Count<Texture2D> Texture;
+		AssetKey<AssetType::Texture> Texture;
 	private:
 		friend class Entity;
 		friend class World;
@@ -327,14 +330,14 @@ namespace Proof
 	{
 	public:
 		SkyLightComponent(const SkyLightComponent&) = default;
-		SkyLightComponent() = default;
+		SkyLightComponent();
 		//hdr maps
 		void RemoveImage();
 		void LoadMap(AssetID asset);
 	public:
 		// Hdr Maps
 		float SkyBoxLoad = 0.0f;
-		Count<Environment> Environment = Count<class Environment>::Create();
+		Count<class Environment> Environment;
 
 		//for all 
 		glm::vec3 ColorTint{1};
@@ -349,7 +352,8 @@ namespace Proof
 		friend class SceneSerializer;
 	};
 
-	struct DirectionalLightComponent {
+	struct DirectionalLightComponent 
+	{
 		DirectionalLightComponent(const DirectionalLightComponent&) = default;
 		DirectionalLightComponent() = default;
 
@@ -364,7 +368,8 @@ namespace Proof
 		float ShadowSoftness = 0.5f; //how soft the shadow is from 0.0 to 1.0f 
 	};
 
-	struct PointLightComponent {
+	struct PointLightComponent 
+	{
 		PointLightComponent(const PointLightComponent&) = default;
 		PointLightComponent() = default;
 		glm::vec3 Color { 1 };
@@ -378,7 +383,8 @@ namespace Proof
 		float ShadowSoftness = 0.5f;//how soft the shadow is from 0.0 to 1.0f 
 	};
 
-	struct SpotLightComponent {
+	struct SpotLightComponent 
+	{
 		SpotLightComponent(const SpotLightComponent&) = default;
 		SpotLightComponent() = default;
 		glm::vec3 Color{ 1.0f };
@@ -399,7 +405,8 @@ namespace Proof
 
 
 
-	struct Proof_API CameraComponent{
+	struct CameraComponent
+	{
 	public:
 		ProjectionType Projection = ProjectionType::Perspective;
 		CameraComponent(const CameraComponent&) = default;
@@ -408,6 +415,17 @@ namespace Proof
 		float NearPlane = 0.3f;
 		float FarPlane = 1000.f;
 		float FovDeg = 45;
+
+		struct CameraViewportRect 
+		{
+			glm::vec2 Position;   // Position of the viewport (top-left corner)
+			glm::vec2 Size;       // Size of the viewport (width, height)
+
+			// Constructor for convenience
+			CameraViewportRect(const glm::vec2& pos = glm::vec2(0.0f, 0.0f), const glm::vec2& sz = glm::vec2(800.0f, 600.0f))
+				: Position(pos), Size(sz) {}
+
+		};
 
 		// render using local rotation 
 		bool UseLocalRotation = false;
@@ -418,25 +436,15 @@ namespace Proof
 		friend class WorldRenderer;
 	};
 
-	struct Proof_API BoxColliderComponent {
+	struct BoxColliderComponent 
+	{
 		BoxColliderComponent(const BoxColliderComponent&) = default;
 		BoxColliderComponent() = default;
 		glm::vec3 Center = { 0,0,0 };
 		glm::vec3 Size= { 1,1,1 }; // would be halfed to be half size in physx
 		bool IsTrigger = false;
-
-		void RemovePhysicsMaterial() const
-		{
-			m_PhysicsMaterialPointerID = 0;
-		}
-
-		bool HasPhysicsMaterial()const {
-			return GetPhysicsMaterial() == nullptr ? false : true;
-		}
-		Count<class PhysicsMaterial> GetPhysicsMaterial()const;
-
+		AssetKey<AssetType::PhysicsMaterial> PhysicsMaterialKey;
 	private:
-		mutable UUID m_PhysicsMaterialPointerID = 0;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
@@ -445,23 +453,15 @@ namespace Proof
 		friend class PhysicsActor;
 	};
 	
-	struct Proof_API SphereColliderComponent {
+	struct SphereColliderComponent 
+	{
 		SphereColliderComponent(const SphereColliderComponent&) = default;
 		SphereColliderComponent() = default;
 		glm::vec3 Center = { 0,0,0 };
 		float Radius = 0.5f;
 		bool IsTrigger = false;
-		void RemovePhysicsMaterial()
-		{
-			m_PhysicsMaterialPointerID = 0;
-		}
-		bool HasPhysicsMaterial()const 
-		{
-			return GetPhysicsMaterial() == nullptr ? false : true;
-		}
-		Count<class PhysicsMaterial> GetPhysicsMaterial()const;
+		AssetKey<AssetType::PhysicsMaterial> PhysicsMaterialKey;
 	private:
-		mutable UUID m_PhysicsMaterialPointerID = 0;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;
@@ -484,14 +484,8 @@ namespace Proof
 		float Height = 2.0f; // The height will be hafled as it is passed into physx
 		CapsuleDirection Direction = CapsuleDirection::Y;
 		bool IsTrigger = false;
-		void RemovePhysicsMaterial() {
-			m_PhysicsMaterialPointerID = 0;
-		}
-		bool HasPhysicsMaterial()const
-		{
-			return GetPhysicsMaterial() == nullptr ? false : true;
-		}
-		Count<class PhysicsMaterial> GetPhysicsMaterial()const;
+
+		AssetKey<AssetType::PhysicsMaterial> PhysicsMaterialKey;
 	private:
 		friend class World;
 		friend class SceneSerializer;
@@ -499,27 +493,16 @@ namespace Proof
 		friend class PhysicsActor;
 		friend class WorldRenderer;
 		friend class PhysicsEngine;
-		mutable UUID m_PhysicsMaterialPointerID= 0;
 	};
 
 	struct MeshColliderComponent
 	{
 		MeshColliderComponent(const MeshColliderComponent&) = default;
 		MeshColliderComponent() = default;
-		MeshColliderComponent(AssetID colliderID, uint32_t submeshIndex = 0)
-			: ColliderID(colliderID), SubMeshIndex(submeshIndex)
-		{
-		}
-		void RemovePhysicsMaterial() {
-			m_PhysicsMaterialPointerID = 0;
-		}
-		bool HasPhysicsMaterial() const
-		{
-			return GetPhysicsMaterial() == nullptr ? false : true;
-		}
-		Count<class PhysicsMaterial> GetPhysicsMaterial()const;
+		MeshColliderComponent(AssetID colliderID, uint32_t submeshIndex = 0);
+		AssetKey<AssetType::PhysicsMaterial> PhysicsMaterialKey;
 
-		AssetID ColliderID = 0; // even if its a memory asset it will be saved on disk by the physics system 
+		AssetKey<AssetType::MeshCollider> ColliderKey; // even if its a memory asset it will be saved on disk by the physics system 
 		uint32_t SubMeshIndex = 0;//only if collider id is a dynamic mesh 
 
 		bool UseSharedShape = false;
@@ -531,7 +514,6 @@ namespace Proof
 		friend class WorldRenderer;
 		friend class PhysicsActor;
 		friend class PhysicsEngine;
-		mutable UUID m_PhysicsMaterialPointerID = 0;
 	};
 	struct CharacterControllerComponent
 	{
@@ -546,7 +528,7 @@ namespace Proof
 		float MinMoveDistance = 0.0f; //min 0
 		// only valid if slopelimit is 0
 		CharacterControllerNonWalkableMode WalkableMode = CharacterControllerNonWalkableMode::PreventClimbing;
-		AssetID PhysicsMaterialID = 0;
+		AssetKey<AssetType::PhysicsMaterial> PhysicsMaterialKey;
 
 		CharacterControllerType ColliderType = CharacterControllerType::Capsule; // only supports box and capusle
 		glm::vec3 Center = { 0,0,0 };
@@ -646,6 +628,16 @@ namespace Proof
 		bool RenderInViewSpace = false;
 	};
 	
+	// the entity that holds this will get destroyed 
+	struct PlayerStartComponent
+	{
+		PlayerStartComponent() = default;
+		AssetKey<AssetType::Prefab> Player;
+		// if its not none then only that player can be spawned here, so like if its one player one has to get spawned here
+		// if none then any player can be spawned here doenst matter
+		Players InputPlayer = Players::None; 
+		bool Used = false;// this is not exposed to usr, it just basicallymeasn use all unused start component before using this
+	};
 	struct PlayerInputComponent 
 	{
 	public:
@@ -653,11 +645,33 @@ namespace Proof
 		PlayerInputComponent(Players playerInput, Count<class ElevatedPlayer> elevatedPlayer);
 		PlayerInputComponent(const PlayerInputComponent& other);
 
-		Players InputPlayer = Players::None;
 		Count<class ElevatedPlayer> Player;
 	};
 
-	struct ParticleSystemComponent {
+	// only engine can see this component not visible in component hierarchy
+	// works with PlayerInputComponent
+	// purpose its easier for us to see how many entities can actually receive user input
+	// making it easier for us to have a player count
+
+	struct InternalPlayerInputComponent
+	{
+		InternalPlayerInputComponent() {};
+		InternalPlayerInputComponent(Players player): m_InputPlayer(player) {};
+	public:
+		Players GetPlayer() const
+		{
+			return m_InputPlayer;
+		}
+	private:
+
+		Players m_InputPlayer = Players::None; //only the engine sees this
+
+		friend class LocalGameMode;
+
+	};
+
+	struct ParticleSystemComponent 
+	{
 	public:
 		ParticleSystemComponent(const ParticleSystemComponent& other);
 		ParticleSystemComponent() = default;
@@ -671,6 +685,12 @@ namespace Proof
 		Count< class UITable> HudTable;
 	};
 
+	struct WorldHUDComponent
+	{
+		WorldHUDComponent(const WorldHUDComponent& other);
+		WorldHUDComponent();
+		Count< class UITable> HudTable;
+	};
 	struct AudioComponent
 	{
 		AssetID AudioAsset = { 0 };

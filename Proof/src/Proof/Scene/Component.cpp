@@ -23,60 +23,18 @@
 #include "Proof/Renderer/Font.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/ParticleSystem.h"
+#include "Proof/Physics/MeshCollider.h"
+
+#include "Material.h"
+
 namespace Proof
 {
 
-	Count<PhysicsMaterial> BoxColliderComponent::GetPhysicsMaterial()const
-	{
-		if (m_PhysicsMaterialPointerID == 0)
-		{
-			return nullptr;
-		}
-		if (AssetManager::HasAsset(m_PhysicsMaterialPointerID))
-		{
-			return AssetManager::GetAsset<PhysicsMaterial>(m_PhysicsMaterialPointerID);
-		}
-		m_PhysicsMaterialPointerID = 0;
-		return nullptr;
-	}
-	Count<PhysicsMaterial> SphereColliderComponent::GetPhysicsMaterial()const 
-	{
-		if (m_PhysicsMaterialPointerID == 0) {
-			return nullptr;
-		}
-		auto a = AssetManager::GetAsset<PhysicsMaterial>(m_PhysicsMaterialPointerID);
-		if (a == nullptr) {
-			m_PhysicsMaterialPointerID = 0;
-			return nullptr;
-		}
-		return a;
-	}
 
-	Count<PhysicsMaterial> CapsuleColliderComponent::GetPhysicsMaterial()const 
+	MeshComponent::MeshComponent()
 	{
-		if (m_PhysicsMaterialPointerID == 0) {
-			return nullptr;
-		}
-		auto a = AssetManager::GetAsset<PhysicsMaterial>(m_PhysicsMaterialPointerID);
-		if (a == nullptr)
-		{
-			m_PhysicsMaterialPointerID = 0;
-			return nullptr;
-		}
-		return a;
-	}
-	Count<PhysicsMaterial> MeshColliderComponent::GetPhysicsMaterial() const
-	{
-		if (m_PhysicsMaterialPointerID == 0) {
-			return nullptr;
-		}
-		auto a = AssetManager::GetAsset<PhysicsMaterial>(m_PhysicsMaterialPointerID);
-		if (a == nullptr)
-		{
-			m_PhysicsMaterialPointerID = 0;
-			return nullptr;
-		}
-		return a;
+		MaterialTable = Count<class MaterialTable>::Create();
+
 	}
 
 	MeshComponent::MeshComponent(const MeshComponent& other)
@@ -87,7 +45,10 @@ namespace Proof
 		, MaterialTable(Count<class MaterialTable>::CreateFrom(other.MaterialTable))
 	{
 	}
-
+	SkyLightComponent::SkyLightComponent()
+	{
+		Environment = Count<class Environment>::Create();
+	}
 	void MeshComponent::SetMesh(UUID ID, bool copyMaterialTable )
 	{
 		#ifdef PF_ENABLE_DEBUG
@@ -113,7 +74,11 @@ namespace Proof
 		//#endif 
 		return AssetManager::GetAsset<Mesh>(m_MeshID);
 	}
+	DynamicMeshComponent::DynamicMeshComponent() 
+	{
+		MaterialTable = Count<class MaterialTable>::Create();
 
+	}
 	DynamicMeshComponent::DynamicMeshComponent(const DynamicMeshComponent& other):
 		m_MeshID(other.m_MeshID)
 		,Visible(other.Visible)
@@ -207,7 +172,7 @@ namespace Proof
 
 	PlayerInputComponent::PlayerInputComponent(Players playerInput, Count<class ElevatedPlayer> elevatedPlayer)
 		:
-		InputPlayer(playerInput), Player(elevatedPlayer)
+		Player(elevatedPlayer)
 	{
 	}
 
@@ -215,6 +180,7 @@ namespace Proof
 	{
 		if (other.Player)
 			Player = Count<ElevatedPlayer>::CreateFrom(other.Player);
+
 	}
 
 	ParticleSystemComponent::ParticleSystemComponent(const ParticleSystemComponent& other)
@@ -227,14 +193,24 @@ namespace Proof
 	PlayerHUDComponent::PlayerHUDComponent(const PlayerHUDComponent& other)
 	{
 		if (other.HudTable)
-			HudTable = Count<UITable>::CreateFrom(other.HudTable);
+			HudTable = Count<UITable>::Create(other.HudTable);
 	}
 
 	PlayerHUDComponent::PlayerHUDComponent()
 	{
 		HudTable = Count<UITable>::Create();
 	}
+	WorldHUDComponent::WorldHUDComponent(const WorldHUDComponent& other)
+	{
+		if (other.HudTable)
+			HudTable = Count<UITable>::Create(other.HudTable);
+	}
 
+	WorldHUDComponent::WorldHUDComponent()
+	{
+		HudTable = Count<UITable>::Create();
+
+	}
 	WaterComponent::WaterComponent()
 	{
 		Water = Count<class Water>::Create();
@@ -251,5 +227,12 @@ namespace Proof
 
 	}
 
+
+	
+
+	MeshColliderComponent::MeshColliderComponent(AssetID colliderID, uint32_t submeshIndex)
+		: ColliderKey(colliderID), SubMeshIndex(submeshIndex)
+	{
+	}
 
 }

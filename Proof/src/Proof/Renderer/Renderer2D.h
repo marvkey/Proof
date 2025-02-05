@@ -83,7 +83,8 @@ namespace Proof {
 		bool RenderOnTop = false;
 
 	};
-	class Renderer2D : RefCounted {
+	class Renderer2D : RefCounted 
+	{
 		friend class Camera;
 	public:
 		Renderer2D(const std::string& debugName);
@@ -180,7 +181,7 @@ namespace Proof {
 		const uint32_t c_MaxVertexCount = c_MaxQuadCount * 4; // times 4 cause each quad holds 4 vertices
 		const uint32_t c_MaxIndexCount = c_MaxQuadCount * 6;
 
-		const uint32_t c_MaxLines = 1000;
+		const uint32_t c_MaxLines = 100000; // TODO put back to 1000 but because drawing multiple times frame not working 
 		const uint32_t c_MaxLineVertices = c_MaxLines * 2;
 		const uint32_t c_MaxLineIndices = c_MaxLines * 6;
 

@@ -3,6 +3,32 @@
 #include "Proof/Utils/StringUtils.h"
 namespace Proof
 {
+ 
+
+    template<typename... Component>
+    static void CopyComponentSingleMenu(entt::registry& dst, entt::registry& src, const std::unordered_map<UIElementID, entt::entity>& enttMap)
+    {
+        ([&]() {
+
+            auto view = src.view<Component>();
+            for (auto srcEntity : view)
+            {
+                UUID id = src.get<UICoreComponent>(srcEntity).GetElementID();
+                entt::entity dstEntity = enttMap.at(id);
+
+                auto& srcComponent = src.get<Component>(srcEntity);
+                dst.emplace_or_replace<Component>(dstEntity, srcComponent);
+
+            }
+            }(), ...);
+
+    }
+
+    template<typename... Component>
+    static void CopyComponent(UIComponentGroup<Component...>, entt::registry& dst, entt::registry& src, const std::unordered_map<UIElementID, entt::entity>& enttMap)
+    {
+        CopyComponentSingleMenu<Component...>(dst, src, enttMap);
+    }
 
     UIElement UIMenu::CreateElement(UIElementType type)
     {
@@ -14,6 +40,31 @@ namespace Proof
         for (const auto& [id, element] : other.m_UIElementsMap)
             CreateElement(element.GetElementType(), id);
     }
+
+    Count<UIMenu> UIMenu::Copy(Count<UIMenu> menuToCopy)
+    {
+        Count<UIMenu> newMenu = Count<UIMenu>::Create();
+
+
+        auto& srcSceneRegistry = menuToCopy->m_Registry;
+        auto& dstSceneRegistry = newMenu->m_Registry;
+        std::unordered_map<UIElementID, entt::entity> enttMap;
+
+        // Create entities in new scene
+        // in reverse order
+        auto idView = srcSceneRegistry.view<UICoreComponent>();
+        std::for_each(idView.rbegin(), idView.rend(), [&](auto e) {
+            UICoreComponent coreComponent = srcSceneRegistry.get<UICoreComponent>(e);
+            UIElement newElement = newMenu->CreateElement(coreComponent.GetName(), coreComponent.GetElementID(), coreComponent.ElementType);
+            enttMap[coreComponent.GetElementID()] = (entt::entity)newElement;
+            });
+
+        // Copy components 
+        CopyComponent(UIAllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
+
+        return newMenu;
+    }
+
     UIElement UIMenu::CreateElement(UIElementType type, UIElementID id)
     {
 
@@ -73,6 +124,14 @@ namespace Proof
 
         return m_UIElementsMap.at(id);
     }
+
+    UIElement UIMenu::GetUIElement(const std::string& name)
+    {
+        PF_CORE_ASSERT(HasUIElement(name));
+
+        return GetUIElement(m_UIElementsNameMap.at(name));
+    }
+
     void UIMenu::SetName(UIElement element, const std::string& newName)
     {
         std::string oldName = element.GetComponent<UICoreComponent>().m_Name;

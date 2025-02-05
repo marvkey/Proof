@@ -4,6 +4,7 @@
 #include "Proof/Input/Mouse.h"
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Input/Input.h"
+#include "ElevatedInputDeviceManager.h"
 namespace Proof
 {
 	
@@ -50,24 +51,26 @@ namespace Proof
 			if (EnumReflection::HasAnyFlags(m_MouseAxisDispatch, ElevatedInputDeviceMouseKeyboardMouseAxisDispatch::X))
 			{
 				ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveX,ElevatedKeyEventType::Released, inputDevice, 0,1 };
-				InvokeStep(params);
+				GetDeviceManager()->InvokeStep(params);
 			}
 
 			if (EnumReflection::HasAnyFlags(m_MouseAxisDispatch, ElevatedInputDeviceMouseKeyboardMouseAxisDispatch::Y))
 			{
 				ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveY,ElevatedKeyEventType::Released, inputDevice, 0,1 };
-				InvokeStep(params);
+				GetDeviceManager()->InvokeStep(params);
 			}
 
 			ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveAxis,ElevatedKeyEventType::Released, inputDevice, glm::vec2{0,0},1};
-			InvokeStep(params);
+			GetDeviceManager()->InvokeStep(params);
 			m_MouseAxisDispatch = ElevatedInputDeviceMouseKeyboardMouseAxisDispatch::None;
 			m_MousePosSetToRelease = true;
 		}
 
 	}
 
-	ElevatedInputDeviceMouseKeyboard::ElevatedInputDeviceMouseKeyboard()
+	ElevatedInputDeviceMouseKeyboard::ElevatedInputDeviceMouseKeyboard(Count<ElevatedInputDeviceManager> deviceManager,Players player)
+		:
+		ElevatedInputDevice(deviceManager,player)
 	{
 		m_ModifierKeyStates[ElevatedInputKeys::LeftShift] = Input::IsKeyPressed(KeyBoardKey::LeftShift);
 		m_ModifierKeyStates[ElevatedInputKeys::RightShift] = Input::IsKeyPressed(KeyBoardKey::RightShift);
@@ -77,6 +80,7 @@ namespace Proof
 		m_ModifierKeyStates[ElevatedInputKeys::RightAlt] = Input::IsKeyPressed(KeyBoardKey::RightAlt);
 		m_ModifierKeyStates[ElevatedInputKeys::RightSuper] = Input::IsKeyPressed(KeyBoardKey::RightSuper);
 		m_ModifierKeyStates[ElevatedInputKeys::LeftSuper] = Input::IsKeyPressed(KeyBoardKey::LeftSuper);
+
 	}
 
 	void ElevatedInputDeviceMouseKeyboard::OnEvent(Event& e)
@@ -89,28 +93,28 @@ namespace Proof
 			{
 				ElevatedInputKey inputkey = Utils::ConvertMouseButton(mouseButtonClickedEvent.GetButton());
 				ElevatedInputKeyParams params{ inputkey,ElevatedKeyEventType::Clicked, inputDevice, 1.0, 0 };
-				return InvokeStep(params);
+				return GetDeviceManager()->InvokeStep(params);
 			});
 /*
 		dispatcher.Dispatch<MouseButtonPressedEvent>([&](MouseButtonPressedEvent& mouseButtonClickedEvent)
 			{
 				ElevatedInputKey inputkey = Utils::ConvertMouseButton(mouseButtonClickedEvent.GetButton());
 				ElevatedInputKeyParams params{ inputkey,ElevatedKeyEventType::Pressed, inputDevice };
-				return InvokeStep(params);
+				return GetDeviceManager()->InvokeStep(params);
 			});
 */
 		dispatcher.Dispatch<MouseButtonReleasedEvent>([&](MouseButtonReleasedEvent& mouseButtonClickedEvent)
 			{
 				ElevatedInputKey inputkey = Utils::ConvertMouseButton(mouseButtonClickedEvent.GetButton());
 				ElevatedInputKeyParams params{ inputkey,ElevatedKeyEventType::Released, inputDevice,0.0, 0 };
-				return InvokeStep(params);
+				return GetDeviceManager()->InvokeStep(params);
 			});
 		/*
 		dispatcher.Dispatch<MouseButtonDoubleClickEvent>([&](MouseButtonDoubleClickEvent& mouseButtonClickedEvent)
 			{
 				ElevatedInputKey inputkey = Utils::ConvertMouseButton(mouseButtonClickedEvent.GetButton());
 				ElevatedInputKeyParams params{ inputkey,ElevatedKeyEventType::Double, inputDevice, 1.0,0 };
-				return InvokeStep(params);
+				return GetDeviceManager()->InvokeStep(params);
 			});
 */
 		dispatcher.Dispatch<MouseMoveEvent>([&](MouseMoveEvent& mouseMovedEvent)
@@ -120,18 +124,18 @@ namespace Proof
 				{
 					m_MouseAxisDispatch |= ElevatedInputDeviceMouseKeyboardMouseAxisDispatch::X;
 					ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveX,ElevatedKeyEventType::Clicked, inputDevice, mouseMovedEvent.GetMovedX(),1 };
-					invokeValue |= InvokeStep(params);
+					invokeValue |= GetDeviceManager()->InvokeStep(params);
 				}
 
 				if (mouseMovedEvent.GetMovedY() > 0)
 				{
 					m_MouseAxisDispatch |= ElevatedInputDeviceMouseKeyboardMouseAxisDispatch::Y;
 					ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveY,ElevatedKeyEventType::Clicked, inputDevice, mouseMovedEvent.GetMovedY(),1 };
-					invokeValue |= InvokeStep(params);
+					invokeValue |= GetDeviceManager()->InvokeStep(params);
 				}
 
 				ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveAxis,ElevatedKeyEventType::Clicked, inputDevice, glm::vec2{mouseMovedEvent.GetMovedX(),mouseMovedEvent.GetMovedY()},1 };
-				invokeValue |= InvokeStep(params);
+				invokeValue |= GetDeviceManager()->InvokeStep(params);
 
 				m_MousePosSetToRelease = false;
 				return invokeValue;
@@ -147,26 +151,26 @@ namespace Proof
 				if (axis == MouseAxis::ScrollUp)
 				{
 					ElevatedInputKeyParams params{ ElevatedInputKeys::MouseScrollUp,ElevatedKeyEventType::Clicked, inputDevice,1.0,0u };
-					invokeValue |= InvokeStep(params);
+					invokeValue |= GetDeviceManager()->InvokeStep(params);
 
 					params.Event = ElevatedKeyEventType::Released;
-					invokeValue |= InvokeStep(params);
+					invokeValue |= GetDeviceManager()->InvokeStep(params);
 
 				}
 				else if (axis == MouseAxis::ScrollDown)
 				{
 					ElevatedInputKeyParams params{ ElevatedInputKeys::MouseScrollDown,ElevatedKeyEventType::Clicked, inputDevice,1.0,0u };
-					invokeValue |= InvokeStep(params);
+					invokeValue |= GetDeviceManager()->InvokeStep(params);
 
 					params.Event = ElevatedKeyEventType::Released;
-					invokeValue |= InvokeStep(params);
+					invokeValue |= GetDeviceManager()->InvokeStep(params);
 				}
 
 				ElevatedInputKeyParams params{ ElevatedInputKeys::MouseWheelAxis,ElevatedKeyEventType::Clicked, inputDevice, mouseScroll.GetScrollY(),1};
-				invokeValue |= InvokeStep(params);
+				invokeValue |= GetDeviceManager()->InvokeStep(params);
 
 				params.Event = ElevatedKeyEventType::Released;
-				invokeValue |= InvokeStep(params);
+				invokeValue |= GetDeviceManager()->InvokeStep(params);
 				return invokeValue;
 			});
 
@@ -179,7 +183,7 @@ namespace Proof
 				bool outValue = false;
 				{
 					ElevatedInputKeyParams params{ inputKey,ElevatedKeyEventType::Clicked, inputDevice,1.0,inputKey.IsAnalog() ? 1u : 0u };
-					outValue|= InvokeStep(params);
+					outValue|= GetDeviceManager()->InvokeStep(params);
 				}
 
 				if (m_ModifierKeyStates.contains(inputKey))
@@ -197,7 +201,7 @@ namespace Proof
 						{
 
 							ElevatedInputKeyParams params{ ElevatedInputKeys::Shift,ElevatedKeyEventType::Clicked, inputDevice,1.0,inputKey.IsAnalog() ? 1u : 0u };
-							outValue |= InvokeStep(params);
+							outValue |= GetDeviceManager()->InvokeStep(params);
 						}
 					}
 					break;
@@ -211,7 +215,7 @@ namespace Proof
 						{
 
 							ElevatedInputKeyParams params{ ElevatedInputKeys::Control,ElevatedKeyEventType::Clicked, inputDevice,1.0,inputKey.IsAnalog() ? 1u : 0u };
-							outValue |= InvokeStep(params);
+							outValue |= GetDeviceManager()->InvokeStep(params);
 						}
 					}
 					break;
@@ -226,7 +230,7 @@ namespace Proof
 						{
 
 							ElevatedInputKeyParams params{ ElevatedInputKeys::Alt,ElevatedKeyEventType::Clicked, inputDevice,1.0,inputKey.IsAnalog() ? 1u : 0u };
-							outValue |= InvokeStep(params);
+							outValue |= GetDeviceManager()->InvokeStep(params);
 						}
 					}
 					break;
@@ -241,7 +245,7 @@ namespace Proof
 						{
 
 							ElevatedInputKeyParams params{ ElevatedInputKeys::Super,ElevatedKeyEventType::Clicked, inputDevice,1.0,inputKey.IsAnalog() ? 1u : 0u };
-							outValue |= InvokeStep(params);
+							outValue |= GetDeviceManager()->InvokeStep(params);
 						}
 					}
 					break;
@@ -260,7 +264,7 @@ namespace Proof
 				{
 					ElevatedInputKeyParams params{ inputKey,ElevatedKeyEventType::Released, inputDevice,0.0,inputKey.IsAnalog() ? 1u : 0u };
 
-					outValue |= InvokeStep(params);
+					outValue |= GetDeviceManager()->InvokeStep(params);
 				}
 
 				if (m_ModifierKeyStates.contains(inputKey))
@@ -276,7 +280,7 @@ namespace Proof
 						{
 
 							ElevatedInputKeyParams params{ ElevatedInputKeys::Shift,ElevatedKeyEventType::Released, inputDevice,0.0,inputKey.IsAnalog() ? 1u : 0u };
-							outValue |= InvokeStep(params);
+							outValue |= GetDeviceManager()->InvokeStep(params);
 						}
 					}
 					break;
@@ -288,7 +292,7 @@ namespace Proof
 						{
 
 							ElevatedInputKeyParams params{ ElevatedInputKeys::Control,ElevatedKeyEventType::Released, inputDevice,0.0,inputKey.IsAnalog() ? 1u : 0u };
-							outValue |= InvokeStep(params);
+							outValue |= GetDeviceManager()->InvokeStep(params);
 						}
 					}
 					break;
@@ -301,7 +305,7 @@ namespace Proof
 						{
 
 							ElevatedInputKeyParams params{ ElevatedInputKeys::Alt,ElevatedKeyEventType::Released, inputDevice,0.0,inputKey.IsAnalog() ? 1u : 0u };
-							outValue |= InvokeStep(params);
+							outValue |= GetDeviceManager()->InvokeStep(params);
 						}
 					}
 					break;
@@ -314,7 +318,7 @@ namespace Proof
 						{
 
 							ElevatedInputKeyParams params{ ElevatedInputKeys::Super,ElevatedKeyEventType::Released, inputDevice,0.0,inputKey.IsAnalog() ? 1u : 0u };
-							outValue |= InvokeStep(params);
+							outValue |= GetDeviceManager()->InvokeStep(params);
 						}
 					}
 					break;
@@ -330,14 +334,14 @@ namespace Proof
 			{
 				ElevatedInputKeyParams params{ ElevatedInputKeys::GetKeyBoardKey(keyHold.GetKey()) ,ElevatedKeyEventType::Repeat, inputDevice };
 
-				return InvokeStep(params);
+				return GetDeviceManager()->InvokeStep(params);
 			});
 
 		dispatcher.Dispatch<KeyDoubleClickEvent>([&](KeyDoubleClickEvent& keyDouble)
 			{
 				ElevatedInputKeyParams params{ ElevatedInputKeys::GetKeyBoardKey(keyDouble.GetKey()) ,ElevatedKeyEventType::Double, inputDevice };
 
-				return InvokeStep(params);
+				return GetDeviceManager()->InvokeStep(params);
 			});
 			*/
 	}
@@ -355,12 +359,12 @@ namespace Proof
 
 		{
 			ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveX,ElevatedKeyEventType::Clicked, inputDevice,m_CachedCursorDelta.x,m_NumCursorSamplesThisFrame.x };
-			InvokeStep(params);
+			GetDeviceManager()->InvokeStep(params);
 		}
 
 		{
 			ElevatedInputKeyParams params{ ElevatedInputKeys::MouseMoveY,ElevatedKeyEventType::Clicked, inputDevice,m_CachedCursorDelta.y,m_NumCursorSamplesThisFrame.y };
-			InvokeStep(params);
+			GetDeviceManager()->InvokeStep(params);
 		}
 	}
 }

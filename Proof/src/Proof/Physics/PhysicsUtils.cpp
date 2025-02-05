@@ -191,7 +191,7 @@ namespace Proof::PhysXUtils
 
 		filterData.word0 = layerInfo.CollidesValue;
 		filterData.word1 = layerInfo.CollidesWith;
-		filterData.word2 = (uint32_t)collisionDetection;
+		filterData.word2 = 0;
 		filterData.word3 = layerInfo.LayerID;
 
 		return filterData;

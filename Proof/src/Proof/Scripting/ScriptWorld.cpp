@@ -654,7 +654,6 @@ namespace Proof
         }
         m_IsRuntime = true;
 
-        auto view = m_World->GetAllEntitiesWith<ScriptComponent>();
         m_World->ForEachEnitityWith<ScriptComponent>([&](Entity entity)
         {
             InstantiateScriptEntity(entity);

@@ -131,6 +131,8 @@ namespace Proof
 
 		}
 		UIMenu(const UIMenu& other);
+		static Count<UIMenu> Copy(Count<UIMenu> other);
+
 		UIElement CreateElement(UIElementType type, UIElementID id);
 		UIElement CreateElement(UIElementType type);
 		UIElement CreateElement(const std::string& name, UIElementID id, UIElementType type);
@@ -155,6 +157,19 @@ namespace Proof
 		};
 		UIElement GetUIElement(UIElementID id);
 		UIElement GetUIElement(UIElementID id)const;
+		UIElement GetUIElement(const std::string& name);
+
+		bool HasUIElement(const std::string& name ) const
+		{
+			return m_UIElementsNameMap.contains(name);
+		}
+
+		bool HasUIElement(const std::string& name )
+		{
+			return m_UIElementsNameMap.contains(name);
+		}
+
+
 		void SetName(UIElement element, const std::string& name);
 	private:
 		std::unordered_map<UIElementID, UIElement> m_UIElementsMap;

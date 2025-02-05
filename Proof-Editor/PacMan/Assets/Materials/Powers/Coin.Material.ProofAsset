@@ -4,7 +4,7 @@ ShaderName: ProofPBR_Static
 AlbedoColour: [1, 0.843137264, 0]
 Roughness: 0.400000006
 Metallness: 0
-Emission: 1.14999998
+Emission: 1.5
 Tiling: [1, 1]
 NormalTextureToggle: false
 Offset: [0, 0]

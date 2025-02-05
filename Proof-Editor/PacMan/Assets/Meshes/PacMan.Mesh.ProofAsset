@@ -2,6 +2,6 @@ AssetType: Mesh
 ID: 6110330914609793711
 AssetSource: 3353567056187041584
 Translation: [0, 0, 0]
-RotationDeg: [0, 0, 0]
+RotationDeg: [0, 90, 0]
 Scale: 1
 SubMeshes: []

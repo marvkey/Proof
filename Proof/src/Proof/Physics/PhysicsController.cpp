@@ -26,10 +26,10 @@ namespace Proof
 	void PhysicsController::Init()
 	{
 		auto& controller = m_Entity.GetComponent<CharacterControllerComponent>();
-		if (AssetManager::HasAsset(controller.PhysicsMaterialID))
-			m_Material = AssetManager::GetAsset<PhysicsMaterial>(controller.PhysicsMaterialID);
+		if (AssetManager::HasAsset(controller.PhysicsMaterialKey))
+			m_Material = AssetManager::GetAsset<PhysicsMaterial>(controller.PhysicsMaterialKey);
 		else
-			controller.PhysicsMaterialID = 0;
+			controller.PhysicsMaterialKey.SetAssetID(0);
 
 		if (m_Material == nullptr)
 			m_Material = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::PhysicsMaterial).As<PhysicsMaterial>();

@@ -34,7 +34,8 @@ namespace Proof
 
 	};
 	
-	class Texture2D : public Texture {
+	class Texture2D : public Texture 
+	{
 	public:
 		virtual ~Texture2D() {};
 		RENDER_VIEW_RESOURCE_CLASS_TYPE(Texture2D);
@@ -67,7 +68,8 @@ namespace Proof
 		virtual Count<class RenderSampler> GetSampler() = 0;
 	};
 
-	class TextureCube : public Texture {
+	class TextureCube : public Texture 
+	{
 	public:
 		RENDER_VIEW_RESOURCE_CLASS_TYPE(TextureCube);
 

@@ -26,6 +26,7 @@ namespace Proof
 
 		virtual glm::vec3 GetLocation() const { return PhysXUtils::FromPhysXVector(m_RigidActor->getGlobalPose().p); }
 		virtual void SetLocation(const glm::vec3& translation, const bool autowake = true);
+		virtual void Translate(const glm::vec3& translation, const bool autowake = true);
 
 		void ClearForce(ForceMode mode);
 		void ClearTorque(ForceMode mode);

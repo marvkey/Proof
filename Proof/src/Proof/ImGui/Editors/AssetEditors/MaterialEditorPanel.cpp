@@ -17,6 +17,7 @@
 #include "Proof/Physics/PhysicsMaterial.h"
 #include "Proof/ImGui/UI.h"
 #include "Proof/ImGui/UIHandlers.h"
+#include "Proof/Renderer/Texture.h"
 
 #include "Proof/Core/Profile.h"
 #include "Proof/ImGui/Editors/Panels/DetailsPanel.h"

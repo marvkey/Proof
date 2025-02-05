@@ -246,11 +246,7 @@ namespace Proof
 		Count<class Image2D> m_ShadowPassImage;
 
 		//meshes
-		Count<Mesh> m_Cube;
-		Special<class DebugMeshRenderer> m_DebugMeshRenderer;
 		Count<class Renderer2D>  m_Renderer2D;
-		Special<class Renderer2D>  m_UIRenderer;
-		Special<class Renderer2D>  m_ParticleSystemRenderer;
 		Count<class RenderCommandBuffer> m_CommandBuffer;
 
 		Count<class StorageBufferSet> m_SBDirectionalLights;
@@ -424,6 +420,7 @@ namespace Proof
 		bool m_IsReady = false;
 		bool m_ResourcesCreatedGPU = false;
 		bool m_ResourcesCreated = false;
+		bool m_InitalRanShadow = false;//idk why but hopfeully works
 	private:
 
 		// only put attach to depth when you are sure u are not changing any vertex position

@@ -9,6 +9,9 @@
 #include "Proof/Utils/StringUtils.h"
 namespace Proof
 {
+#define ASSET_CLASS_TYPE(type) static AssetType GetStaticType() { return AssetType::type; }\
+								virtual AssetType GetAssetType() const override { return GetStaticType(); }
+
 	enum class AssetType 
 	{
 		None = 0,// for items that 
@@ -46,6 +49,7 @@ namespace Proof
 	};
 	using AssetID = UUID;
 
+	class Asset;
 	namespace Utils 
 	{
 		// assets that are not converted to a proof format in the editor
@@ -173,5 +177,121 @@ namespace Proof
 			const std::string fileFullExtension = Utils::String::ToLower(FileSystem::GetFullFileExtension(path));
 			return GetAssetTypeFromExtension(fileFullExtension);
 		}
+
+		bool HasAssetAndAssetType(AssetID id, AssetType type);
+		Count<class Proof::Asset> GetAssetFromID(AssetID id);
 	}
+
+	template <AssetType Type>
+	struct AssetKey 
+	{
+	public:
+		AssetKey() : m_AssetID(0) {}
+
+		AssetKey(AssetID id) 
+		{				    
+			SetAssetID(id);
+		}
+
+		template <class T>
+		Count<T> GetAsset()const {
+			if (!IsValid())
+				return nullptr;
+
+			return Utils::GetAssetFromID(m_AssetID).As<T>();
+		}
+
+		
+
+		Count<class Asset> GetAsBaseAsset() const 
+		{
+			if (!IsValid())
+				return nullptr;
+
+			return Utils::GetAssetFromID(m_AssetID);
+		}
+
+		AssetID GetAssetID() const {
+			return IsValid() ? m_AssetID : AssetID(0);
+		}
+
+		bool SetAssetID(AssetID id) {
+			if (Utils::HasAssetAndAssetType(id, Type)) {
+				m_AssetID = id;
+				return true;
+			}
+
+			return false;
+		}
+
+		bool IsValid() const {
+			if (Utils::HasAssetAndAssetType(m_AssetID, Type))
+				return true;
+
+			m_AssetID = 0;
+			return false;
+		}
+
+		operator AssetID() const 
+		{
+			return GetAssetID();
+		}
+
+		operator bool() const 
+		{
+			return IsValid();
+		}
+
+		AssetType GetAssetType()const
+		{
+			return Type;
+		}
+
+		operator uint64_t () { return m_AssetID; }
+		operator const uint64_t() const { return m_AssetID; }
+		uint64_t Get()const { return m_AssetID; }
+	private:
+		mutable AssetID m_AssetID = { 0 };
+	};
+
+
+	struct MultiAssetKeys
+	{
+		MultiAssetKeys(std::initializer_list<AssetType> types)
+			: m_SupportedTypes(types) {}
+
+		MultiAssetKeys(AssetID id)
+		{
+			SetAssetID(id);
+		}
+
+		template<typename AssetClass>
+		Count<AssetClass> GetAsset() const
+		{
+			return GetAsBaseAsset().As<AssetClass>();
+		}
+
+		Count<class Asset> GetAsBaseAsset() const
+		{
+			if (IsValid())
+				return Utils::GetAssetFromID(m_AssetID);
+			return nullptr;
+		}
+
+		AssetID GetAssetID() const
+		{
+			return IsValid() ? m_AssetID : AssetID(0);
+		}
+
+		bool SetAssetID(AssetID id);
+
+		bool IsValid() const;
+
+		operator AssetID() const { return m_AssetID; }
+		operator bool() const { return IsValid(); }
+
+	private:
+		mutable AssetID m_AssetID = { 0 };
+		std::unordered_set<AssetType> m_SupportedTypes;
+	};
 }

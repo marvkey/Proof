@@ -1,0 +1,61 @@
+AssetType: InputBindingContext
+ID: 14579131940967015079
+InputBindings:
+  - InputActionID: 5641647121618112534
+    KeyBindings:
+      - InputKeyBindingType: Bundle
+        InputKeyBindingBundleName: WASD
+        InputKeyBundleKeys:
+          - InputKeyBindingBundleType: PositiveX
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: D
+          - InputKeyBindingBundleType: NegativeX
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: A
+          - InputKeyBindingBundleType: PositiveY
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: W
+          - InputKeyBindingBundleType: NegativeY
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: S
+          - InputKeyBindingBundleType: PositiveZ
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: Invalid
+          - InputKeyBindingBundleType: NegativeZ
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: Invalid
+      - InputKeyBindingType: Bundle
+        InputKeyBindingBundleName: DPAD
+        InputKeyBundleKeys:
+          - InputKeyBindingBundleType: PositiveX
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: ControllerDPadRight
+          - InputKeyBindingBundleType: NegativeX
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: ControllerDPadLeft
+          - InputKeyBindingBundleType: PositiveY
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: ControllerDPadUp
+          - InputKeyBindingBundleType: NegativeY
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: ControllerDPadDown
+          - InputKeyBindingBundleType: PositiveZ
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: Invalid
+          - InputKeyBindingBundleType: NegativeZ
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: Invalid
+      - InputKeyBindingType: Key
+        InputKeyName: ControllerLeftStick2D

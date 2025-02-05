@@ -12,6 +12,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
+#include "Proof/Scene/Material.h"
 #include "Proof/Input/Mouse.h"
 #include "Proof/Math/MathInclude.h"
 #include "Proof/Core/Application.h"
@@ -31,7 +32,8 @@
 #include "Proof/Renderer/ParticleSystem.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Utils/PersistentDataManager.h"
-
+#include "Proof/Renderer/DebugRenderer.h"
+#include "Proof/Scene/GameMode/LocalGameMode.h"
 #include "ScriptUtils.h"
 //(IMPORTPF)
 /*
@@ -102,6 +104,18 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 #define SCRIPT_FUNC_ENTITY_CHECK_ASSET(assetID,assetType,Component,returnValue)\
 	SCRIPT_FUNC_ENTITY_CHECK_ASSET_BASE(assetID,assetType,Component,return returnValue);
 
+#define SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_BASE(assetKey,Component,errorActionOutput)\
+	if (!assetKey.IsValid())\
+	{\
+		PF_ERROR("{} - entity {} {} {} invalid", SCRIPT_FUNC_GET_NAME, entity.GetName(), #Component, EnumReflection::EnumString(assetKey.GetAssetType())); \
+		errorActionOutput;\
+	}
+
+#define SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_VOID(assetID,Component)\
+	SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_BASE(assetID,Component,return);
+
+#define SCRIPT_FUNC_ENTITY_ASSETKEY_ASSET(assetID,Component,returnValue)\
+	SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_BASE(assetID,Component,return returnValue);
 	
 	static inline Entity GetEntity(uint64_t entityID)
 	{
@@ -213,6 +227,8 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 	static bool Input_IsMouseButtonDoubleClicked(int mouseCode) {
 		return Input::IsMouseButtonDoubleClicked((MouseButton)mouseCode);
 	}
+
+	
 #pragma endregion 
 	#pragma region World
 	static void World_Pause() 
@@ -913,7 +929,25 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		actor->SetLocation(*location);
 	}
 
-	static void RigidBodyComponent_GetRotation(UUID entityID, glm::vec3* rotationRadians)
+	static void RigidBodyComponent_Translate(UUID entityID, glm::vec3* translation)
+	{
+		auto entity = GetEntity(entityID);
+		if (!entity)
+		{
+			PF_ERROR("RigidBody.RigidBodyTranslate - entity is not valid");
+			return;
+		}
+
+		auto actor = GetPhysicsActor(entity);
+		if (!actor)
+		{
+			PF_ERROR("RigidBody.RigidBodyTranslate - physics actor not found");
+			return;
+		}
+		actor->Translate(*translation);
+	}
+
+	static void RigidBodyComponent_GetRotation(UUID entityID, QuaternionProper* rotationRadians)
 	{
 		auto entity = GetEntity(entityID);
 		if (!entity)
@@ -928,9 +962,11 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ERROR("RigidBody.RigidBodyGetRotation - physics actor not found");
 			return;
 		}
-		*rotationRadians = actor->GetRotationEuler();
+		*rotationRadians = Utils::GlmToQuaternionProper(actor->GetRotation());
 	}
-	static void RigidBodyComponent_SetRotation(UUID entityID, glm::vec3* rotationRadians)
+
+
+	static void RigidBodyComponent_SetRotation(UUID entityID, QuaternionProper* rotationRadians)
 	{
 		auto entity = GetEntity(entityID);
 		if (!entity)
@@ -945,7 +981,25 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ERROR("RigidBody.RigidBodySetRotation - physics actor not found");
 			return;
 		}
-		actor->SetRotation(glm::quat(*rotationRadians));
+		actor->SetRotation(Utils::QuaternionProperToGlm(*rotationRadians));
+	}
+
+	static void RigidBodyComponent_Rotate(UUID entityID, QuaternionProper* rotationRadians)
+	{
+		auto entity = GetEntity(entityID);
+		if (!entity)
+		{
+			PF_ERROR("RigidBody.RigidBodyRotate - entity is not valid");
+			return;
+		}
+
+		auto actor = GetPhysicsActor(entity);
+		if (!actor)
+		{
+			PF_ERROR("RigidBody.RigidBodyRotate - physics actor not found");
+			return;
+		}
+		actor->Rotate(Utils::QuaternionProperToGlm(*rotationRadians));
 	}
 
 	static void RigidBodyComponent_GetLinearVelocity(UUID entityID, glm::vec3* force)
@@ -1504,8 +1558,8 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			*outID = AssetID(0);
 			return false;
 		}
-		if (entity.GetComponent<BoxColliderComponent>().HasPhysicsMaterial())
-			*outID = entity.GetComponent<BoxColliderComponent>().GetPhysicsMaterial().As<Asset>()->GetID();
+		if (entity.GetComponent<BoxColliderComponent>().PhysicsMaterialKey.IsValid())
+			*outID = entity.GetComponent<BoxColliderComponent>().PhysicsMaterialKey.GetAssetID();
 		else
 			*outID = 0;
 		return true;
@@ -1639,8 +1693,8 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			*outID = AssetID(0);
 			return false;
 		}
-		if (entity.GetComponent<SphereColliderComponent>().HasPhysicsMaterial())
-			*outID = entity.GetComponent<SphereColliderComponent>().GetPhysicsMaterial().As<Asset>()->GetID();
+		if (entity.GetComponent<SphereColliderComponent>().PhysicsMaterialKey.IsValid())
+			*outID = entity.GetComponent<SphereColliderComponent>().PhysicsMaterialKey.GetAssetID();
 		else
 			*outID = 0;
 		return true;
@@ -1661,12 +1715,12 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		const auto& component = entity.GetComponent<MeshColliderComponent>();
 
-		if (!AssetManager::HasAsset(component.ColliderID))
+		if (!AssetManager::HasAsset(component.ColliderKey.GetAssetID()))
 		{
 			PF_ERROR("MeshColliderComponent.IsMeshStatic - Invalid collider asset!");
 			return false;
 		}
-		Count<MeshCollider> collider = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+		Count<MeshCollider> collider = AssetManager::GetAsset<MeshCollider>(component.ColliderKey.GetAssetID());
 
 		if (!AssetManager::HasAsset(collider->ColliderMesh))
 		{
@@ -1687,13 +1741,13 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 
 		const auto& component = entity.GetComponent<MeshColliderComponent>();
-		if (!AssetManager::HasAsset(component.ColliderID))
+		if (!AssetManager::HasAsset(component.ColliderKey.GetAssetID()))
 		{
 			PF_ERROR("MeshColliderComponent.IsColliderMeshValid - Invalid collider asset!");
 			return false;
 		}
 
-		Count<MeshCollider> collider = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+		Count<MeshCollider> collider = AssetManager::GetAsset<MeshCollider>(component.ColliderKey.GetAssetID());
 
 		return *meshHandle == collider->ColliderMesh;
 	}
@@ -1709,12 +1763,12 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 		const auto& component = entity.GetComponent<MeshColliderComponent>();
 
-		if (!AssetManager::HasAsset(component.ColliderID))
+		if (!AssetManager::HasAsset(component.ColliderKey.GetAssetID()))
 		{
 			PF_ERROR("MeshColliderComponent.GetColliderMesh - Invalid collider asset!");
 			return false;
 		}
-		Count<MeshCollider> collider = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+		Count<MeshCollider> collider = AssetManager::GetAsset<MeshCollider>(component.ColliderKey.GetAssetID());
 
 		if (!AssetManager::HasAsset(collider->ColliderMesh))
 		{
@@ -1722,7 +1776,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			*outHandle = AssetID(0);
 			return false;
 		}
-		*outHandle = component.ColliderID;
+		*outHandle = component.ColliderKey.GetAssetID();
 		return true;
 	}
 
@@ -1761,13 +1815,13 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 
 		const auto& component = entity.GetComponent<MeshColliderComponent>();
-		if (!AssetManager::HasAsset(component.ColliderID))
+		if (!AssetManager::HasAsset(component.ColliderKey.GetAssetID()))
 		{
 			PF_ERROR("MeshColliderComponent.SetTrigger - Invalid collider asset!");
 			return;
 		}
 
-		Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+		Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderKey.GetAssetID());
 
 		if (!AssetManager::HasAsset(colliderAsset->ColliderMesh))
 		{
@@ -1797,18 +1851,18 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		const auto& component = entity.GetComponent<MeshColliderComponent>();
 
-		if (!AssetManager::HasAsset(component.ColliderID))
+		if (!AssetManager::HasAsset(component.ColliderKey.GetAssetID()))
 		{
 			PF_ERROR("MeshColliderComponent.GetPhysicsMaterialID - Invalid collider asset!");
 			*outHandle = AssetID(0);
 			return false;
 		}
 
-		Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+		Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderKey.GetAssetID());
 
 		*outHandle = colliderAsset->PhysicsMaterial;
-		if (component.HasPhysicsMaterial())
-			*outHandle = component.GetPhysicsMaterial()->GetID();
+		if (component.PhysicsMaterialKey.IsValid())
+			*outHandle = component.PhysicsMaterialKey.GetAssetID(); 
 
 		return true;
 	}
@@ -1909,15 +1963,16 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		MonoArray* RequiredComponentTypes;
 		MonoArray* ExcludeEntities;
 	};
-	bool Physics_Raycast(ScriptRaycastData* inRaycastData, ScriptRaycastHit* outHit)
+	
+	bool Physics_RayCastBase(ScriptRaycastData* inRaycastData, ScriptRaycastHit* outHit, const std::string& layerName = std::string())
 	{
 		Count<World> scene = ScriptEngine::GetWorldContext();
-		PF_CORE_ASSERT(scene, "Physics.Raycast No active World!");
+		PF_CORE_ASSERT(scene, "Physics.RayCast No active World!");
 
 		auto physicsWorld = scene->GetPhysicsWorld();
 		if (!physicsWorld)
 		{
-			PF_CORE_ASSERT("Physics.Raycast can only be called in Play mode!");
+			PF_CORE_ASSERT("Physics.RayCast can only be called in Play mode!");
 			return false;
 		}
 
@@ -1928,7 +1983,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (inRaycastData->ExcludeEntities)
 		{
-			PF_CORE_ASSERT(false,"Does not support exlude entities yet");
+			PF_CORE_ASSERT(false,"Does not support exclude entities yet");
 			/*
 			size_t excludeEntitiesCount = mono_array_length(inRaycastData->ExcludeEntities);
 			std::unordered_set<UUID> entityIDs(excludeEntitiesCount);
@@ -1942,7 +1997,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 		else
 		{
-			success = physicsWorld->Raycast(inRaycastData->Origin, inRaycastData->Direction, inRaycastData->MaxDistance, &tempHit);
+			success = physicsWorld->RayCast(inRaycastData->Origin, inRaycastData->Direction, inRaycastData->MaxDistance, &tempHit, layerName);
 			
 		}
 
@@ -1956,7 +2011,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 				void* reflectionType = mono_array_get(inRaycastData->RequiredComponentTypes, void*, i);
 				if (reflectionType == nullptr)
 				{
-					PF_ERROR("Physics.Raycast - Why did you feel the need to pass a \"null\" as a required component?");
+					PF_ERROR("Physics.RayCast - Why did you feel the need to pass a \"null\" as a required component?");
 					success = false;
 					break;
 				}
@@ -2046,7 +2101,20 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		return success;
 	}
-
+	bool Physics_RayCast(ScriptRaycastData* inRaycastData, ScriptRaycastHit* outHit)
+	{
+		return Physics_RayCastBase(inRaycastData, outHit);
+	}
+	bool Physics_RayCastLayer(ScriptRaycastData* inRaycastData, ScriptRaycastHit* outHit, MonoString* layerName)
+	{
+		std::string layerNameStr = ScriptUtils::MonoStringToUTF8(layerName);
+		if (!PhysicsLayerManager::IsLayerValid(layerNameStr))
+		{
+			PF_EC_ERROR("Physics.RaycastLayer layer {} not valid", layerNameStr);
+			return false;
+		}
+		return Physics_RayCastBase(inRaycastData, outHit, layerNameStr);
+	}
 	bool Physics_SphereCast(ScriptSphereCastData* inSphereCastData, ScriptRaycastHit* outHit)
 	{
 		Count<World> scene = ScriptEngine::GetWorldContext();
@@ -2927,8 +2995,39 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 
 #pragma endregion
+#pragma region ElevatedInputPlayer
 
-	#pragma region PlayerInputComponent
+	static void ElevatedInputSystem_SetInputPlayer(UUID entityID, Players player)
+	{
+		SCRIPT_FUNC_ENTITY_CHECK();
+		if(entity.GetCurrentWorld()->GetGameMode()->GetGameMode() == GameModeTypes::LocalGameMode)
+			entity.GetCurrentWorld()->GetGameMode().As<LocalGameMode>()->CreatePlayer(entityID, player);
+		else
+			PF_EC_ERROR("{} - entity {} This Game mode does not support setInputPlayer ",SCRIPT_FUNC_GET_NAME, entity.GetName());
+
+	}
+
+	static bool ElevatedInputSystem_IsInputPlayer(UUID entityID)
+	{
+		SCRIPT_FUNC_ENTITY_CHECK();
+		if(entity.HasComponent<InternalPlayerInputComponent>() && entity.GetComponent<InternalPlayerInputComponent>().GetPlayer() != Players::None)
+			return true;
+
+		return false;
+	}
+
+	static Players ElevatedInputSystem_EntityGetInputPlayer(UUID entityID)
+	{
+		SCRIPT_FUNC_ENTITY_CHECK();
+		if (entity.HasComponent<InternalPlayerInputComponent>() )
+			return entity.GetComponent<InternalPlayerInputComponent>().GetPlayer();
+
+		return Players::None;
+	}
+
+
+#pragma endregion 
+#pragma region PlayerInputComponent
 
 	struct PlayerInputBindingContextInstance
 	{
@@ -3123,7 +3222,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 
 		PlayerInputComponent& playerInput = entity.GetComponent <PlayerInputComponent>();
-		InputManagerMeathods::SetPlayerInput((uint32_t)playerInput.InputPlayer, (PlayerInputState)inputState);
+		//	InputManagerMeathods::SetPlayerInput((uint32_t)playerInput.InputPlayer, (PlayerInputState)inputState);
 	}
 
 	#pragma endregion 
@@ -3408,6 +3507,95 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 	#endif
 	}
+
+	struct ScriptFunUIPanelInstance
+	{
+		AssetKey<AssetType::UIPanel> Panel;
+		bool Visible = true;
+	};
+	struct ScriptFuncUILayer
+	{
+		bool Visible;
+		MonoString* Name;
+		MonoArray* Panels;
+
+	};
+	static void PlayerHUDComponent_UITableGetLayer(uint64_t entityID, uint32_t layerIndex, ScriptFuncUILayer* uiLayer)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
+
+		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
+
+		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
+		{
+			PF_ERROR("PlayerHUDComponent.UITableGetLayer entity tag: {} ID: {}  does not contain layer index: {}", entity.GetName(), layerIndex);
+			return;
+		}
+
+		UILayer& layer = playerHudComponent.HudTable->GetLayer(layerIndex);
+
+		uiLayer->Name = ScriptUtils::UTF8StringToMono(layer.Name);
+		uiLayer->Visible = layer.Visible;
+
+		for (auto& panel : layer.GetUIPanels())
+		{
+			ScriptFunUIPanelInstance instance;
+			if (panel->GetUIPanel() != nullptr)
+				instance.Panel = panel->GetUIPanel()->GetID();
+
+			instance.Visible = panel->Visible;
+		}
+
+	}
+
+	struct UITextData 
+	{
+		TextParams TextParams;
+		AssetKey<AssetType::Font> Font;
+	};
+
+	static void PlayerHUDComponent_UIPanelInstanceSetText(uint64_t entityID, uint32_t layerIndex, AssetKey<AssetType::UIPanel> panel, MonoString* textName, MonoString* newTextValue)
+	{
+
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
+		SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_VOID(panel);
+
+		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
+
+		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
+		{
+			PF_ERROR("{} entity tag: {} ID: {}  does not contain layer index: {}", SCRIPT_FUNC_GET_NAME, entity.GetName(), layerIndex);
+			return;
+		}
+		UILayer& layer = playerHudComponent.HudTable->GetLayer(layerIndex);
+
+		if (layer.GetUIPanelByPanel(panel.GetAsset<UIPanel>()) == nullptr)
+		{
+			PF_ERROR("{} entity tag: {} ID: {}  does not contain panel type: {}", SCRIPT_FUNC_GET_NAME,entity.GetName(), AssetManager::GetAssetInfo(panel).GetName());
+			return;
+		}
+
+		auto uiPanelInstance = layer.GetUIPanelByPanel(panel.GetAsset<UIPanel>());
+
+		auto instanceMenu = uiPanelInstance->GetInstanceMenu();
+		if (!instanceMenu->HasUIElement(ScriptUtils::MonoStringToUTF8(textName)))
+		{
+			PF_ERROR("{} entity tag: {} panel type: {} does not contain UI element with name: {}", SCRIPT_FUNC_GET_NAME,
+				entity.GetName(), AssetManager::GetAssetInfo(panel).GetName(), ScriptUtils::MonoStringToUTF8(textName));
+			return;
+		}
+
+		if (instanceMenu->GetUIElement(ScriptUtils::MonoStringToUTF8(textName)).GetElementType() != UIElementType::Text)
+		{
+			PF_ERROR("{} entity tag: {} panel type: {} UI element: {} is not of type UIElementType::Text", SCRIPT_FUNC_GET_NAME,
+				entity.GetName(), AssetManager::GetAssetInfo(panel).GetName(), ScriptUtils::MonoStringToUTF8(textName));
+			return;
+		}
+
+		instanceMenu->GetUIElement(ScriptUtils::MonoStringToUTF8(textName)).GetComponent<UITextComponent>().Text = ScriptUtils::MonoStringToUTF8(newTextValue);
+	}
+
+
 	struct UIBaseData {
 		glm::vec2 Position;
 		glm::vec2 Rotation;
@@ -3854,15 +4042,21 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
 		SCRIPT_FUNC_ENTITY_CHECK_ASSET_VOID(assetID, AssetType::UIPanel, PlayerHUDComponent);
 
-		entity.GetComponent<PlayerHUDComponent>().HudTable->Panel = AssetManager::GetAsset<UIPanel>(assetID);
+		//entity.GetComponent<PlayerHUDComponent>().HudTable->Panel = AssetManager::GetAsset<UIPanel>(assetID);
 	}
 
-	static void PlayerHUDComponent_SetText(uint64_t entityID, MonoString* textData)
+	static void PlayerHUDComponent_SetText(uint64_t entityID, MonoString* textName,MonoString* textData)
 	{
+	#if 0
 		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
 		std::string text = ScriptUtils::MonoStringToUTF8(textData);
-
-		entity.GetComponent<PlayerHUDComponent>().HudTable->Panel->Menu->GetUIElement(11749623098364570259).GetComponent<UITextComponent>().Text = text;
+		std::string textNameCStr = ScriptUtils::MonoStringToUTF8(textName);
+		auto panel =entity.GetComponent<PlayerHUDComponent>().HudTable->Panel;
+		if (panel->Menu->HasUIElement(textNameCStr))
+		{
+			panel->Menu->GetUIElement(textNameCStr).GetComponent<UITextComponent>().Text = text;
+		}
+	#endif
 	}
 
 #pragma region PersistentDataSorage
@@ -3895,6 +4089,35 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 	}
 
 	
+#pragma endregion
+
+#pragma region DebugRenderer
+
+	void DebugRenderer_DrawLine(glm::vec3* p0, glm::vec3* p1, glm::vec4* color)
+	{
+		Count<World> world = ScriptEngine::GetWorldContext();
+		Count<DebugRenderer> debugRenderer = world->GetDebugRenderer();
+
+		debugRenderer->DrawLine(*p0, *p1, *color);
+	}
+
+	void DebugRenderer_DrawRayLength(glm::vec3* origin, glm::vec3* direction, float* length, glm::vec4* color)
+	{
+		Count<World> world = ScriptEngine::GetWorldContext();
+		Count<DebugRenderer> debugRenderer = world->GetDebugRenderer();
+
+		debugRenderer->DrawRay(*origin, *direction, *length ,*color);
+	}
+
+	void DebugRenderer_DrawRay(glm::vec3* origin, glm::vec3* direction, glm::vec4* color)
+	{
+		Count<World> world = ScriptEngine::GetWorldContext();
+		Count<DebugRenderer> debugRenderer = world->GetDebugRenderer();
+
+		debugRenderer->DrawRay(*origin, *direction, *color);
+	}
+
+
 #pragma endregion
 
 #pragma region ScriptFunc
@@ -3971,6 +4194,13 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(Input_IsMouseButtonReleased);
 			PF_ADD_INTERNAL_CALL(Input_IsMouseButtonDoubleClicked);
 		}
+
+		// Elevated Input
+		{
+			PF_ADD_INTERNAL_CALL(ElevatedInputSystem_EntityGetInputPlayer);
+			PF_ADD_INTERNAL_CALL(ElevatedInputSystem_IsInputPlayer);
+			PF_ADD_INTERNAL_CALL(ElevatedInputSystem_SetInputPlayer);
+		}
 		//World
 		{
 			PF_ADD_INTERNAL_CALL(World_Instanciate);
@@ -4018,7 +4248,8 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 		//physics
 		{
-			PF_ADD_INTERNAL_CALL(Physics_Raycast);
+			PF_ADD_INTERNAL_CALL(Physics_RayCast);
+			PF_ADD_INTERNAL_CALL(Physics_RayCastLayer);
 			PF_ADD_INTERNAL_CALL(Physics_SphereCast);
 			//PF_ADD_INTERNAL_CALL(Physics_Raycast2D);
 			//PF_ADD_INTERNAL_CALL(Physics_OverlapBox);
@@ -4058,9 +4289,11 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 			PF_ADD_INTERNAL_CALL(RigidBodyComponent_GetLocation);
 			PF_ADD_INTERNAL_CALL(RigidBodyComponent_SetLocation);
+			PF_ADD_INTERNAL_CALL(RigidBodyComponent_Translate);
 
 			PF_ADD_INTERNAL_CALL(RigidBodyComponent_GetRotation);
 			PF_ADD_INTERNAL_CALL(RigidBodyComponent_SetRotation);
+			PF_ADD_INTERNAL_CALL(RigidBodyComponent_Rotate);
 
 			PF_ADD_INTERNAL_CALL(RigidBodyComponent_GetMaxLinearVelocity);
 			PF_ADD_INTERNAL_CALL(RigidBodyComponent_SetMaxLinearVelocity);
@@ -4235,8 +4468,16 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		//persistent data storage
 		{
-			PF_ADD_INTERNAL_CALL(PersistentDataStorage_LoadData);;
-			PF_ADD_INTERNAL_CALL(PersistentDataStorage_SaveData)
+			PF_ADD_INTERNAL_CALL(PersistentDataStorage_LoadData);
+			PF_ADD_INTERNAL_CALL(PersistentDataStorage_SaveData);
+		}
+
+		//Debug Renderer
+		{
+			PF_ADD_INTERNAL_CALL(DebugRenderer_DrawLine);
+			PF_ADD_INTERNAL_CALL(DebugRenderer_DrawRayLength);
+			PF_ADD_INTERNAL_CALL(DebugRenderer_DrawRay);
+
 		}
 	}
 }

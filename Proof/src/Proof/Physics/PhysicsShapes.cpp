@@ -11,6 +11,7 @@
 #include "PhysicsWorld.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/Component.h"
+#include "PhysicsMaterial.h"
 namespace Proof {
 	ColliderShape::ColliderShape(ColliderType type, Entity entity, bool isShared)
 		: m_Type(type), m_IsShared(isShared) 
@@ -45,8 +46,8 @@ namespace Proof {
 		World* world = entity.GetCurrentWorld();
 		TransformComponent worldTransform = world->GetWorldSpaceTransformComponent(entity);
 		Count<PhysicsMaterial> material;
-		if (component.HasPhysicsMaterial())
-			material = component.GetPhysicsMaterial();
+		if (component.PhysicsMaterialKey.IsValid())
+			material = component.PhysicsMaterialKey.GetAsset<PhysicsMaterial>();
 
 		if (!material)
 			material = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::PhysicsMaterial).As<PhysicsMaterial>();
@@ -130,8 +131,8 @@ namespace Proof {
 		World* world = entity.GetCurrentWorld();
 		TransformComponent worldTransform = world->GetWorldSpaceTransformComponent(entity);
 		Count<PhysicsMaterial> material;
-		if (component.HasPhysicsMaterial())
-			material = component.GetPhysicsMaterial();
+		if (component.PhysicsMaterialKey.IsValid())
+			material = component.PhysicsMaterialKey.GetAsset<PhysicsMaterial>();
 
 		if (!material)
 			material = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::PhysicsMaterial).As<PhysicsMaterial>();
@@ -211,8 +212,8 @@ namespace Proof {
 		World* world = entity.GetCurrentWorld();
 		TransformComponent worldTransform = world->GetWorldSpaceTransformComponent(entity);
 		Count<PhysicsMaterial> material;
-		if (component.HasPhysicsMaterial())
-			material = component.GetPhysicsMaterial();
+		if (component.PhysicsMaterialKey.IsValid())
+			material = component.PhysicsMaterialKey.GetAsset<PhysicsMaterial>();
 
 		if (!material)
 			material = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::PhysicsMaterial).As<PhysicsMaterial>();
@@ -356,7 +357,7 @@ namespace Proof {
 		: ColliderShape(ColliderType::ConvexMesh, entity, component.UseSharedShape)
 	{
 		PF_PROFILE_FUNC();
-		Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+		Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderKey.GetAssetID());
 		PF_CORE_ASSERT(colliderAsset);
 
 		SharedShapeManager::SharedShapeData* sharedData = SharedShapeManager::FindSuitableSharedShape(ColliderType::ConvexMesh, colliderAsset);
@@ -388,8 +389,8 @@ namespace Proof {
 			{
 				material = AssetManager::GetAsset<PhysicsMaterial>(colliderAsset->PhysicsMaterial);
 			}
-			if(component.HasPhysicsMaterial())
-			material = component.GetPhysicsMaterial();
+			if (component.PhysicsMaterialKey.IsValid())
+				material = component.PhysicsMaterialKey.GetAsset<PhysicsMaterial>();
 
 			if (!material)
 				material = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::PhysicsMaterial).As<PhysicsMaterial>();
@@ -465,7 +466,7 @@ namespace Proof {
 
 	AssetID ConvexMeshShape::GetColliderHandle() const
 	{
-		return m_Entity.GetComponent<MeshColliderComponent>().ColliderID;
+		return m_Entity.GetComponent<MeshColliderComponent>().ColliderKey.GetAssetID();
 	}
 
 	bool ConvexMeshShape::IsTrigger() const
@@ -479,7 +480,7 @@ namespace Proof {
 		if (component.UseSharedShape)
 			return;
 
-		Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+		Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderKey.GetAssetID());
 
 		for (auto shape : m_Shapes)
 		{
@@ -517,7 +518,7 @@ namespace Proof {
 		// Reference count was 1, meaning the shape has now been destroyed, so clear it from the map
 		if (referenceCount == 1)
 		{
-			Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+			Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderKey.GetAssetID());
 			SharedShapeManager::RemoveSharedShapeData(ColliderType::ConvexMesh, colliderAsset, true, component.SubMeshIndex);
 		}
 
@@ -535,7 +536,7 @@ namespace Proof {
 	{
 		PF_PROFILE_FUNC();
 
-		Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+		Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderKey.GetAssetID());
 		PF_CORE_ASSERT(colliderAsset);
 
 		SharedShapeManager::SharedShapeData* sharedData = SharedShapeManager::FindSuitableSharedShape(ColliderType::TriangleMesh, colliderAsset);
@@ -569,8 +570,8 @@ namespace Proof {
 			{
 				material = AssetManager::GetAsset<PhysicsMaterial>(colliderAsset->PhysicsMaterial);
 			}
-			if (component.HasPhysicsMaterial())
-				material = component.GetPhysicsMaterial();
+			if (component.PhysicsMaterialKey.IsValid())
+				material = component.PhysicsMaterialKey.GetAsset<PhysicsMaterial>();
 
 			if (!material)
 				material = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::PhysicsMaterial).As<PhysicsMaterial>();
@@ -645,7 +646,7 @@ namespace Proof {
 	}
 	AssetID TriangleMeshShape::GetColliderHandle() const
 	{
-		return m_Entity.GetComponent<MeshColliderComponent>().ColliderID;
+		return m_Entity.GetComponent<MeshColliderComponent>().ColliderKey.GetAssetID();
 	}
 	bool TriangleMeshShape::IsTrigger() const
 	{
@@ -681,7 +682,7 @@ namespace Proof {
 		// Reference count was 1, meaning the shape has now been destroyed, so clear it from the map
 		if (referenceCount == 1)
 		{
-			Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+			Count<MeshCollider> colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderKey.GetAssetID());
 			SharedShapeManager::RemoveSharedShapeData(ColliderType::TriangleMesh, colliderAsset);
 		}
 

@@ -258,6 +258,7 @@ namespace Proof {
 
         if (event == GLFW_CONNECTED)
         {
+            
             Controller controller;
             controller.ID = jid;
             controller.Name = glfwGetGamepadName(jid);

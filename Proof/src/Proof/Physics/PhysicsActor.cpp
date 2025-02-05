@@ -568,6 +568,16 @@ namespace Proof {
 			SyncTransform();
 	}
 
+	void PhysicsActor::Translate(const glm::vec3& translation, const bool autowake)
+	{
+		physx::PxTransform transform = m_RigidActor->getGlobalPose();
+		transform.p += PhysXUtils::ToPhysXVector(translation);
+		m_RigidActor->setGlobalPose(transform, autowake);
+
+		//if (!IsDynamic())
+		SyncTransform();
+	}
+
 	void PhysicsActor::SetTransform(const glm::mat4& transform)
 	{
 		physx::PxTransform physxTransform = PhysXUtils::ToPhysXTransform(transform);

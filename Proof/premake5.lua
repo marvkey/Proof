@@ -97,9 +97,10 @@ project "Proof"
 
     defines {
 		"IMGUI_IMPL_OPENGL_LOADER_GLAD2",
-		"GLFW_INCLUDE_NONE",
+		"GLFW_INCLUDE_NONE", 
 		"_CRT_SECURE_NO_WARNINGS",
 		"PX_PHYSX_STATIC_LIB",
+		"GLM_ENABLE_EXPERIMENTAL"
 		
 	}
 	filter "files:vendor/ImGui/**.cpp"

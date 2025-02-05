@@ -196,6 +196,8 @@ float PBR_CastShadow(inout uint cascadeIndex)
 
     DirectionalLight currentLight = u_DirectionalLightData.Lights[0];
 
+     if(currentLight.CastShadows == false)
+        return 1;
     vec3 lightDirection = currentLight.Direction;
     const int SHADOW_MAP_CASCADE_COUNT = 4;
     cascadeIndex = 0;
@@ -318,11 +320,13 @@ void PBR_FinalOutput(vec3 directLighting, float shadowScale, vec3 IblEffect, vec
 
     if(pbrData.UseOnlyAlbedo)
     {
-        pbrData.Albedo * shadowScale;
+       finalColor =  pbrData.Albedo * shadowScale;
+
     }
     else
     {
-        directLighting * shadowScale ;
+        finalColor = directLighting * shadowScale ;
+
     }
 
     finalColor += CalculatePointLights(m_PBRParams.F0, PBR_Input.WorldPosition);
@@ -343,8 +347,13 @@ void PBR_FinalOutput(vec3 directLighting, float shadowScale, vec3 IblEffect, vec
     out_DirectLighting = vec4(finalColor,1.0);
     finalEndingCOlor =vec4(finalColor + IblEffect ,alpha);
 
-  
-    out_ViewNormalsLuminance.a = clamp(shadowScale + dot(finalEndingCOlor.rgb, vec3(0.2125f, 0.7154f, 0.0721f)), 0.0f, 1.0f);
+    DirectionalLight currentLight = u_DirectionalLightData.Lights[0];
+    float shadowLimunance = shadowScale;
+    if(currentLight.CastShadows == false || currentLight.Intensity <= 0)
+    {
+        shadowLimunance = 0.0f;
+    }
+    out_ViewNormalsLuminance.a = clamp(shadowLimunance + dot(finalEndingCOlor.rgb, vec3(0.2125f, 0.7154f, 0.0721f)), 0.0f, 1.0f);
 
     if(u_RendererData.ShowCascades)
     {

@@ -11,6 +11,22 @@
 #include "Proof/Renderer/Renderer.h"
 #include "Editors/EditorResources.h"
 #include "Proof/Project/Project.h"
+#include "Proof/Renderer/UIRenderer/UIMenu.h"
+#include "Proof/Renderer/UIRenderer/UIPanel.h"
+#include "Proof/Utils/ContainerUtils.h"
+
+#pragma region AssetsInclude
+#include "Proof/Scene/Mesh.h"
+#include "Proof/Physics/PhysicsMaterial.h"
+#include "Proof/Physics/MeshCollider.h"
+#include "Proof/Scene/Material.h"
+#include "Proof/Renderer/Texture.h"
+#include "Proof/Scene/Prefab.h"
+#include "Proof/Input/ElevatedInputSystem/InputAction.h"
+#include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
+#include "Proof/Input/ElevatedInputSystem/InputCustomizers.h"
+
+#pragma endregion
 namespace Proof::UI
 {
     bool AttributeAssetReference(const std::string& label, AssetType assetType, AssetID& outHandle, const PropertyAssetReferenceSettings& settings)
@@ -605,4 +621,71 @@ namespace Proof::UI
 		HandleModified(modified);
 		return modified;
 	}
+
+	bool AttributeDrawUITable(Count<UITable> UITable)
+	{
+
+		if (UI::AttributeTreeNode("UITable"))
+		{
+			
+			auto& layers = UITable->GetLayers();
+			
+			for (uint32_t layerIndex = 0; layerIndex < layers.size(); layerIndex++)
+			{
+				auto& layer = UITable->GetLayer(layerIndex);
+				std::string layerLabel = fmt::format("[{} Index: {}]", layer.Name, layerIndex);
+				std::string layerId = fmt::format("{0}-{1}", layerLabel, layerIndex);
+
+				ImGui::PushID(layerId.c_str());
+
+				
+				if (UI::AttributeTreeNode(layerLabel, true, 3, 3))
+				{
+					if (ImGui::Button("+", ImVec2{ ImGui::GetContentRegionAvail().x,20 }))
+					{
+						layer.PushUI();
+					}
+
+					auto& panels = layer.GetUIPanels();
+
+					for (uint32_t panelIndex = 0; panelIndex < panels.size(); panelIndex++)
+					{
+						auto panelInstance = panels[panelIndex];
+
+						AssetID ID = 0;
+						std::string panelLabel = fmt::format("[{} Index: {}]", "Not Set", panelIndex);
+						if (panelInstance->GetUIPanel() != nullptr)
+						{
+							auto actualName =AssetManager::GetAssetInfo(panelInstance->GetUIPanel()).GetName();
+							panelLabel = fmt::format("[{} Index: {}]", actualName, panelIndex);
+
+							ID = panelInstance->GetUIPanel()->GetID();
+						}
+						std::string panelID = fmt::format("{0}-{1}", panelLabel, panelIndex);
+						ImGui::PushID(panelID.c_str());
+
+						if (UI::AttributeAssetReference(panelLabel, AssetType::UIPanel, ID))
+						{
+							panelInstance->SetPanelInstance(AssetManager::GetAsset<UIPanel>(ID));
+						}
+
+						float prevItemHeight = ImGui::GetItemRectSize().y;
+
+						ImGui::SameLine();
+						if (ImGui::Button(UI::GenerateLabelID("X"), ImVec2{ prevItemHeight, prevItemHeight }))
+						{
+							layer.PopIndex(layerIndex);
+						}
+						ImGui::PopID();
+					}
+
+					UI::EndTreeNode();
+				}
+
+				ImGui::PopID();
+			}
+			UI::EndTreeNode();
+		}
+	}
+	
 }

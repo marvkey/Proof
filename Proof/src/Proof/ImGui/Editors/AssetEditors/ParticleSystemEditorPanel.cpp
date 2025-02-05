@@ -11,6 +11,7 @@
 #include "Proof/ImGui/UI.h"
 #include "Proof/ImGui/UiUtilities.h"
 #include "Proof/Renderer/Image.h"
+#include "Proof/Renderer/Texture.h"
 namespace Proof
 {
 	ParticleSystemEditorPanel::ParticleSystemEditorPanel()

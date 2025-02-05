@@ -4,7 +4,7 @@
 #include "Proof/Input/Input.h"
 #include "Proof/Input/Controller.h"
 #include "Proof/Core/Application.h"
-
+#include "Proof/Input/ElevatedInputSystem/ElevatedInputDevices/ElevatedInputDeviceManager.h"
 namespace Proof
 {
 	namespace Utils
@@ -74,8 +74,9 @@ namespace Proof
 		}
 	}
 
-   
-    ElevatedInputDeviceController::ElevatedInputDeviceController(int controllerIndex)
+
+    ElevatedInputDeviceController::ElevatedInputDeviceController(Count<ElevatedInputDeviceManager> deviceManager,Players player,int controllerIndex)
+        :ElevatedInputDevice(deviceManager,player)
     {
         m_WindowController = &Application::Get()->GetWindow()->GetController(controllerIndex);
     }
@@ -102,9 +103,37 @@ namespace Proof
                     return false;
                 }
 
+                switch (controllerButtonClickedEvent.GetButton())
+                {
+                    case Proof::ControllerButton::ButtonDpadUp:
+                    {
+                        ElevatedInputKeyParams params{ ElevatedInputKeys::ControllerDPad,ElevatedKeyEventType::Clicked, inputDevice, glm::vec2(0,1),0};
+                        break;
+                    }
+                    case Proof::ControllerButton::ButtonDpadRight:
+                    {
+                        ElevatedInputKeyParams params{ ElevatedInputKeys::ControllerDPad,ElevatedKeyEventType::Clicked, inputDevice, glm::vec2(1,0),0 };
 
+                        break;
+                    }
+
+                    case Proof::ControllerButton::ButtonDpadDown:
+                    {
+                        ElevatedInputKeyParams params{ ElevatedInputKeys::ControllerDPad,ElevatedKeyEventType::Clicked, inputDevice, glm::vec2(0,-1),0 };
+                        break;
+
+                    }
+                    case Proof::ControllerButton::ButtonDpadLeft:
+                    {
+                        ElevatedInputKeyParams params{ ElevatedInputKeys::ControllerDPad,ElevatedKeyEventType::Clicked, inputDevice, glm::vec2(-1,0),0 };
+                        break;
+                    }
+                    default:
+                        break;
+                }
+                
                 ElevatedInputKeyParams params{ inputkey,ElevatedKeyEventType::Clicked, inputDevice, 1.0, 0 };
-                return InvokeStep(params);
+                return GetDeviceManager()->InvokeStep(params);
             });
 
         dispatcher.Dispatch<ControllerButtonReleasedEvent>([&](ControllerButtonReleasedEvent& controllerButtonReleasedEvent)
@@ -121,13 +150,13 @@ namespace Proof
                     return false;
                 }
                 ElevatedInputKeyParams params{ inputkey,ElevatedKeyEventType::Released, inputDevice, 0.0, 0 };
-                return InvokeStep(params);
+                return GetDeviceManager()->InvokeStep(params);
             });
 
         dispatcher.Dispatch<ControllerLeftJoystickAxisEvent>([&](ControllerLeftJoystickAxisEvent& leftJoyStickEvent)
             {
-                if (m_WindowController->ID != leftJoyStickEvent.GetIndex())
-                    return false;
+                //if (m_WindowController->ID != leftJoyStickEvent.GetIndex())
+                 //   return false;
 
                 bool invokeValue = false;
                 float x = leftJoyStickEvent.GetX();
@@ -139,7 +168,7 @@ namespace Proof
                 {
                     ElevatedInputKey inputkey = ElevatedInputKeys::ControllerLeftStickRight;// Right direction
                     ElevatedInputKeyParams params{ inputkey,ElevatedKeyEventType::Clicked, inputDevice,{x}, 1 };
-                    invokeValue |= InvokeStep(params);
+                    invokeValue |= GetDeviceManager()->InvokeStep(params);
                     validMovementX = true;
 
                 }
@@ -147,7 +176,7 @@ namespace Proof
                 {
                     ElevatedInputKey inputkey = ElevatedInputKeys::ControllerLeftStickLeft;// Left direction
                     ElevatedInputKeyParams params{ inputkey,ElevatedKeyEventType::Clicked, inputDevice,{x}, 1 };
-                    invokeValue |= InvokeStep(params);
+                    invokeValue |= GetDeviceManager()->InvokeStep(params);
                     validMovementX = true;
                 }
                 // since it is in dead zone area and its not the same as the previous frame value can say controller is released
@@ -161,7 +190,7 @@ namespace Proof
                         inputKey = ElevatedInputKeys::ControllerLeftStickLeft;
 
                     ElevatedInputKeyParams params{ inputKey,ElevatedKeyEventType::Released, inputDevice,{x}, 1 };
-                    invokeValue |= InvokeStep(params);
+                    invokeValue |= GetDeviceManager()->InvokeStep(params);
                 }
 
                 bool validMovementY = false;
@@ -170,14 +199,14 @@ namespace Proof
                 {
                     ElevatedInputKey inputKey = ElevatedInputKeys::ControllerLeftStickUp; // Up direction
                     ElevatedInputKeyParams params{ inputKey, ElevatedKeyEventType::Clicked, inputDevice, {y}, 1 };
-                    invokeValue |= InvokeStep(params);
+                    invokeValue |= GetDeviceManager()->InvokeStep(params);
                     validMovementY = true;
                 }
                 else if (y < -joyStickDeadZone)
                 {
                     ElevatedInputKey inputKey = ElevatedInputKeys::ControllerLeftStickDown; // Down direction
                     ElevatedInputKeyParams params{ inputKey, ElevatedKeyEventType::Clicked, inputDevice, {y}, 1 };
-                    invokeValue |= InvokeStep(params);
+                    invokeValue |= GetDeviceManager()->InvokeStep(params);
                     validMovementY = true;
 
                 }
@@ -192,15 +221,15 @@ namespace Proof
                         inputKey = ElevatedInputKeys::ControllerLeftStickDown;
 
                     ElevatedInputKeyParams params{ inputKey,ElevatedKeyEventType::Released, inputDevice,{y}, 1 };
-                    invokeValue |= InvokeStep(params);
+                    invokeValue |= GetDeviceManager()->InvokeStep(params);
                 }
 
                 {
                     ElevatedKeyEventType inputEvent = validMovementX == false && validMovementY == false ? ElevatedKeyEventType::Released : ElevatedKeyEventType::Clicked;
 
-                    ElevatedInputKey inputKey = ElevatedInputKeys::ControllerRightStick2D; // 2D axis for right stick
+                    ElevatedInputKey inputKey = ElevatedInputKeys::ControllerLeftStick2D; // 2D axis for right stick
                     ElevatedInputKeyParams params{ inputKey, inputEvent, inputDevice, {x,y}, 1 };
-                    invokeValue |= InvokeStep(params);
+                    invokeValue |= GetDeviceManager()->InvokeStep(params);
                 }
                 m_PreviousLeftJoystickAxis = { x,y };
 
@@ -225,14 +254,14 @@ namespace Proof
                 {
                     ElevatedInputKey inputKey = ElevatedInputKeys::ControllerRightStickRight; // Right direction
                     ElevatedInputKeyParams params{ inputKey, ElevatedKeyEventType::Clicked, inputDevice, {x}, 1 };
-                    invokeValue |= InvokeStep(params);
+                    invokeValue |= GetDeviceManager()->InvokeStep(params);
                     validMovementX = true;
                 }
                 else if (x < -joyStickDeadZone)
                 {
                     ElevatedInputKey inputKey = ElevatedInputKeys::ControllerRightStickLeft; // Left direction
                     ElevatedInputKeyParams params{ inputKey, ElevatedKeyEventType::Clicked, inputDevice, {x}, 1 };
-                    invokeValue |= InvokeStep(params);
+                    invokeValue |= GetDeviceManager()->InvokeStep(params);
                     validMovementX = true;
                 }
                 // since it is in dead zone area and its not the same as the previous frame value can say controller is released
@@ -246,7 +275,7 @@ namespace Proof
                         inputKey = ElevatedInputKeys::ControllerRightStickLeft;
 
                     ElevatedInputKeyParams params{ inputKey,ElevatedKeyEventType::Released, inputDevice,{x}, 1 };
-                    invokeValue |= InvokeStep(params);
+                    invokeValue |= GetDeviceManager()->InvokeStep(params);
                 }
                 bool validMovementY = false;
 
@@ -255,14 +284,14 @@ namespace Proof
                 {
                     ElevatedInputKey inputKey = ElevatedInputKeys::ControllerRightStickUp; // Up direction
                     ElevatedInputKeyParams params{ inputKey, ElevatedKeyEventType::Clicked, inputDevice, {y}, 1 };
-                    invokeValue |= InvokeStep(params);
+                    invokeValue |= GetDeviceManager()->InvokeStep(params);
                     validMovementY = true;
                 }
                 else if (y < -joyStickDeadZone)
                 {
                     ElevatedInputKey inputKey = ElevatedInputKeys::ControllerRightStickDown; // Down direction
                     ElevatedInputKeyParams params{ inputKey, ElevatedKeyEventType::Clicked, inputDevice, {y}, 1 };
-                    invokeValue |= InvokeStep(params);
+                    invokeValue |= GetDeviceManager()->InvokeStep(params);
                     validMovementY = true;
                 }
                 else if (m_PreviousRightJoystickAxis.y != y)
@@ -275,7 +304,7 @@ namespace Proof
                         inputKey = ElevatedInputKeys::ControllerRightStickDown;
 
                     ElevatedInputKeyParams params{ inputKey,ElevatedKeyEventType::Released, inputDevice,{y}, 1 };
-                    invokeValue |= InvokeStep(params);
+                    invokeValue |= GetDeviceManager()->InvokeStep(params);
                 }
 
                 {
@@ -283,7 +312,7 @@ namespace Proof
 
                     ElevatedInputKey inputKey = ElevatedInputKeys::ControllerRightStick2D; // 2D axis for right stick
                     ElevatedInputKeyParams params{ inputKey, inputEvent, inputDevice, {x,y}, 1 };
-                    invokeValue |= InvokeStep(params);
+                    invokeValue |= GetDeviceManager()->InvokeStep(params);
                 }
                    
                 m_PreviousRightJoystickAxis = { x, y };
@@ -303,26 +332,36 @@ namespace Proof
                 {
                     case ControllerAxis::LeftTrigger:
                     {
-                        ElevatedInputKey inputKey = ElevatedInputKeys::ControllerRightStickDown; // Down direction
+                        ElevatedInputKey inputKey = ElevatedInputKeys::ControllerLeftTrigger; // Down direction
                         ElevatedInputKeyParams params{ inputKey, keyEventType, inputDevice, {triggerAxisEvent.GetAxis()}, 1};
-                        invokeValue |= InvokeStep(params);
+                        invokeValue |= GetDeviceManager()->InvokeStep(params);
                         break;
                     }
                     case ControllerAxis::RightTrigger:
                     {
-                        ElevatedInputKey inputKey = ElevatedInputKeys::ControllerRightStickDown; // Down direction
+                        ElevatedInputKey inputKey = ElevatedInputKeys::ControllerRightTrigger; // Down direction
                         ElevatedInputKeyParams params{ inputKey, keyEventType, inputDevice, {triggerAxisEvent.GetAxis()}, 1 };
-                        invokeValue |= InvokeStep(params);
+                        invokeValue |= GetDeviceManager()->InvokeStep(params);
                         break;
                     }
                     default:
                         break;
 
                 }
+
+                return invokeValue;
             });
 	}
 
 	void ElevatedInputDeviceController::OnUpdate(float deltaTime)
 	{
 	}
+    std::string ElevatedInputDeviceController::GetDeviceName()
+    {
+        return m_WindowController->Name;
+    }
+    int ElevatedInputDeviceController::GetControllerIndex()
+    {
+        return m_WindowController->ID;
+    }
 }

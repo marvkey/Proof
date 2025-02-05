@@ -11,6 +11,8 @@
 #include "Proof/Physics/MeshCollider.h"
 #include "Proof/Physics/PhysicsEngine.h"
 #include "Proof/Project/Project.h"
+#include "Proof/Renderer/Texture.h"
+#include "Proof/Physics/PhysicsMaterial.h"
 //#include "ContentBrowserPanel.h"
 #include <vector>
 #include "Proof/Scene/WaterSystem/WaterSystem.h"
@@ -161,7 +163,7 @@ namespace Proof
 		{\
 			newEntity = m_ActiveWorld->CreateEntity(#Type);\
 			newEntity.AddComponent<MeshComponent>().SetMesh(AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Type)->GetID());\
-			newEntity.AddComponent<MeshColliderComponent>().ColliderID = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Type)->GetID();\
+			newEntity.AddComponent<MeshColliderComponent>().ColliderKey = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Type)->GetID();\
 			newEntity.AddComponent<RigidBodyComponent>();\
 		}
 	template<class T>
@@ -350,6 +352,11 @@ namespace Proof
 		if (ImGui::MenuItem("Camera")) {
 			newEntity = m_ActiveWorld->CreateEntity("Camera");
 			newEntity.AddComponent<CameraComponent>();
+		}
+
+		if (ImGui::MenuItem("PlayerStart")) {
+			newEntity = m_ActiveWorld->CreateEntity("PlayerStart");
+			newEntity.AddComponent<PlayerStartComponent>();
 		}
 		if (owner && newEntity.GetUUID() != 0) {
 			owner.AddChild(newEntity);
@@ -828,16 +835,17 @@ namespace Proof
 
 			UI::BeginPropertyGrid();
 
-			if (spriteComp.Texture != nullptr)
-				UI::Image(spriteComp.Texture, { 30,30 });
+			if(spriteComp.Texture.IsValid())
+				UI::Image(spriteComp.Texture.GetAsset<Texture2D>(), {30,30});
 			else
 				UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
+
 			if (ImGui::BeginPopupContextItem("RemoveTexture")) {
 				ImGui::EndPopup();
 			}
 			if (ImGui::BeginPopup("RemoveTexture")) {
 				if (ImGui::MenuItem("Remove Texture")) {
-					spriteComp.Texture = nullptr;
+					spriteComp.Texture.SetAssetID(0);
 				}
 				ImGui::EndPopup();
 			}
@@ -847,7 +855,7 @@ namespace Proof
 					uint64_t Data = *(const uint64_t*)payload->Data;
 					if (AssetManager::HasAsset(Data))
 					{
-						spriteComp.Texture = AssetManager::GetAsset<Texture2D>(Data);
+						spriteComp.Texture = AssetManager::GetAsset<Texture2D>(Data)->GetID();
 					}
 				}
 				ImGui::EndDragDropTarget();
@@ -1040,7 +1048,7 @@ namespace Proof
 			UI::DrawVec3Control("Size", cubeCollider.Size, glm::vec3{ 1 });
 			UI::DrawVec3Control("Center", cubeCollider.Center);
 
-			UI::AttributeAssetReference("Material", AssetType::PhysicsMaterial, cubeCollider.m_PhysicsMaterialPointerID);
+			UI::AttributeAssetKeyReference("Material",cubeCollider.PhysicsMaterialKey);
 
 			UI::EndPropertyGrid();
 
@@ -1052,7 +1060,7 @@ namespace Proof
 			UI::AttributeDrag("Radius", sphereCollider.Radius, 0.5);
 			UI::DrawVec3Control("Center", sphereCollider.Center);
 
-			UI::AttributeAssetReference("Material", AssetType::PhysicsMaterial, sphereCollider.m_PhysicsMaterialPointerID);
+			UI::AttributeAssetKeyReference("Material", sphereCollider.PhysicsMaterialKey);
 			UI::EndPropertyGrid();
 
 			});
@@ -1064,16 +1072,16 @@ namespace Proof
 			UI::AttributeDrag("Height", capsuleCollider.Height, 0.5);
 			UI::EnumCombo("Direction", capsuleCollider.Direction);
 			UI::DrawVec3Control("Center", capsuleCollider.Center);
-			UI::AttributeAssetReference("Material", AssetType::PhysicsMaterial, capsuleCollider.m_PhysicsMaterialPointerID);
+			UI::AttributeAssetKeyReference("Material", capsuleCollider.PhysicsMaterialKey);
 
 			UI::EndPropertyGrid();
 			});
 		DrawComponents<MeshColliderComponent>("Mesh Collider", entity, [&](MeshColliderComponent& meshCollider) {
 			UI::BeginPropertyGrid();
 
-			if (UI::AttributeAssetReference("MeshCollider", AssetType::MeshCollider, meshCollider.ColliderID))
+			if (UI::AttributeAssetKeyReference("MeshCollider", meshCollider.ColliderKey))
 			{
-				if (meshCollider.ColliderID == 0)
+				if (meshCollider.ColliderKey.GetAssetID() == 0)
 				{
 					PhysicsEngine::GetOrCreateColliderAsset(entity, meshCollider);
 				}
@@ -1086,10 +1094,10 @@ namespace Proof
 			Count<MeshCollider> colliderAsset = nullptr;
 			bool isPhysicalAsset = false;
 
-			if (AssetManager::HasAsset(meshCollider.ColliderID))
+			if (AssetManager::HasAsset(meshCollider.ColliderKey.GetAssetID()))
 			{
-				isPhysicalAsset = !AssetManager::GetAssetInfo(meshCollider.ColliderID).RuntimeAsset;
-				colliderAsset = AssetManager::GetAsset<MeshCollider>(meshCollider.ColliderID);
+				isPhysicalAsset = !AssetManager::GetAssetInfo(meshCollider.ColliderKey.GetAssetID()).RuntimeAsset;
+				colliderAsset = AssetManager::GetAsset<MeshCollider>(meshCollider.ColliderKey.GetAssetID());
 			}
 
 			UI::PushItemDisabled(colliderAsset && isPhysicalAsset);
@@ -1097,7 +1105,7 @@ namespace Proof
 			UI::SetTooltip("Allows this collider to share its collider data. (Default: False)");
 			UI::PopItemDisabled();
 
-			UI::AttributeAssetReference("Material", AssetType::PhysicsMaterial, meshCollider.m_PhysicsMaterialPointerID);
+			UI::AttributeAssetKeyReference("Material", meshCollider.PhysicsMaterialKey);
 			UI::SetTooltip("Overrides the material provided by the collider asset if an explicit asset has been set");
 
 
@@ -1171,8 +1179,7 @@ namespace Proof
 					"only valid if cos(SlopeLimitDeg) is greater than 0");
 				UI::PopItemDisabled();
 			}
-			UI::AttributeAssetReference("PhysicsMaterial", AssetType::PhysicsMaterial, controller.PhysicsMaterialID);
-
+			UI::AttributeAssetKeyReference("Material", controller.PhysicsMaterialKey);
 			ImGui::Separator();
 
 			UI::EnumCombo("ColliderType", controller.ColliderType);
@@ -1793,7 +1800,7 @@ namespace Proof
 		DrawComponents<PlayerInputComponent>("Player Input", entity, [](PlayerInputComponent& player) {
 			UI::BeginPropertyGrid();
 
-			UI::EnumCombo("Player", player.InputPlayer);
+			//UI::EnumCombo("Player", player.InputPlayer);
 			//UI::AttributeAssetReference("Player",AssetType::Prefab, player.Player);
 			UI::EndPropertyGrid();
 
@@ -1830,7 +1837,9 @@ namespace Proof
 			}
 			});
 	#if 1
-		DrawComponents<PlayerHUDComponent>("Player HUD", entity, [](PlayerHUDComponent& playerHud){
+		DrawComponents<PlayerHUDComponent>("Player HUD", entity, [](PlayerHUDComponent& playerHud)
+			{
+				UI::AttributeDrawUITable(playerHud.HudTable);
 			/*
 			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });

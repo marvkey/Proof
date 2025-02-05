@@ -4,7 +4,61 @@
 #include "VulkanUtils/VulkanBufferBase.h"
 namespace Proof
 {
-	
+	class RenderBuffer
+	{
+	public:
+		RenderBuffer(uint64_t bufferSize, uint32_t numBuffers = 1)
+			: m_BufferSize(bufferSize), m_NumBuffers(numBuffers)
+		{
+			// Allocate the specified number of buffers
+			m_Buffers.resize(m_NumBuffers);
+			for (auto& buffer : m_Buffers)
+			{
+				buffer.Allocate(m_BufferSize);
+			}
+		}
+
+		// Set data into the active buffer
+		void SetData(const void* data, uint32_t size, uint32_t offset = 0)
+		{
+			std::lock_guard<std::mutex> lock(m_BufferMutex);
+			if (size + offset > m_BufferSize)
+			{
+				throw std::runtime_error("Data size exceeds buffer capacity!");
+			}
+
+			// Write data into the current buffer
+			m_Buffers[m_CurrentBufferIndex].SetData(data, size, offset);
+		}
+
+		// Get the active buffer for rendering
+		const Buffer& GetActiveBuffer() const
+		{
+			std::lock_guard<std::mutex> lock(m_BufferMutex);
+			return m_Buffers[m_CurrentBufferIndex];
+		}
+
+		// Swap to the next buffer (used after submission)
+		void SwapBuffer()
+		{
+			std::lock_guard<std::mutex> lock(m_BufferMutex);
+			m_CurrentBufferIndex = (m_CurrentBufferIndex + 1) % m_NumBuffers;
+		}
+
+		// Get the size of the buffer
+		uint64_t GetBufferSize() const
+		{
+			return m_BufferSize;
+		}
+	private:
+
+	private:
+		uint64_t m_BufferSize;                      // Size of each buffer
+		uint32_t m_NumBuffers;                      // Number of buffers (e.g., double buffering)
+		std::vector<Buffer> m_Buffers;              // Storage for multiple buffers
+		mutable std::mutex m_BufferMutex;           // Mutex for thread-safe access
+		std::atomic<uint32_t> m_CurrentBufferIndex; // Active buffer index
+	};
 	class VulkanVertexBuffer : public VertexBuffer {
 	public:
 		virtual ~VulkanVertexBuffer();

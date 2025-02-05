@@ -366,12 +366,85 @@ namespace Proof {
 		}
 
 	}
-	bool PhysicsWorld::Raycast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit)
+	class CustomQueryFilterCallback : public physx::PxQueryFilterCallback
+	{
+	public:
+		// Example: Ignore specific objects or layers dynamically
+		CustomQueryFilterCallback(uint32_t allowedLayer)
+			: m_Allowedlayer(allowedLayer)
+		{
+		}
+
+		// Called before PhysX processes a potential hit
+		virtual physx::PxQueryHitType::Enum preFilter(
+			const physx::PxFilterData& filterData,
+			const physx::PxShape* shape,
+			const physx::PxRigidActor* actor,
+			physx::PxHitFlags& queryFlags) override
+		{
+			Count<PhysicsActorBase> physicsActor = (PhysicsActorBase*)actor->userData;
+
+			switch (physicsActor->GetType())
+			{
+				case PhysicsControllerType::Actor:
+				{
+					// Access the layer ID of the shape's filter data
+					uint32_t layerID = shape->getQueryFilterData().word3;
+
+					// Example: Ignore shapes with a specific layer ID
+					if (m_Allowedlayer == physicsActor.As<PhysicsActor>()->GetEntity().GetComponent<RigidBodyComponent>().PhysicsLayerID)
+					{
+						return physx::PxQueryHitType::eBLOCK; // Ignore this shape
+					}
+				}
+					break;
+				default:
+					PF_CORE_ASSERT(false);
+					break;
+			}
+			
+
+			return physx::PxQueryHitType::eNONE; // Default behavior
+		}
+
+		virtual physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit)
+		{
+			return physx::PxQueryHitType::eBLOCK; 
+		};
+
+
+	private:
+		uint32_t m_Allowedlayer; // Example: Layer to ignore
+	};
+
+	bool PhysicsWorld::RayCast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit, const std::string & layerName)
 	{
 		PF_PROFILE_FUNC();
 
 		physx::PxRaycastBuffer hitInfo;
-		bool result = m_PhysXScene->raycast(PhysXUtils::ToPhysXVector(origin), PhysXUtils::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo);
+		bool result;
+		// means consider all layers
+		if (layerName.empty())
+		{
+			result = m_PhysXScene->raycast(PhysXUtils::ToPhysXVector(origin), PhysXUtils::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo);
+
+		}
+		else
+		{
+			if (!PhysicsLayerManager::IsLayerValid(layerName))
+			{
+				return false;
+			}
+
+
+			const PhysicsLayer& layer = PhysicsLayerManager::GetLayer(layerName);
+			CustomQueryFilterCallback customFilter(layer.LayerID);
+
+			physx::PxQueryFilterData filter = physx::PxQueryFilterData();
+			filter.flags |= physx::PxQueryFlag::ePREFILTER;
+			result = m_PhysXScene->raycast(PhysXUtils::ToPhysXVector(origin), PhysXUtils::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo, physx::PxHitFlag::eDEFAULT, filter,&customFilter);
+		}
+
 
 		if (result)
 		{

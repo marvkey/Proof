@@ -2,7 +2,7 @@ Project:
   Name: PacMan
   AssetDirectory: Assets
   AssetManager: Assets/AssetManager.ProofAssetManager
-  StartWorld: 1727338198408425826
+  StartWorld: 14873561790240695648
   ScriptModuleDirectory: Binaries/ScriptApp
   OnCloseStartWorldEditLastOpen: true
   StartWorldEdit: 14873561790240695648
@@ -21,3 +21,8 @@ Project:
       - Name: Default
         CollidesWith:
           - Name: Default
+          - Name: GridPos
+      - Name: GridPos
+        CollidesWith:
+          - Name: Default
+          - Name: GridPos

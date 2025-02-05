@@ -2,6 +2,9 @@ Assets:
   - Asset: 3775403716397730273
     Type: MeshSourceFile
     Path: Models\Ghost\BlueGhost.fbx
+  - Asset: 5641647121618112534
+    Type: InputAction
+    Path: Inputs\MovementInputs\IA_MovePlayer.InputAction.ProofAsset
   - Asset: 10143467326758689428
     Type: MeshSourceFile
     Path: Models\Ghost\RedGhost.fbx
@@ -14,12 +17,12 @@ Assets:
   - Asset: 13280932937859939048
     Type: MeshSourceFile
     Path: Models\Ghost\PinkGhost.fbx
-  - Asset: 3353567056187041584
-    Type: MeshSourceFile
-    Path: Models\Ghost\PacMan.fbx
   - Asset: 17434142070289377666
     Type: Material
     Path: Materials\GhostMaterial\m_GhostBluebody.Material.ProofAsset
+  - Asset: 3353567056187041584
+    Type: MeshSourceFile
+    Path: Models\Ghost\PacMan.fbx
   - Asset: 1183667040280831393
     Type: Material
     Path: Materials\GhostMaterial\m_YellowGhost.Material.ProofAsset
@@ -29,12 +32,15 @@ Assets:
   - Asset: 3299587904307048578
     Type: MeshSourceFile
     Path: Models\Ghost\YellowGhost.fbx
-  - Asset: 6949490793449633867
-    Type: Mesh
-    Path: Meshes\Ghosts\BlueGhost.Mesh.ProofAsset
+  - Asset: 8564061394677088875
+    Type: ScriptFile
+    Path: Scripts\PlayerMovement.cs
   - Asset: 8390136837565217791
     Type: DynamicMesh
     Path: Meshes\CoinMap.DynamicMesh.ProofAsset
+  - Asset: 6949490793449633867
+    Type: Mesh
+    Path: Meshes\Ghosts\BlueGhost.Mesh.ProofAsset
   - Asset: 5819369969701459712
     Type: MeshSourceFile
     Path: Models\Map\PacManMap\source\pacman\pacman.fbx
@@ -50,15 +56,18 @@ Assets:
   - Asset: 211824176385437945
     Type: Mesh
     Path: Meshes\Ghosts\YellowGhost.Mesh.ProofAsset
-  - Asset: 6935370745037491401
-    Type: Material
-    Path: Materials\GhostMaterial\m_RedGhost.Material.ProofAsset
   - Asset: 16033059277705394909
     Type: Texture
     Path: Models\Map\PacManMap\textures\nes_bldg_pacmanmaze_food.png
+  - Asset: 6935370745037491401
+    Type: Material
+    Path: Materials\GhostMaterial\m_RedGhost.Material.ProofAsset
   - Asset: 9327211322041075893
     Type: Material
     Path: Materials\GhostMaterial\m_PinkGhost.Material.ProofAsset
+  - Asset: 14579131940967015079
+    Type: InputBindingContext
+    Path: Inputs\MovementInputs\IB_Movement.InputBindingContext.ProofAsset
   - Asset: 9874272850086966312
     Type: Texture
     Path: Models\Map\PacManMap\textures\nes_bldg_pacmanmaze_top.png
@@ -97,7 +106,16 @@ Assets:
     Path: Materials\Powers\Coin.Material.ProofAsset
   - Asset: 1610708375569449371
     Type: Prefab
-    Path: p_CoinMap.Prefab.ProofAsset
-  - Asset: 17050433406608827291
+    Path: Prefabs\p_CoinMap.Prefab.ProofAsset
+  - Asset: 9472213816213012035
+    Type: MeshCollider
+    Path: Colliders\MapCollider.MeshCollider.ProofAsset
+  - Asset: 13847400243855801213
+    Type: ScriptFile
+    Path: Scripts\PlayerInput.cs
+  - Asset: 15379209317904638741
+    Type: Prefab
+    Path: Prefabs\p_MapParent.Prefab.ProofAsset
+  - Asset: 9692898115587236468
     Type: Texture
     Path: ..\..\..\..\..\Desktop\Documents\Proof\Proof-Editor\PacMan3D\Assets\Models\PacManMap\source\pacman\nes_bldg_pacmanmaze_maze.png

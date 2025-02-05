@@ -75,7 +75,7 @@ namespace Proof {
     #endif
 
  
-    void UIRenderer::DrawUI(Count<class UIPanel> panel, Count<class Renderer2D> renderer, const glm::mat4& projectionMatrix, const glm::mat4 viewProjection, uint32_t screenWidth, uint32_t screenHeight)
+    void UIRenderer::DrawUI(Count<class UIMenu> menu, Count<class Renderer2D> renderer, uint32_t screenWidth, uint32_t screenHeight)
     {
 
       //  glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)screenWidth, (float)screenHeight, 0.0f);
@@ -83,14 +83,13 @@ namespace Proof {
 
         renderer->BeginContext(orthoMatrix, glm::mat4(1.0f), Vector(0.0f), { true });
 
-        auto menu = panel->Menu;
 
 
         for (auto& [uiElementId,uiElement] : menu->m_UIElementsMap)
         {
             //if (element->Parent != nullptr)
                     //continue;
-            DrawElement(panel, renderer, projectionMatrix, viewProjection, screenWidth, screenHeight, uiElement);
+            DrawElement(menu, renderer, screenWidth, screenHeight, uiElement);
 
         }
           
@@ -150,7 +149,7 @@ namespace Proof {
         return UIRenderFinalData{ finalPosition, elementSize };
     }
 
-    void UIRenderer::DrawElement(Count<class UIPanel> panel, Count<class Renderer2D> renderer, const glm::mat4& projectionMatrix, const glm::mat4 viewProjection, uint32_t screenWidth, uint32_t screenHeight, class UIElement element)
+    void UIRenderer::DrawElement(Count<class UIMenu> menu, Count<class Renderer2D> renderer, uint32_t screenWidth, uint32_t screenHeight, class UIElement element)
     {
 
         glm::vec2 elementSize = element.GetComponent<UICoreComponent>().Transform.Size;     // Element size in pixels

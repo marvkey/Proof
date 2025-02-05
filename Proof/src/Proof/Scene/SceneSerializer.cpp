@@ -236,10 +236,7 @@ namespace Proof
 				SpriteComponent& sprite = entity.GetComponent<SpriteComponent>();
 				out << YAML::Key << "SpriteComponent";
 				out << YAML::BeginMap; // Sprite component
-				if(sprite.Texture != nullptr)
-					out << YAML::Key << "TextureAssetPointerID" << YAML::Value << sprite.Texture->GetID();
-				else 
-					out << YAML::Key << "TextureAssetPointerID" << YAML::Value << 0;
+				out << YAML::Key << "TextureAssetPointerID" << YAML::Value << sprite.Texture.GetAssetID();
 				out << YAML::Key << "Colour" << YAML::Value << sprite.Colour;
 				out << YAML::EndMap; // Sprite component
 			}
@@ -282,6 +279,10 @@ namespace Proof
 					out << YAML::BeginMap; // DirectionalLightComponent
 					out << YAML::Key << "Color" << directonalLight.Color;
 					out << YAML::Key << "Intensity" << directonalLight.Intensity;
+					out << YAML::Key << "CastShadow" << directonalLight.CastShadow;
+					out << YAML::Key << "ShadowStrength" << directonalLight.ShadowStrength;
+					out << YAML::Key << "CastSoftShadow" << directonalLight.CastSoftShadow;
+					out << YAML::Key << "ShadowSoftness" << directonalLight.ShadowSoftness;
 					out << YAML::EndMap; // DirectionalLightComponent
 				}
 			}
@@ -413,7 +414,7 @@ namespace Proof
 				out << YAML::Key << "IsTrigger" << cubeCollider.IsTrigger;
 				out << YAML::Key << "Center" << cubeCollider.Center;
 				out << YAML::Key << "Size" << cubeCollider.Size;
-				out << YAML::Key << "PhysicsMaterialPointerID" << cubeCollider.m_PhysicsMaterialPointerID;
+				out << YAML::Key << "PhysicsMaterialPointerID" << cubeCollider.PhysicsMaterialKey.GetAssetID();
 				out << YAML::EndMap; // BoxColliderComponent
 			}
 		}
@@ -426,7 +427,7 @@ namespace Proof
 				out << YAML::Key << "IsTrigger" << sphereCollider.IsTrigger;
 				out << YAML::Key << "Center" << sphereCollider.Center;
 				out << YAML::Key << "Radius" << sphereCollider.Radius;
-				out << YAML::Key << "PhysicsMaterialPointerID" << sphereCollider.m_PhysicsMaterialPointerID;
+				out << YAML::Key << "PhysicsMaterialPointerID" << sphereCollider.PhysicsMaterialKey.GetAssetID();
 				out << YAML::EndMap; // SphereColliderComponent
 			}
 		}
@@ -441,7 +442,7 @@ namespace Proof
 				out << YAML::Key << "Radius" << CapsuleCollider.Radius;
 				out << YAML::Key << "Height" << CapsuleCollider.Height;
 				out << YAML::Key << "Direction" << EnumReflection::EnumString<CapsuleDirection>(CapsuleCollider.Direction);
-				out << YAML::Key << "PhysicsMaterialPointerID" << CapsuleCollider.m_PhysicsMaterialPointerID;
+				out << YAML::Key << "PhysicsMaterialPointerID" << CapsuleCollider.PhysicsMaterialKey.GetAssetID();
 				out << YAML::EndMap; // CapsuleColliderComponent
 			}
 		}
@@ -450,10 +451,10 @@ namespace Proof
 				MeshColliderComponent& meshColliderComponent = entity.GetComponent<MeshColliderComponent>();
 				out << YAML::Key << "MeshColliderComponent";
 				out << YAML::BeginMap; // MeshColliderComponent
-				out << YAML::Key << "ColliderID" << YAML::Value << meshColliderComponent.ColliderID;
+				out << YAML::Key << "ColliderID" << YAML::Value << meshColliderComponent.ColliderKey.GetAssetID();
 				out << YAML::Key << "IsTrigger" << YAML::Value << meshColliderComponent.IsTrigger;
 				out << YAML::Key << "UseSharedShape" << YAML::Value << meshColliderComponent.UseSharedShape;
-				out << YAML::Key << "PhysicsMaterialPointerID" << YAML::Value << meshColliderComponent.m_PhysicsMaterialPointerID;
+				out << YAML::Key << "PhysicsMaterialPointerID" << YAML::Value << meshColliderComponent.PhysicsMaterialKey.GetAssetID();
 				//out << YAML::Key << "MeshAssetPointerID" << meshCollider.m_MeshAssetPointerID;
 				out << YAML::EndMap; // MeshColliderComponent
 			}
@@ -465,6 +466,7 @@ namespace Proof
 				out << YAML::BeginMap; // RigidBodyComponent
 				out << YAML::Key << "Mass" << rigidBody.Mass;
 				out << YAML::Key << "LinearDrag" << rigidBody.LinearDrag;
+				out << YAML::Key << "PhysicsLayerID" << rigidBody.PhysicsLayerID;
 				out << YAML::Key << "AngularDrag" << rigidBody.AngularDrag;
 				out << YAML::Key << "Gravity" << rigidBody.Gravity;
 				out << YAML::Key << "Type" << EnumReflection::EnumString<RigidBodyType>(rigidBody.RigidBodyType);
@@ -490,7 +492,7 @@ namespace Proof
 				out << YAML::Key << "GravityScale" << characterController.GravityScale;
 				out << YAML::Key << "MinMoveDistance" << characterController.MinMoveDistance;
 				out << YAML::Key << "WalkableMode" <<  EnumReflection::EnumString(characterController.WalkableMode);
-				out << YAML::Key << "PhysicsMaterialID" << characterController.PhysicsMaterialID;
+				out << YAML::Key << "PhysicsMaterialID" << characterController.PhysicsMaterialKey.GetAssetID();
 
 				out << YAML::Key << "ColliderType" << EnumReflection::EnumString(characterController.ColliderType);
 				out << YAML::Key << "Center" << characterController.Center;
@@ -507,7 +509,7 @@ namespace Proof
 				PlayerInputComponent& playerInput = entity.GetComponent<PlayerInputComponent>();
 				out << YAML::Key << "PlayerInputComponent";
 				out << YAML::BeginMap; // PlayerInputComponent
-				out << YAML::Key << "InputPlayer" << EnumReflection::EnumString(playerInput.InputPlayer);
+				//out << YAML::Key << "InputPlayer" << EnumReflection::EnumString(playerInput.InputPlayer);
 
 
 				out << YAML::Key << "InputBindings";
@@ -533,7 +535,21 @@ namespace Proof
 				out << YAML::EndMap; // PlayerInputComponent
 			}
 		}
-		
+
+		{
+			if (entity.HasComponent<PlayerStartComponent>())
+			{
+				PlayerStartComponent& playerStart = entity.GetComponent<PlayerStartComponent>();
+				out << YAML::Key << "PlayerStartComponent";
+				out << YAML::BeginMap; // PlayerStartComponent
+
+				out << YAML::Key << "InputPlayer" << YAML::Value << EnumReflection::EnumString(playerStart.InputPlayer);
+				out << YAML::Key << "PlayerPrefab" << YAML::Value << playerStart.Player.GetAssetID();
+				out << YAML::EndMap; // PlayerStartComponent
+
+			}
+		}
+
 		{
 		#if 1
 			if (entity.HasComponent<PlayerHUDComponent>())
@@ -542,29 +558,36 @@ namespace Proof
 				PlayerHUDComponent& hud = entity.GetComponent<PlayerHUDComponent>();
 				out << YAML::Key << "PlayerHUDComponent";
 				out << YAML::BeginMap; // PlayerHudComponent
-				/*
 
-				out << YAML::Key << "UiTable";
+				out << YAML::Key << "UITable";
+
 				out << YAML::BeginSeq;//hudTable
 				if (hud.HudTable != nullptr)
 				{
-					for (auto& [index,panel] : hud.HudTable->GetPanels())
+					for (const auto& layer : hud.HudTable->GetLayers())
 					{
-						out << YAML::BeginMap;// hud
+						out << YAML::BeginMap;// Layer
+						out << YAML::Key << "Layer" << YAML::Key << layer.Name;
+						out << YAML::Key << "Visible" << YAML::Key << layer.Visible;
 
-						out << YAML::Key << "HUD" << YAML::Key << "";
-						AssetID  id = panel != nullptr ? panel->GetID() : AssetID(0);
-						out << YAML::Key << "HUDAssetID" << YAML::Value << id;
-						if(panel != nullptr)
+						out << YAML::Key << "Panels";
+						out << YAML::BeginSeq;//Panels
+
+						for (auto& panel : layer.GetUIPanels())
+						{
+							out << YAML::BeginMap;// panel
+
+							AssetID assetID = panel->GetUIPanel() == nullptr ? (AssetID)0 : panel->GetUIPanel()->GetID();
+							out << YAML::Key << "PanelID" << YAML::Value << assetID;
 							out << YAML::Key << "Visible" << YAML::Value << panel->Visible;
-						out << YAML::Key << "Index" << YAML::Value << index;
 
-						out << YAML::EndMap;// hud
-
+							out << YAML::EndMap;// panel
+						}
+						out << YAML::EndSeq;//Panels
+						out << YAML::EndMap;// laayer
 					}
 				}
-				out << YAML::EndSeq; // hudTable
-				*/
+				out << YAML::EndSeq; // UITableTable
 				out << YAML::EndMap; // PlayerHudComponent
 			}
 		#endif
@@ -978,7 +1001,7 @@ namespace Proof
 							//m_AssetLoadID.emplace((UUID)id);
 						if (AssetManager::HasAsset(id))
 						{
-							src.Texture = AssetManager::GetAsset<Texture2D>(id);
+							src.Texture = AssetManager::GetAsset<Texture2D>(id)->GetID();
 						}
 					}
 				}
@@ -1034,7 +1057,11 @@ namespace Proof
 					{
 						auto& src = NewEntity.AddComponent<DirectionalLightComponent>();
 						src.Color = directionalLight["Color"].as<glm::vec3>();
-						src.Intensity = directionalLight["Intensity"].as<float>();
+						src.Intensity = directionalLight["Intensity"].as<float>(src.Intensity);
+						src.CastShadow = directionalLight["CastShadow"].as<bool>(src.CastShadow);
+						src.ShadowStrength = directionalLight["ShadowStrength"].as<float>(src.ShadowStrength);
+						src.CastSoftShadow = directionalLight["CastSoftShadow"].as<bool>(src.CastSoftShadow);
+						src.ShadowSoftness = directionalLight["ShadowSoftness"].as<float>(src.ShadowSoftness);
 					}
 				}
 
@@ -1115,7 +1142,7 @@ namespace Proof
 					src.IsTrigger = cubeColliderComponent["IsTrigger"].as<bool>();
 					src.Center = cubeColliderComponent["Center"].as<glm::vec3>(src.Center);
 					src.Size = cubeColliderComponent["Size"].as<glm::vec3>(src.Size);
-					src.m_PhysicsMaterialPointerID = cubeColliderComponent["PhysicsMaterialPointerID"].as<uint64_t>();
+					src.PhysicsMaterialKey = (AssetID)cubeColliderComponent["PhysicsMaterialPointerID"].as<uint64_t>();
 				}
 			}
 
@@ -1128,7 +1155,7 @@ namespace Proof
 					src.IsTrigger = sphereColliderComponent["IsTrigger"].as<bool>();
 					src.Center = sphereColliderComponent["Offset"].as<glm::vec3>(src.Center);
 					src.Radius = sphereColliderComponent["Radius"].as<float>();
-					src.m_PhysicsMaterialPointerID = sphereColliderComponent["PhysicsMaterialPointerID"].as<uint64_t>();
+					src.PhysicsMaterialKey = (AssetID)sphereColliderComponent["PhysicsMaterialPointerID"].as<uint64_t>();
 				}
 			}
 			//CAPSULE COLLIDER
@@ -1143,7 +1170,7 @@ namespace Proof
 					src.Radius = capsuleColliderComponent["Radius"].as<float>();
 					src.Height = capsuleColliderComponent["Height"].as<float>();
 					src.Direction = EnumReflection::StringEnum<CapsuleDirection>(capsuleColliderComponent["Direction"].as<std::string>());
-					src.m_PhysicsMaterialPointerID = capsuleColliderComponent["PhysicsMaterialPointerID"].as<uint64_t>();
+					src.PhysicsMaterialKey = (AssetID)capsuleColliderComponent["PhysicsMaterialPointerID"].as<uint64_t>();
 				}
 			}
 			//Mesh COLLIDER
@@ -1154,10 +1181,10 @@ namespace Proof
 				{
 					auto src = MeshColliderComponent();
 
-					src.ColliderID = mehsCollider["ColliderID"].as<uint64_t>(0);
+					src.ColliderKey = (AssetID)mehsCollider["ColliderID"].as<uint64_t>(0);
 					src.IsTrigger = mehsCollider["IsTrigger"].as<bool>(false);
 					src.UseSharedShape = mehsCollider["UseSharedShape"].as<bool>(false);
-					src.m_PhysicsMaterialPointerID = mehsCollider["PhysicsMaterialPointerID"].as<uint64_t>(0);
+					src.PhysicsMaterialKey = (AssetID)mehsCollider["PhysicsMaterialPointerID"].as<uint64_t>(0);
 					
 					//src.m_MeshAssetPointerID = mehsCollider["MeshAssetPointerID"].as<uint64_t>();
 					// 
@@ -1173,6 +1200,7 @@ namespace Proof
 				{
 					auto& rgb = NewEntity.AddComponent<RigidBodyComponent>();
 					rgb.Mass = rigidBodyComponent["Mass"].as<float>();
+					rgb.PhysicsLayerID = rigidBodyComponent["PhysicsLayerID"].as<uint32_t>(rgb.PhysicsLayerID);
 					rgb.LinearDrag = rigidBodyComponent["LinearDrag"].as<float>();
 					rgb.AngularDrag = rigidBodyComponent["AngularDrag"].as<float>();
 					rgb.Gravity = rigidBodyComponent["Gravity"].as<bool>();
@@ -1202,7 +1230,7 @@ namespace Proof
 					ccc.MinMoveDistance = characterControllerComponent["MinMoveDistance"].as<float>();
 					ccc.WalkableMode = EnumReflection::StringEnum<CharacterControllerNonWalkableMode>( characterControllerComponent["GravityScale"].as<std::string>());
 
-					ccc.PhysicsMaterialID = characterControllerComponent["PhysicsMaterialID"].as<uint64_t>();
+					ccc.PhysicsMaterialKey = (AssetID)characterControllerComponent["PhysicsMaterialID"].as<uint64_t>();
 
 					ccc.ColliderType = EnumReflection::StringEnum<CharacterControllerType>(characterControllerComponent["ColliderType"].as<std::string>());
 					ccc.Center = characterControllerComponent["Center"].as<glm::vec3>();
@@ -1218,7 +1246,7 @@ namespace Proof
 				if (playerInputComponent)
 				{
 					auto& pic = NewEntity.AddComponent<PlayerInputComponent>();
-					pic.InputPlayer = EnumReflection::StringEnum< Players>(playerInputComponent["InputPlayer"].as<std::string>());
+					//pic.InputPlayer = EnumReflection::StringEnum< Players>(playerInputComponent["InputPlayer"].as<std::string>());
 
 					for (auto inputBinding : playerInputComponent["InputBindings"])
 					{
@@ -1235,6 +1263,18 @@ namespace Proof
 					}
 				}
 			}
+
+			// PlayerStartComponent
+			{
+			
+				auto playerStartComponent = entity["PlayerStartComponent"];
+				if (playerStartComponent)
+				{
+					auto& psc = NewEntity.AddComponent<PlayerStartComponent>();
+					psc.InputPlayer = EnumReflection::StringEnum<Players>(playerStartComponent["InputPlayer"].as<std::string>());
+					psc.Player = playerStartComponent["PlayerPrefab"].as<AssetID>();
+				}
+			}
 			// PlayerHudComppoent
 			{
 			#if 1
@@ -1242,29 +1282,26 @@ namespace Proof
 				if (playerHudComponent)
 				{
 					auto& phc = NewEntity.AddComponent<PlayerHUDComponent>();
-					/*
+
 					Count<UITable> table = Count<UITable>::Create();
-					for(auto hud :  playerHudComponent["UiTable"])
+					for (auto layer : playerHudComponent["UITable"])
 					{
-						
-						AssetID id = hud["HUDAssetID"].as<uint64_t>();
-						uint32_t index= hud["Index"].as<uint32_t>();
-						if (AssetManager::HasAsset(id))
+						auto& newLayer = table->AddLayer(layer["Layer"].as<std::string>("Unnamed"));
+						newLayer.Visible = layer["Visible"].as<bool>(true);
+
+						auto panels = layer["Panels"];
+
+						for (auto panel : panels)
 						{
-							table->SetUI(index, AssetManager::GetAsset<UIPanel>(id));
-							if (hud["Visible"])
-							{
-								bool visible = hud["Visible"].as<bool>();
-								table->GetPanel(index)->Visible = visible;
-							}
+							Count<UIPanelInstance> newPanelInstance = newLayer.PushUI();
+							AssetKey<AssetType::UIPanel> uiAsset = panel["PanelID"].as<AssetID>();
+
+							if (uiAsset.IsValid())
+								newPanelInstance->SetPanelInstance(uiAsset.GetAsset<UIPanel>());
+							newPanelInstance->Visible = panel["Visible"].as<bool>(true);
 						}
-						else
-						{
-							table->SetUI(index, nullptr);
-						}
+
 					}
-					phc.HudTable = table;
-					*/
 				}
 			#endif
 			}

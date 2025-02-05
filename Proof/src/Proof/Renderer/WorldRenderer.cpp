@@ -224,7 +224,6 @@ namespace Proof
 		const glm::uvec2 viewportSize = m_UBScreenData.FullResolution;
 		m_CommandBuffer = RenderCommandBuffer::Create("WorldRenderer");
 		m_Renderer2D = Count<Renderer2D>::Create("World2DRenderer");
-		m_Cube = MeshWorkShop::GenerateCube();
 		m_Environment = Count<Environment>::Create(EnvironmentTextureData());
 
 		switch (ShadowSetting.ShadowResolution)
@@ -1695,6 +1694,7 @@ namespace Proof
 		if (m_NeedResize)
 		{
 			m_NeedResize = false;
+			m_InitalRanShadow = false;
 			const glm::uvec2 viewportSize = m_UBScreenData.FullResolution;
 			{
 
@@ -2385,8 +2385,20 @@ namespace Proof
 		Timer shadowPassTimer;
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 
-		if (m_MainDirectionllLight.Intensity == 0.f || !m_MainDirectionllLight.bCastShadows)
+		//TODO
+		// for some reason if shadow pass not ran we get output wierd of colours 
+		// i have no idea this is a temporary fix
+		if ((m_MainDirectionllLight.Intensity == 0.f || !m_MainDirectionllLight.bCastShadows )&& m_InitalRanShadow == true)
+		{
+			for (uint32_t cascade = 0; cascade < SHADOWMAP_CASCADE_COUNT; cascade++)
+			{
+				auto cascadePass = m_ShadowMapPasses[cascade];
+
+				ClearPass(cascadePass, true);
+			}
 			return;
+
+		}
 		CascadeData cascades[SHADOWMAP_CASCADE_COUNT];
 		if (ShadowSetting.UseManualCascadeSplits)
 			CalculateCascadesManualSplit(cascades, m_MainDirectionllLight.Direction);
@@ -2417,6 +2429,7 @@ namespace Proof
 		m_UBCascadeProjectionBuffer->SetData(frameIndex, Buffer(&projections, sizeof(CascadeProjection)));
 		for (uint32_t cascade = 0; cascade < SHADOWMAP_CASCADE_COUNT; cascade++)
 		{
+			m_InitalRanShadow = true;
 			PF_PROFILE_FUNC("ShadowPass Cascade");
 			PF_PROFILE_TAG("Cascade ", cascade);
 
@@ -2860,7 +2873,7 @@ namespace Proof
 	}
 	void WorldRenderer::AmbientOcclusionPass()
 	{
-		if (!AmbientOcclusionSettings.Enabled)
+		if (!AmbientOcclusionSettings.Enabled || m_MainDirectionllLight.bCastShadows == false)
 			return;
 
 		PF_PROFILE_FUNC();

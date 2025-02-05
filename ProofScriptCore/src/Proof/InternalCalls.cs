@@ -155,7 +155,9 @@ namespace Proof
         #region Physics
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern bool Physics_Raycast(ref RaycastData raycastData, out RaycastHit hit);
+        internal static extern bool Physics_RayCast(ref RaycastData raycastData, out RaycastHit hit);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool Physics_RayCastLayer(ref RaycastData raycastData, out RaycastHit hit, string layerName);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool Physics_SphereCast(ref SphereCastData sphereCastData, out RaycastHit hit);
         /*
@@ -182,6 +184,21 @@ namespace Proof
         */
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void Physics_AddRadialImpulse(ref Vector3 origin, float radius, float strength, EFalloffMode falloff, bool velocityChange);
+
+        #endregion
+
+        #region DebugRenderer
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void DebugRenderer_DrawLine(ref Vector3 p0, ref Vector3 p1, ref Vector4 color);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void DebugRenderer_DrawRayLength(ref Vector3 origin, ref Vector3 direction, ref float length,ref Vector4 color);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void DebugRenderer_DrawRay(ref Vector3 origin, ref Vector3 direction, ref Vector4 color);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void DebugRenderer_DrawQuadBillboard(ref Vector3 translation, ref Vector2 size, ref Vector4 color);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void DebugRenderer_SetLineWidth(float width);
 
         #endregion
 
@@ -235,11 +252,15 @@ namespace Proof
         internal extern static void RigidBodyComponent_GetLocation(ulong entityID, out Vector3 location);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void RigidBodyComponent_SetLocation(ulong entityID, ref Vector3 location);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidBodyComponent_Translate(ulong entityID, ref Vector3 location);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBodyComponent_GetRotation(ulong entityID, out Vector3 rotation);
+        internal extern static void RigidBodyComponent_GetRotation(ulong entityID, out Quaternion rotation);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void RigidBodyComponent_SetRotation(ulong entityID, ref Vector3 rotation);
+        internal extern static void RigidBodyComponent_SetRotation(ulong entityID, ref Quaternion rotation);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidBodyComponent_Rotate(ulong entityID, ref Quaternion rotation);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static float RigidBodyComponent_GetMaxLinearVelocity(ulong entityID);

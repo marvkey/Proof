@@ -1,5 +1,6 @@
 #include "Proofprch.h"
 #include "CommandQueue.h"
+#include <mutex>
 //https://github.com/TheUnicum/RenderCommandQueue/blob/master/RenderCommandQueue/src/RenderCommandQueue.cpp
 namespace Proof 
 {
@@ -15,8 +16,11 @@ namespace Proof
 		m_Commands.clear();
 		m_CommandsPtr = nullptr;
 	}
+	std::mutex m_Mutex;
 	void* CommandQueue::Allocate(CommandFn fn, uint32_t size)
 	{
+		std::lock_guard<std::mutex> lock(m_Mutex); // Lock the critical section
+
 		*(CommandFn*)m_CommandsPtr = fn; // storing the pointer to the function
 		m_CommandsPtr += sizeof(CommandFn); // advancing by commdnafucntio
 

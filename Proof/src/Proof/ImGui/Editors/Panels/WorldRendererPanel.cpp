@@ -457,9 +457,9 @@ namespace Proof
 
 				UI::EndTreeNode();
 			}
-			ImGui::End();
 
 		}
+		ImGui::End();
 	}
 }
 

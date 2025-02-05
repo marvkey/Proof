@@ -801,6 +801,7 @@ namespace Proof
         Renderer::SubmitResourceFree([pool = m_DescriptorPool, descriptorSet=m_DescriptorSets ] 
             {
                 auto device = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice();
+            #if 0
                 for (int frame = 0; frame < descriptorSet.size(); frame++)
                 {
                     for (auto [binding, resource] : descriptorSet[frame])
@@ -809,6 +810,7 @@ namespace Proof
                             VK_CHECK_RESULT(vkFreeDescriptorSets(device, pool, 1, &resource.Set));
                     }
                 }
+            #endif
                 vkDestroyDescriptorPool(device, pool, nullptr);
 
             });

@@ -34,7 +34,8 @@
 #include "Proof/Physics/MeshCollider.h"
 #include "Proof/Physics/PhysicsMeshCooker.h"
 #include "Proof/Events/MouseEvent.h"
-
+#include "Proof/Physics/MeshCollider.h"
+#include "Proof/Physics/PhysicsMaterial.h"
 #include "Proof/ImGui/UI.h"
 #include "Proof/ImGui/UIHandlers.h"
 #include "Proof/ImGui/UiUtilities.h"
@@ -50,6 +51,7 @@
 #include "Proof/ImGui/Editors/Panels/PhysicsPanelStats.h"
 #include "Proof/ImGui/Editors/Panels/ProjectSettingsPanel.h"
 #include "Proof/ImGui/Editors/Panels/ScriptImportSettingsPanel.h"
+#include "Proof/ImGui/Editors/Panels/ElevatedInputDeviceManagerPanel.h"
 #include "Proof/ImGui/Editors/AssetEditors/AssetEditor.h"
 #include "Proof/ImGui/SelectionManager.h"
 #include "Proof/ImGui/Editors/EditorWorkspace/EditorWorkspace.h"
@@ -72,6 +74,7 @@
 #define PHYSICS_DEBUG_PANEL_ID "PhysicsDebugPanel"
 #define PROJECT_DEBUG_PANEL_ID "ProjectSettings"
 #define SCRIPTENGINE_IMPORT_PANEL_ID "ScriptSettingsPanel"
+#define ELEVATED_INPUT_DEVICE_MANAGER_PANEL_ID "InputDeviceManagerPanel"
 namespace Proof
 {
 	// you can do this
@@ -142,6 +145,9 @@ namespace Proof
 			bool DynamicRigidBody = true;
 			AssetID ColliderID; // if 0 will generate 
 		} CreateNewDynamicMeshPopupData;
+
+		Count< ElevatedInputDeviceManager> ElevatedInputManager = Count<ElevatedInputDeviceManager>::Create();
+
 	};
 	enum class PopupState
 	{
@@ -250,7 +256,6 @@ namespace Proof
 
 	struct PlayWorldData
 	{
-		Count< ElevatedInputDeviceManager> ElevatedInputManager = Count<ElevatedInputDeviceManager>::Create();
 
 	};
 
@@ -512,9 +517,13 @@ namespace Proof
 		//if (m_ActiveWorld->m_CurrentState == WorldState::Play)
 		//	InputManager::OnEvent(e);
 
+		s_EditorData->ElevatedInputManager->OnEvent(e);
+		if (m_ActiveWorld->IsPlaying())
+		{
+		}
 		if (s_PlayWorldData != nullptr)
 		{
-			s_PlayWorldData->ElevatedInputManager->OnEvent(e);
+			
 			//	Mouse::SetCursorMode(CursorMode::Locked);
 		}
 		AssetEditorPanel::OnEvent(e);
@@ -554,8 +563,9 @@ namespace Proof
 
 		s_EditorData->PanelManager->AddPanel< SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID, "Scene Hierarchy", true);
 		s_EditorData->PanelManager->AddPanel<PhysicsStatsPanel>(PHYSICS_DEBUG_PANEL_ID, "Physics Stats", false);
+		s_EditorData->PanelManager->AddPanel<ElevatedInputDeviceManagerPanel>(ELEVATED_INPUT_DEVICE_MANAGER_PANEL_ID, "Elevated Input Panel", true,s_EditorData->ElevatedInputManager);
 		s_EditorData->PanelManager->AddPanel<AssetManagerPanel>(ASSET_MANAGER_PANEL_ID, "Asset Manager", false);
-		s_EditorData->PanelManager->AddPanel<InputPanel>(INPUT_PANEL_ID, "Input Panel", false);
+		//s_EditorData->PanelManager->AddPanel<InputPanel>(INPUT_PANEL_ID, "Input Panel", false);
 		s_EditorData->PanelManager->AddPanel<WorldRendererPanel>(WORLD_RENDERER_PANEL_ID, "Renderer Panel", true);
 		s_EditorData->PanelManager->AddPanel<ProjectSettingsPanel>(PROJECT_DEBUG_PANEL_ID, "Project Settings", false);
 		s_EditorData->PanelManager->AddPanel<ScriptSettingsPanelPanel>(SCRIPTENGINE_IMPORT_PANEL_ID, "Script Settings", false);
@@ -637,9 +647,11 @@ namespace Proof
 		AssetEditorPanel::OnUpdate(DeltaTime);
 		s_EditorData->EditorWorkspaceManager->OnUpdate(DeltaTime);
 
+		s_EditorData->ElevatedInputManager->OnUpdate(DeltaTime);
+
+
 		if (s_PlayWorldData != nullptr)
 		{
-			s_PlayWorldData->ElevatedInputManager->OnUpdate(DeltaTime);
 			//	Mouse::SetCursorMode(CursorMode::Locked);
 		}
 		/*
@@ -823,6 +835,7 @@ namespace Proof
 							Entity duplicate = m_ActiveWorld->CreateEntity(entity);
 							SelectionManager::Deselect(SelectionContext::Scene, entity.GetUUID());  
 							SelectionManager::Select(SelectionContext::Scene, duplicate.GetUUID());
+							PF_TRACE("Duplicated Entity {} ", duplicate.GetName());
 						}
 						if(!selectedEntities.empty())
 							return true;
@@ -1642,25 +1655,40 @@ namespace Proof
 				if (ImGui::MenuItem("APply"))
 				{
 					std::string defaultnameCoin = "Coin";
+					std::string defaultnameSphere = "Sphere";
 
 					uint32_t spawnPosCounter = 0;
-					Entity SpawnPositionsEntity = m_ActiveWorld->CreateEntity("SpawnPositions");
+					Entity SpawnPositionsEntity = m_ActiveWorld->CreateEntity("GridPositions");
 					m_ActiveWorld->ForEachEnitityWith<TagComponent>([&](Entity e) 
 						{
 							if (e.GetName().size() >= defaultnameCoin.size())
 							{
 								if (e.GetName().substr(0, defaultnameCoin.size()) == defaultnameCoin.substr(0, defaultnameCoin.size()))
 								{
-									e.AddComponent<RigidBodyComponent>();
-									e.AddComponent<BoxColliderComponent>().Size = glm::vec3{ 1.2f };
-									e.GetComponent<BoxColliderComponent>().IsTrigger = true;
-									if(e.HasComponent< DynamicMeshComponent>())
-										e.GetComponent<DynamicMeshComponent>().MaterialTable->SetMaterial(0, AssetManager::GetAsset<Material>(14572677565861703317));
+									
+									auto spawnEntity = m_ActiveWorld->CreateChildEntity(SpawnPositionsEntity,fmt::format("GridPos {}", spawnPosCounter));
 
-									auto spawnEntity = m_ActiveWorld->CreateChildEntity(SpawnPositionsEntity,fmt::format("SpawnPos {}", spawnPosCounter));
-
-									e.AddComponent<RigidBodyComponent>();
+									spawnEntity.GetComponent<TransformComponent>().Location = e.Transform().Location;
 									spawnEntity.AddComponent<BoxColliderComponent>().IsTrigger = true;
+									spawnEntity.GetComponent<BoxColliderComponent>().Size = { 4.5,1,4.5 };
+									spawnEntity.AddComponent<RigidBodyComponent>().PhysicsLayerID = PhysicsLayerManager::GetLayer("GridPos").LayerID;
+									spawnPosCounter++;
+
+								}
+							}
+							if (e.GetName().size() >= defaultnameSphere.size())
+							{
+								if (e.GetName().substr(0, defaultnameSphere.size()) == defaultnameSphere.substr(0, defaultnameSphere.size()))
+								{
+
+									auto spawnEntity = m_ActiveWorld->CreateChildEntity(SpawnPositionsEntity, fmt::format("GridPos {}", spawnPosCounter));
+
+									spawnEntity.GetComponent<TransformComponent>().Location = e.Transform().Location;
+									spawnEntity.GetComponent<TransformComponent>().Location.y = 2.204f; 
+									spawnEntity.AddComponent<BoxColliderComponent>().IsTrigger = true;
+									spawnEntity.GetComponent<BoxColliderComponent>().Size = { 4.5,1,4.5 };
+									spawnEntity.AddComponent<RigidBodyComponent>().PhysicsLayerID = PhysicsLayerManager::GetLayer("GridPos").LayerID;
+
 									spawnPosCounter++;
 
 								}
@@ -2083,7 +2111,7 @@ namespace Proof
 						rootEntity.EachChild([&](Entity entity) 
 							{
 								if(entity.HasComponent<MeshColliderComponent>())
-									entity.GetComponent<MeshColliderComponent>().ColliderID = popUpData.ColliderID;
+									entity.GetComponent<MeshColliderComponent>().ColliderKey.SetAssetID(popUpData.ColliderID);
 							});
 					}
 					s_EditorData->CreateNewDynamicMeshPopupData = {};
@@ -2158,7 +2186,7 @@ namespace Proof
 							{
 								auto& colliderComponent = entity.GetorCreateComponent<MeshColliderComponent>();
 								Count<MeshCollider> colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(entity, colliderComponent);
-								colliderComponent.ColliderID = colliderAsset->GetID();
+								colliderComponent.ColliderKey.SetAssetID(colliderAsset->GetID());
 								colliderComponent.SubMeshIndex = 0;
 								colliderComponent.UseSharedShape = colliderAsset->AlwaysShareShape;
 								entity.GetorCreateComponent<RigidBodyComponent>();
@@ -2232,11 +2260,7 @@ namespace Proof
 
 		{
 			tenareaxWorld = m_ActiveWorld;
-
-			for (auto& inputDevice : s_PlayWorldData->ElevatedInputManager->GetInputDevices())
-			{
-				inputDevice->BindToEventDelegate<&EventDeleta>();
-			}
+			s_EditorData->ElevatedInputManager->OnEventDelegate.Bind<&EventDeleta>();
 		}
 	}
 	void Editore3D::SimulateWorld() 
@@ -2252,7 +2276,10 @@ namespace Proof
 
 		const std::string oldState = EnumReflection::EnumString(m_ActiveWorld->GetState());
 		//s_EditorData->GuizmoType = 0;
+
 		m_ActiveWorld->EndRuntime();      
+		s_EditorData->ElevatedInputManager->OnEventDelegate.Unbind();
+
 		m_ActiveWorld = m_EditorWorld;
 		s_PlayWorldData = nullptr;
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);

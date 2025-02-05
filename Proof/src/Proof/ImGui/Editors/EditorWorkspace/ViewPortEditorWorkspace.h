@@ -21,6 +21,7 @@ namespace Proof
 	enum class ViewportEditorImage
 	{
 		FinalImage =0,
+		Color,
 		Normal,
 		MetalnessRoughness,
 		Velocity,

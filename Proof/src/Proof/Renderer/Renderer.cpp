@@ -130,6 +130,7 @@ namespace Proof {
 		ShaderLibrary->LoadShader("ShadowDepthPass", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Shadow/ShadowDepthPass.glsl");
 		
 		ShaderLibrary->LoadShader("TextPass", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/TextPass.glsl");
+		ShaderLibrary->LoadShader("TextPassMultiPlayer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/TextPassMultiPlayer.glsl");
 
 		//IBL
 		ShaderLibrary->LoadShader("CubeMapToEquirectangular", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/CubeMapToEquirectangular.glsl");
@@ -1075,6 +1076,7 @@ namespace Proof {
 	{
 		for (auto renderer : Renderer2D::s_Instances)
 		{
+
 			if (!renderer.IsValid())continue;
 			auto rendererCount = renderer.Lock();
 			if (rendererCount->m_NeedsToSubmitCommandBuffer)
@@ -1084,6 +1086,7 @@ namespace Proof {
 				rendererCount->m_NeedsToSubmitCommandBuffer = false;
 			}
 		}
+
 		UpdateAllEnvironment();
 		Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
 		Renderer::SubmitCommandBuffer(s_Data->RenderCommandBuffer);

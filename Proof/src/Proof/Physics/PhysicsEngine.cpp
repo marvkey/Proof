@@ -53,8 +53,8 @@ namespace Proof {
 	Count<MeshCollider> PhysicsEngine::GetOrCreateColliderAsset(Entity entity, MeshColliderComponent& component)
 	{
 		Count<MeshCollider> colliderAsset =nullptr;
-		if(AssetManager::HasAsset(component.ColliderID))
-			colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+		if(AssetManager::HasAsset(component.ColliderKey))
+			colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderKey);
 
 		if (colliderAsset)
 			return colliderAsset;
@@ -65,7 +65,7 @@ namespace Proof {
 			auto& mc = entity.GetComponent<DynamicMeshComponent>();
 			if (mc.GetMesh() != nullptr)
 			{
-				component.ColliderID = AssetManager::CreateRuntimeAssetWithName<MeshCollider>("Default" + AssetManager::GetAssetInfo(mc.GetMesh()).GetName() + "Dynamic Collider", mc.GetMesh()->GetID())->GetID();
+				component.ColliderKey = AssetManager::CreateRuntimeAssetWithName<MeshCollider>("Default" + AssetManager::GetAssetInfo(mc.GetMesh()).GetName() + "Dynamic Collider", mc.GetMesh()->GetID())->GetID();
 				component.SubMeshIndex = mc.GetSubMeshIndex();
 			}
 		}
@@ -73,14 +73,14 @@ namespace Proof {
 		{
 			auto& mc = entity.GetComponent<MeshComponent>();
 			if(mc.GetMesh()!= nullptr)
-				component.ColliderID = AssetManager::CreateRuntimeAssetWithName<MeshCollider>("Default" + AssetManager::GetAssetInfo(mc.GetMesh()).GetName() + "Collider", mc.GetMesh()->GetID())->GetID();
+				component.ColliderKey = AssetManager::CreateRuntimeAssetWithName<MeshCollider>("Default" + AssetManager::GetAssetInfo(mc.GetMesh()).GetName() + "Collider", mc.GetMesh()->GetID())->GetID();
 		}
 
-		if(AssetManager::HasAsset(component.ColliderID))
-			colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderID);
+		if(AssetManager::HasAsset(component.ColliderKey))
+			colliderAsset = AssetManager::GetAsset<MeshCollider>(component.ColliderKey);
 
 		if (colliderAsset && !PhysicsMeshCache::Exists(colliderAsset))
-			PhysicsMeshCooker::CookMesh(component.ColliderID);
+			PhysicsMeshCooker::CookMesh(component.ColliderKey);
 
 		return colliderAsset;
 	}

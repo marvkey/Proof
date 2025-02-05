@@ -184,7 +184,7 @@ namespace Proof {
 			uint32_t* lineIndices = pnew uint32_t[c_MaxLineIndices];
 			for (uint32_t i = 0; i < c_MaxLineIndices; i++)
 				lineIndices[i] = i;
-			m_LineIndexBuffer = IndexBuffer::Create(lineIndices, c_MaxLineIndices);
+			m_LineIndexBuffer = IndexBuffer::Create(lineIndices, c_MaxLineIndices * sizeof(uint32_t));
 			pdelete[] lineIndices;
 
 			m_LineVertexBufferBase = pnew LineVertex[c_MaxLineVertices];
@@ -270,7 +270,7 @@ namespace Proof {
 			uint32_t* pointIndices = pnew uint32_t[c_MaxPointIndices];
 			for (uint32_t i = 0; i < c_MaxPointIndices; i++)
 				pointIndices[i] = i;
-			m_PointIndexBuffer = IndexBuffer::Create(pointIndices, c_MaxPointIndices);
+			m_PointIndexBuffer = IndexBuffer::Create(pointIndices, c_MaxPointIndices * sizeof(uint32_t));
 			pdelete[] pointIndices;
 
 			m_PointVertexBufferBase = pnew PointVertex[c_MaxPointVertices];
@@ -348,7 +348,7 @@ namespace Proof {
 
 	void Renderer2D::DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform) 
 	{
-		auto texture = Sprite.Texture != nullptr ? Sprite.Texture : m_WhiteTexture;
+		auto texture = Sprite.Texture.IsValid() ? Sprite.Texture.GetAsset<Texture2D>() : m_WhiteTexture;
 		DrawQuad(transform.GetTransform(),glm::vec4{Sprite.Colour}, texture);
 	}
 	void Renderer2D::DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color)
@@ -367,7 +367,7 @@ namespace Proof {
 		m_LineVertexBufferPtr->Color = color;
 		m_LineVertexBufferPtr++;
 
-		m_LineIndexCount += 2;
+		m_LineIndexCount += 6;
 
 	}
 
@@ -1306,8 +1306,8 @@ namespace Proof {
 			m_LineVertexBuffer->GetVertexBuffer()->SetData(m_LineVertexBufferBase.Get(), dataSize);
 
 			Renderer::BeginRenderPass(m_CommandBuffer, linePass);
-			m_LineIndexBuffer->Bind(m_CommandBuffer);
 			m_LineVertexBuffer->GetVertexBuffer()->Bind(m_CommandBuffer);
+			m_LineIndexBuffer->Bind(m_CommandBuffer);
 			
 			Renderer::DrawElementIndexed(m_CommandBuffer, m_LineIndexCount);
 			Renderer::EndRenderPass(linePass);
