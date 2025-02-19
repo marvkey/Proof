@@ -35,7 +35,7 @@ namespace Proof
 		switch (waveType)
 		{
 			case Proof::WaveType::GerstnerWave:
-				m_Wave = Count<GerstnerWave>::Create(this,waveType);
+				m_Wave = Count<GerstnerWave>::Create(Count<Water>(this));
 				break;
 			case Proof::WaveType::FastFourierTransformWave:
 				//m_Wave = Count<GerstnerWave>::Create();
@@ -49,7 +49,7 @@ namespace Proof
 		switch (wave->GetWaveType())
 		{
 			case Proof::WaveType::GerstnerWave:
-				m_Wave = Count<GerstnerWave>::Create(wave.As<GerstnerWave>());
+				m_Wave = Count<GerstnerWave>::Create(this,wave.As<GerstnerWave>());
 				break;
 			case Proof::WaveType::FastFourierTransformWave:
 				//m_Wave = Count<GerstnerWave>::Create();

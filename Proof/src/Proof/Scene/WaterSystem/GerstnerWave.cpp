@@ -39,14 +39,14 @@ namespace Proof
 
 		return worldPosition;
 	}
-	GerstnerWave::GerstnerWave(Count<class Water> water, WaveType type)
-		: Wave(water,type)
+	GerstnerWave::GerstnerWave(Count<class Water> water)
+		: Wave(water, WaveType::GerstnerWave)
 	{
 		BaseInit();
 	}
 
-	GerstnerWave::GerstnerWave(Count<GerstnerWave> other)
-		: Wave(other->m_Water, WaveType::GerstnerWave)
+	GerstnerWave::GerstnerWave(Count<class Water> water, Count<GerstnerWave> other)
+		: Wave(water, WaveType::GerstnerWave)
 	{
 		Texture = other->Texture;
 		WaterData = other->WaterData;
@@ -59,7 +59,6 @@ namespace Proof
 
 	void GerstnerWave::Update(float deltaTime)
 	{
-		m_WorldTransform = m_Water->GetTransform();
 		RecomputeWaves();
 		OnUpdatePhysics(deltaTime, GetWorld());
 	}
@@ -80,7 +79,8 @@ namespace Proof
 			m_SBGerstnerWavesSet->SetData(Renderer::GetCurrentFrameInFlight(), Buffer((void*)m_Waves.data(), m_Waves.size() * sizeof(UBGerstnerWave)));
 
 		}
-		renderer->SubmitMesh(m_Plane, m_RenderMaterial, m_Water->GetTransform());
+		renderer->SubmitMesh(m_Plane, m_RenderMaterial, GetTransform());
+		//renderer->SubmitMesh(AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Cube).As<Mesh>(), AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Cube).As<Mesh>()->GetMaterialTable(), glm::mat4(1.0f));
 
 
 	}
@@ -122,13 +122,13 @@ namespace Proof
 
 		for (auto localPos : positions)
 		{
-			auto worldPos = LocalToWorld(localPos, m_WorldTransform);
+			auto worldPos = LocalToWorld(localPos, GetTransform());
 
 			glm::vec3 pos = localPos;
 
 			pos.y += GetWaveHeightAtPosition(localPos, FrameTime::GetTime());
 
-			pos = LocalToWorld(pos, m_WorldTransform);
+			pos = LocalToWorld(pos, GetTransform());
 
 			renderer2D->DrawLine(worldPos, pos);
 			renderer2D->FillCircle(pos, glm::vec3(glm::radians(90.0f), 0.0f, 0), 0.8);
@@ -140,7 +140,7 @@ namespace Proof
 	float GerstnerWave::GetWaveHeightAtPosition(glm::vec3 position, float applicationTime)
 	{
 		// Calculate the inverse of the model matrix
-		glm::mat4 inverseModelMatrix = glm::inverse(m_WorldTransform);
+		glm::mat4 inverseModelMatrix = glm::inverse(GetTransform());
 
 		// Convert the world position to a vertex position in model space
 		glm::vec3 vertexPosition = glm::vec3(inverseModelMatrix * glm::vec4(position, 1.0f));
@@ -166,7 +166,7 @@ namespace Proof
 	float GerstnerWave::GetWorldWaveHeightAtPosition(glm::vec3 position, float applicationTime)
 	{
 		TransformComponent component;
-		component.SetTransform(m_WorldTransform);
+		component.SetTransform(GetTransform());
 
 		return GetWaveHeightAtPosition(position, applicationTime) + component.Location.y;
 	}
@@ -175,6 +175,7 @@ namespace Proof
 	{
 		PF_ENGINE_ERROR("Have to Fix this because if we call regenerate plane we are still keeping the old one in the runtime asset");
 		m_Plane = MeshWorkShop::GeneratePlane(GerstnerData.PlaneSize / 5, GerstnerData.PlaneSize);
+		//m_Plane = MeshWorkShop::GenerateCube();
 		AssetManager::CreateRuntimeAsset(m_Plane.As<Asset>(), "GerstnerWavePlane");
 
 	}
@@ -230,6 +231,8 @@ namespace Proof
 	void GerstnerWave::OnUpdatePhysics(float deltaTime, Count<class World> world)
 	{
 		PF_PROFILE_FUNC();
+		if (!world)
+			return;
  		if (!world->IsPlaying())return;
 		auto  buoyancyEntities = world->GetAllEntitiesWith<BuoyancyComponent, RigidBodyComponent>();
 		for (auto e : buoyancyEntities)
@@ -261,7 +264,7 @@ namespace Proof
 				auto worldTransformComponent = world->GetWorldSpaceTransformComponent(floaterEntity);
 				physicsActor->AddForceAtPosition(physicsWorld->GetGravity() / (float)activeFloatersIndex.size(), worldTransformComponent.Location, ForceMode::Acceleration);
 
-				auto vertexPos = WorldToLocal(worldTransformComponent.Location, m_WorldTransform);
+				auto vertexPos = WorldToLocal(worldTransformComponent.Location, GetTransform());
 				float waveHeight = GetWaveHeightAtPosition(vertexPos, FrameTime::GetTime());
 
 				// if below water
@@ -288,7 +291,6 @@ namespace Proof
 
 
 		}
-
 
 	}
 

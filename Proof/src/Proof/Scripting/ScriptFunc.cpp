@@ -3009,7 +3009,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 	static bool ElevatedInputSystem_IsInputPlayer(UUID entityID)
 	{
-		SCRIPT_FUNC_ENTITY_CHECK();
+		SCRIPT_FUNC_ENTITY_CHECK(false);
 		if(entity.HasComponent<InternalPlayerInputComponent>() && entity.GetComponent<InternalPlayerInputComponent>().GetPlayer() != Players::None)
 			return true;
 
@@ -3018,7 +3018,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 	static Players ElevatedInputSystem_EntityGetInputPlayer(UUID entityID)
 	{
-		SCRIPT_FUNC_ENTITY_CHECK();
+		SCRIPT_FUNC_ENTITY_CHECK(Players::None);
 		if (entity.HasComponent<InternalPlayerInputComponent>() )
 			return entity.GetComponent<InternalPlayerInputComponent>().GetPlayer();
 
@@ -3609,11 +3609,6 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		uint64_t AssetID;
 	};
 
-	struct UITextData {
-		UIBaseData Base;
-		float Kerning;
-		float LineSpacing;
-	};
 #if 0
 	static bool PlayerHUDComponent_IndexHasHUD(uint64_t entityID, uint32_t tableIndex) 
 	{

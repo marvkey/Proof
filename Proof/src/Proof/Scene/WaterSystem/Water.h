@@ -20,14 +20,15 @@ namespace Proof
 		WaveType GetWaveType();
 		Count<class Wave> GetWave();
 
-		const glm::mat4& GetTransform()const { return m_Transform; };
+		glm::mat4 GetTransform()const { return m_Transform; };
+		glm::mat4 GetTransform(){ return m_Transform; };
 
 		void SetWorld(Count<class World> world);
 		Count<World> GetWorld();
 	private:
 		Count<class World> m_World;
 		Count<class Wave> m_Wave;
-		glm::mat4 m_Transform;
+		glm::mat4 m_Transform = glm::mat4(1.0f);
 		friend class World;
 	};
 }

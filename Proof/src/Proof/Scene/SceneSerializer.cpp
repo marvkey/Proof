@@ -693,7 +693,7 @@ namespace Proof
 				{
 					case WaveType::GerstnerWave:
 					{
-						GerstnerWave::GerstnerWaveInfo& waterDataInfo = waterComponent.Water.As<GerstnerWave>()->GerstnerData;
+						const GerstnerWave::GerstnerWaveInfo& waterDataInfo = waterComponent.Water->GetWave().As<GerstnerWave>()->GerstnerData;
 
 						out << YAML::Key << "WaveCount " << YAML::Key << waterDataInfo.WaveCount;
 						out << YAML::Key << "WaveDistribution" << YAML::Key << waterDataInfo.WaveDistribution;
@@ -1385,7 +1385,7 @@ namespace Proof
 							break;
 					}
 
-					auto& wtc = NewEntity.AddComponent<WaterComponent>(water);
+					NewEntity.AddComponent<WaterComponent>(water);
 
 				
 				}

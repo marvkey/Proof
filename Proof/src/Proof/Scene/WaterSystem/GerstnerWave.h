@@ -25,8 +25,8 @@ namespace Proof
 	{
 		
 	public:
-		GerstnerWave(Count<GerstnerWave> other);
-		GerstnerWave(Count<class Water> water, WaveType type);
+		GerstnerWave(Count<class Water> water,Count<GerstnerWave> other);
+		GerstnerWave(Count<class Water> water);
 
 		void Update(float deltaTime);
 
@@ -110,7 +110,6 @@ namespace Proof
 			uint32_t WaveCount = 1;
 		} m_UBGerstnerData;
 
-		glm::mat4 m_WorldTransform;
 	};
 
 }

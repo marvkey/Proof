@@ -11,15 +11,12 @@ namespace Proof
 		GerstnerWave = 1,// better for small bodies of water
 		FastFourierTransformWave // use for large bodies of water
 	};
+
+
 	class Wave : RefCounted
 	{
 	public:
-		Wave(Count<class Water> water, WaveType type)
-			:
-			m_Water(water), m_WaveType(type)
-		{
-
-		}
+		Wave(Count<class Water> water, WaveType type);
 		virtual void Update(float deltaTime) {};
 		virtual void Render(Count<class WorldRenderer> renderer) {};
 		virtual void Render2D(Count<class Renderer2D> renderer2D) {};
@@ -27,6 +24,8 @@ namespace Proof
 		WaveType GetWaveType() { return m_WaveType; };
 		Count<class World> GetWorld();
 		Count<class Water> GetWater() { return m_Water; }
+		glm::mat4 GetTransform()const;
+		glm::mat4 GetTransform();
 	protected:
 		Count<class Water> m_Water;
 		WaveType m_WaveType;

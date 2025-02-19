@@ -15,6 +15,10 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 1
+        CastShadow: true
+        ShadowStrength: 0.5
+        CastSoftShadow: true
+        ShadowSoftness: 0.5
     - Entity: 5688669051187286007
       TagComponent:
         Tag: Sky Light
@@ -36,22 +40,6 @@ World:
         HosekWilkieTurbidity: 4
         HosekWilkieGroundReflectance: 0.100000001
         PreethamTurbidity: 4
-    - Entity: 534809590626788377
-      TagComponent:
-        Tag: Camera
-        tags: []
-      TransformComponent:
-        Location: [0, 13.3000002, 35.7000008]
-        Rotation: [-0.263544708, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 1059656669603847335
-        Children: []
-      CameraComponent:
-        NearPlane: 0.300000012
-        FarPlane: 1000
-        FOV: 45
-        UseLocalRotation: false
     - Entity: 17529283325493608271
       TagComponent:
         Tag: TestPlayer
@@ -82,13 +70,14 @@ World:
                 Type: InputAction
                 Data: 12371603639197638862
       MeshColliderComponent:
-        ColliderID: 13400412014312119804
+        ColliderID: 15722687759406015080
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0
       RigidBodyComponent:
         Mass: 1
         LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Dynamic
@@ -97,7 +86,6 @@ World:
         Kinematic: false
         CollisionDetection: Discrete
       PlayerInputComponent:
-        InputPlayer: None
         InputBindings:
           - InputBindingContextHandler: ""
             InputBindingID: 6003628806341811560
@@ -128,17 +116,23 @@ World:
             Drag: 0.5
             AngularDrag: 12
             BuoyancyStrength: 3
-    - Entity: 10296132144757632783
+    - Entity: 534809590626788377
       TagComponent:
-        Tag: Floater
+        Tag: Camera
         tags: []
       TransformComponent:
-        Location: [-3, 3.58699989, -6.39219713]
-        Rotation: [0, -0, 0]
+        Location: [0, 13.3000002, 35.7000008]
+        Rotation: [-0.263544708, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
-        ParentHandle: 17529283325493608271
+        ParentHandle: 1059656669603847335
         Children: []
+      CameraComponent:
+        NearPlane: 0.300000012
+        FarPlane: 1000
+        FOV: 45
+        UseLocalRotation: false
+        ActiveForRendering: true
     - Entity: 1059656669603847335
       TagComponent:
         Tag: Head
@@ -150,6 +144,17 @@ World:
       HierarchyComponent:
         ParentHandle: 17529283325493608271
         Children: [534809590626788377]
+    - Entity: 10296132144757632783
+      TagComponent:
+        Tag: Floater
+        tags: []
+      TransformComponent:
+        Location: [-3, 3.58699989, -6.39219713]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17529283325493608271
+        Children: []
     - Entity: 13234523174882156880
       TagComponent:
         Tag: Floater
@@ -204,6 +209,7 @@ World:
                 Type: Entity
                 Data: 17529283325493608271
       WaterComponent:
+        WaveType: GerstnerWave
         "WaveCount ": 5
         WaveDistribution: 1.89300001
         WaveDirection: [0.5, 0.5]

@@ -94,18 +94,12 @@ namespace Proof {
 
 		{
 
-			auto group = m_Registry.group<WaterComponent>(entt::get<TransformComponent>);
-			for (auto entity : group)
-			{
-				auto [transformComponent, waterComponent] = group.get<TransformComponent, WaterComponent>(entity);
+			ForEachEnitityWith<WaterComponent>([&](Entity e)
+				{
+					glm::mat4 transform = GetWorldSpaceTransform(e);
 
-
-				Entity e = Entity(entity, this);
-				glm::mat4 transform = GetWorldSpaceTransform(e);
-
-				waterComponent.Water->Update(DeltaTime, transform);
-
-			}
+					e.GetComponent<WaterComponent>().Water->Update(DeltaTime, transform);
+				});
 		}
 		
 	}
@@ -388,16 +382,11 @@ namespace Proof {
 
 		// render water
 		{
-			auto group = m_Registry.group<WaterComponent>(entt::get<TransformComponent>);
-			for (auto entity : group)
-			{
-				auto [transformComponent, waterComponent] = group.get<TransformComponent, WaterComponent>(entity);
-
-
-				Entity e = Entity(entity, this);
-
-				waterComponent.Water->Render(worldRenderer);
-			}
+			ForEachEnitityWith<WaterComponent>([&] (Entity e)
+				{
+					e.GetComponent<WaterComponent>().Water->Render(worldRenderer);
+				});
+			
 		}
 		RenderPhysicsDebug(worldRenderer, false);
 
@@ -471,16 +460,11 @@ namespace Proof {
 
 		// render water
 		{
-			auto group = m_Registry.group<WaterComponent>(entt::get<TransformComponent>);
-			for (auto entity : group)
-			{
-				auto [transformComponent, waterComponent] = group.get<TransformComponent, WaterComponent>(entity);
 
-
-				Entity e = Entity(entity, this);
-
-				waterComponent.Water->Render2D(renderer2D);
-			}
+			ForEachEnitityWith<WaterComponent>([&](Entity e)
+				{
+					e.GetComponent<WaterComponent>().Water->Render2D(renderer2D);
+				});
 		}
 		{
 #if 0
@@ -1075,18 +1059,12 @@ namespace Proof {
 
 		{
 
-			auto group = m_Registry.group<WaterComponent>(entt::get<TransformComponent>);
-			for (auto entity : group)
-			{
-				auto [transformComponent, waterComponent] = group.get<TransformComponent, WaterComponent>(entity);
+			ForEachEnitityWith<WaterComponent>([&](Entity e)
+				{
+					glm::mat4 transform = GetWorldSpaceTransform(e);
 
-
-				Entity e = Entity(entity, this);
-				auto transform = GetWorldSpaceTransform(e);
-
-				waterComponent.Water->Update(DeltaTime, transform);
-
-			}
+					e.GetComponent<WaterComponent>().Water->Update(DeltaTime, transform);
+				});
 		}
 		m_PhysicsWorld->Simulate(DeltaTime);
 
