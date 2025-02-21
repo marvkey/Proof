@@ -192,6 +192,7 @@ namespace Proof
 			return m_Stats;
 		}
 		UBScreenData GetScreenData()const { return m_UBScreenData; }
+		Count<class RenderCommandBuffer> GetCommandBuffer() { return m_CommandBuffer; };
 
 	public:
 		// preProcess

@@ -40,6 +40,7 @@
 #include "Proof/ImGui/SelectionManager.h"
 #include "Proof/Scene/WaterSystem/Water.h"
 #include "Proof/Scene/WaterSystem/GerstnerWave.h"
+#include "Proof/Scene/WaterSystem/FFTWave/FFTWave.h"
 //include those before stdlig.h
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/ParticleSystem.h"
@@ -1880,12 +1881,17 @@ namespace Proof
 		DrawComponents<WaterComponent>("Water Component", entity, [](WaterComponent& waterComponent)
 			{
 			#if 1
-				UI::BeginPropertyGrid();
 
+				auto water = waterComponent.Water;
+				WaveType type = water->GetWaveType();
+				if (UI::EnumCombo("WaveType", type))
+					water->SetWave(type);
 				//WaterSystem::WaterDataInfo& waterData = waterComponent.WaterSystem->WaterData;
 
 				if (waterComponent.Water->GetWaveType() == WaveType::GerstnerWave)
 				{
+					UI::BeginPropertyGrid();
+
 					GerstnerWave::GerstnerWaveInfo& gerstnerData = waterComponent.Water->GetWave().As<GerstnerWave>()->GerstnerData;
 					UI::AttributeDrag("Wave Count", gerstnerData.WaveCount, 0.2f, 0, gerstnerData.MaxGerstnerWavesCount);
 					ImGui::Separator();
@@ -1924,6 +1930,33 @@ namespace Proof
 
 					UI::AttributeBool("VisualizeWaveHeight", waterComponent.Water->GetWave().As<GerstnerWave>()->VisualizeWaveHeight);
 					UI::EndPropertyGrid();
+
+				}
+
+				if (water->GetWaveType() == WaveType::FastFourierTransformWave)
+				{
+					UI::BeginPropertyGrid();
+					FFTWave::FFTWaveInfo& waveInfo = water->GetWave().As<FFTWave>()->WaveInfo;
+					Count< FFTWave> fftWave = water->GetWave().As<FFTWave>();
+					UI::AttributeSlider("Wind Mag", waveInfo.WindMagnitude, 10, 50);
+					UI::AttributeSlider("Wind Angle", waveInfo.windAngle, 0, 359);
+					UI::AttributeSlider("Choppiness", waveInfo.Choppiness, 0,2.5f);
+					UI::EndPropertyGrid();
+
+					ImGui::Separator();
+
+					if (UI::AttributeTreeNode("Debugs", false, 3, 3))
+					{
+						UI::ViewDebugImage("InitialSpectrum", fftWave->GetInitialSpectrumImage());
+						UI::ViewDebugImage("PingPhase", fftWave->GetPingPhaseTexture());
+						UI::ViewDebugImage("PongPhase", fftWave->GetPongPhaseImage());
+						UI::ViewDebugImage("TimeDependentSpectrum", fftWave->GetSpectrumImage());
+						UI::ViewDebugImage("Temp", fftWave->GetTempImage());
+						UI::ViewDebugImage("NormalMap", fftWave->GetNormalMap());
+
+						UI::EndTreeNode();
+					}
+
 				}
 				/**
 				UI::AttributeDrag("Wave Count", waterData.WaveCount, 0.2f, 0, 100);

@@ -196,9 +196,14 @@ namespace Proof {
 
 		// water
 		ShaderLibrary->LoadShader("GerstnerWave", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/GerstnerWave.glsl");
-		ShaderLibrary->LoadShader("InitialSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/InitialSpectrum.glsl");
-		ShaderLibrary->LoadShader("TimeDependentSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/TimeDependentSpectrum.glsl");
-		ShaderLibrary->LoadShader("FFTWater", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWater.glsl");
+
+		ShaderLibrary->LoadShader("FFTInitialSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanInitialSpectrum.glsl");
+		ShaderLibrary->LoadShader("FFTPhase", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanPhase.glsl");
+		ShaderLibrary->LoadShader("FFTSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanSpectrum.glsl");
+		ShaderLibrary->LoadShader("FFTHorizontal", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanHorizontal.glsl");
+		ShaderLibrary->LoadShader("FFTVertical", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanVertical.glsl");
+		ShaderLibrary->LoadShader("FFTNormalMap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanNormalMap.glsl");
+		//ShaderLibrary->LoadShader("FFTWater", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWater.glsl");
 
 		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);

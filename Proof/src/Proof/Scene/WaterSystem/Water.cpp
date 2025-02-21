@@ -2,6 +2,7 @@
 #include "Water.h"
 #include "Wave.h"
 #include "GerstnerWave.h"
+#include"FFTWave/FFTWave.h"
 
 namespace Proof
 {
@@ -38,7 +39,7 @@ namespace Proof
 				m_Wave = Count<GerstnerWave>::Create(Count<Water>(this));
 				break;
 			case Proof::WaveType::FastFourierTransformWave:
-				//m_Wave = Count<GerstnerWave>::Create();
+				m_Wave = Count<FFTWave>::Create(Count<Water>(this));
 				break;
 			default:
 				break;
@@ -52,7 +53,7 @@ namespace Proof
 				m_Wave = Count<GerstnerWave>::Create(this,wave.As<GerstnerWave>());
 				break;
 			case Proof::WaveType::FastFourierTransformWave:
-				//m_Wave = Count<GerstnerWave>::Create();
+				m_Wave = Count<FFTWave>::Create(Count<Water>(this));
 				break;
 			default:
 				break;
