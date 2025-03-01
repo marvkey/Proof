@@ -3,6 +3,7 @@
 #include "Proof/Resources/EnumReflection.h"
 #include "Proof/Math/Math.h"
 #include "Proof/Asset/AssetTypes.h"
+#include "Proof/Utils/MultiUse.h"
 #include <imgui.h>
 #include <glm/glm.hpp>
 #include <unordered_set>
@@ -19,6 +20,7 @@ namespace Proof
 	class ArrayFieldStorage;
 	class Image2D;
 	class Asset;
+	class ImageView;
 }
 namespace Proof::UI 
 {
@@ -80,6 +82,17 @@ namespace Proof::UI
 	// For floating-point data types
 	bool AttributeSlider(const std::string& label, float& value, float min, float max, const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
 	bool AttributeSlider(const std::string& label, double& value, double min, double max, const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
+	
+	template <typename T, T MinVal, T MaxVal>
+	bool AttributeSlider(const std::string& label, ClampedValue<T, MinVal, MaxVal>& value, const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp) 
+	{
+		T tempValue = value.GetValue();
+		bool output = AttributeSlider(label, tempValue, MinVal, MaxVal, helpMessage, flags);
+		value.Set(tempValue);
+
+		return output;
+	}
+
 
 	bool AttributeSlider(const std::string& label, glm::vec2& value, float min, float max, const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
 	bool AttributeSlider(const std::string& label, glm::vec3& value, float min, float max, const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
@@ -101,6 +114,17 @@ namespace Proof::UI
 	bool AttributeDrag(const std::string& label, glm::vec2& value, float speed = 1.f, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
 	bool AttributeDrag(const std::string& label, glm::vec3& value, float speed = 1.f, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
 	bool AttributeDrag(const std::string& label, glm::vec4& value, float speed = 1.f, float min = Math::GetMinType<float>(), float max = Math::GetMaxType<float>(), const std::string& helpMessage = "",ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp, const char* format = "%.3f");
+
+	template <typename T, T MinVal, T MaxVal>
+	bool AttributeDrag(const std::string& label, ClampedValue<T, MinVal, MaxVal>& value, float speed = 1.0f, const std::string& helpMessage = "", ImGuiSliderFlags flags = ImGuiSliderFlags_AlwaysClamp)
+	{
+
+		T tempValue = value.GetValue();
+		bool output = AttributeDrag(label, tempValue, speed,MinVal, MaxVal, helpMessage, flags);
+		value.Set(tempValue);
+
+		return output;
+	}
 
 	bool AttributeColor(const std::string& label, glm::vec3& value, const std::string& helpMessage = "");
 	bool AttributeColor(const std::string& label, glm::vec4& value, const std::string& helpMessage = "");
@@ -206,4 +230,5 @@ namespace Proof::UI
 
 	void ViewDebugImage(const std::string& label, Count<Image2D> image);
 	void ViewDebugImage(const std::string& name, Count<Texture2D> image);
+	void ViewDebugImage(const std::string& name, Count<ImageView> image);
 }

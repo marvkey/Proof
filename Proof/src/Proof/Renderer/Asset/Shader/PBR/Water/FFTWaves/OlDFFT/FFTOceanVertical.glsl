@@ -35,9 +35,11 @@ layout(push_constant) uniform PushConstants {
 } u_PC;
 
 // Function to multiply two complex numbers
-vec2 MultiplyComplex(vec2 a, vec2 b) {
-    return vec2(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
+vec2 MultiplyComplex(vec2 a, vec2 b)
+{
+	return vec2(a[0] * b[0] - a[1] * b[1], a[1] * b[0] + a[0] * b[1]);
 }
+
 
 // Function to perform the butterfly operation (used in FFT)
 vec4 ButterflyOperation(vec2 a, vec2 b, vec2 twiddle) {

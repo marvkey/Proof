@@ -46,10 +46,19 @@ void main()
     vec2 waveVector = (2.0 * PI * vec2(n, m)) / float(u_PC.OceanSize);
     float k = length(waveVector);
 
+    /*
     // Apply dispersion relation to update phase
+
     float deltaPhase = ComputeOmega(k) * u_PC.DeltaTime;
     float phase = imageLoad(u_Phases, pixelCoord).r;
     phase = mod(phase + deltaPhase, 2.0 * PI);
+    */
+
+     // Retrieve previous phase value from texture
+    float initialPhase = imageLoad(u_Phases, pixelCoord).r;
+
+    // Compute new phase using absolute time
+    float phase = mod(initialPhase + ComputeOmega(k) * u_PC.DeltaTime, 2.0 * PI);
 
     // Store updated phase value in the output texture
     imageStore(o_DeltaPhases, pixelCoord, vec4(phase, 0.0, 0.0, 0.0));

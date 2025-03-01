@@ -2441,6 +2441,14 @@ namespace Proof::UI
         float size = ImGui::GetContentRegionAvail().x;
         UI::Image(image, { size, size * (1.0f / image->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
     }
+
+    void ViewDebugImage(const std::string& label, Count<ImageView> image)
+    {
+        UI::AttributeLabel(label);
+
+        float size = ImGui::GetContentRegionAvail().x;
+        UI::Image(image, { size, size * (1.0f / image->GetAspectRatio()) }, { 0, 1 }, { 1, 0 });
+    }
     bool ImageButton(const Count<Texture2D>& texture, const ImVec2& size, const ImVec2& uv0, const ImVec2& uv1, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
     {
         return ImageButton(UI::GenerateID(), texture->GetImage(), size, uv0, uv1, frame_padding, bg_col, tint_col);

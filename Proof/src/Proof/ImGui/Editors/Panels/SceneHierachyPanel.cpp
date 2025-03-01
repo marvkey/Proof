@@ -1935,42 +1935,47 @@ namespace Proof
 
 				if (water->GetWaveType() == WaveType::FastFourierTransformWave)
 				{
-					UI::BeginPropertyGrid();
 					FFTWave::FFTWaveInfo& waveInfo = water->GetWave().As<FFTWave>()->WaveInfo;
 					Count< FFTWave> fftWave = water->GetWave().As<FFTWave>();
-					UI::AttributeSlider("Wind Mag", waveInfo.WindMagnitude, 10, 50);
-					UI::AttributeSlider("Wind Angle", waveInfo.windAngle, 0, 359);
-					UI::AttributeSlider("Choppiness", waveInfo.Choppiness, 0,2.5f);
-					UI::EndPropertyGrid();
 
-					ImGui::Separator();
-
-					if (UI::AttributeTreeNode("Debugs", false, 3, 3))
+					for (auto cascade : fftWave->GetCascades())
 					{
-						UI::ViewDebugImage("InitialSpectrum", fftWave->GetInitialSpectrumImage());
-						UI::ViewDebugImage("PingPhase", fftWave->GetPingPhaseTexture());
-						UI::ViewDebugImage("PongPhase", fftWave->GetPongPhaseImage());
-						UI::ViewDebugImage("TimeDependentSpectrum", fftWave->GetSpectrumImage());
-						UI::ViewDebugImage("Temp", fftWave->GetTempImage());
-						UI::ViewDebugImage("NormalMap", fftWave->GetNormalMap());
+						if (UI::AttributeTreeNode(fmt::format("Cascade {}",cascade->GetCascadeIndex()), false, 3, 3))
+						{
+							auto& settings = cascade->Settings;
+							UI::BeginPropertyGrid();
 
-						UI::EndTreeNode();
+							UI::AttributeDrag("TileLength", settings.TileLength);
+							ImGui::Separator();
+
+							UI::AttributeSlider("Wind Speed", settings.WindSpeed);
+							UI::AttributeDrag("WindDirection", settings.WindDirection, 0.01);
+							UI::AttributeSlider("FetLength", settings.FetchLength);
+							UI::AttributeSlider("Swell", settings.Swell);
+							UI::AttributeSlider("Detail", settings.Detail);
+							UI::AttributeSlider("Spread", settings.Spread);
+
+							ImGui::Separator();
+							UI::AttributeDrag("WhiteCap", settings.Whitecap, 0.01);
+
+							UI::EndPropertyGrid();
+
+							if (UI::AttributeTreeNode("Debugs", false, 3, 3))
+							{
+								auto cascade = fftWave->GetCascades().at(0);
+								UI::ViewDebugImage("Spectrum", cascade->SpectrumMap);
+								UI::ViewDebugImage("Displacement", cascade->DisplacementMap);
+								UI::ViewDebugImage("Normal", cascade->NormalMap);
+
+								UI::EndTreeNode();
+							}
+
+
+							UI::EndTreeNode();
+						}
 					}
 
 				}
-				/**
-				UI::AttributeDrag("Wave Count", waterData.WaveCount, 0.2f, 0, 100);
-				ImGui::Separator();
-				
-				UI::AttributeColor("Color", waterData.Color);
-				UI::AttributeDrag("Speed", waterData.Speed, 0.25f);
-				UI::AttributeDrag("Direction", waterData.WaveDirection, 0.01f);
-				UI::AttributeSlider("Distribution", waterData.WaveDistribution, 0, 1);
-				UI::AttributeSlider("Spread", waterData.WaveSpread, 0, 1);
-
-				UI::AttributeDrag("Min Max Wavelength", waterData.MinMaxWavelength);
-				UI::AttributeDrag("Min Max Steepness", waterData.MinMaxSteepness,0.01,0,1);
-				*/
 				
 			#endif
 

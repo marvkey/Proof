@@ -31,7 +31,7 @@ layout(push_constant) uniform FFTConstants
 // (a + bi) * (c + di) = (ac - bd) + (ad + bc)i
 vec2 MultiplyComplex(vec2 a, vec2 b) 
 {
-    return vec2(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
+    return vec2(a[0] * b[0] - a[1] * b[1], a[1] * b[0] + a[0] * b[1]);
 }
 
 
