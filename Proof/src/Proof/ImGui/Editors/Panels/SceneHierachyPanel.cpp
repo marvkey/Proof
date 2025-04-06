@@ -1946,6 +1946,8 @@ namespace Proof
 							UI::BeginPropertyGrid();
 
 							UI::AttributeDrag("TileLength", settings.TileLength);
+							UI::AttributeSlider("DisplacementScale", settings.DisplacementScale);
+							UI::AttributeSlider("NormalScale", settings.NormalScale);
 							ImGui::Separator();
 
 							UI::AttributeSlider("Wind Speed", settings.WindSpeed);

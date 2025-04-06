@@ -63,7 +63,7 @@ namespace Proof{
 			m_LocalBuffer.Allocate(m_Size);
 		}
 		PF_CORE_ASSERT(data.Size <= m_LocalBuffer.Size);
-		memcpy(m_LocalBuffer.Data, (uint8_t*)data.Data + offset, data.Size);
+		memcpy(m_LocalBuffer.Data, (uint8_t*)data.Data + offset, data.	Size);
 
 		Count<VulkanUniformBuffer> instance = this;
 		Renderer::Submit([instance, offset]() mutable

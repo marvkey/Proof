@@ -35,6 +35,8 @@ namespace Proof
 		virtual void Set(const std::string& name, int value);
 		virtual void Set(const std::string& name, uint32_t value);
 
+		virtual void Set(const std::string& name, Buffer data);
+
 		virtual void Set(const std::string& name, const glm::ivec2& value);
 		virtual void Set(const std::string& name, const glm::ivec3& value);
 		virtual void Set(const std::string& name, const glm::ivec4& value);

@@ -38,6 +38,10 @@ namespace Proof
 		{
 			// Denotes the distance the cascade's tile should cover (in meters).
 			glm::vec2 TileLength = glm::vec2(50.0f, 50.0f);
+
+			ClampedValue<float, 0.f, 2.0f> DisplacementScale = 1.0f; 
+			ClampedValue<float, 0.f, 2.0f> NormalScale = 1.0f; 
+
 			ClampedValue<float, 0.f, 2.0f> TimeScale = 1.0f; // how fast foams build up
 
 			// Denotes the average wind speed above the water (in meters per second). Increasing makes waves steeper and more 'chaotic'.
@@ -144,6 +148,7 @@ namespace Proof
 		Count<class StorageBufferSet> m_SBButterflyFactors;
 		Count<class StorageBufferSet> m_FFTBuffer;
 
+		Count<class UniformBufferSet>m_WaterBuffer;
 		Count<Image2D> m_SpectrumTexture;
 		Count<Image2D> m_DisplacementMap;
 		Count<Image2D> m_NormalMap;

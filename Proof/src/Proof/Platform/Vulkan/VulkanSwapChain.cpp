@@ -573,6 +573,10 @@ namespace Proof
 		// Resource release queue
 		//auto& queue = Renderer::GetRenderResourceReleaseQueue(m_CurrentBufferIndex);
 		//queue.Execute();
+
+			// --- FIXED: Wait on the fence BEFORE AcquireNextImage ---
+		VK_CHECK_RESULT(vkWaitForFences(device, 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
+		VK_CHECK_RESULT(vkResetFences(device, 1, &m_WaitFences[m_CurrentBufferIndex]));
 		m_CurrentImageIndex = AcquireNextImage();
 
 		VK_CHECK_RESULT(vkResetCommandPool(device, m_CommandBuffers[m_CurrentBufferIndex].CommandPool, 0));
@@ -603,7 +607,7 @@ namespace Proof
 		submitInfo.commandBufferCount = 1;
 		VkDevice device = VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice();
 
-		vkResetFences(VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]);
+		//vkResetFences(VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]);
 		vkQueueSubmit(VulkanGraphicsContext::Get()->GetDevice()->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]);
 
 		// Present the current buffer to the swap chain
@@ -643,8 +647,9 @@ namespace Proof
 			m_PREVIOUSBufferIndex = m_CurrentBufferIndex;
 			m_CurrentBufferIndex = (m_CurrentBufferIndex + 1) % config.FramesFlight;
 			// Make sure the frame we're requesting has finished rendering
-			VK_CHECK_RESULT(vkWaitForFences(VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, DEFAULT_FENCE_TIMEOUT));
+			//VK_CHECK_RESULT(vkWaitForFences(VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
 
+			vkDeviceWaitIdle(device); // TODO: Remove this
 			auto& queue = Renderer::GetRenderResourceReleaseQueue(m_CurrentBufferIndex);
 			queue.Execute();
 		}
@@ -654,7 +659,7 @@ namespace Proof
 	RendererConfig VulkanSwapChain::GetRenderConfig()
 	{
 		//returns default frame in flight in frame in flgiht
-		return RendererConfig(RendererConfig().FramesFlight,m_ImageCount );
+		return RendererConfig(m_ImageCount,m_ImageCount );
 	}
 
 
@@ -677,7 +682,7 @@ namespace Proof
 	uint32_t VulkanSwapChain::AcquireNextImage()
 	{
 		uint32_t imageIndex;
-		VK_CHECK_RESULT(fpAcquireNextImageKHR(VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice(), m_SwapChain, UINT64_MAX, m_Semaphores.PresentComplete, (VkFence)nullptr, &imageIndex));
+		VK_CHECK_RESULT(vkAcquireNextImageKHR(VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice(), m_SwapChain, UINT64_MAX, m_Semaphores.PresentComplete, (VkFence)nullptr, &imageIndex));
 		return imageIndex;
 	}
 

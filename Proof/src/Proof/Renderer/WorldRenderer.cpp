@@ -399,7 +399,7 @@ namespace Proof
 			GraphicsPipelineConfiguration pipelineConfig;
 			pipelineConfig.DebugName = "ShadowMapCascade";
 			pipelineConfig.Attachments = { depthFormat };
-			pipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
+			pipelineConfig.DepthCompareOperator = DepthCompareOperator::Less;
 			pipelineConfig.CullMode = CullMode::Back;
 			pipelineConfig.Shader = Renderer::GetShader("ShadowDepthPass");
 			pipelineConfig.VertexArray = staticVertexArray;
@@ -448,7 +448,7 @@ namespace Proof
 			auto frameBuffer = FrameBuffer::Create(geoFramebufferConfig);
 
 			GraphicsPipelineConfiguration pipelinelineConfig;
-			//pipelinelineConfig.CullMode = CullMode::None;
+			pipelinelineConfig.CullMode = CullMode::Back;
 			pipelinelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA,ImageFormat::RG16F,ImageFormat::RGBA32F, ImageFormat::DEPTH32F }; // color, view limuncance, metallnessroughness,velocity, direct lighting(Point Light,Directional Light,Spotlight,Area Light)
 			// Don't blend with luminance in the alpha channel.
 			pipelinelineConfig.Attachments.Attachments[1].Blend = false;
@@ -456,10 +456,11 @@ namespace Proof
 
 			pipelinelineConfig.DebugName = "Geometry_Static";
 			pipelinelineConfig.Shader = Renderer::GetShader("ProofPBR_Static");
-			pipelinelineConfig.DepthCompareOperator = DepthCompareOperator::Equal;
+			pipelinelineConfig.DepthCompareOperator = DepthCompareOperator::Less; // usign predepth pass
 			pipelinelineConfig.VertexArray = staticVertexArray;
 			pipelinelineConfig.WriteDepth = false;
-			//pipelinelineConfig.Blend = false;
+			pipelinelineConfig.Blend = true;
+			pipelinelineConfig.DepthTest = true;
 
 			Count<GraphicsPipeline> pipeline = GraphicsPipeline::Create(pipelinelineConfig);
 
@@ -485,13 +486,14 @@ namespace Proof
 			}
 			{
 				auto pipelineTransparent = pipelinelineConfig;
+				pipelineTransparent.Blend = true;
 				//pipelineTransparent.Attachments.Attachments[0].Blend = true; 
 				pipelineTransparent.DebugName = "Transparent";
 				pipelineTransparent.Shader = Renderer::GetShader("ProofPBRTransparent_Static");
 				pipelineTransparent.Attachments.Attachments.pop_back();
 				//pipelineTransparent.CullMode = CullMode::None;
 				pipelineTransparent.DepthTest = true;
-				pipelineTransparent.DepthCompareOperator = DepthCompareOperator::Less;
+				pipelineTransparent.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
 				//pipelineTransparent.FrontFace = FrontFace::CounterClockWise;
 
 
@@ -768,8 +770,6 @@ namespace Proof
 			skyBoxPipelineConfig.DepthTest = false;
 			skyBoxPipelineConfig.WriteDepth = false;
 			skyBoxPipelineConfig.Shader = Renderer::GetShader("SkyBox");
-			skyBoxPipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
-			//skyBoxPipelineConfig.DepthCompareOperator = DepthCompareOperator::GreaterOrEqual;
 			skyBoxPipelineConfig.VertexArray = quadVertexArray;
 			auto skyBoxPipeline = GraphicsPipeline::Create(skyBoxPipelineConfig);
 
@@ -2483,6 +2483,8 @@ namespace Proof
 		Renderer::CopyImage(m_CommandBuffer, m_PreDepthPass->GetOutput(0).As<Image2D>(), m_PrevDepthImage);
 		Renderer::BeginRenderPass(m_CommandBuffer, m_PreDepthPass, true);
 
+#if 1
+
 		for (auto& [meshKey, dc] : m_MeshDrawList)
 		{
 			const auto& transformData = m_CurTransformMap->at(meshKey);
@@ -2490,12 +2492,17 @@ namespace Proof
 			RenderMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 		}
 
+#endif
+
+#if 1
 		for (auto& [meshKey, dc] : m_DynamicMeshDrawList)
 		{
 			const auto& transformData = m_CurTransformMap->at(meshKey);
 			uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 			RenderDynamicMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 		}
+#endif
+
 	#if 0
 		for (auto& [meshKey, dc] : m_TransparentMeshDrawList)
 		{
@@ -2519,6 +2526,7 @@ namespace Proof
 		}
 		*/
 
+#if 0
 		for (auto& [shaderName, meshDrawList] : m_GeometryPassInstancesDrawList)
 		{
 			if (!m_GeometryPassInstances.contains(shaderName))
@@ -2534,7 +2542,7 @@ namespace Proof
 				RenderMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 			}
 		}
-
+#endif
 		Renderer::EndRenderPass(m_PreDepthPass);
 
 
@@ -2618,6 +2626,7 @@ namespace Proof
 
 
 		}
+#if 1
 		{
 			PF_PROFILE_FUNC("GeometryPass::SkyBoxPass");
 
@@ -2630,10 +2639,14 @@ namespace Proof
 
 			m_Timers.GeometrySkyBoxPass = timer.ElapsedMillis();
 		}
+#endif
+
 		{
 			PF_PROFILE_FUNC("GeometryPass::MeshPass");
 
 			Timer timer;
+#if 1
+
 			m_GeometryPass->SetInput("u_IrradianceMap", m_Environment->GetPrefilterMap());
 			m_GeometryPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
 
@@ -2669,7 +2682,7 @@ namespace Proof
 			}
 			
 			Renderer::EndRenderPass(m_GeometryPass);
-			
+#endif
 			m_TransparentGeometryPass->SetInput("u_IrradianceMap", m_Environment->GetPrefilterMap());
 			m_TransparentGeometryPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_TransparentGeometryPass);
@@ -2687,6 +2700,7 @@ namespace Proof
 				}
 			}
 			Renderer::EndRenderPass(m_TransparentGeometryPass);
+			
 			/*
 
 			
@@ -2694,42 +2708,45 @@ namespace Proof
 			m_Timers.GeometryMeshPass = timer.ElapsedMillis();
 		}
 		
-	#if 1
-		std::unordered_set<std::string> addedInstances;
-		for (auto& [shaderName, meshDrawList] : m_GeometryPassInstancesDrawList)
+#if 1
 		{
-			if (!m_GeometryPassInstances.contains(shaderName))
+			PF_PROFILE_FUNC("GeometryPass::Instances");
+			std::unordered_set<std::string> addedInstances;
+			for (auto& [shaderName, meshDrawList] : m_GeometryPassInstancesDrawList)
 			{
-				// we do not attach to depth because the vertex shader 
-				// in water shader will change so it will create wierd effect
-				// only put attach to depth when you are sure u are not changing any vertex position
+				if (!m_GeometryPassInstances.contains(shaderName))
+				{
+					// we do not attach to depth because the vertex shader 
+					// in water shader will change so it will create wierd effect
+					// only put attach to depth when you are sure u are not changing any vertex position
 
-				bool drawWithDepth = false;
-				//m_GeometryPassInstances[shaderName] = { CreateGeometryPassInstance(shaderName,drawWithDepth), drawWithDepth };
-				m_GeometryPassInstances[shaderName] = { CreateTransparentPassInstance(shaderName), drawWithDepth };
-				addedInstances.insert({ shaderName });
-				continue;
+					bool drawWithDepth = false;
+					//m_GeometryPassInstances[shaderName] = { CreateGeometryPassInstance(shaderName,drawWithDepth), drawWithDepth };
+					m_GeometryPassInstances[shaderName] = { CreateTransparentPassInstance(shaderName), drawWithDepth };
+					addedInstances.insert({ shaderName });
+					continue;
+				}
+				if (addedInstances.contains(shaderName))
+					continue;
+				auto renderPass = m_GeometryPassInstances[shaderName].first;
+
+				renderPass->SetInput("u_IrradianceMap", m_Environment->GetPrefilterMap());
+				renderPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
+
+				Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, renderPass);
+
+				for (auto& [meshKey, dc] : meshDrawList)
+				{
+					const auto& transformData = m_CurTransformMap->at(meshKey);
+					uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+					RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, dc.OverrideMaterial, renderPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+				}
+
+				Renderer::EndRenderPass(renderPass);
 			}
-			if (addedInstances.contains(shaderName))
-				continue;
-			auto renderPass = m_GeometryPassInstances[shaderName].first;
-
-			renderPass->SetInput("u_IrradianceMap", m_Environment->GetPrefilterMap());
-			renderPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
-
-			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, renderPass);
-
-			for (auto& [meshKey, dc] : meshDrawList)
-			{
-				const auto& transformData = m_CurTransformMap->at(meshKey);
-				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
-				RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, dc.OverrideMaterial, renderPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
-			}
-
-			Renderer::EndRenderPass(renderPass);
 		}
-
 		{
+			PF_PROFILE_FUNC("GeometryPass::TransperantPassComposite");
 
 			m_TransparentPassComposite->SetInput("u_TransperantAccum", m_TransparentGeometryPass->GetOutput(5));
 			m_TransparentPassComposite->SetInput("u_TransperantReveal", m_TransparentGeometryPass->GetOutput(6));
@@ -2742,7 +2759,7 @@ namespace Proof
 		}
 		
 	#endif
-	
+
 	#if 0
 		{
 

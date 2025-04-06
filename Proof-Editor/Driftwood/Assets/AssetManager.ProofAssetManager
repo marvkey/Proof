@@ -2,30 +2,30 @@ Assets:
   - Asset: 890189201012343458
     Type: World
     Path: Scenes\TestScene.ProofWorld
-  - Asset: 13811694500107944009
-    Type: ScriptFile
-    Path: Scripts\PlayerMovement.cs
   - Asset: 13004967076466772727
     Type: Material
     Path: Materials\m_White.Material.ProofAsset
   - Asset: 16828794601913637151
     Type: Material
     Path: Materials\m_Red.Material.ProofAsset
-  - Asset: 16430391847963516997
-    Type: PhysicsMaterial
-    Path: Physics\Materials\pm_Slippery.PhysicsMaterial.ProofAsset
+  - Asset: 13811694500107944009
+    Type: ScriptFile
+    Path: Scripts\PlayerMovement.cs
   - Asset: 5461393239524366491
     Type: Texture
     Path: Models\jetski-20201027t232239z-001\textures\StingrayPBS1SG_baseColor.png
+  - Asset: 16430391847963516997
+    Type: PhysicsMaterial
+    Path: Physics\Materials\pm_Slippery.PhysicsMaterial.ProofAsset
   - Asset: 4070791257353169978
     Type: ScriptFile
     Path: Scripts\PlayerInput.cs
-  - Asset: 5887741440318754892
-    Type: MeshSourceFile
-    Path: Models\jetski-20201027t232239z-001\scene.gltf
   - Asset: 12371603639197638862
     Type: InputAction
     Path: Inputs\Actions\IA_MoveSideWays.InputAction.ProofAsset
+  - Asset: 5887741440318754892
+    Type: MeshSourceFile
+    Path: Models\jetski-20201027t232239z-001\scene.gltf
   - Asset: 6003628806341811560
     Type: InputBindingContext
     Path: Inputs\IB_PlayerMovementInputBinding.InputBindingContext.ProofAsset
@@ -35,24 +35,24 @@ Assets:
   - Asset: 16335704901017713052
     Type: Mesh
     Path: Mesh\Jetski.Mesh.ProofAsset
-  - Asset: 5062657810340108268
-    Type: Mesh
-    Path: Mesh\JetskiCompleted.Mesh.ProofAsset
   - Asset: 13541951023650058868
     Type: World
     Path: Scenes\TestWater.ProofWorld
+  - Asset: 5062657810340108268
+    Type: Mesh
+    Path: Mesh\JetskiCompleted.Mesh.ProofAsset
   - Asset: 15296045491271304012
     Type: Material
     Path: Materials\m_lambert1.Material.ProofAsset
   - Asset: 12032844309677068269
     Type: Texture
     Path: Models\kawasaki-310xultra-jet-ski\textures\JetSki_Completed_JetSki_Material_Roughness.png
-  - Asset: 17236951069357854769
-    Type: Texture
-    Path: Models\kawasaki-310xultra-jet-ski\textures\JetSki_Completed_JetSki_Material_Metallic.png
   - Asset: 15675069007552346806
     Type: Material
     Path: Materials\m_Green.Material.ProofAsset
+  - Asset: 17236951069357854769
+    Type: Texture
+    Path: Models\kawasaki-310xultra-jet-ski\textures\JetSki_Completed_JetSki_Material_Metallic.png
   - Asset: 1559445481780771238
     Type: Texture
     Path: Models\kawasaki-310xultra-jet-ski\textures\AO.png
@@ -74,3 +74,6 @@ Assets:
   - Asset: 6508493049314716236
     Type: ScriptFile
     Path: Scripts\FollowXZ.cs
+  - Asset: 14572165204170696598
+    Type: Material
+    Path: Materials\New Material.Material.ProofAsset

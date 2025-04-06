@@ -1,6 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include"Proof/Math/Vector.h"
+#include "Proof/Renderer/Buffer.h"
 #include <glm/glm.hpp>
 namespace Proof {
 
@@ -40,6 +41,7 @@ namespace Proof {
 		virtual void Set(const std::string& name, const glm::vec4& value) = 0;
 		virtual void Set(const std::string& name, const glm::mat3& value) = 0;
 		virtual void Set(const std::string& name, const glm::mat4& value) = 0;
+		virtual void Set(const std::string& name, Buffer value) = 0;
 
 		virtual float& GetFloat(const std::string& name) = 0;
 		virtual int& GetInt(const std::string& name) = 0;

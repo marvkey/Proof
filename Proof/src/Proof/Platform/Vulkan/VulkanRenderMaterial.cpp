@@ -151,6 +151,25 @@ namespace Proof {
 		SetInternal(name, value);
 	}
 
+	void VulkanRenderMaterial::Set(const std::string& name, Buffer data)
+	{
+		const ShaderResourceBufferInfo* decl = FindUniformDeclaration(name);
+		PF_CORE_ASSERT(decl, fmt::format("Could not Find Storage! {}", name));
+
+		if (!decl)return;
+
+		{
+			// cannot work because material sets default material and basically
+			// when we load a matrial actually date from diskk when we do htis and push to render thread
+			// that data is then overriden
+
+			//Buffer data(&value, decl->Size);
+			//SetBufferData(data, decl->Offset);
+		}
+		auto& buffer = m_UniformBufferStorage;
+		buffer.SetData(data.Data, data.Size, decl->Offset);
+	}
+
 	void VulkanRenderMaterial::Set(const std::string& name, const glm::ivec2& value)
 	{
 		SetInternal(name, value);

@@ -48,7 +48,7 @@ void main() {
 			float hx = tile[0][id_local.y][id_local.x].x;
 			float hy = tile[0][id_local.y][id_local.x].y;
 			float hz = tile[1][id_local.y][id_local.x].x;
-			imageStore(o_DisplacementMap, id, vec4(hx, hy, hz, 0) * sign_shift);
+			imageStore(o_DisplacementMap, id, vec4(hx, hy, hz, 0.0f) * sign_shift);
 			break;
 		case 1:
 			float dhy_dx = tile[1][id_local.y][id_local.x].y * sign_shift;

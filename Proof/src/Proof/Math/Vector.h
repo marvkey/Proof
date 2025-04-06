@@ -2,6 +2,7 @@
 #include <sstream>
 #include <string>
 #include<iostream>>
+#include <glm/glm.hpp>
 namespace Proof
 {
     struct Math;
@@ -85,7 +86,7 @@ namespace Proof
         }
 
         T GetLength()const {
-            return Math::SquareRoot<T>(X * X + Y * Y + Z * Z);
+            return glm::sqrt(X * X + Y * Y + Z * Z);
         }
         // basically the dot product
         T GetLengthSquared()const {
@@ -94,7 +95,7 @@ namespace Proof
 
         T GetAngle(const VectorTemplate& Vec)const {
             T Angle = Dot(*this, Vec) / (GetLength(*this) * GetLength(Vec));
-            return Math::DInverseCos<T>(Angle);
+            return glm::degrees(glm::acos(glm::radians(Angle)));
         }
 
         void AddScaledVectorTemplate(VectorTemplate& other, float number) {
@@ -186,7 +187,8 @@ namespace Proof
         }
 
         T GetLength()const {
-            return Math::SquareRoot<T>(X * X + Y * Y + Z * Z + W * W);
+            return glm::sqrt(X * X + Y * Y + Z * Z + W * W);
+
         }
         VectorTemplate4 Normalize() {
             T Length = GetLength();
@@ -203,7 +205,7 @@ namespace Proof
         }
         T GetAngle(const VectorTemplate4& other) {
             T Angle = Dot(other) / GetLength() * other.GetLength();
-            return Math::InverseCos<T>(Angle);
+            return glm::degrees(glm::acos (glm::radians(Angle)));
         }
 
     };
@@ -266,7 +268,8 @@ namespace Proof
         }
 
         T GetLength()const {
-            return Math::SquareRoot<T>(X * X + Y * Y);
+            return 0;
+            //return Math::SquareRoot<T>((X * X) + (Y * Y));
         }
         T Normalize() {
             T length = GetLength();
@@ -279,7 +282,8 @@ namespace Proof
         }
         T GetAngle(const VectorTemplate2& other) {
             T Angle = Dot(other) / GetLength() * other.GetLength();
-            return Math::InverseCos<T>(Angle);
+            return glm::degrees(glm::acos(glm::radians(Angle)));
+
         }
     };
     template<typename T>

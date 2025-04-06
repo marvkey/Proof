@@ -795,27 +795,18 @@ static void ImGui_ImplVulkan_CreateDescriptorSetLayout(VkDevice device, const Vk
     ImGui_ImplVulkan_Data* bd = ImGui_ImplVulkan_GetBackendData();
     if (bd->DescriptorSetLayout)
         return;
-    VkDebugUtilsObjectNameInfoEXT nameInfo;
-    nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
-    nameInfo.objectType = VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
-    nameInfo.pObjectName = "VulkanImguiDescritporLayout";
-    nameInfo.objectHandle = (uint64_t)bd->DescriptorSetLayout;
-    nameInfo.pNext = VK_NULL_HANDLE;
-
     fpSetDebugUtilsObjectNameEXT = (PFN_vkSetDebugUtilsObjectNameEXT)(vkGetInstanceProcAddr(bd->VulkanInitInfo.Instance, "vkSetDebugUtilsObjectNameEXT"));
-    if (fpSetDebugUtilsObjectNameEXT == nullptr)
-        fpSetDebugUtilsObjectNameEXT = [](VkDevice device, const VkDebugUtilsObjectNameInfoEXT* pNameInfo) { return VK_SUCCESS; };
-    fpSetDebugUtilsObjectNameEXT(device, &nameInfo);
-
-    ImGui_ImplVulkan_CreateFontSampler(device, allocator);
-    VkSampler sampler[1] = { bd->FontSampler };
+    
+    if(bd->FontSampler == VK_NULL_HANDLE)
+       ImGui_ImplVulkan_CreateFontSampler(device, nullptr);
+   // VkSampler sampler[1] = { bd->FontSampler };
 
     // Descriptor set layout binding
     VkDescriptorSetLayoutBinding binding[1] = {};
     binding[0].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
     binding[0].descriptorCount = 1;
     binding[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-    binding[0].pImmutableSamplers = sampler;
+    binding[0].pImmutableSamplers = &bd->FontSampler;
 
     // Enable update-after-bind for the layout
     VkDescriptorSetLayoutBindingFlagsCreateInfo bindingFlagsInfo{};
@@ -836,6 +827,17 @@ static void ImGui_ImplVulkan_CreateDescriptorSetLayout(VkDevice device, const Vk
 
     VkResult err = vkCreateDescriptorSetLayout(device, &info, allocator, &bd->DescriptorSetLayout);
     check_vk_result(err);
+
+    VkDebugUtilsObjectNameInfoEXT nameInfo;
+    nameInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+    nameInfo.objectType = VK_OBJECT_TYPE_DESCRIPTOR_SET_LAYOUT;
+    nameInfo.pObjectName = "VulkanImguiDescritporLayout";
+    nameInfo.objectHandle = (uint64_t)bd->DescriptorSetLayout;
+    nameInfo.pNext = VK_NULL_HANDLE;
+
+    if (fpSetDebugUtilsObjectNameEXT == nullptr)
+        fpSetDebugUtilsObjectNameEXT = [](VkDevice device, const VkDebugUtilsObjectNameInfoEXT* pNameInfo) { return VK_SUCCESS; };
+    fpSetDebugUtilsObjectNameEXT(device, &nameInfo);
 
     // Ensure the descriptor pool supports `UPDATE_AFTER_BIND` if necessary
     // This is likely implemented elsewhere in your code, but make sure:

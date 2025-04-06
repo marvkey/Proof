@@ -15,7 +15,7 @@ namespace Proof
 	const bool s_Validation = false;
 	#endif
 	static bool s_Initialized = false;
-	uint32_t VulkanGraphicsContext::s_VulkanVersion = VK_API_VERSION_1_2;
+	uint32_t VulkanGraphicsContext::s_VulkanVersion = VK_API_VERSION_1_3;
 
 	constexpr const char* VkDebugUtilsMessageType(const VkDebugUtilsMessageTypeFlagsEXT type)
 	{

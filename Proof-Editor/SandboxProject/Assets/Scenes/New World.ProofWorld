@@ -15,13 +15,14 @@ World:
       MeshComponent:
         MeshAssetPointerID: 18141853162402936448
       MeshColliderComponent:
-        ColliderID: 16262991468785504834
+        ColliderID: 11406703058470307677
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0
       RigidBodyComponent:
         Mass: 1
         LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Static
@@ -54,6 +55,7 @@ World:
       RigidBodyComponent:
         Mass: 1
         LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Dynamic
@@ -109,6 +111,10 @@ World:
       DirectionalLightComponent:
         Color: [0.569986284, 0.675194681, 0.785185218]
         Intensity: 2
+        CastShadow: false
+        ShadowStrength: 0.5
+        CastSoftShadow: true
+        ShadowSoftness: 0.5
     - Entity: 8653500929971714399
       TagComponent:
         Tag: Sky Light
@@ -188,13 +194,14 @@ World:
       MeshComponent:
         MeshAssetPointerID: 18348114341737718825
       MeshColliderComponent:
-        ColliderID: 14261771895205164784
+        ColliderID: 2568564140073205507
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0
       RigidBodyComponent:
         Mass: 1
         LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Static
@@ -207,9 +214,9 @@ World:
         Tag: Cube
         tags: []
       TransformComponent:
-        Location: [0.699999988, 2.46479583, -1]
+        Location: [2.06050515, 11.860219, 2.78953743]
         Rotation: [-0.0347524844, -0.197529182, -0.162225157]
-        Scale: [0.999997616, 0.999998569, 0.99999845]
+        Scale: [18.3999996, 8.60000038, 16.1000004]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
@@ -316,13 +323,14 @@ World:
             AssetID: 13866412923197075697
             Index: 0
       MeshColliderComponent:
-        ColliderID: 55
+        ColliderID: 13237922280155050701
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0
       RigidBodyComponent:
         Mass: 1
         LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Static
@@ -330,3 +338,20 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 13424675401336356411
+      TagComponent:
+        Tag: Camera
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      CameraComponent:
+        NearPlane: 0.300000012
+        FarPlane: 1000
+        FOV: 45
+        UseLocalRotation: false
+        ActiveForRendering: true

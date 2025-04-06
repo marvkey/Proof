@@ -387,7 +387,6 @@ void PBR_FinalOutput(vec3 directLighting, float shadowScale, vec3 IblEffect, vec
 	out_Velocity = screenPosPrev - screenPosCur;
 
     out_FragColor = finalEndingCOlor;
-        //out_FragColor = vec4(0,0,1,1);
 }
 
 
@@ -411,6 +410,7 @@ void PreEndFragment();
 
 void main()
 {
+
     PBRData pbrData;
     pbrData.Albedo = vec3(1);
     pbrData.Metalness = 0.0f;

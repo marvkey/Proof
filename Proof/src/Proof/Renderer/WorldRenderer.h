@@ -321,6 +321,7 @@ namespace Proof
 		Count<class ComputePass> m_LightCullingPass;
 		Count<StorageBufferSet> m_SBVisiblePointLightIndicesBuffer;
 		Count<StorageBufferSet> m_SBVisibleSpotLightIndicesBuffer;
+		Count<StorageBufferSet> m_SBVisibleDirectionalLightIndicesBuffer;
 
 		inline static const uint32_t TILE_SIZE = 16u;
 		inline static const uint32_t MAX_NUM_LIGHTS_PER_TILE = 1024u;

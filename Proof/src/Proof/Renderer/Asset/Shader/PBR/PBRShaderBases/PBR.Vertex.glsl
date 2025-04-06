@@ -5,6 +5,7 @@ layout(location = 3) in vec3 aTangent;
 layout(location = 4) in vec3 aBitangent;
 layout(location = 5) in mat4 aTransform;
 layout(location = 9) in mat4 aPrevTransform;
+invariant gl_Position;
 
 #extension GL_ARB_explicit_attrib_location : enable
 #include <Common.glslh>
@@ -59,6 +60,7 @@ void ApplyPbrVertex(PBRVertexInput pbrvertex)
     vec4 worldPos = aTransform * vec4(modifiedPosition , 1.0);
     //worldPos = worldPos + vec4(pbrvertex.WorldPositionOffset,0);
     PBR_Output.WorldPosition = worldPos.xyz+ pbrvertex.WorldPositionOffset ;
+
     pbrvertex.VertexPosition = modifiedPosition; 
     vec4 shadowCoords[4];
     shadowCoords[0] = u_CascadePositions.ViewProjections[0] * vec4(PBR_Output.WorldPosition, 1.0);
@@ -99,7 +101,8 @@ void ApplyPbrVertex(PBRVertexInput pbrvertex)
 	PBR_Output.NormalizePositionCur = posProjCur;
 	PBR_Output.NormalizePositionPrev = posProjPrev;
 
-   gl_Position =  u_Camera.Projection * u_Camera.View * vec4(PBR_Output.WorldPosition, 1.0);
+    vec4 worldPosVec4= vec4(PBR_Output.WorldPosition, 1.0);
+   gl_Position =  u_Camera.Projection * u_Camera.View * worldPosVec4 ;
    PBR_Output.ViewSpaceValue =  (u_Camera.View * vec4(PBR_Output.WorldPosition, 1.0)).xyz;
 
 }

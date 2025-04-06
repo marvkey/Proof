@@ -37,7 +37,16 @@ namespace Proof
 
 		vkGetPhysicalDeviceFeatures(m_PhysicalDevice, &m_Features);
 		vkGetPhysicalDeviceMemoryProperties(m_PhysicalDevice, &m_MemoryProperties);
-
+		{
+			PF_ENGINE_INFO("Gpu Name: {}", m_Properties.deviceName);
+			PF_ENGINE_INFO("	Driver Version: {}", m_Properties.driverVersion);
+			PF_ENGINE_INFO("	Vendor ID: {}", m_Properties.vendorID);
+			PF_ENGINE_INFO("	Device ID: {}", m_Properties.deviceID);
+			PF_ENGINE_INFO("	Type: {}", m_Properties.deviceType);
+			PF_ENGINE_INFO("	API Version: {}", m_Properties.apiVersion);
+			PF_ENGINE_INFO("	max bound descriptor sets: {}", m_Properties.limits.maxBoundDescriptorSets);
+			PF_ENGINE_INFO("	minimum buffer alignment : {}", m_Properties.limits.minUniformBufferOffsetAlignment);
+		}
 		uint32_t queueFamilyCount;
 		vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queueFamilyCount, nullptr);
 		PF_CORE_ASSERT(queueFamilyCount > 0, "");

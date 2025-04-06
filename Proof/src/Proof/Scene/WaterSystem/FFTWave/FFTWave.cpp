@@ -19,15 +19,28 @@
 #include "Proof/Scene/WaterSystem/Water.h"
 #include "Proof/Math/Random.h"
 #include "Proof/Math/Math.h"
+#include "Proof/Asset/MeshImpoter.h"
 #include "Proof/Asset/AssetManager.h"
 
 #include "Proof/Platform/Vulkan/Vulkan.h"
 #include "Proof/Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Proof/Platform/Vulkan/VulkanImage.h"
+ 
+#define FFT_MAX_CASCADES 8
 namespace Proof
 {
 
+    struct FFTWaterUBBuffer
+    {
+        glm::vec4 WaterColor;
+        glm::vec4 FoamColor;
 
+        glm::vec4 MapScales[FFT_MAX_CASCADES];
+
+        float Roughness;
+        int NumCascades;
+        float NormalStrength;
+    };
     Count<Texture2D> CreateRenderTex(std::string debugName, uint32_t width, uint32_t height, uint32_t depth, ImageFormat  format, bool useMips) {
 
         TextureConfiguration rt;
@@ -151,8 +164,10 @@ namespace Proof
         InitTextures();
         InitPasses();
 
-      //  m_Grid = GenerateGrid(GRID_DIM);
-       // AssetManager::CreateRuntimeAsset(m_Grid.As<Asset>(), "FFTGRID");
+
+        MeshImporter importer = MeshImporter("Assets/Meshes/clipmap_low.obj");
+        m_Grid = Count<Mesh>::Create(importer.ImportToMeshSource());
+        AssetManager::CreateRuntimeAsset(m_Grid.As<Asset>(), "FFTGRID");
 
     }
     FFTWave::FFTWave(Count<class Water> water)
@@ -160,8 +175,9 @@ namespace Proof
     {
         InitTextures();
         InitPasses();
-       // m_Grid = GenerateGrid(GRID_DIM);
-      //  AssetManager::CreateRuntimeAsset(m_Grid.As<Asset>(), "FFTGRID");
+        MeshImporter importer = MeshImporter("Assets/Meshes/clipmap_low.obj");
+        m_Grid = Count<Mesh>::Create(importer.ImportToMeshSource());
+        AssetManager::CreateRuntimeAsset(m_Grid.As<Asset>(), "FFTGRID");
 
 
     }
@@ -238,7 +254,8 @@ namespace Proof
             pc.WindSpeed = cascade->Settings.WindSpeed;
 
             glm::vec2 windDir = cascade->Settings.WindDirection;
-            pc.Angle = atan2f(windDir.y, windDir.x); // tan^-1(y/x) inverse tan
+            pc.Angle = glm::radians(180.0f); // tan^-1(y/x) inverse tan
+            //pc.Angle = atan2f(windDir.y, windDir.); // tan^-1(y/x) inverse tan
             pc.Depth = DEPTH;
             pc.Swell = cascade->Settings.Swell;
             pc.Detail = cascade->Settings.Detail;
@@ -250,6 +267,7 @@ namespace Proof
             m_SpectrumPass->Dispatch(oceanSize / WorkGroup, oceanSize / WorkGroup, 1);
             Renderer::EndComputePass(m_SpectrumPass);
         }
+
         {
             PF_PROFILE_SCOPE_DYNAMIC("SpectrumModulate");
             const uint32_t WorkGroup = 16;
@@ -268,7 +286,9 @@ namespace Proof
             pc.tileSize = cascade->Settings.TileLength;
             pc.oceanDepth = DEPTH;
 
-            pc.simulationTime = FrameTime::GetTime(); //TODO is this right
+            //pc.simulationTime = FrameTime::GetTime(); //TODO is this right
+            pc.simulationTime = cascade->InternalSettings.Time;
+           
             pc.cascadeLayerIndex = cascade->GetCascadeIndex();
 
             m_SpectrumModulatePass->PushData("u_PC", &pc);
@@ -337,10 +357,25 @@ namespace Proof
             Renderer::EndComputePass(m_FFTUnpack);
         }
 
+        {
+            FFTWaterUBBuffer ubf;
+            ubf.NumCascades = m_Cascades.size();
+            for (Count<FFTWaveCascade> cascade : m_Cascades)
+            {
+                glm::vec2 uvScale = glm::vec2(1.0f) / cascade->Settings.TileLength;
+                ubf.MapScales[cascade->m_CascadeIndex] = glm::vec4(uvScale.x, uvScale.y, cascade->Settings.DisplacementScale, cascade->Settings.NormalScale);
+
+            }
+            Buffer buffer(&ubf, sizeof(ubf), true);
+            m_WaterBuffer->SetData(Renderer::GetCurrentFrameInFlight(), buffer);
+            buffer.Release(); 
+        }
+   
     #endif
         Renderer::EndCommandBuffer(m_CommandBuffer);
         Renderer::SubmitCommandBuffer(m_CommandBuffer);
    
+        renderer->SubmitMesh(m_Grid, m_RenderMaterial, GetTransform());
     }
 
     void FFTWave::InitPasses()
@@ -348,6 +383,13 @@ namespace Proof
         PF_PROFILE_FUNC();
 
         const uint32_t oceanSize = (uint32_t)WaveInfo.OceanSize;
+
+        {
+            m_RenderMaterial = RenderMaterial::Create("FFTRenderMaterial", Renderer::GetShader("FFTWater"));
+            m_WaterBuffer = UniformBufferSet::Create(sizeof(FFTWaterUBBuffer));
+            m_RenderMaterial->Set("WaterUniforms", m_WaterBuffer);
+            m_RenderMaterial->Set("WaterUniformsF", m_WaterBuffer);
+        }
 
         m_CommandBuffer = RenderCommandBuffer::Create("FFTCommandBuffer");
         m_SBButterflyFactors = StorageBufferSet::Create(oceanSize * oceanSize * sizeof(glm::vec4));
@@ -386,6 +428,9 @@ namespace Proof
             auto displacement = CreateRenderImageView("FFTDisplacementView", m_DisplacementMap, 0, 0, WaveInfo.NumCascades, 1, ImageViewType::View2DArray);
             auto normal = CreateRenderImageView("FFTNormalView", m_NormalMap, 0, 0, WaveInfo.NumCascades, 1, ImageViewType::View2DArray);
 
+            m_RenderMaterial->Set("u_Displacements", displacement);
+            m_RenderMaterial->Set("u_Normals", normal);
+
             m_FFTUnpack->SetInput("o_DisplacementMap", displacement);
             m_FFTUnpack->SetInput("o_NormalMap", normal);
         }
@@ -395,6 +440,7 @@ namespace Proof
             Count<FFTWaveCascade> cascade = Count<FFTWaveCascade>::Create(i,this);
 
             m_Cascades.emplace_back(cascade);
+
         }
 
 	}

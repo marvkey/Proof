@@ -203,6 +203,7 @@ namespace Proof {
 		ShaderLibrary->LoadShader("FFTOceanCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanCompute.glsl");
 		ShaderLibrary->LoadShader("FFTOceanTranspose", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanTranspose.glsl");
 		ShaderLibrary->LoadShader("FFTOceanUnpack", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanUnpack.glsl");
+		ShaderLibrary->LoadShader("FFTWater", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTWater.glsl");
 
 		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);

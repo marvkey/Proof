@@ -10,12 +10,12 @@ layout(location = 4) in vec3 aBitangent;
 layout(location = 5) in mat4 aTransform;
 layout(location = 9) in mat4 aPrevTransform;
 
-precise invariant gl_Position;
-
+invariant gl_Position;
 void main()
 {
     vec4 worldPos = aTransform * vec4(aPosition, 1.0);
     gl_Position = u_Camera.Projection * u_Camera.View * worldPos;
+    gl_Position.z += 0.001; // Offset
 	
 }
 #Fragment Shader
