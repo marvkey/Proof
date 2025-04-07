@@ -202,10 +202,10 @@ namespace Proof
         Renderer::BeginCommandBuffer(m_CommandBuffer);
 
         const uint32_t oceanSize = (uint32_t)WaveInfo.OceanSize;
-        const uint32_t numFFTStages = static_cast<int>(std::log2((uint32_t)WaveInfo.OceanSize));
+        const uint32_t numFFTStages = static_cast<int>(std::log2((uint32_t)WaveInfo.OceanSize)/std::log2(2));
         static bool checkedButterfly = false;
         // onlu once if map size is chagned
-        if (!checkedButterfly)
+      //  if (!checkedButterfly)
         {
             PF_PROFILE_SCOPE_DYNAMIC("ButterflyPass");
             checkedButterfly = true;
@@ -219,7 +219,7 @@ namespace Proof
         static bool checked = false;
         const float DEPTH = 20.0;
         Count<FFTWaveCascade> cascade = m_Cascades[0];
-        if (!checked)
+       // if (!checked)
         {
             const uint32_t WorkGroup = 16;
             PF_PROFILE_SCOPE_DYNAMIC("Spectrum");

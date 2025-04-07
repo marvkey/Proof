@@ -44,12 +44,7 @@ void Vertex(inout PBRVertexInput vertexInput)
         displacement += texture(u_Displacements, vec3(Output.UV * scales.xy, float(i))).xyz * scales.z;
     }
 
-    //vertexInput.VertexPosition +=  displacement * distanceFactor ;
-
-    float wave = sin(vertexInput.VertexPosition.x * 2.0 + u_FrameData.AppTimeSeconds) *2;
-    vertexInput.VertexPosition.y += wave ;
-
-    //vertexInput.VertexPosition= modifiedPosition;
+    vertexInput.VertexPosition +=  displacement * distanceFactor ;
     Output.WaveHeight = displacement.y;
 
 }
@@ -138,7 +133,8 @@ void Fragment(inout PBRData pbrData)
     pbrData.Metalness = 0.3;
     pbrData.Roughness = 0.7;
 
-    gradient *= mix(0.015, u_PC.NormalStrength, exp(-dist*0.0175)); // Blend normal with terrain normal as distance increases.
+   // gradient *= mix(0.015, u_PC.NormalStrength, exp(-dist*0.0175)); // Blend normal with terrain normal as distance increases.
+   // gradient *= mix(0.015, u_PC.NormalStrength, exp(-dist*0.0175)); // Blend normal with terrain normal as distance increases.
 
    // pbrData.Normal =  (u_Camera.View * vec4(normalize(vec3(-gradient.x, 1.0, -gradient.y)), 0.0)).xyz;
     pbrData.Alpha = 1.0;
