@@ -1938,8 +1938,16 @@ namespace Proof
 					FFTWave::FFTWaveInfo& waveInfo = water->GetWave().As<FFTWave>()->WaveInfo;
 					Count< FFTWave> fftWave = water->GetWave().As<FFTWave>();
 
+					UI::BeginPropertyGrid();
+					UI::AttributeColor("Water Colour", waveInfo.WaterColor);
+					UI::AttributeDrag("Normal Strength", waveInfo.NormalStrength,0.01);
+					UI::AttributeDrag("Roughness", waveInfo.Roughness, 0.01);
+					UI::EndPropertyGrid();
+
+					ImGui::Separator();
 					for (auto cascade : fftWave->GetCascades())
 					{
+						UI::ScopedID scopeID(fmt::format("FFt waterCascade Settings {}", cascade->GetCascadeIndex()).c_str());
 						if (UI::AttributeTreeNode(fmt::format("Cascade {}",cascade->GetCascadeIndex()), false, 3, 3))
 						{
 							auto& settings = cascade->Settings;

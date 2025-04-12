@@ -70,7 +70,9 @@ void Fragment(inout PBRData pbrData)
     pbrData.Alpha = u_MaterialUniform.Albedo.a;
     pbrData.OutFinalColor = 0;
 }
-
+void LightLateUpdate(inout vec3 lightDir, inout vec3 diffuseBRDF, inout vec3 specularBRDF,DirectionalLight currentLight)
+{
+}
 /*
 void PreEndFragment()
 {

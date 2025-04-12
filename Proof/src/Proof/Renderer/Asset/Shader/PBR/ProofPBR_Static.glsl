@@ -238,3 +238,9 @@ void Fragment(inout PBRData pbrData)
 void PreEndFragment()
 {
 }
+
+        
+void LightLateUpdate(inout vec3 lightDir, inout vec3 diffuseBRDF, inout vec3 specularBRDF,DirectionalLight currentLight)
+{
+
+}

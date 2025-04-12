@@ -32,12 +32,14 @@ namespace Proof
 
     struct FFTWaterUBBuffer
     {
-        glm::vec4 WaterColor;
-        glm::vec4 FoamColor;
-
         glm::vec4 MapScales[FFT_MAX_CASCADES];
 
+        glm::vec4 WaterColor;
+
+        glm::vec3 FoamColor;
         float Roughness;
+
+
         int NumCascades;
         float NormalStrength;
     };
@@ -165,7 +167,7 @@ namespace Proof
         InitPasses();
 
 
-        MeshImporter importer = MeshImporter("Assets/Meshes/clipmap_low.obj");
+        MeshImporter importer = MeshImporter("Assets/Meshes/clipmap_high.obj");
         m_Grid = Count<Mesh>::Create(importer.ImportToMeshSource());
         AssetManager::CreateRuntimeAsset(m_Grid.As<Asset>(), "FFTGRID");
 
@@ -175,7 +177,7 @@ namespace Proof
     {
         InitTextures();
         InitPasses();
-        MeshImporter importer = MeshImporter("Assets/Meshes/clipmap_low.obj");
+        MeshImporter importer = MeshImporter("Assets/Meshes/clipmap_high.obj");
         m_Grid = Count<Mesh>::Create(importer.ImportToMeshSource());
         AssetManager::CreateRuntimeAsset(m_Grid.As<Asset>(), "FFTGRID");
 
@@ -194,6 +196,13 @@ namespace Proof
             cascade->InternalSettings.FoamGrowRate = cascadeDelta * cascade->Settings.FoamAmount* 7.5f;
             cascade->InternalSettings.FoamDecayRate = cascadeDelta * std::max(0.5f, 10.0f - cascade->Settings.FoamAmount) * 1.15f;
         }
+
+        if (m_Cascades.size() != WaveInfo.NumCascades)
+        {
+            InitTextures();
+            InitPasses();
+        }
+
     }
 
     void FFTWave::Render(Count<class WorldRenderer> renderer)
@@ -216,10 +225,47 @@ namespace Proof
             Renderer::EndComputePass(m_ButterflyPass);
 
         }
+
+		for (Count<FFTWaveCascade> cascade : m_Cascades)
+		{
+			UpdateCascade(cascade);
+		}
+
+        {
+            FFTWaterUBBuffer ubf;
+            ubf.NumCascades = m_Cascades.size();
+            
+            for (Count<FFTWaveCascade> cascade : m_Cascades)
+            {
+                glm::vec2 uvScale = glm::vec2(1.0f) / cascade->Settings.TileLength;
+                ubf.MapScales[cascade->m_CascadeIndex] = glm::vec4(uvScale.x, uvScale.y, cascade->Settings.DisplacementScale, cascade->Settings.NormalScale);
+
+            }
+            
+            ubf.NormalStrength = WaveInfo.NormalStrength;
+            ubf.WaterColor = WaveInfo.WaterColor;
+            ubf.FoamColor = WaveInfo.FoamColor;
+            ubf.Roughness = WaveInfo.Roughness;
+            
+            Buffer buffer(&ubf, sizeof(ubf), true);
+            m_WaterBuffer->SetData(Renderer::GetCurrentFrameInFlight(), buffer);
+            buffer.Release(); 
+        }
+   
+        Renderer::EndCommandBuffer(m_CommandBuffer);
+        Renderer::SubmitCommandBuffer(m_CommandBuffer);
+   
+        renderer->SubmitMesh(m_Grid, m_RenderMaterial, GetTransform());
+    }
+
+    void FFTWave::UpdateCascade(Count<FFTWaveCascade> cascade)
+    {
+
+        const uint32_t oceanSize = (uint32_t)WaveInfo.OceanSize;
+        const uint32_t numFFTStages = static_cast<int>(std::log2((uint32_t)WaveInfo.OceanSize) / std::log2(2));
         static bool checked = false;
         const float DEPTH = 20.0;
-        Count<FFTWaveCascade> cascade = m_Cascades[0];
-       // if (!checked)
+        // if (!checked)
         {
             const uint32_t WorkGroup = 16;
             PF_PROFILE_SCOPE_DYNAMIC("Spectrum");
@@ -254,8 +300,8 @@ namespace Proof
             pc.WindSpeed = cascade->Settings.WindSpeed;
 
             glm::vec2 windDir = cascade->Settings.WindDirection;
-            pc.Angle = glm::radians(180.0f); // tan^-1(y/x) inverse tan
-            //pc.Angle = atan2f(windDir.y, windDir.); // tan^-1(y/x) inverse tan
+            //pc.Angle = glm::radians(180.0f); // tan^-1(y/x) inverse tan
+            pc.Angle = atan2f(windDir.y, windDir.x); // tan^-1(y/x) inverse tan
             pc.Depth = DEPTH;
             pc.Swell = cascade->Settings.Swell;
             pc.Detail = cascade->Settings.Detail;
@@ -288,7 +334,7 @@ namespace Proof
 
             //pc.simulationTime = FrameTime::GetTime(); //TODO is this right
             pc.simulationTime = cascade->InternalSettings.Time;
-           
+
             pc.cascadeLayerIndex = cascade->GetCascadeIndex();
 
             m_SpectrumModulatePass->PushData("u_PC", &pc);
@@ -300,13 +346,12 @@ namespace Proof
             PF_PROFILE_SCOPE_DYNAMIC("FFTCompute");
 
             Renderer::BeginComputePass(m_CommandBuffer, m_FFTPass);
-           
+
             uint32_t index = cascade->GetCascadeIndex();
-            m_FFTPass->PushData("u_PC",&index);
+            m_FFTPass->PushData("u_PC", &index);
             m_FFTPass->Dispatch(1, oceanSize, 4);
             Renderer::EndComputePass(m_FFTPass);
         }
-    #if 1
 
         {
             PF_PROFILE_SCOPE_DYNAMIC("Transpose");
@@ -356,26 +401,6 @@ namespace Proof
             m_FFTUnpack->Dispatch(oceanSize / WorkGroup, oceanSize / WorkGroup, 1);
             Renderer::EndComputePass(m_FFTUnpack);
         }
-
-        {
-            FFTWaterUBBuffer ubf;
-            ubf.NumCascades = m_Cascades.size();
-            for (Count<FFTWaveCascade> cascade : m_Cascades)
-            {
-                glm::vec2 uvScale = glm::vec2(1.0f) / cascade->Settings.TileLength;
-                ubf.MapScales[cascade->m_CascadeIndex] = glm::vec4(uvScale.x, uvScale.y, cascade->Settings.DisplacementScale, cascade->Settings.NormalScale);
-
-            }
-            Buffer buffer(&ubf, sizeof(ubf), true);
-            m_WaterBuffer->SetData(Renderer::GetCurrentFrameInFlight(), buffer);
-            buffer.Release(); 
-        }
-   
-    #endif
-        Renderer::EndCommandBuffer(m_CommandBuffer);
-        Renderer::SubmitCommandBuffer(m_CommandBuffer);
-   
-        renderer->SubmitMesh(m_Grid, m_RenderMaterial, GetTransform());
     }
 
     void FFTWave::InitPasses()
@@ -434,7 +459,7 @@ namespace Proof
             m_FFTUnpack->SetInput("o_DisplacementMap", displacement);
             m_FFTUnpack->SetInput("o_NormalMap", normal);
         }
-
+        m_Cascades.clear();
         for (uint32_t i = 0; i < WaveInfo.NumCascades; i++)
         {
             Count<FFTWaveCascade> cascade = Count<FFTWaveCascade>::Create(i,this);
@@ -457,4 +482,5 @@ namespace Proof
     {
         return m_RenderMaterial;
     }
+   
 }

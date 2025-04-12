@@ -444,6 +444,8 @@ void Fragment(inout PBRData pbrData)
 	//pbrData.Normal = normalize(PBR_Input.WorldNormals * pbrData.Normal);
 
 }
-
+void LightLateUpdate(inout vec3 lightDir, inout vec3 diffuseBRDF, inout vec3 specularBRDF,DirectionalLight currentLight)
+{
+}
 
 

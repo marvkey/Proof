@@ -55,7 +55,7 @@ namespace Proof
 			ClampedValue<float, 0.0f, 2.0f> Swell = 0.8;
 
 			// Modifies the attenuation of high frequency waves.
-			ClampedValue<float, 0.0f, 1.0f> Detail = 1.0f; // Note: This should be reduced as the number of cascades increases to avoid *too* much detail!
+			ClampedValue<float, 0.0f, 1.0f> Detail = 0.25f; // Note: This should be reduced as the number of cascades increases to avoid *too* much detail!
 
 			// Modifies how much wind and swell affect the direction of the waves.
 			ClampedValue<float, 0.0f, 1.0f> Spread = 0.2f;
@@ -123,7 +123,12 @@ namespace Proof
 			float windAngle = 45.f;
 			float Choppiness = 1.5f;
 			FFTWaveMapSize OceanSize = FFTWaveMapSize::SIZE_1024;
-			uint32_t NumCascades = 1;
+			ClampedValue<int, 1, 8> NumCascades = 3;
+			ClampedValue<float, 0.0f, 1.0f> NormalStrength = 1.0f;
+			ClampedValue<float, 0.0f, 1.0f> Roughness= 0.4f;
+			glm::vec4 WaterColor = glm::vec4(0.1, 0.15, 0.18, 1.0f);
+			glm::vec3 FoamColor = glm::vec3(0.73, 0.67, 0.62);
+
 		}WaveInfo;
 
 		Count<Image2D> GetSpectrumTexture() { return m_SpectrumTexture; };
@@ -136,6 +141,7 @@ namespace Proof
 		void InitPasses();
 		void InitTextures();
 		Count<class RenderMaterial> GetRenderMaterial();
+		void UpdateCascade(Count<FFTWaveCascade> cascade);
 	private:
 
 		Count<ComputePass> m_SpectrumPass;

@@ -109,6 +109,9 @@ void PBR_SetUpPbr(vec3 albedocolor, float metalness, float roughness, vec3 norma
     out_ViewNormalsLuminance.xyz = PBR_Input.CameraView * normalize(PBR_Input.Normal);
 }
 
+void LightLateUpdate(inout vec3 directLighting, inout vec3 diffuseBRDF, inout vec3 specularBRDF, DirectionalLight currentLight);
+   
+
 vec3 PBR_DirectionalLighting()
 {
     vec3 directLighting = vec3(0); 
@@ -134,28 +137,13 @@ vec3 PBR_DirectionalLighting()
         // Cook-Torrance
 		vec3 specularBRDF = (F * D * G) / max(0.00001, 4.0 * cosLi * m_PBRParams.NdotV);
 		specularBRDF = clamp(specularBRDF, vec3(0.0f), vec3(10.0f));
-		directLighting += (diffuseBRDF + specularBRDF) * Lradiance * cosLi;
 
-        /*
-        vec3 lightDirection = -normalize(currentLight.Direction);
-        vec3 halfway = normalize(m_PBRParams.View  + lightDirection);
-        float nDotL = max(dot(m_PBRParams.Normal, lightDirection), 0.0);
-        vec3 radiance = currentLight.Color * currentLight.Intensity;
-        
-        float NDF = DistributionGGX(m_PBRParams.Normal, halfway, m_PBRParams.Roughness);
-        float G   = GeometrySmith(m_PBRParams.NdotV, nDotL, m_PBRParams.Roughness);
-        vec3  F   = FresnelSchlick(max(dot(halfway,m_PBRParams.View ), 0.0), m_PBRParams.F0);
+        specularBRDF = specularBRDF* Lradiance * cosLi;
+        diffuseBRDF = diffuseBRDF * Lradiance * cosLi;
+        LightLateUpdate(Li, diffuseBRDF, specularBRDF,currentLight);
 
-        vec3 kD = 1.0 - F;
-        kD *= 1.0 - m_PBRParams.Metalness;
+		directLighting += (diffuseBRDF + specularBRDF);
 
-        vec3 numerator = NDF * G * F;
-        float denominator = 4.0 * m_PBRParams.NdotV * nDotL;
-        vec3 specular = numerator / max (denominator, 0.0001);
-
-        vec3 lightEffect = (kD * m_PBRParams.AlbedoColor / PI + specular )  * radiance * nDotL;
-        directLighting +=lightEffect;
-        */
     }
 
     return directLighting;
