@@ -1958,15 +1958,17 @@ namespace Proof
 							UI::AttributeSlider("NormalScale", settings.NormalScale);
 							ImGui::Separator();
 
-							UI::AttributeSlider("Wind Speed", settings.WindSpeed);
-							UI::AttributeDrag("WindDirection", settings.WindDirection, 0.01);
+							UI::AttributeDrag("Wind Speed", settings.WindSpeed);
+							UI::AttributeDrag("WindDirection", settings.WindDirection, 0.25);
 							UI::AttributeSlider("FetLength", settings.FetchLength);
 							UI::AttributeSlider("Swell", settings.Swell);
 							UI::AttributeSlider("Detail", settings.Detail);
 							UI::AttributeSlider("Spread", settings.Spread);
 
 							ImGui::Separator();
-							UI::AttributeDrag("WhiteCap", settings.Whitecap, 0.01);
+							UI::AttributeDrag("FoamAmount", settings.FoamAmount, 0.01);
+							UI::AttributeDrag("WhiteCap", settings.Whitecap, 0.01,"How Steep wave before foam builds up");
+							UI::AttributeDrag("FoamTimeScale", settings.FoamTimeScale, 0.01,"How fast foam builds up");
 
 							UI::EndPropertyGrid();
 

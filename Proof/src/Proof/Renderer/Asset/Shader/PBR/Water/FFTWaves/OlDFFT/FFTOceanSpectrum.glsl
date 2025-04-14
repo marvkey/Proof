@@ -1,82 +1,117 @@
-// This compute shader calculates the Fourier spectrum of ocean waves by applying
-// the initial wave spectrum, the phase data, and the dispersion relation.
-// It also introduces wave choppiness for more realistic wave displacement.
+//https://github.com/2Retr0/GodotOceanWaves/blob/4e1e219bc8f55c38092ed34e6fee568b900d95b5/assets/shaders/compute/spectrum_compute.glsl
 #Compute Shader
-#version 450 core
-//https://github.com/achalpandeyy/OceanFFT/blob/master/Source/Shaders/CS_Spectrum.comp
 
-#define COMPUTE_WORK_GROUP_DIM 32
-#define RESOLUTION 512
+#version 450
+/**
+ * Generates a 2D texture representing the JONSWAP wave spectra
+ * w/ Hasselmann directional spreading.
+ *
+ * Sources: Jerry Tessendorf - Simulating Ocean Water
+ *          Christopher J. Horvath - Empirical Directional Wave Spectra for Computer Graphics
+ */
 
-const float PI = 3.14159265359;
-const float GRAVITY = 9.81;
-const float KM = 370.0; // Phillips spectrum constant for large-scale ocean waves
+#define PI (3.141592653589793)
+#define G  (9.81)
 
-layout (local_size_x = COMPUTE_WORK_GROUP_DIM, local_size_y = COMPUTE_WORK_GROUP_DIM) in;
+layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 
-layout (binding = 0, r32f) readonly uniform image2D u_Phases;
-layout (binding = 1, r32f) readonly uniform image2D u_InitialSpectrum;
-layout (binding = 2, rgba32f) writeonly uniform image2D o_Spectrum;
+layout(rgba16f, set = 0, binding = 0) restrict writeonly uniform image2DArray o_Spectrum;
 
-layout(push_constant) uniform SpectrumConstants
-{
-    int OceanSize;    // Physical size of the ocean grid
-    float Choppiness; // Controls wave steepness and horizontal displacement
-} u_PC;
+layout(push_constant) restrict readonly uniform PushConstants {
+    ivec2 Seed;
+    vec2 TileLength;
 
-// Performs complex multiplication: (a + bi) * (c + di)
-vec2 MultiplyComplex(vec2 a, vec2 b)
-{
-    return vec2(a.x * b.x - a.y * b.y, a.y * b.x + a.x * b.y);
+    float Alpha;
+    float PeakFrequency;
+    float WindSpeed;
+    float Angle; // radians
+
+    float Depth;
+    float Swell;
+    float Detail;
+    float Spread;
+
+    uint CascadeIndex;
+}u_PC;
+
+// --- HELPER FUNCTIONS ---
+// Source: https://www.shadertoy.com/view/Xt3cDn
+vec2 Hash(in uvec2 x) {
+    uint h32 = x.y + 374761393U + x.x * 3266489917U;
+    h32 = 2246822519U * (h32 ^ (h32 >> 15));
+    h32 = 3266489917U * (h32 ^ (h32 >> 13));
+    uint n = h32 ^ (h32 >> 16);
+    uvec2 rz = uvec2(n, n * 48271U);
+    return vec2((rz.xy >> 1) & uvec2(0x7FFFFFFFU)) / float(0x7FFFFFFF);
 }
 
-// Multiplies a complex number by 'i' (imaginary unit)
-vec2 MultiplyByI(vec2 z)
-{
-    return vec2(-z.y, z.x);
+/** Samples a 2D-bivariate normal distribution */
+vec2 Gaussian(in vec2 x) {
+    float r = sqrt(-2.0 * log(x.x));
+    float theta = 2.0 * PI * x.y;
+    return vec2(r * cos(theta), r * sin(theta));
 }
 
-// Computes angular frequency using the dispersion relation
-float ComputeOmega(float k)
-{
-    return sqrt(GRAVITY * k * (1.0 + (k * k) / (KM * KM)));
+/** Returns the complex conjugate of x */
+vec2 ConjComplex(in vec2 x) {
+    return vec2(x.x, -x.y);
 }
 
-void main()
-{
-   // Get pixel coordinates in the texture
-    ivec2 pixelCoord = ivec2(gl_GlobalInvocationID.xy);
-
-    // Compute wave vector components using FFT indexing
-    float n = (pixelCoord.x < 0.5 * RESOLUTION) ? pixelCoord.x : pixelCoord.x - RESOLUTION;
-    float m = (pixelCoord.y < 0.5 * RESOLUTION) ? pixelCoord.y : pixelCoord.y - RESOLUTION;
-    vec2 waveVector = (2.0 * PI * vec2(n, m)) / u_PC.OceanSize;
-
-    // Load the current phase value and convert it into a complex exponential form
-    float phase = imageLoad(u_Phases, pixelCoord).r;
-    vec2 phaseVector = vec2(cos(phase), sin(phase)); // e^(i*phase)
-
-    // Load the initial wave spectrum values
-    vec2 h0 = vec2(imageLoad(u_InitialSpectrum, pixelCoord).r, 0.0);
-    vec2 h0Star = vec2(imageLoad(u_InitialSpectrum, (RESOLUTION - pixelCoord) % (RESOLUTION - 1)).r, 0.0);
-    h0Star.y *= -1.0; // Complex conjugate
-
-    // Compute the complex wave height h(k, t)
-    vec2 h = MultiplyComplex(h0, phaseVector) + MultiplyComplex(h0Star, vec2(phaseVector.x, -phaseVector.y));
-
-    // Compute horizontal displacements using choppiness factor
-    vec2 hX = -MultiplyByI(h * (waveVector.x / length(waveVector))) * u_PC.Choppiness;
-    vec2 hZ = -MultiplyByI(h * (waveVector.y / length(waveVector))) * u_PC.Choppiness;
-
-    // Remove DC term at zero frequency to prevent unrealistic drift
-    if (waveVector.x == 0.0 && waveVector.y == 0.0)
-    {
-        h = vec2(0.0);
-        hX = vec2(0.0);
-        hZ = vec2(0.0);
-    }
-
-    // Store the computed spectrum components in the output texture
-    imageStore(o_Spectrum, pixelCoord, vec4(hX + MultiplyByI(h), hZ));
+// --- SPECTRUM-RELATED FUNCTIONS ---
+// Source: Jerry Tessendorf - Simulating Ocean Water
+vec2 DispersionRelation(in float k) {
+    float a = k * u_PC.Depth;
+    float b = tanh(a);
+    float dispersionRelation = sqrt(G * k * b);
+    float dDispersionRelation = 0.5 * G * (b + a * (1.0 - b * b)) / dispersionRelation;
+    return vec2(dispersionRelation, dDispersionRelation);
 }
 
+/** Normalization factor approximation for Longuet-Higgins function. */
+float LonguetHigginsNormalization(in float s) {
+    float a = sqrt(s);
+    return (s < 0.4) ? (0.5 / PI) + s * (0.220636 + s * (-0.109 + s * 0.090)) : inversesqrt(PI) * (a * 0.5 + (1.0 / a) * 0.0625);
+}
+
+float LonguetHigginsFunction(in float s, in float theta) {
+    return LonguetHigginsNormalization(s) * pow(abs(cos(theta * 0.5)), 2.0 * s);
+}
+
+float HasselmannDirectionalSpread(in float w, in float wP, in float windSpeed, in float theta) {
+    float p = w / wP;
+    float s = (w <= wP) ? 6.97 * pow(abs(p), 4.06) : 9.77 * pow(abs(p), -2.33 - 1.45 * (windSpeed * wP / G - 1.17));
+    float sXi = 16.0 * tanh(wP / w) * u_PC.Swell * u_PC.Swell;
+    return LonguetHigginsFunction(s + sXi, theta - u_PC.Angle);
+}
+
+float TMASpectrum(in float w, in float wP, in float alpha) {
+    const float beta = 1.25;
+    const float gamma = 3.3;
+    float sigma = (w <= wP) ? 0.07 : 0.09;
+    float r = exp(-(w - wP) * (w - wP) / (2.0 * sigma * sigma * wP * wP));
+    float jonswapSpectrum = (alpha * G * G) / pow(w, 5) * exp(-beta * pow(wP / w, 4)) * pow(gamma, r);
+    float wH = min(w * sqrt(u_PC.Depth / G), 2.0);
+    float kitaigorodskiiDepthAttenuation = (wH <= 1.0) ? 0.5 * wH * wH : 1.0 - 0.5 * (2.0 - wH) * (2.0 - wH);
+    return jonswapSpectrum * kitaigorodskiiDepthAttenuation;
+}
+
+vec2 GetSpectrumAmplitude(in ivec2 id, in ivec2 mapSize) {
+    vec2 dk = 2.0 * PI / u_PC.TileLength;
+    vec2 kVec = (id - mapSize * 0.5) * dk;
+    float k = length(kVec) + 1e-6;
+    float theta = atan(kVec.x, kVec.y);
+    vec2 dispersion = DispersionRelation(k);
+    float w = dispersion[0];
+    float wNorm = dispersion[1] / k * dk.x * dk.y;
+    float s = TMASpectrum(w, u_PC.PeakFrequency, u_PC.Alpha);
+    float d = mix(0.5 / PI, HasselmannDirectionalSpread(w, u_PC.PeakFrequency, u_PC.WindSpeed, theta), 1.0 - u_PC.Spread) * exp(-(1.0 - u_PC.Detail) * (1.0 - u_PC.Detail) * k * k);
+    return Gaussian(Hash(uvec2(id + u_PC.Seed))) * sqrt(2.0 * s* d* wNorm);
+}
+
+void main() {
+    const ivec2 dims = imageSize(o_Spectrum).xy;
+    const ivec3 id = ivec3(gl_GlobalInvocationID.xy, u_PC.CascadeIndex);
+    const ivec2 id0 = id.xy;
+    const ivec2 id1 = ivec2(mod(-id0, dims));
+    imageStore(o_Spectrum, id, vec4(GetSpectrumAmplitude(id0, dims), ConjComplex(GetSpectrumAmplitude(id1, dims))));
+}

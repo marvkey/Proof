@@ -1,4 +1,3 @@
-//https://github.com/2Retr0/GodotOceanWaves/blob/a171446f8174348895aaafc426576c26261058b9/assets/shaders/compute/fft_unpack.glsl
 #Compute Shader
 #version 460
 /** 
@@ -11,8 +10,8 @@
 
 layout(local_size_x = TILE_SIZE, local_size_y = TILE_SIZE, local_size_z = 2) in;
 
-layout(rgba16f, set = 0, binding = 0) restrict writeonly uniform image2DArray o_DisplacementMap;
-layout(rgba16f, set = 0, binding = 1) restrict uniform image2DArray o_NormalMap;
+layout(rgba16f, set = 0, binding = 0) restrict writeonly uniform image2DArray displacement_map;
+layout(rgba16f, set = 0, binding = 1) restrict uniform image2DArray normal_map;
 
 layout(std430, set = 1, binding = 0) restrict buffer FFTBuffer {
 	vec2 data[]; // map_size x map_size x num_spectra x 2 * num_cascades
@@ -48,7 +47,7 @@ void main() {
 			float hx = tile[0][id_local.y][id_local.x].x;
 			float hy = tile[0][id_local.y][id_local.x].y;
 			float hz = tile[1][id_local.y][id_local.x].x;
-			imageStore(o_DisplacementMap, id, vec4(hx, hy, hz, 0.0f) * sign_shift);
+			imageStore(displacement_map, id, vec4(hx, hy, hz, 0) * sign_shift);
 			break;
 		case 1:
 			float dhy_dx = tile[1][id_local.y][id_local.x].y * sign_shift;
@@ -59,13 +58,13 @@ void main() {
 
 			float jacobian = (1.0 + dhx_dx) * (1.0 + dhz_dz) - dhz_dx*dhz_dx;
 			float foam_factor = -min(0, jacobian - u_PC.whitecap);
-			float foam = imageLoad(o_NormalMap, id).a;
+			float foam = imageLoad(normal_map, id).a;
 			foam *= exp(-u_PC.foam_decay_rate);
-			foam +=foam_factor * u_PC.foam_grow_rate;
+			foam += foam_factor * u_PC.foam_grow_rate;
 			foam = clamp(foam, 0.0, 1.0);
 
 			vec2 gradient = vec2(dhy_dx, dhy_dz) / (1.0 + abs(vec2(dhx_dx, dhz_dz)));
-			imageStore(o_NormalMap, id, vec4(gradient, dhx_dx, foam));
+			imageStore(normal_map, id, vec4(gradient, dhx_dx, foam));
 			break;
 	}
 }

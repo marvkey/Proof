@@ -1,7 +1,5 @@
-//https://github.com/2Retr0/GodotOceanWaves/blob/4e1e219bc8f55c38092ed34e6fee568b900d95b5/assets/shaders/compute/fft_compute.glsl
 #Compute Shader
-
-#version 450
+#version 460
 /** 
  * A coalesced decimation-in-time Stockham FFT kernel. 
  * Source: http://wwwa.pikara.ne.jp/okojisan/otfft-en/stockham3.html

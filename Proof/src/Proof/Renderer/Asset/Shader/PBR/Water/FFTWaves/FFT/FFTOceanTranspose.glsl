@@ -1,6 +1,4 @@
-//https://github.com/2Retr0/GodotOceanWaves/blob/a171446f8174348895aaafc426576c26261058b9/assets/shaders/compute/transpose.glsl
 #Compute Shader
-
 #version 460
 /** 
  * A memory-efficient coalesced matrix transpose kernel. 

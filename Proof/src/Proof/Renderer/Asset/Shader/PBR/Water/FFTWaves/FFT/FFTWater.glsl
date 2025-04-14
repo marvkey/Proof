@@ -11,7 +11,6 @@ layout(set = 0, binding = 1) uniform sampler2DArray u_Displacements;
 
 layout(set = 0, binding = 0) uniform WaterUniforms 
 {
-   vec4 MapScales[MAX_CASCADES];
 
     vec4 WaterColor;
 
@@ -20,7 +19,16 @@ layout(set = 0, binding = 0) uniform WaterUniforms
 
     int NumCascades;
     float NormalStrength;
+	vec2 Padding;
+
+
 } u_PC;
+
+layout(set = 0, binding = 5) uniform ScalesWaterUniform
+{
+
+   vec4 MapScales[MAX_CASCADES];
+};
 
 
 struct VertexOutput
@@ -32,22 +40,27 @@ struct VertexOutput
 layout(location = 23) out VertexOutput Output;
 void Vertex(inout PBRVertexInput vertexInput)
 {
-
-
-    Output.UV = vertexInput.VertexPosition.xz;
-
-    float distanceFactor = min(exp(-(length(Output.UV - u_Camera.Position.xz) - 150.0) * 0.007), 1.0); // Displacement amonut falls off after 150m.
-
-    // Read displacements from displacement maps.
+	vec4 worldPos = aTransform * vec4(vertexInput.VertexPosition , 1.0);
     vec3 displacement = vec3(0.0);
-    for (int i = 0; i < u_PC.NumCascades; ++i) {
-        vec4 scales = u_PC.MapScales[i];
-        displacement += texture(u_Displacements, vec3(Output.UV * scales.xy, float(i))).xyz * scales.z;
-    }
+for (int i = 0; i < u_PC.NumCascades; ++i) {
+    vec4 scales = MapScales[i];
 
-    vertexInput.VertexPosition +=  displacement * distanceFactor ;
-    Output.WaveHeight = displacement.y;
+    // Reconstruct tileLength from 1.0 / scale
+    vec2 tileLength = vec2(1.0 / scales.x, 1.0 / scales.y);
 
+    // Wrap world position into tile space [0, tileLength]
+    vec2 worldPos = vertexInput.VertexPosition.xz;
+    vec2 wrapped = mod(mod(worldPos, tileLength) + tileLength, tileLength); // handles negative coords
+    vec2 uv = wrapped / tileLength; // map to [0,1]
+
+    displacement += texture(u_Displacements, vec3(uv, float(i))).xyz * scales.z;
+}
+
+Output.UV = vertexInput.VertexPosition.xz;
+Output.WaveHeight = displacement.y;
+
+float distanceFactor = min(exp(-(length(Output.UV - u_Camera.Position.xz) - 150.0) * 0.007), 1.0);
+vertexInput.VertexPosition += displacement * distanceFactor;
 }
 
 #Fragment Shader
@@ -63,8 +76,6 @@ layout(set = 0, binding = 2) uniform sampler2DArray u_Normals;
 
 layout(set = 0, binding = 3) uniform WaterUniformsF 
 {
-    vec4 MapScales[MAX_CASCADES];
-
     vec4 WaterColor;
 
     vec3 FoamColor;
@@ -72,7 +83,15 @@ layout(set = 0, binding = 3) uniform WaterUniformsF
 
     int NumCascades;
     float NormalStrength;
+	vec2 Padding;
+
 } u_PC;
+
+layout(set = 0, binding = 7) uniform ScalesWaterUniformF
+{
+
+   vec4 MapScales[MAX_CASCADES];
+};
 
 struct VertexOutput
 {
@@ -121,19 +140,22 @@ vec3 Normal = vec3(0);
 
 void Fragment(inout PBRData pbrData)
 {
-
     float map_size = float(textureSize(u_Normals, 0).x);
 	float dist = length(PBR_Input.VertexPosition.xz);
 
     vec3 gradient = vec3(0);
 	for (uint i = 0U; i < u_PC.NumCascades; ++i) 
     {
-		vec4 scales = u_PC.MapScales[i];
-		vec3 coords = vec3(Input.UV*scales.xy, float(i));
-		float ppm = map_size * min(scales.x, scales.y); // Pixels per meter
-		// Mix between bicubic and bilinear filtering depending on the world space pixels per meter.
-		// This is dependent on the tile size as well as displacement/normal map resolution.
-		gradient += mix(texture_bicubic(coords), texture(u_Normals, coords), min(1.0, ppm*0.1)).xyw * vec3(scales.ww, 1.0);
+		vec4 scales = MapScales[i];
+		vec2 tileLength = vec2(1.0 / scales.x, 1.0 / scales.y);
+vec2 worldPos = Input.UV;
+vec2 wrapped = mod(mod(worldPos, tileLength) + tileLength, tileLength);
+vec2 uv = wrapped / tileLength;
+
+vec3 coords = vec3(uv, float(i));
+float ppm = map_size * min(scales.x, scales.y);
+gradient += mix(texture_bicubic(coords), texture(u_Normals, coords), min(1.0, ppm * 0.1)).xyw * vec3(scales.ww, 1.0);
+
 	}
 	
 	FoamFactor = smoothstep(0.0, 1.0, gradient.z*0.75) * exp(-dist*0.0075);

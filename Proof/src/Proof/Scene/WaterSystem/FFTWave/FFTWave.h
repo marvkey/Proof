@@ -42,12 +42,10 @@ namespace Proof
 			ClampedValue<float, 0.f, 2.0f> DisplacementScale = 1.0f; 
 			ClampedValue<float, 0.f, 2.0f> NormalScale = 1.0f; 
 
-			ClampedValue<float, 0.f, 2.0f> TimeScale = 1.0f; // how fast foams build up
-
 			// Denotes the average wind speed above the water (in meters per second). Increasing makes waves steeper and more 'chaotic'.
-			ClampedValue<float, 0.0001f, 100.0f> WindSpeed = 20.0f;
+			ClampedValue<float, 0.0001f, 100000.0f> WindSpeed = 20.0f;
 
-			glm::vec2 WindDirection{ 0.5f,0.5f };
+			ClampedValue<float,-360.0f,360.0f> WindDirection = 180.0f;
 
 			// Denotes the distance from shoreline (in kilometers). Increasing makes waves steeper, but reduces their 'choppiness'.
 			ClampedValue<float, 0.0001f, 1000.0f> FetchLength = 550.0f;
@@ -59,6 +57,8 @@ namespace Proof
 
 			// Modifies how much wind and swell affect the direction of the waves.
 			ClampedValue<float, 0.0f, 1.0f> Spread = 0.2f;
+
+			ClampedValue<float, 0.f, 2.0f> FoamTimeScale = 1.0f; // how fast foams build up
 
 			// Modifies how steep a wave needs to be before foam can accumulate.
 			ClampedValue<float, 0.0f, 2.0f> Whitecap = 0.5f; // Note: 'Wispier' foam can be created by increasing 'foamAmount' and decreasing 'whitecap'.
@@ -106,6 +106,7 @@ namespace Proof
 		static inline float JONSWAPAlpha(float windSpeed = 20.0f, float fetchLength = 550e3f) 
 		{
 			return 0.076f * std::pow((windSpeed * windSpeed) / (fetchLength * G), 0.22f);
+
 		}
 
 		// Source: https://wikiwaves.org/Ocean-Wave_Spectra#JONSWAP_Spectrum
@@ -124,10 +125,13 @@ namespace Proof
 			float Choppiness = 1.5f;
 			FFTWaveMapSize OceanSize = FFTWaveMapSize::SIZE_1024;
 			ClampedValue<int, 1, 8> NumCascades = 3;
-			ClampedValue<float, 0.0f, 1.0f> NormalStrength = 1.0f;
-			ClampedValue<float, 0.0f, 1.0f> Roughness= 0.4f;
-			glm::vec4 WaterColor = glm::vec4(0.1, 0.15, 0.18, 1.0f);
+			ClampedValue<float, 0.0f, 1.0f> NormalStrength = 0.2f;
+			ClampedValue<float, 0.0f, 1.0f> Roughness= 0.2f;
+			glm::vec4 WaterColor = glm::vec4(0.000f, 0.560f, 1.000f, 1.000f);
 			glm::vec3 FoamColor = glm::vec3(0.73, 0.67, 0.62);
+
+
+
 
 		}WaveInfo;
 
@@ -144,6 +148,7 @@ namespace Proof
 		void UpdateCascade(Count<FFTWaveCascade> cascade);
 	private:
 
+		void InitialWaveparams();
 		Count<ComputePass> m_SpectrumPass;
 		Count<ComputePass> m_ButterflyPass;
 		Count<ComputePass> m_SpectrumModulatePass;
@@ -154,6 +159,7 @@ namespace Proof
 		Count<class StorageBufferSet> m_SBButterflyFactors;
 		Count<class StorageBufferSet> m_FFTBuffer;
 
+		Count<class UniformBufferSet> m_WaterScalesBuffer;
 		Count<class UniformBufferSet>m_WaterBuffer;
 		Count<Image2D> m_SpectrumTexture;
 		Count<Image2D> m_DisplacementMap;
