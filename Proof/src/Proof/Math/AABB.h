@@ -16,36 +16,21 @@ namespace Proof
 		{
 			return (Min + Max) * 0.5f;
 		}
-
-		glm::vec3 GetHalfSize()const
+		glm::vec3 GetSize() const
 		{
-			return (Min - Max) * 0.5f;
+			return Max - Min;
 		}
+
+		glm::vec3 GetHalfSize() const
+		{
+			return (Max - Min) * 0.5f;
+		}
+
 		glm::vec3 GetExtents()const
 		{
 			auto center = GetCenter();
 			return glm::vec3{ Max.x - center.x, Max.y - center.y, Max.z - center.z };
 		}
-		/*
-		AABB ScaleAABB(glm::vec3 scale)
-		{
-			// Calculate the center of the AABB
-			glm::vec3 center = GetCenter();
-
-			// Calculate the half-size (extents) of the AABB
-			glm::vec3 halfSize = GetHalfSize();
-
-			// Scale the extents
-			glm::vec3 scaledHalfSize = halfSize * scale;
-
-			// Create a new AABB with scaled dimensions
-			AABB scaledAABB;
-			scaledAABB.Min = center - scaledHalfSize;
-			scaledAABB.Max = center + scaledHalfSize;
-
-			return scaledAABB;
-		}
-		*/
 
 		AABB ScaleAABB(const glm::mat4& transform) const
 		{

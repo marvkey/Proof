@@ -11,6 +11,7 @@
 #include "PhysicsWorld.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/Component.h"
+#include <Physx/extensions/PxShapeExt.h>
 #include "PhysicsMaterial.h"
 namespace Proof {
 	ColliderShape::ColliderShape(ColliderType type, Entity entity, bool isShared)
@@ -20,6 +21,76 @@ namespace Proof {
 		m_Entity = entity;
 		if (m_Material == nullptr)
 			m_Material = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::PhysicsMaterial).As<PhysicsMaterial>();
+	}
+	bool ColliderShape::IsPointInsideCollider(glm::vec3 point)
+	{
+		if (GetShapes().second == 1)
+		{
+			auto pos = m_Entity.GetCurrentWorld()->GetWorldSpaceTransform(m_Entity);
+
+			// Get shape and actor transform
+			physx::PxShape* shape = GetShapes().first; // assuming shape[0] is valid
+
+			// Convert point to PxVec3
+			physx::PxVec3 pxPoint = PhysXUtils::ToPhysXVector(point);
+
+			// Output variables (optional)
+			physx::PxVec3 closestPoint;
+			float distance = physx::PxGeometryQuery::pointDistance(pxPoint, shape->getGeometry().any(), PhysXUtils::ToPhysXTransform(pos), &closestPoint);
+
+			if (distance <= -1.0f)
+			{
+				PF_EC_ERROR("Entity {} shape {} does not support IsPointInsideCollider", m_Entity.GetName(), EnumReflection::EnumString(m_Type));
+				return false;
+			}
+			// If distance <= 0, it's inside or on the surface
+			if (distance <= 0.0f) // if returns -1 it means shape not supported
+				return true;
+			else
+				return false;
+
+
+
+		}
+		PF_CORE_ASSERT(false, "Does not suport shaeps more than 1 subShapes");
+		return false;
+
+	}
+	bool ColliderShape::UseRayIsPointInsideCollider(glm::vec3 point, float rayLength)
+	{
+		Count<PhysicsActor> base = m_Entity.GetCurrentWorld()->GetPhysicsWorld()->GetActor(m_Entity);
+		RaycastHit* hit = new RaycastHit();;
+		if (m_Entity.GetCurrentWorld()->GetPhysicsWorld()->RayCast(point, PhysXUtils::FromPhysXVector( GetShapes().first[0].getLocalPose().p) - point, rayLength, hit))
+		{
+			if (hit->HitCollider.Get() == this)
+				return false;
+		}
+
+		delete hit;
+		return true;
+	}
+	AABB ColliderShape::GetBoundingBox()
+	{
+		if (GetShapes().second == 1)
+		{
+			auto boundingBox =  physx::PxShapeExt::getWorldBounds(*GetShapes().first,*GetShapes().first->getActor(),1.0f);
+
+			AABB aabb(PhysXUtils::FromPhysXVector(boundingBox.minimum), PhysXUtils::FromPhysXVector(boundingBox.maximum));
+
+			//aabb.ScaleAABB(pos);
+			return aabb;
+		}
+		PF_CORE_ASSERT(false,"Does not suport shaeps more than 1 subShapes");
+
+		return AABB();
+	}
+	glm::mat4 ColliderShape::GetInitalShapeLocalTransform()
+	{
+		return PhysXUtils::FromPhysXMatrix(GetShapes().first->getLocalPose());
+	}
+	glm::mat4 ColliderShape::GetInitalShapeWorldTransform()
+	{
+		return m_Entity.GetCurrentWorld()->GetPhysicsWorld()->GetActor(m_Entity)->GetTransform() * GetInitalShapeLocalTransform();
 	}
 	void ColliderShape::Release()
 	{
@@ -101,6 +172,7 @@ namespace Proof {
 	{
 		BoxColliderComponent& component = m_Entity.GetComponent<BoxColliderComponent>();
 		m_Shape->setLocalPose(PhysXUtils::ToPhysXTransform(center, glm::vec3(0.0f)));
+
 		component.Center = center;
 	}
 	bool BoxColliderShape::IsTrigger() const
@@ -123,6 +195,21 @@ namespace Proof {
 		PF_CORE_ASSERT(actor);
 		PF_CORE_ASSERT(m_Shape);
 		actor->detachShape(*m_Shape);
+	}
+
+	AABB BoxColliderShape::GetBoundingBox()
+	{
+		auto pos = m_Entity.GetCurrentWorld()->GetWorldSpaceTransform(m_Entity);
+
+		auto boundingBox = physx::PxShapeExt::getWorldBounds(*GetShapes().first, *GetShapes().first->getActor());
+
+		// they are half size in physx
+		//boundingBox.minimum *= 2;
+		//boundingBox.maximum *= 2;
+		AABB aabb(PhysXUtils::FromPhysXVector(boundingBox.minimum), PhysXUtils::FromPhysXVector(boundingBox.maximum));
+
+		//aabb.ScaleAABB(pos);
+		return aabb;
 	}
 	
 	SphereColliderShape::SphereColliderShape(const SphereColliderComponent& component, const PhysicsActor& actor, Entity entity)

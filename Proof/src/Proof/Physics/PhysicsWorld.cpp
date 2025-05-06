@@ -11,6 +11,8 @@
 
 #include "Proof/Scripting/ScriptWorld.h"
 #include "Proof/Scripting/ScriptEngine.h"
+
+#include "Proof/Scene/WaterSystem/BuoyancyActor.h"
 namespace Proof {
 	physx::PxFilterFlags shaderControl(
 		physx::PxFilterObjectAttributes attributes0,
@@ -118,6 +120,7 @@ namespace Proof {
 	void PhysicsWorld::Simulate(float deltaTime)
 	{
 		PF_PROFILE_FUNC();
+
 		if (m_World->IsPlaying() && lastAdvance)
 		{
 			// not actually on update
@@ -189,6 +192,27 @@ namespace Proof {
 		return nullptr;
 	}
 
+	Count<class BuoyancyActor> PhysicsWorld::CreateBuoyancyActor(Entity entity)
+	{
+		if (!HasActor(entity))
+		{
+			PF_EC_ERROR("Cannot create buoyancy actor Entity: {}, withtout a rigid body", entity.GetName());
+			PF_CORE_ASSERT(false);
+			return nullptr;
+		}
+		Count<BuoyancyActor> actor = Count<BuoyancyActor>::Create(entity);
+		m_BuoyancyActors[entity.GetUUID()] = actor;
+		return actor;
+	}
+
+	Count<class BuoyancyActor> PhysicsWorld::GetBuoyancyActor(Entity entity)
+	{
+		if (m_BuoyancyActors.contains(entity.GetUUID()))
+			return m_BuoyancyActors[entity.GetUUID()];
+
+		return nullptr;
+	}
+
 	void PhysicsWorld::RemoveActor(Entity entity)
 	{
 		PF_CORE_ASSERT(HasActor(entity), " Does not contain actor");
@@ -242,14 +266,22 @@ namespace Proof {
 				CreateController(entity);
 			});
 
+		m_World->ForEachEnitityWith<BuoyancyComponent>([&](Entity entity)
+			{
+				CreateBuoyancyActor(entity);
+			});
+
+
 	}
 	void PhysicsWorld::EndWorld()
 	{
 		// release all rigid bodies before we release teh scene
+		m_BuoyancyActors.clear();
 		m_Actors.clear();
 		m_Controllers.clear();
 		m_PhysXControllerManager->release();
 		m_PhysXScene->release();
+
 		m_PhysXScene = nullptr;
 		m_World = nullptr;
 
@@ -300,6 +332,15 @@ namespace Proof {
 		}
 		for (uint32_t i = 0; i < m_NumSubSteps; i++)
 		{
+			// needs to behere bcause the boyancy is not working
+			// cause the physcs is adding more Gravity force in a frame
+			// and our boyancy only adds one force per frame 
+			if (m_World->IsPlaying())
+			{
+				PF_PROFILE_SCOPE_DYNAMIC("Physics update Buoyancy Actors")
+					for (auto& [Id, actor] : m_BuoyancyActors)
+						actor->OnPhysicsUpdate(deltaTime);
+			}
 			m_PhysXScene->simulate(m_SubStepSize);
 			m_PhysXScene->fetchResults(true);
 		}

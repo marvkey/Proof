@@ -1754,6 +1754,21 @@ namespace Proof
 
 		DrawComponents<BuoyancyComponent>("Buoyancy Component", entity, [&](BuoyancyComponent& buoyancyComponent) 
 			{
+				{
+
+					UI::BeginPropertyGrid();
+
+					UI::AttributeDrag("Density", buoyancyComponent.Density,0.01);
+					ImGui::SameLine();
+					UI::AttributeText("Yo wagawan");
+					UI::AttributeSlider("VoxelRelativeSize", buoyancyComponent.VoxelRelativeSize);
+					UI::AttributeDrag("DragInWater", buoyancyComponent.DragInWater,0.01);
+					UI::AttributeDrag("AngularDragInWater", buoyancyComponent.AngularDragInWater, 0.01);
+
+					UI::EndPropertyGrid();
+				}
+
+				UI::Separator();
 
 				if (UI::AttributeButton("", "AddFloater"))
 				{
@@ -1881,11 +1896,22 @@ namespace Proof
 		DrawComponents<WaterComponent>("Water Component", entity, [](WaterComponent& waterComponent)
 			{
 			#if 1
-
 				auto water = waterComponent.Water;
+
+				//physics
+				{
+					UI::BeginPropertyGrid();
+					UI::AttributeDrag("Density", water->Density);
+					UI::EndPropertyGrid();
+				}
+				UI::Separator();
 				WaveType type = water->GetWaveType();
 				if (UI::EnumCombo("WaveType", type))
+				{
 					water->SetWave(type);
+					return;
+				}
+
 				//WaterSystem::WaterDataInfo& waterData = waterComponent.WaterSystem->WaterData;
 
 				if (waterComponent.Water->GetWaveType() == WaveType::GerstnerWave)
@@ -1940,8 +1966,31 @@ namespace Proof
 
 					UI::BeginPropertyGrid();
 					UI::AttributeColor("Water Colour", waveInfo.WaterColor);
+					UI::AttributeColor("Foam Colour", waveInfo.FoamColor);
 					UI::AttributeDrag("Normal Strength", waveInfo.NormalStrength,0.01);
 					UI::AttributeDrag("Roughness", waveInfo.Roughness, 0.01);
+					UI::AttributeSlider("Num Cascades", waveInfo.NumCascades);
+					ImGui::Separator();
+
+					UI::AttributeDrag("DisplacementScale", waveInfo.DisplacementScale,0.01);
+					UI::AttributeDrag("NormalScale", waveInfo.NormalScale, 0.01);
+					UI::AttributeDrag("WindSpeedScale", waveInfo.WindSpeedScale, 0.01);
+					UI::AttributeDrag("SwellScale", waveInfo.SwellScale, 0.01);
+					UI::AttributeDrag("DetailScale", waveInfo.DetailScale, 0.01);
+					UI::AttributeDrag("SpreadScale", waveInfo.SpreadScale, 0.01);
+					
+					ImGui::Separator();
+
+					UI::AttributeDrag("WhitecapScale", waveInfo.WhitecapScale, 0.01);
+					UI::AttributeDrag("FoamGrowthScale", waveInfo.FoamGrowthScale, 0.01);
+					UI::AttributeDrag("FoamDecayScale", waveInfo.FoamDecayScale, 0.01);
+					UI::AttributeDrag("FoamTimeScale", waveInfo.FoamTimeScale, 0.01);
+
+
+					ImGui::Separator();
+
+					UI::AttributeBool("View WaveHeight", waveInfo.ViewWaveHeight);
+
 					UI::EndPropertyGrid();
 
 					ImGui::Separator();

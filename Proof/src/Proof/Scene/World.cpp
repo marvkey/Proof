@@ -1514,6 +1514,7 @@ namespace Proof {
 		AudioEngine::BeginContext(instance);
 		m_ScriptWorld->BeginRuntime();
 
+
 	#if 0
 		m_Registry.on_construct<ScriptComponent>().connect<&World::OnScriptAdded>(this);
 		m_Registry.on_destroy<ScriptComponent>().connect<&World::OnScriptDelete>(this);

@@ -25,6 +25,7 @@
 #include "Proof/Scene/WaterSystem/WaterSystem.h"
 #include "Proof/Scene/WaterSystem/Water.h"
 #include "Proof/Scene/WaterSystem/GerstnerWave.h"
+#include "Proof/Scene/WaterSystem/FFTWave/FFTWave.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/ParticleSystem.h"
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
@@ -688,6 +689,7 @@ namespace Proof
 				out << YAML::Key << "WaterComponent";
 				out << YAML::BeginMap; // WaterComponent
 				out << YAML::Key << "WaveType" << YAML::Key << EnumReflection::EnumString(waterComponent.Water->GetWaveType());
+				out << YAML::Key << "Density" << YAML::Key << waterComponent.Water->Density;
 
 				switch (waterComponent.Water->GetWaveType())
 				{
@@ -717,7 +719,59 @@ namespace Proof
 						out << YAML::Key << "PlaneSize" << YAML::Key << waterDataInfo.PlaneSize;
 					}
 					break;
+					case WaveType::FastFourierTransformWave:
+					{
+						const FFTWave::FFTWaveInfo& waterDataInfo = waterComponent.Water->GetWave().As<FFTWave>()->WaveInfo;
+						out << YAML::Key << "OceanSize" << YAML::Value << EnumReflection::EnumString(waterDataInfo.OceanSize);
+						out << YAML::Key << "NumCascades" << YAML::Value << waterDataInfo.NumCascades;
+						out << YAML::Key << "NormalStrength" << YAML::Value << waterDataInfo.NormalStrength;
+						out << YAML::Key << "Roughness" << YAML::Value << waterDataInfo.Roughness;
+						out << YAML::Key << "WaterColor" << YAML::Value << waterDataInfo.WaterColor;
+						out << YAML::Key << "FoamColor" << YAML::Value << waterDataInfo.FoamColor;
 
+						out << YAML::Key << "DisplacementScale" << YAML::Value << waterDataInfo.DisplacementScale;
+						out << YAML::Key << "NormalScale" << YAML::Value << waterDataInfo.NormalScale;
+						out << YAML::Key << "WindSpeedScale" << YAML::Value << waterDataInfo.WindSpeedScale;
+						out << YAML::Key << "SwellScale" << YAML::Value << waterDataInfo.SwellScale;
+						out << YAML::Key << "DetailScale" << YAML::Value << waterDataInfo.DetailScale;
+						out << YAML::Key << "SpreadScale" << YAML::Value << waterDataInfo.SpreadScale;
+
+						out << YAML::Key << "FoamTimeScale" << YAML::Value << waterDataInfo.FoamTimeScale;
+						out << YAML::Key << "WhitecapScale" << YAML::Value << waterDataInfo.WhitecapScale;
+						out << YAML::Key << "FoamGrowthScale" << YAML::Value << waterDataInfo.FoamGrowthScale;
+						out << YAML::Key << "FoamDecayScale" << YAML::Value << waterDataInfo.FoamDecayScale;
+
+						out << YAML::Key << "Cascades";
+						out << YAML::BeginSeq;//Cascades
+						{
+							for (const Count<FFTWaveCascade>& cascade : waterComponent.Water->GetWave().As<FFTWave>()->GetCascades())
+							{
+								out << YAML::BeginMap;// cascade
+
+								out << YAML::Key << "Cascade" << YAML::Key << cascade->GetCascadeIndex();
+
+								const auto& cascadeSettings = cascade->Settings;
+
+								out << YAML::Key << "TileLength" << YAML::Value << cascadeSettings.TileLength;
+								out << YAML::Key << "DisplacementScale" << YAML::Value << cascadeSettings.DisplacementScale;
+								out << YAML::Key << "NormalScale" << YAML::Value << cascadeSettings.NormalScale;
+								out << YAML::Key << "WindSpeed" << YAML::Value << cascadeSettings.WindSpeed;
+								out << YAML::Key << "WindDirection" << YAML::Value << cascadeSettings.WindDirection;
+								out << YAML::Key << "FetchLength" << YAML::Value << cascadeSettings.FetchLength;
+								out << YAML::Key << "Swell" << YAML::Value << cascadeSettings.Swell;
+								out << YAML::Key << "Detail" << YAML::Value << cascadeSettings.Detail;
+								out << YAML::Key << "Spread" << YAML::Value << cascadeSettings.Spread;
+								out << YAML::Key << "FoamTimeScale" << YAML::Value << cascadeSettings.FoamTimeScale;
+								out << YAML::Key << "Whitecap" << YAML::Value << cascadeSettings.Whitecap;
+								out << YAML::Key << "FoamAmount" << YAML::Value << cascadeSettings.FoamAmount;
+
+								out << YAML::EndMap;// cascade
+							}
+						}
+						out << YAML::EndSeq; // Cascade
+
+						break;
+					}
 					default:
 						break;
 				}
@@ -737,7 +791,12 @@ namespace Proof
 				out << YAML::Key << "BuoyancyComponent";
 				out << YAML::BeginMap; // buoyancyComponent
 
-					
+				
+				out << YAML::Key << "Density" << buoyancyComponent.Density;
+				out << YAML::Key << "VoxelRelativeSize" << buoyancyComponent.VoxelRelativeSize.GetValue();
+				out << YAML::Key << "DragInWater" << buoyancyComponent.DragInWater;
+				out << YAML::Key << "AngularDragInWater" << buoyancyComponent.AngularDragInWater;
+
 				out << YAML::Key << "Floaters";
 				out << YAML::BeginSeq;//Floaters
 				{
@@ -1352,6 +1411,9 @@ namespace Proof
 
 					Count<Water> water = Count<Water>::Create(waveType);
 
+					water->Density = waterComponent["Density"].as<float>(water->Density);
+					NewEntity.AddComponent<WaterComponent>(water);
+
 					switch (waveType)
 					{
 						case Proof::WaveType::GerstnerWave:
@@ -1380,12 +1442,59 @@ namespace Proof
 						}
 							break;
 						case Proof::WaveType::FastFourierTransformWave:
+						{
+							FFTWave::FFTWaveInfo& waterDataInfo = water->GetWave().As<FFTWave>()->WaveInfo;
+
+							waterDataInfo.OceanSize = EnumReflection::StringEnum<FFTWaveMapSize>(waterComponent["OceanSize"].as<std::string>(EnumReflection::EnumString(waterDataInfo.OceanSize)));
+							waterDataInfo.NumCascades = waterComponent["NumCascades"].as<int>(waterDataInfo.NumCascades);
+							waterDataInfo.NormalStrength = waterComponent["NormalStrength"].as<float>(waterDataInfo.NormalStrength);
+							waterDataInfo.Roughness = waterComponent["Roughness"].as<float>(waterDataInfo.Roughness);
+							waterDataInfo.WaterColor = waterComponent["WaterColor"].as<glm::vec4>(waterDataInfo.WaterColor);
+							waterDataInfo.FoamColor = waterComponent["FoamColor"].as<glm::vec3>(waterDataInfo.FoamColor);
+
+							waterDataInfo.DisplacementScale = waterComponent["DisplacementScale"].as<float>(waterDataInfo.DisplacementScale);
+							waterDataInfo.NormalScale = waterComponent["NormalScale"].as<float>(waterDataInfo.NormalScale);
+							waterDataInfo.WindSpeedScale = waterComponent["WindSpeedScale"].as<float>(waterDataInfo.WindSpeedScale);
+							waterDataInfo.SwellScale = waterComponent["SwellScale"].as<float>(waterDataInfo.SwellScale);
+							waterDataInfo.DetailScale = waterComponent["DetailScale"].as<float>(waterDataInfo.DetailScale);
+							waterDataInfo.SpreadScale = waterComponent["SpreadScale"].as<float>(waterDataInfo.SpreadScale);
+
+							waterDataInfo.FoamTimeScale = waterComponent["FoamTimeScale"].as<float>(waterDataInfo.FoamTimeScale);
+							waterDataInfo.WhitecapScale = waterComponent["WhitecapScale"].as<float>(waterDataInfo.WhitecapScale);
+							waterDataInfo.FoamGrowthScale = waterComponent["FoamGrowthScale"].as<float>(waterDataInfo.FoamGrowthScale);
+							waterDataInfo.FoamDecayScale = waterComponent["FoamDecayScale"].as<float>(waterDataInfo.FoamDecayScale);
+
+							if (waterComponent["Cascades"])
+							{
+								uint32_t cascadeindex = 0; 
+								for (auto csc : waterComponent["Cascades"])
+								{
+									FFTWaveCascade::WaveCascadeParameters& cascadeSettings = water->GetWave().As<FFTWave>()->GetCascades().at(cascadeindex)->Settings;
+
+									cascadeSettings.TileLength = csc["TileLength"].as<glm::vec2>(cascadeSettings.TileLength);
+									cascadeSettings.DisplacementScale = csc["DisplacementScale"].as<float>(cascadeSettings.DisplacementScale);
+									cascadeSettings.NormalScale = csc["NormalScale"].as<float>(cascadeSettings.NormalScale);
+									cascadeSettings.WindSpeed = csc["WindSpeed"].as<float>(cascadeSettings.WindSpeed);
+									cascadeSettings.WindDirection = csc["WindDirection"].as<float>(cascadeSettings.WindDirection);
+									cascadeSettings.FetchLength = csc["FetchLength"].as<float>(cascadeSettings.FetchLength);
+									cascadeSettings.Swell = csc["Swell"].as<float>(cascadeSettings.Swell);
+									cascadeSettings.Detail = csc["Detail"].as<float>(cascadeSettings.Detail);
+									cascadeSettings.Spread = csc["Spread"].as<float>(cascadeSettings.Spread);
+									cascadeSettings.FoamTimeScale = csc["FoamTimeScale"].as<float>(cascadeSettings.FoamTimeScale);
+									cascadeSettings.Whitecap = csc["Whitecap"].as<float>(cascadeSettings.Whitecap);
+									cascadeSettings.FoamAmount = csc["FoamAmount"].as<float>(cascadeSettings.FoamAmount);
+
+									cascadeindex++;
+								}
+							}
+
+
+						}
 							break;
 						default:
 							break;
 					}
 
-					NewEntity.AddComponent<WaterComponent>(water);
 
 				
 				}
@@ -1398,6 +1507,13 @@ namespace Proof
 				if (buoyancyComponent)
 				{
 					BuoyancyComponent& bycc = NewEntity.AddComponent<BuoyancyComponent>();
+
+
+					bycc.Density = buoyancyComponent["Density"].as<float>(bycc.Density);
+					bycc.VoxelRelativeSize = buoyancyComponent["VoxelRelativeSize"].as<float>(bycc.VoxelRelativeSize.GetValue());
+					bycc.DragInWater = buoyancyComponent["DragInWater"].as<float>(bycc.DragInWater);
+					bycc.AngularDragInWater = buoyancyComponent["AngularDragInWater"].as<float>(bycc.AngularDragInWater);
+
 					for (auto byc : buoyancyComponent["Floaters"])
 					{
 

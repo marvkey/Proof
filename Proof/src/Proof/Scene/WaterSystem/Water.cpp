@@ -31,6 +31,10 @@ namespace Proof
 	{
 		m_Wave->Render2D(renderer2D);
 	}
+	void Water::OnPhysicsUpdate(float deltaTime)
+	{
+		
+	}
 	void Water::SetWave(WaveType waveType)
 	{
 		switch (waveType)
@@ -53,7 +57,7 @@ namespace Proof
 				m_Wave = Count<GerstnerWave>::Create(this,wave.As<GerstnerWave>());
 				break;
 			case Proof::WaveType::FastFourierTransformWave:
-				m_Wave = Count<FFTWave>::Create(Count<Water>(this));
+				m_Wave = Count<FFTWave>::Create(wave.As<FFTWave>());
 				break;
 			default:
 				break;

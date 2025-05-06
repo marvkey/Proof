@@ -2,6 +2,9 @@ Assets:
   - Asset: 890189201012343458
     Type: World
     Path: Scenes\TestScene.ProofWorld
+  - Asset: 894531552823225415
+    Type: MeshSourceFile
+    Path: Models\inflateable_lifeSave_Buoy\scene.gltf
   - Asset: 13811694500107944009
     Type: ScriptFile
     Path: Scripts\PlayerMovement.cs
@@ -83,6 +86,9 @@ Assets:
   - Asset: 1686573710467884765
     Type: Texture
     Path: HDRMaps\Arches_E_PineTree_3k.hdr
+  - Asset: 6890206917520790392
+    Type: World
+    Path: Scenes\TestBuoyancy.ProofWorld
   - Asset: 13316866181799636933
     Type: Texture
     Path: HDRMaps\MegaSun4k.hdr
@@ -92,3 +98,12 @@ Assets:
   - Asset: 14694394491242497381
     Type: Texture
     Path: HDRMaps\qwantani_puresky_4k.hdr
+  - Asset: 6640835730003835717
+    Type: World
+    Path: Scenes\New World.ProofWorld
+  - Asset: 10732699188280844646
+    Type: MeshSourceFile
+    Path: Models\port_mesh_buoy\scene.gltf
+  - Asset: 785809237399164901
+    Type: Mesh
+    Path: Meshes\buoy.Mesh.ProofAsset

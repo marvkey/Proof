@@ -15,9 +15,9 @@ namespace Proof{
 		RefCounted(const RefCounted& other)
 		{
 		}
-		RefCounted& operator=(const RefCounted& other)
-		{
-		}
+		//RefCounted& operator=(const RefCounted& other)
+		//{
+		//}
 		virtual ~RefCounted() {};
 		
 		

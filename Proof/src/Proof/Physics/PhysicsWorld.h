@@ -48,6 +48,8 @@ namespace Proof
 		bool HasActor(class Entity entity);
 		Count<class PhysicsActor> CreateActor(class Entity entity);
 		Count<class PhysicsActor> GetActor(class Entity entity);
+		Count<class BuoyancyActor> CreateBuoyancyActor(class Entity entity);
+		Count<class BuoyancyActor> GetBuoyancyActor(class Entity entity);
 		void RemoveActor(class Entity entity);
 
 		bool HasController(Entity entity);
@@ -93,6 +95,7 @@ namespace Proof
 		// performance saved
 		std::unordered_map<UUID, Count<class PhysicsActor>> m_Actors;
 		std::unordered_map<UUID,Count<class PhysicsController>> m_Controllers;
+		std::unordered_map<UUID, Count<class BuoyancyActor>> m_BuoyancyActors;
 		Count<class World> m_World;
 		physx::PxBounds3* m_RegionBounds = nullptr;
 		physx::PxControllerManager* m_PhysXControllerManager;

@@ -176,7 +176,7 @@ namespace Proof
 				case DefaultRuntimeAssets::Plane:
 					{
 						
-						Count<Mesh> mesh = MeshWorkShop::GeneratePlane(10,1);
+						Count<Mesh> mesh = MeshWorkShop::GeneratePlane(10,10);
 						Count<Asset> asset = mesh;
 						CreateRuntimeAsset(ID, asset, "Plane");
 					}

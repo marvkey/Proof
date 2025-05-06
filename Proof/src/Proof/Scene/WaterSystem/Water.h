@@ -4,6 +4,7 @@
 
 namespace Proof
 {
+
 	enum class WaveType;
 	class Water : RefCounted
 	{
@@ -14,6 +15,7 @@ namespace Proof
 		void Update(float deltaTime, const glm::mat4& transform);;
 		void Render(Count<class WorldRenderer> renderer);
 		void Render2D(Count<class Renderer2D> renderer2D);
+		void OnPhysicsUpdate(float deltaTime);
 
 		void SetWave(WaveType waveType);
 		void CopyWave(Count<class Wave> wave);
@@ -25,6 +27,9 @@ namespace Proof
 
 		void SetWorld(Count<class World> world);
 		Count<World> GetWorld();
+
+	public:
+		float Density = 1.0f;
 	private:
 		Count<class World> m_World;
 		Count<class Wave> m_Wave;

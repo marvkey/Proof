@@ -377,7 +377,7 @@ namespace Proof
                     num++;
                 }
                 if(m_InitialCompile)
-                    PF_CORE_ASSERT(false);
+                     PF_CORE_ASSERT(false);
                 
                 return false;
             }

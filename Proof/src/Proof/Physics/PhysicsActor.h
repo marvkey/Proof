@@ -46,6 +46,7 @@ namespace Proof
 		glm::vec3 GetRotationEuler() const { return glm::eulerAngles(GetRotation()); }
 
 		void SetTransform(const glm::mat4& transform);
+		glm::mat4 GetTransform();
 
 		void SetRotation(const glm::quat& rotation, bool autowake = true);
 		void Rotate(const glm::quat& rotation, bool autowake = true);
@@ -113,10 +114,11 @@ namespace Proof
 		
 		const physx::PxFilterData& GetFilterData() const { return m_FilterData; }
 
-		void AddForceAtPosition(const glm::vec3& force, const glm::vec3& location, ForceMode forceMode);
+		void AddForceAtPosition(const glm::vec3& force, const glm::vec3& location, ForceMode forceMode = ForceMode::Force);
 
 		glm::mat4 GetCenterOfMass() const;
 		glm::mat4 GetLocalCenterOfMass() const;
+
 	private:
 		void AddRigidBody();
 		void Release();

@@ -94,6 +94,7 @@ namespace Proof
 		virtual void CreateMipAndLayerViews();
 		virtual Count<RenderSampler> GetSampler();
 
+		virtual void GenerateMips();
 	private:
 		std::vector<Image2DResizeCallback > m_ResizeCallbacks;
 
@@ -130,6 +131,8 @@ namespace Proof
 		const VulkanImageInfo& GetVulkanImageInfo() const { return m_Info; }
 		const VulkanImageInfo& GetVulkanImageInfo() { return m_Info; }
 		VulkanImageInfo& GetVulkanImageInfoRef() { return m_Info; }
+
+
 	private:
 		VulkanImageInfo m_Info;
 		void Build();

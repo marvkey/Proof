@@ -1,4 +1,4 @@
-//https://github.com/2Retr0/GodotOceanWaves/blob/4e1e219bc8f55c38092ed34e6fee568b900d95b5/assets/shaders/spatial/fft_water.gdshader
+﻿//https://github.com/2Retr0/GodotOceanWaves/blob/4e1e219bc8f55c38092ed34e6fee568b900d95b5/assets/shaders/spatial/fft_water.gdshader
 
 #Vertex Shader
 #version 450
@@ -19,7 +19,10 @@ layout(set = 0, binding = 0) uniform WaterUniforms
 
     int NumCascades;
     float NormalStrength;
-	vec2 Padding;
+
+	float ClipMap_Scale;
+    float ClipMap_LevelHalfSize;
+    vec3  ClipMap_ViewerPosition;
 
 
 } u_PC;
@@ -38,29 +41,58 @@ struct VertexOutput
 };
 
 layout(location = 23) out VertexOutput Output;
-void Vertex(inout PBRVertexInput vertexInput)
-{
-	vec4 worldPos = aTransform * vec4(vertexInput.VertexPosition , 1.0);
-    vec3 displacement = vec3(0.0);
-for (int i = 0; i < u_PC.NumCascades; ++i) {
-    vec4 scales = MapScales[i];
 
-    // Reconstruct tileLength from 1.0 / scale
-    vec2 tileLength = vec2(1.0 / scales.x, 1.0 / scales.y);
-
-    // Wrap world position into tile space [0, tileLength]
-    vec2 worldPos = vertexInput.VertexPosition.xz;
-    vec2 wrapped = mod(mod(worldPos, tileLength) + tileLength, tileLength); // handles negative coords
-    vec2 uv = wrapped / tileLength; // map to [0,1]
-
-    displacement += texture(u_Displacements, vec3(uv, float(i))).xyz * scales.z;
+float ModifiedManhattanDistance(vec3 a, vec3 b) {
+    vec3 v = a - b;
+    return max(abs(v.x + v.z) + abs(v.x - v.z), abs(v.y)) * 0.5;
 }
 
-Output.UV = vertexInput.VertexPosition.xz;
+// Snaps a vertex around the viewer to simulate infinite terrain tiling
+vec3 ClipMap_VertexSnap(vec3 positionOS, vec2 uv) {
+    float meshScale = u_PC.ClipMap_Scale;
+    float step = meshScale * 4.0;
+
+    vec2 snappedViewerXZ = floor(u_PC.ClipMap_ViewerPosition.xz / step) * step;
+    vec3 worldPos = vec3(snappedViewerXZ + positionOS.xz * meshScale, 0.0);
+
+    float morphStart = ((u_PC.ClipMap_LevelHalfSize + 1.0) * 0.5 + 8.0) * meshScale;
+    float morphEnd   = (u_PC.ClipMap_LevelHalfSize - 2.0) * meshScale;
+
+    float t = clamp((ModifiedManhattanDistance(worldPos, u_PC.ClipMap_ViewerPosition) - morphStart) / (morphEnd - morphStart), 0.0, 1.0);
+    worldPos += vec3(uv, 0.0) * meshScale * t;
+
+    return worldPos;
+}
+void Vertex(inout PBRVertexInput vertexInput)
+{
+ //vec3 positionOS = vertexInput.VertexPosition;
+  //  vec2 uv = positionOS.xz;
+
+    //vec3 worldPosClipmap = ClipMap_VertexSnap(positionOS, uv);
+    Output.UV = vertexInput.VertexPosition.xz;
+
+    vec3 displacement = vec3(0.0);
+    for (int i = 0; i < u_PC.NumCascades; ++i) 
+    {
+        vec4 scales = MapScales[i];
+
+        // Reconstruct tileLength from 1.0 / scale
+        vec2 tileLength = vec2(1.0 / scales.x, 1.0 / scales.y);
+
+        // Wrap world position into tile space [0, tileLength]
+        vec2 worldPos = vertexInput.VertexPosition.xz;
+        vec2 wrapped = mod(mod(worldPos, tileLength) + tileLength, tileLength); // handles negative coords
+        vec2 uv = wrapped / tileLength; // map to [0,1]
+
+        displacement += texture(u_Displacements, vec3(uv, float(i))).xyz * scales.z;
+    }
+
 Output.WaveHeight = displacement.y;
 
 float distanceFactor = min(exp(-(length(Output.UV - u_Camera.Position.xz) - 150.0) * 0.007), 1.0);
+
 vertexInput.VertexPosition += displacement * distanceFactor;
+
 }
 
 #Fragment Shader
@@ -75,15 +107,18 @@ layout(set = 0, binding = 2) uniform sampler2DArray u_Normals;
 #define MAX_CASCADES 8
 
 layout(set = 0, binding = 3) uniform WaterUniformsF 
-{
-    vec4 WaterColor;
+{ 
+vec4 WaterColor;
 
     vec3 FoamColor;
     float Roughness;
 
     int NumCascades;
     float NormalStrength;
-	vec2 Padding;
+	float MinMeshScale;
+    int LevelhalfSize;
+
+    vec3  ViewerPosition;
 
 } u_PC;
 
@@ -148,13 +183,17 @@ void Fragment(inout PBRData pbrData)
     {
 		vec4 scales = MapScales[i];
 		vec2 tileLength = vec2(1.0 / scales.x, 1.0 / scales.y);
-vec2 worldPos = Input.UV;
-vec2 wrapped = mod(mod(worldPos, tileLength) + tileLength, tileLength);
-vec2 uv = wrapped / tileLength;
+        vec2 worldPos = Input.UV;
+        vec2 wrapped = mod(mod(worldPos, tileLength) + tileLength, tileLength);
+        vec2 uv = wrapped / tileLength;
 
-vec3 coords = vec3(uv, float(i));
-float ppm = map_size * min(scales.x, scales.y);
-gradient += mix(texture_bicubic(coords), texture(u_Normals, coords), min(1.0, ppm * 0.1)).xyw * vec3(scales.ww, 1.0);
+        vec3 coords = vec3(uv, float(i));
+        float ppm = map_size * min(scales.x, scales.y);
+
+       // gradient += mix(texture_bicubic(coords), texture(u_Normals, coords), min(1.0, ppm * 0.1)).xyw * vec3(scales.ww, 1.0);
+float blend = clamp((ppm - 1.0) / 2.0, 0.0, 1.0); // 0 = bicubic, 1 = bilinear
+vec4 normalSample = mix(texture_bicubic(coords), texture(u_Normals, coords), blend);
+        gradient += normalSample.xyz;
 
 	}
 	

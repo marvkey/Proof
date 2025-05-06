@@ -69,6 +69,7 @@ namespace Proof
 		virtual void CreateMipAndLayerViews() = 0;
 		virtual std::pair<uint32_t, uint32_t> GetMipSize(uint32_t mip) const = 0;
 
+		virtual void GenerateMips() = 0;
 		RENDER_VIEW_RESOURCE_CLASS_TYPE(Image2D);
 	};
 	

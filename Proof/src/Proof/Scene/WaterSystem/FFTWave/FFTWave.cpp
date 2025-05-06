@@ -26,7 +26,11 @@
 #include "Proof/Platform/Vulkan/Vulkan.h"
 #include "Proof/Platform/Vulkan/VulkanCommandBuffer.h"
 #include "Proof/Platform/Vulkan/VulkanImage.h"
- 
+#include "Proof/Scene/SceneUtils.h"
+#include "Proof/Renderer/Renderer2D.h"
+
+#include <tuple>
+
 #define FFT_MAX_CASCADES 8
 namespace Proof
 {
@@ -41,7 +45,10 @@ namespace Proof
 
         int NumCascades;
         float NormalStrength;
-        glm::vec2 Padding;         // 8 → to align to 16
+        float MinMeshScale;
+        int LevelhalfSize;
+
+        glm::vec3  ViewerPosition;
 
 
     };
@@ -80,7 +87,7 @@ namespace Proof
         return tex;
     }
 
-    Count<Image2D> CreateRenderImage(std::string debugName, uint32_t width, uint32_t height, ImageFormat  format, uint32_t numLayers =1, SamplerWrap wrap = SamplerWrap::Repeat, SamplerFilter filter = SamplerFilter::Nearest)
+    Count<Image2D> CreateRenderImage(std::string debugName, uint32_t width, uint32_t height, ImageFormat  format, uint32_t numLayers =1, SamplerWrap wrap = SamplerWrap::Repeat, SamplerFilter filter = SamplerFilter::Linear)
     {
         ImageConfiguration rt;
         rt.DebugName = debugName;
@@ -170,27 +177,34 @@ namespace Proof
     FFTWave::FFTWave(Count<FFTWave> other)
         : Wave(other->m_Water, WaveType::FastFourierTransformWave)
     {
+        m_Grid = other->m_Grid;
+        WaveInfo = other->WaveInfo;
+        InitBuffer();
         InitTextures();
         InitPasses();
 
-        InitialWaveparams();
+        for (int i =0; i < m_Cascades.size(); i++)
+        {
+            auto casccade = m_Cascades[i];
+            casccade->Settings = other->m_Cascades[i]->Settings;
+        }
+
+        //InitialWaveparams();
 
         //MeshImporter importer = MeshImporter("Assets/Meshes/clipmap_high.obj");
         //m_Grid = Count<Mesh>::Create(importer.ImportToMeshSource());
-
-        m_Grid = MeshWorkShop::GeneratePlane(1024, 1024);
-        AssetManager::CreateRuntimeAsset(m_Grid.As<Asset>(), "FFTGRID");
     }
     FFTWave::FFTWave(Count<class Water> water)
         : Wave(water, WaveType::FastFourierTransformWave)
     {
+        InitBuffer();
         InitTextures();
         InitPasses();
         InitialWaveparams();
-        //MeshImporter importer = MeshImporter("Assets/Meshes/clipmap_high.obj");
-        //m_Grid = Count<Mesh>::Create(importer.ImportToMeshSource());
+        MeshImporter importer = MeshImporter("Assets/Meshes/clipmap_high.obj");
+        m_Grid = Count<Mesh>::Create(importer.ImportToMeshSource());
 
-        m_Grid = MeshWorkShop::GeneratePlane(1024, 1024);
+        //m_Grid = MeshWorkShop::GeneratePlane(1024, 1024);
         AssetManager::CreateRuntimeAsset(m_Grid.As<Asset>(), "FFTGRID");
 
 
@@ -201,40 +215,71 @@ namespace Proof
 
         for (Count<FFTWaveCascade> cascade : m_Cascades)
         {
-            float cascadeDelta = deltaTime * cascade->Settings.FoamTimeScale;
+            float cascadeDelta = deltaTime * cascade->Settings.FoamTimeScale * WaveInfo.FoamTimeScale;
             cascade->InternalSettings.Time += cascadeDelta;
 
             // Note: The constants are used to normalize parameters between 0 and 10.
-            cascade->InternalSettings.FoamGrowRate = cascadeDelta * cascade->Settings.FoamAmount* 7.5f;
-            cascade->InternalSettings.FoamDecayRate = cascadeDelta * std::max(0.5f, 10.0f - cascade->Settings.FoamAmount) * 1.15f;
+            cascade->InternalSettings.FoamGrowRate = cascadeDelta * cascade->Settings.FoamAmount * WaveInfo.FoamGrowthScale * 7.5f;
+            cascade->InternalSettings.FoamDecayRate = cascadeDelta * std::max(0.5f, 10.0f - cascade->Settings.FoamAmount ) * 1.15f * WaveInfo.FoamDecayScale;
         }
 
-        if (m_Cascades.size() != WaveInfo.NumCascades)
+        if (m_Cascades.size() != WaveInfo.NumCascades || m_OldWaveInfo.OceanSize != WaveInfo.OceanSize)
         {
             InitTextures();
             InitPasses();
+            m_HasInitialRun = false;
         }
 
+        if (WaveInfo.ViewWaveHeight && m_SampleWaveheightAtPos.empty())
+        {
+            std::vector<glm::vec3> positions = Utils::SamplePlanePoints((uint64_t)WaveInfo.OceanSize);
+
+            for (int i = 0; i < positions.size(); i++)
+            {
+                m_SampleWaveheightAtPos.push_back(std::make_tuple( UUID(),positions[i]));
+            }
+
+            for (auto& data: m_SampleWaveheightAtPos)
+            {
+                PushWaveHeightQueryID(std::get<0>(data));
+                UpdateWaveHeightQueryID(std::get<0>(data), std::get<1>(data));
+            }
+        }
+
+        if (WaveInfo.ViewWaveHeight == false && m_SampleWaveheightAtPos.empty() == false)
+        {
+
+            for (auto& data : m_SampleWaveheightAtPos)
+            {
+                RemoveWaveHeightQueryID(std::get<0>(data));
+            }
+        }
     }
 
     void FFTWave::Render(Count<class WorldRenderer> renderer)
     {
         PF_PROFILE_FUNC();
+
         Renderer::BeginCommandBuffer(m_CommandBuffer);
 
         const uint32_t oceanSize = (uint32_t)WaveInfo.OceanSize;
         const uint32_t numFFTStages = static_cast<int>(glm::log((uint32_t)WaveInfo.OceanSize)/glm::log(2));
-        static bool checkedButterfly = false;
-        // onlu once if map size is chagned
-      //  if (!checkedButterfly)
+
+        // doing the intial frame count
+        // cause we are wrting to a storage buffer
+        // wich has multiple bufer cause of frame in flight
+        // so basicaly, if we fill one we will skip the rest and not fill them cause of this 
+        // system of only chanign if m_OldWaveInfo is changed
+        //if(m_HasInitialRun == false || m_OldWaveInfo != WaveInfo) 
         {
             PF_PROFILE_SCOPE_DYNAMIC("ButterflyPass");
-            checkedButterfly = true;
             const uint32_t WorkGroup = 64;
 
             Renderer::BeginComputePass(m_CommandBuffer, m_ButterflyPass);
             m_ButterflyPass->Dispatch((uint32_t)WaveInfo.OceanSize / 2/ WorkGroup, numFFTStages, 1);
             Renderer::EndComputePass(m_ButterflyPass);
+
+           // PF_ENGINE_TRACE("Generated FFTWave Ocean butterfly pass");
 
         }
 
@@ -251,7 +296,7 @@ namespace Proof
             {
 #if 1
                 glm::vec2 uvScale = glm::vec2(1) / cascade->Settings.TileLength;
-                scalesBuffer.MapScales[cascade->m_CascadeIndex] = glm::vec4(uvScale.x, uvScale.y, cascade->Settings.DisplacementScale, cascade->Settings.NormalScale);
+                scalesBuffer.MapScales[cascade->m_CascadeIndex] = glm::vec4(uvScale.x, uvScale.y, cascade->Settings.DisplacementScale * WaveInfo.DisplacementScale, cascade->Settings.NormalScale * WaveInfo.NormalScale);
 
 #else
 
@@ -277,6 +322,19 @@ namespace Proof
             ubf.Roughness = WaveInfo.Roughness;
             
             {
+                // Replace this with your actual FFT ocean grid scale
+                float minMeshScale = 1.0f;
+                int vertexDensity = 256;
+
+				
+                int clipLevelHalfSize = vertexDensity / 2;
+                int pow = glm::floor(std::max(0.0f, glm::log2(std::abs(renderer->GetCameraUBData().Position.y) / (2.0f * minMeshScale)) + 1));
+                float meshScale = minMeshScale / clipLevelHalfSize * std::pow(2, pow);
+
+                // Send these as uniform
+                ubf.MinMeshScale= meshScale;
+                ubf.LevelhalfSize = clipLevelHalfSize;
+                ubf.ViewerPosition = renderer->GetCameraUBData().Position;
 
                 Buffer buffer(&ubf, sizeof(ubf), true);
                 m_WaterBuffer->SetData(Renderer::GetCurrentFrameInFlight(), buffer);
@@ -291,10 +349,127 @@ namespace Proof
             }
         }
    
+        if(!m_WaveHeightQueryPositons.empty())
+        {
+            PF_PROFILE_SCOPE_DYNAMIC("Query Wave Height");
+
+            struct PushConstant
+            {
+                uint32_t NumQueries;
+                int NumCascades;
+            }pc;
+
+            pc.NumCascades = m_Cascades.size();
+            pc.NumQueries = m_WaveHeightQueryPositons.size();
+
+            const uint32_t WorkGroup = 64;
+            {
+                int i = 0;
+                for (auto& [id, pos] : m_WaveHeightQueryPositons)
+                {
+                    m_FFTQueryBuffer.Get()[i].ID = id;
+                    m_FFTQueryBuffer.Get()[i].WorldPosition = pos;
+                    i++;
+                }
+
+                Buffer buffer (m_FFTQueryBuffer.Get().data(),m_FFTQueryBuffer.Get().size() * sizeof(SBWaveHeightQuery),true);
+                m_FFTSBQueryBuffer->SetData(Renderer::GetCurrentFrameInFlight(), buffer);
+                buffer.Release();
+
+            }
+
+
+            Renderer::BeginComputePass(m_CommandBuffer, m_QueryWaaveHeightPass);
+            m_QueryWaaveHeightPass->PushData("u_PC", &pc);
+            m_QueryWaaveHeightPass->Dispatch((63 + pc.NumQueries) / WorkGroup, 1, 1);
+
+            Renderer::Submit([commandBuffer = m_CommandBuffer]()
+                {
+
+                    VkMemoryBarrier barrier = {};
+                    barrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+                    barrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+                    barrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+
+                    vkCmdPipelineBarrier(commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+                        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                        VK_PIPELINE_STAGE_HOST_BIT,
+                        0,
+                        1, &barrier,
+                        0, nullptr,
+                        0, nullptr);
+                });
+            Renderer::EndComputePass(m_QueryWaaveHeightPass);
+            Buffer buffer = m_FFTSBQueryBuffer->GetBuffer(Renderer::GetCurrentFrameInFlight())->GetDataRaw();
+
+
+            std::memcpy(m_FFTQueryBufferResult.Get().data(), buffer.Data, buffer.GetSize());
+            buffer.Release();
+
+            for (const auto& ref : m_FFTQueryBufferResult.Get())
+            {
+                if (HasWaveHeightQueryID(ref.ID))
+                    m_WaveHeightQueryResultHeight[ref.ID] = ref.WaveHeight;
+            }
+            //TODO when multithreaded this code will not be safe
+           /*
+            Count<FFTWave> instance = this;
+            Renderer::Submit([instance] 
+                {
+                    PF_PROFILE_SCOPE_DYNAMIC("Rendther thread Query Wave Height ");
+                    
+                    Buffer buffer = instance->m_FFTSBQueryBuffer->GetBuffer(Renderer::RT_GetCurrentFrameInFlight())->GetDataRaw();
+
+                    std::memcpy(instance->m_FFTQueryBufferResult.RT_Get().data(), buffer.Data, buffer.GetSize());
+                    buffer.Release();
+
+                    for (const auto& ref : instance->m_FFTQueryBufferResult.RT_Get())
+                    {
+                        if (instance->HasWaveHeightQueryID(ref.ID))
+                            instance->m_WaveHeightQueryResultHeight[ref.ID] = ref.WaveHeight;
+                    }
+                });
+                */
+        }
         Renderer::EndCommandBuffer(m_CommandBuffer);
         Renderer::SubmitCommandBuffer(m_CommandBuffer);
+
+
    
-        renderer->SubmitMesh(m_Grid, m_RenderMaterial, GetTransform());
+        renderer->SubmitMesh(m_Grid, m_RenderMaterial, glm::mat4(1.0f));
+
+        m_OldWaveInfo = WaveInfo;
+
+        m_HasInitialRun = true;
+    }
+
+    void FFTWave::Render2D(Count<class Renderer2D> renderer2D)
+    {
+        if (WaveInfo.ViewWaveHeight)
+        {
+
+		    for (auto& data : m_SampleWaveheightAtPos)
+		    {
+                
+                if (!IsWaveheightQueryReady(std::get<0>(data)))
+                    continue;
+                auto localPos = std::get<1>(data);
+                auto worldPos = localPos;// Utils::LocalToWorld(localPos, GetTransform());
+
+			    glm::vec3 pos = localPos;
+
+			    pos.y += GetWaveheight(std::get<0>(data));
+
+			    //pos = Utils::LocalToWorld(pos, GetTransform());
+
+			    renderer2D->DrawLine(worldPos, pos);
+                renderer2D->FillCircle(pos, glm::vec3(glm::radians(90.0f), 0.0f, 0), 0.8, glm::vec4(1, 0, 0, 1));
+                renderer2D->DrawPoint(pos, 20, glm::vec4(1, 0, 0, 1));
+              //  renderer2D->DrawCircle(pos, glm::vec3(glm::radians(90.0f), 0.0f, 0),0.8,glm::vec4(1,0,0,1));
+
+		    }
+        }
+
     }
 
     void FFTWave::UpdateCascade(Count<FFTWaveCascade> cascade)
@@ -302,17 +477,17 @@ namespace Proof
         PF_PROFILE_FUNC();
         const uint32_t oceanSize = (uint32_t)WaveInfo.OceanSize;
         const uint32_t numFFTStages = static_cast<int>(glm::log((uint32_t)WaveInfo.OceanSize) / glm::log(2));
-        static bool checked = false;
         const float DEPTH = 20.0;
-        // if (!checked)
+
+        // dont need the frame count here, not writng to any buffer only images
+       // if (m_HasInitialRun == false || cascade->Settings != cascade->m_OldSettings || m_OldWaveInfo != WaveInfo)
         {
             const uint32_t WorkGroup = 16;
             PF_PROFILE_SCOPE_DYNAMIC("Spectrum");
             Renderer::BeginComputePass(m_CommandBuffer, m_SpectrumPass);
 
-            checked = true;
-            float alpha = JONSWAPAlpha(cascade->Settings.WindSpeed, cascade->Settings.FetchLength * 1e3);
-            float omega = JONSWAPPeakAngularFrequency(cascade->Settings.WindSpeed, cascade->Settings.FetchLength * 1e3);
+            float alpha = JONSWAPAlpha(cascade->Settings.WindSpeed * WaveInfo.WindSpeedScale, cascade->Settings.FetchLength * 1e3);
+            float omega = JONSWAPPeakAngularFrequency(cascade->Settings.WindSpeed * WaveInfo.WindSpeedScale, cascade->Settings.FetchLength * 1e3);
 
             struct PushConstant
             {
@@ -336,19 +511,21 @@ namespace Proof
             pc.TileLength = cascade->Settings.TileLength;
             pc.Alpha = alpha;
             pc.PeakFrequency = omega;
-            pc.WindSpeed = cascade->Settings.WindSpeed;
+            pc.WindSpeed = cascade->Settings.WindSpeed * WaveInfo.WindSpeedScale;
 
             pc.Angle = glm::radians((float)cascade->Settings.WindDirection); 
             pc.Depth = DEPTH;
-            pc.Swell = cascade->Settings.Swell;
-            pc.Detail = cascade->Settings.Detail;
+            pc.Swell = cascade->Settings.Swell * WaveInfo.SwellScale;
+            pc.Detail = cascade->Settings.Detail * WaveInfo.DetailScale;
 
-            pc.Spread = cascade->Settings.Spread;
+            pc.Spread = cascade->Settings.Spread * WaveInfo.SpreadScale;
             pc.CascadeIndex = cascade->GetCascadeIndex();
 
             m_SpectrumPass->PushData("u_PC", &pc);
             m_SpectrumPass->Dispatch(oceanSize / WorkGroup, oceanSize / WorkGroup, 1);
             Renderer::EndComputePass(m_SpectrumPass);
+
+            //PF_ENGINE_TRACE("Generated Cascade {} FFt Ocean ",cascade->GetCascadeIndex());
         }
 
         {
@@ -427,7 +604,7 @@ namespace Proof
             }pc;
 
             pc.CascadeIndex = cascade->GetCascadeIndex();
-            pc.WhiteCap = cascade->Settings.Whitecap;
+            pc.WhiteCap = cascade->Settings.Whitecap * WaveInfo.WhitecapScale;
 
             pc.FoamGrowRate = cascade->InternalSettings.FoamGrowRate;
             pc.FoamDecayRate = cascade->InternalSettings.FoamDecayRate;
@@ -436,14 +613,75 @@ namespace Proof
             m_FFTUnpack->Dispatch(oceanSize / WorkGroup, oceanSize / WorkGroup, 1);
             Renderer::EndComputePass(m_FFTUnpack);
         }
+        cascade->m_OldSettings = cascade->Settings;
+
     }
 
     void FFTWave::InitialWaveparams()
     {
         
+        if (m_Cascades.size() < 3)
+            return;
+
         m_Cascades[0]->Settings.TileLength = { 400,400 };
         m_Cascades[1]->Settings.TileLength = { 200,200 };
         m_Cascades[2]->Settings.TileLength = { 100,100 };
+    }
+
+    void FFTWave::InitBuffer()
+    {
+        const uint32_t count = 256;
+
+        for (int i = 0; i < m_FFTQueryBuffer.GetCount(); i++)
+        {
+            m_FFTQueryBuffer.GetByIndex(i).resize(count);
+            m_FFTQueryBufferResult.GetByIndex(i).resize(count);
+        }
+
+        m_FFTSBQueryBuffer = StorageBufferSet::Create(count * sizeof(SBWaveHeightQuery));
+    }
+
+    bool FFTWave::HasWaveHeightQueryID(UUID ID)
+    {
+        return m_WaveHeightQueryPositons.contains(ID);
+    }
+
+    void FFTWave::PushWaveHeightQueryID(UUID ID)
+    {
+        PF_CORE_ASSERT(!HasWaveHeightQueryID(ID), "Already contains that ID");
+        m_WaveHeightQueryPositons.insert({ ID,glm::vec3(0) });
+    }
+
+    void FFTWave::UpdateWaveHeightQueryID(UUID ID, glm::vec3 pos)
+    {
+        PF_CORE_ASSERT(m_WaveHeightQueryPositons.contains(ID), "Does not contain ID");
+        m_WaveHeightQueryPositons[ID] = pos;
+    }
+
+    void FFTWave::RemoveWaveHeightQueryID(UUID ID)
+    {
+        PF_CORE_ASSERT(m_WaveHeightQueryPositons.contains(ID), "Does contain ID");
+        m_WaveHeightQueryPositons.extract(ID);
+
+        if (m_WaveHeightQueryResultHeight.contains(ID))
+            m_WaveHeightQueryResultHeight.extract(ID);
+    }
+
+    bool FFTWave::IsWaveheightQueryReady(UUID ID)
+    {
+        PF_CORE_ASSERT(HasWaveHeightQueryID(ID), "ID was never pushed to be queried");
+
+        if(!m_WaveHeightQueryResultHeight.contains(ID))
+            return false;
+
+        return true;
+    }
+
+    float FFTWave::GetWaveheight(UUID ID)
+    {
+        PF_CORE_ASSERT(IsWaveheightQueryReady(ID), "Query Wave heigh is not ready");
+
+        return m_WaveHeightQueryResultHeight.at(ID);
     }
 
     void FFTWave::InitPasses()
@@ -467,7 +705,7 @@ namespace Proof
         }
 
         m_CommandBuffer = RenderCommandBuffer::Create("FFTCommandBuffer");
-        m_SBButterflyFactors = StorageBufferSet::Create(numFFTStages * oceanSize * 4 * 4);
+        m_SBButterflyFactors = StorageBuffer::Create(numFFTStages * oceanSize * 4 * 4);
         // Size: (map size^2 * 4 FFTs * 2 temp buffers (for Stockham FFT) * sizeof(vec2))
         m_FFTBuffer = StorageBufferSet::Create(WaveInfo.NumCascades * oceanSize * oceanSize * 4 * 2 * 2 * 4);
 
@@ -500,8 +738,9 @@ namespace Proof
 
         m_FFTUnpack = ComputePass::Create({ "FFTOceanUnpack",ComputePipeline::Create({"FFTOceanUnpack",Renderer::GetShader("FFTOceanUnpack")}) });
         m_FFTUnpack->SetInput("FFTBuffer", m_FFTBuffer);
+        auto displacement = CreateRenderImageView("FFTDisplacementView", m_DisplacementMap, 0, 0, WaveInfo.NumCascades, 1, ImageViewType::View2DArray);
+
         {
-            auto displacement = CreateRenderImageView("FFTDisplacementView", m_DisplacementMap, 0, 0, WaveInfo.NumCascades, 1, ImageViewType::View2DArray);
             auto normal = CreateRenderImageView("FFTNormalView", m_NormalMap, 0, 0, WaveInfo.NumCascades, 1, ImageViewType::View2DArray);
 
             m_RenderMaterial->Set("u_Displacements", displacement);
@@ -513,14 +752,23 @@ namespace Proof
             m_FFTUnpack->SetInput("displacement_map", displacement);
             m_FFTUnpack->SetInput("normal_map", normal);
         }
-        m_Cascades.clear();
+        m_Cascades.resize(WaveInfo.NumCascades);
         for (uint32_t i = 0; i < WaveInfo.NumCascades; i++)
         {
+            if (m_Cascades[i] != nullptr)
+                continue;
+
             Count<FFTWaveCascade> cascade = Count<FFTWaveCascade>::Create(i,this);
 
-            m_Cascades.emplace_back(cascade);
+            m_Cascades[i] = cascade;
 
         }
+
+        m_QueryWaaveHeightPass = ComputePass::Create({ "FFTWaveHeightQuery",ComputePipeline::Create({"FFTWaveheight",Renderer::GetShader("FFTSampleWaveHeight")}) });
+
+        m_QueryWaaveHeightPass->SetInput("u_Displacements", displacement);
+        m_QueryWaaveHeightPass->SetInput("WaveQueryBuffer", m_FFTSBQueryBuffer);
+        m_QueryWaaveHeightPass->SetInput("ScalesWaterUniform", m_WaterScalesBuffer);
 
 	}
     void FFTWave::InitTextures()
@@ -530,6 +778,10 @@ namespace Proof
         m_SpectrumTexture = CreateRenderImage("FFTSpectrum", oceanSize, oceanSize, ImageFormat::RGBA32F, WaveInfo.NumCascades);
         m_DisplacementMap = CreateRenderImage("FFTDisplacement", oceanSize, oceanSize, ImageFormat::RGBA16F, WaveInfo.NumCascades);
         m_NormalMap = CreateRenderImage("FFTNormal", oceanSize, oceanSize, ImageFormat::RGBA16F, WaveInfo.NumCascades);
+
+        m_SpectrumTexture->GenerateMips();
+        m_DisplacementMap->GenerateMips();
+        m_NormalMap->GenerateMips();
     }
 
     Count<class RenderMaterial> FFTWave::GetRenderMaterial()

@@ -3,9 +3,32 @@
 #include <yaml-cpp/yaml.h>
 #include "Proof/Math/Vector.h"
 #include "Proof/Asset/AssetTypes.h"
+#include "Proof/Utils/MultiUse.h"
+#include "Proof/Utils/MultiUse.h"
 
 namespace YAML
 {
+
+	template<typename T, T MinVal, T MaxVal>
+	struct convert<Proof::ClampedValue<T, MinVal, MaxVal>>
+	{
+		static Node encode(const Proof::ClampedValue<T, MinVal, MaxVal>& rhs)
+		{
+			Node node;
+			node = static_cast<T>(rhs);  // uses the implicit operator T()
+			return node;
+		}
+
+		static bool decode(const Node& node, Proof::ClampedValue<T, MinVal, MaxVal>& rhs)
+		{
+			if (!node.IsScalar())
+				return false;
+
+			rhs = node.as<T>();
+			return true;
+		}
+	};
+
 	template<typename T>
 	struct convert<Proof::VectorTemplate<T>> {
 		static Node encode(const Proof::VectorTemplate<T>& rhs) {
@@ -185,6 +208,12 @@ namespace Proof
 	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec3& v);
 	YAML::Emitter& operator<<(YAML::Emitter& out, const glm::vec2& v);
 
+	template<typename T, T MinVal, T MaxVal>
+	YAML::Emitter& operator<<(YAML::Emitter& out, const ClampedValue<T, MinVal, MaxVal>& v)
+	{
+		out << static_cast<T>(v);
+		return out;
+	}
 	template<typename T>
 	YAML::Emitter& operator<<(YAML::Emitter& out, const const VectorTemplate<T>& v) {
 		out << YAML::Flow;

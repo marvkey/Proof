@@ -70,7 +70,7 @@ World:
                 Type: InputAction
                 Data: 12371603639197638862
       MeshColliderComponent:
-        ColliderID: 15722687759406015080
+        ColliderID: 13487579784090746161
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0
@@ -91,6 +91,10 @@ World:
             InputBindingID: 6003628806341811560
             Active: true
       BuoyancyComponent:
+        Density: 0.75
+        VoxelRelativeSize: 0.75
+        DragInWater: 1
+        AngularDragInWater: 1
         Floaters:
           - Floater: ""
             EntityID: 13234523174882156880
@@ -210,6 +214,7 @@ World:
                 Data: 17529283325493608271
       WaterComponent:
         WaveType: GerstnerWave
+        Density: 1
         "WaveCount ": 5
         WaveDistribution: 1.89300001
         WaveDirection: [0.5, 0.5]

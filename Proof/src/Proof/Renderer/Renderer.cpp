@@ -204,6 +204,7 @@ namespace Proof {
 		ShaderLibrary->LoadShader("FFTOceanTranspose", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanTranspose.glsl");
 		ShaderLibrary->LoadShader("FFTOceanUnpack", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanUnpack.glsl");
 		ShaderLibrary->LoadShader("FFTWater", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTWater.glsl");
+		ShaderLibrary->LoadShader("FFTSampleWaveHeight", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTSampleWaveheight.glsl");
 
 		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
@@ -1079,6 +1080,7 @@ namespace Proof {
 
 	void Renderer::EndFrame()
 	{
+#if 0
 		for (auto renderer : Renderer2D::s_Instances)
 		{
 
@@ -1091,7 +1093,7 @@ namespace Proof {
 				rendererCount->m_NeedsToSubmitCommandBuffer = false;
 			}
 		}
-
+#endif
 		UpdateAllEnvironment();
 		Renderer::EndCommandBuffer(s_Data->RenderCommandBuffer);
 		Renderer::SubmitCommandBuffer(s_Data->RenderCommandBuffer);

@@ -82,6 +82,8 @@ namespace Proof {
 			graphicsPipelineConfig.Shader = Renderer::GetShader("Base2D");
 			graphicsPipelineConfig.VertexArray = vertexArray;
 			graphicsPipelineConfig.CullMode = CullMode::None;
+			graphicsPipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
+
 			//graphicsPipelineConfig.DepthTest = false;
 			//graphicsPipelineConfig.WriteDepth = false;
 			auto graphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
@@ -132,6 +134,8 @@ namespace Proof {
 			graphicsPipelineConfig.Shader = Renderer::GetShader("Text2D");
 			graphicsPipelineConfig.VertexArray = vertexArray;
 			graphicsPipelineConfig.CullMode = CullMode::None;
+			graphicsPipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
+
 			auto graphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 
 			RenderPassConfig renderPassConfig("Text RenderPass");
@@ -163,6 +167,8 @@ namespace Proof {
 			graphicsPipelineConfig.VertexArray = vertexArray;
 			graphicsPipelineConfig.DrawMode = DrawType::Line;
 			graphicsPipelineConfig.LineWidth = 2.0f; //TODO
+			graphicsPipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
+
 			//graphicsPipelineConfig.LineWidth = 1.0f;
 			auto graphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 
@@ -209,6 +215,7 @@ namespace Proof {
 			graphicsPipelineConfig.Shader = Renderer::GetShader("Circle2D");
 			graphicsPipelineConfig.VertexArray = vertexArray;
 			graphicsPipelineConfig.CullMode = CullMode::None;
+			graphicsPipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
 			auto graphicsPipeline = GraphicsPipeline::Create(graphicsPipelineConfig);
 
 			RenderPassConfig renderPassConfig("Circle");
@@ -289,7 +296,7 @@ namespace Proof {
 		Buffer buffer(&m_Camera, sizeof(CameraData));
 		m_UBCamera->SetData(Renderer::GetCurrentFrameInFlight(), buffer);
 		m_Stats = {};
-		if(!m_NeedsToSubmitCommandBuffer)
+		//if(!m_NeedsToSubmitCommandBuffer)
 			Renderer::BeginCommandBuffer(m_CommandBuffer);
 
 		Reset();
@@ -1183,8 +1190,8 @@ namespace Proof {
 	void Renderer2D::EndContext() {
 		Render();
 		Reset();
-		//Renderer::EndCommandBuffer(m_CommandBuffer);
-		//Renderer::SubmitCommandBuffer(m_CommandBuffer);
+		Renderer::EndCommandBuffer(m_CommandBuffer);
+		Renderer::SubmitCommandBuffer(m_CommandBuffer);
 		m_NeedsToSubmitCommandBuffer = true;
 		m_ContextSettings = {};
 	}

@@ -240,7 +240,7 @@ namespace Proof {
 		TransformComponent transform = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
 		physx::PxTransform newTransform = PhysXUtils::ToPhysXTransform(transform);
 
-	#if 1
+	#if 0
 		// Update global pose only if location or rotation has changed
 		if (m_LastLocation != transform.Location)
 		{
@@ -585,6 +585,11 @@ namespace Proof {
 		m_RigidActor->setGlobalPose(physxTransform);
 	}
 
+	glm::mat4 PhysicsActor::GetTransform()
+	{
+		return PhysXUtils::FromPhysXMatrix(m_RigidActor->getGlobalPose());
+	}
+
 	void PhysicsActor::SetRotation(const glm::quat& rotation, bool autowake)
 	{
 		physx::PxTransform transform = m_RigidActor->getGlobalPose();
@@ -636,6 +641,7 @@ namespace Proof {
 
 	glm::mat4 PhysicsActor::GetLocalCenterOfMass() const { return !IsDynamic() ? glm::mat4(1.0f) : PhysXUtils::FromPhysXTransform(m_RigidActor->is<physx::PxRigidDynamic>()->getCMassLocalPose()); }
 
+
 	void PhysicsActor::AddForceAtPosition(const glm::vec3& force, const glm::vec3& position, ForceMode forceMode)
 	{
 		PF_PROFILE_FUNC();
@@ -659,18 +665,19 @@ namespace Proof {
 			{
 				AddForce(force, ForceMode::Impulse);
 				AddTorque(torque, ForceMode::Impulse);
+
 				return;
 			}
 			case ForceMode::Acceleration:
 			{
-				glm::vec3 appliedForce = GetMass() * force;
-				AddForce(appliedForce, ForceMode::Force);
-				//AddTorque(torque, ForceMode::Force);
+				physx::PxRigidBodyExt::addForceAtPos(*actor, PhysXUtils::ToPhysXVector(force) / GetInverseMass(), PhysXUtils::ToPhysXVector(position), Utils::ToPhysxForce(ForceMode::Force));
 				break;
 			}
 			default:
+			{
 				physx::PxRigidBodyExt::addForceAtPos(*actor, PhysXUtils::ToPhysXVector(force), PhysXUtils::ToPhysXVector(position), Utils::ToPhysxForce(forceMode));
 				break;
+			}
 		}
 	}
 

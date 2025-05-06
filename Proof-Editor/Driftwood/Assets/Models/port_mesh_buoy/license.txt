@@ -1,0 +1,11 @@
+Model Information:
+* title:	Port Mesh Buoy2
+* source:	https://sketchfab.com/3d-models/port-mesh-buoy2-6da81c3d87bd4d1da56503d371ef5b15
+* author:	john.simmons.hypertext (https://sketchfab.com/john.simmons.hypertext)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Port Mesh Buoy2" (https://sketchfab.com/3d-models/port-mesh-buoy2-6da81c3d87bd4d1da56503d371ef5b15) by john.simmons.hypertext (https://sketchfab.com/john.simmons.hypertext) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

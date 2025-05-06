@@ -9,7 +9,8 @@
 //solve objexts goign to fast for collisoin
 //https://www.youtube.com/watch?v=XvrFQJ3n8Mo
 namespace Proof {
-	class PhysicsEngine {
+	class PhysicsEngine
+	{
 	public:
 		static physx::PxFoundation* GetFoundation();
 		static physx::PxPhysics* GetPhysics();

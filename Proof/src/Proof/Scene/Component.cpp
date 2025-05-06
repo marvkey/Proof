@@ -227,9 +227,6 @@ namespace Proof
 
 	}
 
-
-	
-
 	MeshColliderComponent::MeshColliderComponent(AssetID colliderID, uint32_t submeshIndex)
 		: ColliderKey(colliderID), SubMeshIndex(submeshIndex)
 	{

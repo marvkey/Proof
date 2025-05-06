@@ -15,6 +15,7 @@
 #include "Proof/Asset/AssetTypes.h"
 #include "Proof/Scripting/ScriptRawTypes.h"
 #include <glm/gtx/quaternion.hpp>
+#include "Proof/Utils/MultiUse.h"
 #include<vector>
 #include <string>
 #include <format>
@@ -737,8 +738,15 @@ namespace Proof
 		Count< class Water> Water;
 	};
 
+	enum class BuoyancyType
+	{
+		Voxels,
+		Points
+	};
+	
 	struct BuoyancyComponent
 	{
+		
 		struct Floater
 		{
 			float SubmersionDepth = 1.0f;
@@ -753,6 +761,13 @@ namespace Proof
 			Floater Floater;
 		};
 		std::vector<EntityFloater> Floaters;
+
+		BuoyancyType bouyancyType = BuoyancyType::Voxels;
+		// voxels
+		float Density = 0.75;
+		ClampedValue<float, 0.0f, 1.0f> VoxelRelativeSize = 0.75;
+		float DragInWater = 1.0f;
+		float AngularDragInWater = 1.0f;
 	};
 	template<class ... Component>
 	struct ComponentGroup {
@@ -766,7 +781,7 @@ namespace Proof
 		WaterComponent, BuoyancyComponent>;
 	
 
-	using LightComponnet =ComponentGroup<SkyLightComponent, DirectionalLightComponent, PointLightComponent, SpotLightComponent>;
+	using LightComponnet = ComponentGroup<SkyLightComponent, DirectionalLightComponent, PointLightComponent, SpotLightComponent>;
 }
 
 

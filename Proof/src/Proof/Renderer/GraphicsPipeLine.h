@@ -261,7 +261,7 @@ namespace Proof
 		bool Blend = true;
 		BlendAttachmentState BlendMode{ BlendMode::SrcAlphaOneMinusSrcAlpha };
 
-		DepthCompareOperator DepthCompareOperator = DepthCompareOperator::GreaterOrEqual;
+		DepthCompareOperator DepthCompareOperator = DepthCompareOperator::LessOrEqual;
 		FrontFace FrontFace = FrontFace::ClockWise;
 
 		// default drawType

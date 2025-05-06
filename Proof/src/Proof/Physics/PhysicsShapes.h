@@ -3,6 +3,7 @@
 #include "PhysicsUtils.h"
 #include "MeshCollider.h"
 #include "Proof/Scene/Entity.h"
+#include "Proof/Math/AABB.h"
 namespace Proof
 {
 	class Entity;
@@ -40,6 +41,13 @@ namespace Proof
 
 		//shapes and counts
 		virtual std::pair< physx::PxShape*, size_t> GetShapes() = 0;
+		bool IsPointInsideCollider(glm::vec3 point);
+		bool UseRayIsPointInsideCollider(glm::vec3 point,float rayLength);
+
+		virtual AABB GetBoundingBox();
+
+		glm::mat4 GetInitalShapeLocalTransform(); 
+		glm::mat4 GetInitalShapeWorldTransform(); 
 	protected:
 		ColliderType m_Type;
 		bool m_IsShared = false;
@@ -72,6 +80,9 @@ namespace Proof
 		virtual bool IsValid() const override { return ColliderShape::IsValid() && m_Shape != nullptr; }
 
 		static ColliderType GetStaticType() { return ColliderType::Box; }
+
+		virtual AABB GetBoundingBox();
+
 		
 	private:
 		physx::PxShape* m_Shape = nullptr;

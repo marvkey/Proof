@@ -18,27 +18,11 @@
 #include "Proof/Physics/PhysicsWorld.h"
 #include "Proof/Physics/PhysicsActor.h"
 #include "Proof/Scene/WaterSystem/Water.h"
+#include "Proof/Scene/SceneUtils.h"
 
 namespace Proof
 {
-	glm::vec3 WorldToLocal(const glm::vec3& worldPosition, const glm::mat4& modelMatrix)
-	{
-		// First, inverse the model matrix to convert world position back to local space
-		glm::mat4 inverseModelMatrix = glm::inverse(modelMatrix);
-
-		// Transform the world position back to local space
-		glm::vec3 localPosition = glm::vec3(inverseModelMatrix * glm::vec4(worldPosition, 1.0f));
-
-		return localPosition;
-	}
-
-	glm::vec3 LocalToWorld(const glm::vec3& localPosition, const glm::mat4& modelMatrix)
-	{
-		// Transform the local position to world space using the model matrix
-		glm::vec3 worldPosition = glm::vec3(modelMatrix * glm::vec4(localPosition, 1.0f));
-
-		return worldPosition;
-	}
+	
 	GerstnerWave::GerstnerWave(Count<class Water> water)
 		: Wave(water, WaveType::GerstnerWave)
 	{
@@ -85,50 +69,23 @@ namespace Proof
 
 	}
 
-	std::vector<glm::vec3> SamplePlanePoints(float planeSize)
-	{
-		std::vector<glm::vec3>Positions;
-
-		float offset = 0.8f; // so points dont be on the corner cause on a gerstner wave the corners bend
-
-		float halfSize = (planeSize * offset) / 2.f;
-
-		float verticalStep = (planeSize * offset) / 4.0f; // divide plane with 4 intervals
-		float horizontalStep = (planeSize * offset) / 4.0f; // divded pplane with 4 interaval
-
-		for (int col = 0; col < 5; col++)
-		{
-			float x = -halfSize + col * horizontalStep;
-
-			//loop each row in a column
-
-			for (int row = 0; row < 5; row++)
-			{
-				float z = halfSize - row * verticalStep;
-
-				Positions.push_back(glm::vec3(x, 0.0f, z));
-			}
-		}
-
-		return Positions;
-	}
 	void GerstnerWave::Render2D(Count<class Renderer2D> renderer2D)
 	{
 		if (!VisualizeWaveHeight)
 			return;
 
-		std::vector<glm::vec3> positions = SamplePlanePoints(GerstnerData.PlaneSize);
+		std::vector<glm::vec3> positions = Utils::SamplePlanePoints(GerstnerData.PlaneSize);
 
 
 		for (auto localPos : positions)
 		{
-			auto worldPos = LocalToWorld(localPos, GetTransform());
+			auto worldPos = Utils::LocalToWorld(localPos, GetTransform());
 
 			glm::vec3 pos = localPos;
 
 			pos.y += GetWaveHeightAtPosition(localPos, FrameTime::GetTime());
 
-			pos = LocalToWorld(pos, GetTransform());
+			pos = Utils::LocalToWorld(pos, GetTransform());
 
 			renderer2D->DrawLine(worldPos, pos);
 			renderer2D->FillCircle(pos, glm::vec3(glm::radians(90.0f), 0.0f, 0), 0.8);
@@ -264,7 +221,7 @@ namespace Proof
 				auto worldTransformComponent = world->GetWorldSpaceTransformComponent(floaterEntity);
 				physicsActor->AddForceAtPosition(physicsWorld->GetGravity() / (float)activeFloatersIndex.size(), worldTransformComponent.Location, ForceMode::Acceleration);
 
-				auto vertexPos = WorldToLocal(worldTransformComponent.Location, GetTransform());
+				auto vertexPos = Utils::WorldToLocal(worldTransformComponent.Location, GetTransform());
 				float waveHeight = GetWaveHeightAtPosition(vertexPos, FrameTime::GetTime());
 
 				// if below water

@@ -1,0 +1,164 @@
+World:
+  ID: 6890206917520790392
+  Entities:
+    - Entity: 5099837638696904783
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.0174532924, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 18201829381461811068
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [1.39626336, 0.17453292, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+        CastShadow: true
+        ShadowStrength: 0.5
+        CastSoftShadow: true
+        ShadowSoftness: 0.5
+    - Entity: 2653913844991597937
+      TagComponent:
+        Tag: Water
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      WaterComponent:
+        WaveType: FastFourierTransformWave
+        Density: 1
+        OceanSize: SIZE_1024
+        NumCascades: 2
+        NormalStrength: 0.200000003
+        Roughness: 0.200000003
+        WaterColor: [0, 0.560000002, 1, 1]
+        FoamColor: [0.730000019, 0.670000017, 0.620000005]
+        DisplacementScale: 0.949999988
+        NormalScale: 1
+        WindSpeedScale: 0.159999996
+        SwellScale: 1
+        DetailScale: 1
+        SpreadScale: 1
+        FoamTimeScale: 1
+        WhitecapScale: 1
+        FoamGrowthScale: 1
+        FoamDecayScale: 1
+        Cascades:
+          - Cascade: 0
+            TileLength: [400, 400]
+            DisplacementScale: 1
+            NormalScale: 1
+            WindSpeed: 20
+            WindDirection: 180
+            FetchLength: 550
+            Swell: 0.800000012
+            Detail: 0.25
+            Spread: 0.200000003
+            FoamTimeScale: 1
+            Whitecap: 0.5
+            FoamAmount: 5
+          - Cascade: 1
+            TileLength: [50, 50]
+            DisplacementScale: 1
+            NormalScale: 1
+            WindSpeed: 20
+            WindDirection: 180
+            FetchLength: 550
+            Swell: 0.800000012
+            Detail: 0.25
+            Spread: 0.200000003
+            FoamTimeScale: 1
+            Whitecap: 0.5
+            FoamAmount: 5
+    - Entity: 17490857901337804801
+      TagComponent:
+        Tag: Ocean Floor
+        tags: []
+      TransformComponent:
+        Location: [0, -200, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1000, 1, 1000]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 15082089553182115387
+      TagComponent:
+        Tag: buoy
+        tags: []
+      TransformComponent:
+        Location: [0, 13.5424061, -33.675251]
+        Rotation: [0, 0, 0]
+        Scale: [10, 10, 10]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 785809237399164901
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 0.699999988, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+      BuoyancyComponent:
+        Density: 0.5
+        VoxelRelativeSize: 0.5
+        DragInWater: 1
+        AngularDragInWater: 1
+        Floaters:
+          []
