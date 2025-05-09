@@ -46,7 +46,7 @@ namespace Proof
 			ClampedValue<float, 0.f, 2.0f> NormalScale = 1.0f; 
 
 			// Denotes the average wind speed above the water (in meters per second). Increasing makes waves steeper and more 'chaotic'.
-			ClampedValue<float, 0.0001f, 100000.0f> WindSpeed = 20.0f;
+			ClampedValue<float, 0.0001f, 100000.0f> WindSpeed = 2.0f;
 
 			ClampedValue<float,-360.0f,360.0f> WindDirection = 180.0f;
 
@@ -107,6 +107,9 @@ namespace Proof
 		glm::vec3 WorldPosition;
 		uint32_t pad2;
 
+		glm::vec3 WaveDisplacment;
+		uint32_t pad3;
+
 	};
 	class FFTWave : public Wave
 	{
@@ -149,7 +152,7 @@ namespace Proof
 
 			ClampedValue<float, 0.f, 10.f> DisplacementScale = 1.0f;
 			ClampedValue<float, 0.f, 10.f> NormalScale = 1.0f;
-			ClampedValue<float, 0.f, 10.f> WindSpeedScale = 1.0f;
+			ClampedValue<float, 0.0001f, 10.f> WindSpeedScale = 1.0f;
 			ClampedValue<float, 0.f, 10.f> SwellScale = 1.0f;
 			ClampedValue<float, 0.f, 10.f> DetailScale = 1.0f;
 			ClampedValue<float, 0.f, 10.f> SpreadScale = 1.0f;
@@ -178,7 +181,8 @@ namespace Proof
 		void RemoveWaveHeightQueryID(UUID ID);
 
 		bool IsWaveheightQueryReady(UUID ID);
-		float GetWaveheight(UUID ID);
+		// returns wave Height, and displacment of the wave
+		std::pair<float,glm::vec3> GetWaveHeightAndDisplacment(UUID ID); 
 	private:
 		void InitPasses();
 		void InitTextures();
@@ -214,7 +218,7 @@ namespace Proof
 		RendererCustomTypeSet<std::vector<SBWaveHeightQuery>> m_FFTQueryBuffer;
 		RendererCustomTypeSet<std::vector<SBWaveHeightQuery>> m_FFTQueryBufferResult;
 		std::unordered_map<UUID, glm::vec3> m_WaveHeightQueryPositons;
-		std::unordered_map<UUID, float> m_WaveHeightQueryResultHeight;
+		std::unordered_map<UUID, std::pair<float,glm::vec3>> m_WaveHeightAndDisplacmentQueryResult;
 
 		std::vector<std::tuple<UUID, glm::vec3>> m_SampleWaveheightAtPos;
 

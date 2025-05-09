@@ -39,6 +39,9 @@
 #include "WaterSystem/Water.h"
 #include "Proof/ImGui/SelectionManager.h"
 #include "Proof/Renderer/DebugRenderer.h"
+#include "Proof/Scene/WaterSystem/BuoyancyActor.h"
+#include "Proof/Renderer/Colors.h"
+#include "Proof/Scene/SceneUtils.h"
 
 #include "GameMode/LocalGameMode.h"
 #include "Proof/Scripting/ScriptWorld.h"
@@ -760,8 +763,40 @@ namespace Proof {
 
 					renderer2D->DrawDebugSphere(location, rotation, radius, color);
 				}
+
+				if (m_PhysicsWorld != nullptr)
+				{
+					auto bouyancyActor = m_PhysicsWorld->GetBuoyancyActor(buoyancyEntity);
+
+					if (bouyancyActor)
+					{
+						glm::mat4 transform= GetWorldSpaceTransform(buoyancyEntity);
+						auto physicsActor = m_PhysicsWorld->GetActor(buoyancyEntity);
+
+						glm::mat4 physicsTransfrom = physicsActor->GetTransform();
+
+						{
+							//Transform trans;
+							//trans.SetTransform(transform);
+							//
+							//PF_EC_INFO("boyancyEntity Tranfrom {}", trans.ToString());
+							//trans.SetTransform(physicsTransfrom);
+							//PF_EC_INFO("boyancyEntity Physics actor transform Tranfrom {}", trans.ToString());
+
+						}
+						for (const auto& [id, voxelPos] : bouyancyActor->GetVoxels())
+						{
+
+							//renderer2D->DrawDebugCube(Utils::LocalToWorld(voxelPos, physicsActor->GetTransform()), glm::vec3(0), bouyancyActor->GetVoxelSize() *0.8f, Colors::Magenta);
+							renderer2D->DrawDebugCube(Utils::LocalToWorld(voxelPos, transform), glm::vec3(0), bouyancyActor->GetVoxelSize() *0.8f, Colors::Magenta);
+						}
+					}
+				}
+
 			}
 		}
+
+		
 		renderer2D->EndContext();
 	}
 	void World::Init()

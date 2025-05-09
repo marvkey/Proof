@@ -200,20 +200,24 @@ namespace Proof
 	}
 	void PhysicsController::OnUpdate(float dt)
 	{
+		
+	}
+	void PhysicsController::OnPhysicsUpdate(float physicsFixedDeltaTime)
+	{
 		//float gravity = glm::length(PhysicsEngine::GetSettings().Gravity);            // acceleration due to gravity (in direction opposite to controllers "up" vector)
 
 		physx::PxControllerFilters filters;
 
-		if(IsGravityEnabled())
-			m_Speed -= PhysicsEngine::GetSettings().Gravity * dt * GetGravityScale() ;
+		if (IsGravityEnabled())
+			m_Speed -= m_PhysicsWorld->GetGravity() * physicsFixedDeltaTime * GetGravityScale();
 
-		glm::vec3 displacement = m_Displacement - PhysXUtils::FromPhysXVector(m_Controller->getUpDirection()) * m_Speed * dt;
+		glm::vec3 displacement = m_Displacement - PhysXUtils::FromPhysXVector(m_Controller->getUpDirection()) * m_Speed * physicsFixedDeltaTime;
 
-		m_CollisionFlags = m_Controller->move(PhysXUtils::ToPhysXVector(displacement), 0.0, static_cast<physx::PxF32>(dt), filters);
+		m_CollisionFlags = m_Controller->move(PhysXUtils::ToPhysXVector(displacement), 0.0, static_cast<physx::PxF32>(physicsFixedDeltaTime), filters);
 
 		if (IsGrounded())
 		{
-			m_Speed = PhysicsEngine::GetSettings().Gravity * 0.01f; // setting speed back to zero here would be more technically correct,
+			m_Speed = m_PhysicsWorld->GetGravity() * 0.01f; // setting speed back to zero here would be more technically correct,
 		}
 		// but a small non-zero gives better results (e.g. lessens jerkyness when walking down a slope)
 		m_Displacement = {};

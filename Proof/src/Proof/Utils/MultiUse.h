@@ -5,7 +5,7 @@
 namespace Proof
 {
     //template <typename T, T MinVal = std::numeric_limits<T>::lowest(), T MaxVal = std::numeric_limits<T>::max()>
-    template <typename T, T MinVal = 0, T MaxVal = std::numeric_limits<T>::max()>
+    template <typename T, T MinVal , T MaxVal >
     struct ClampedValue 
     {
         static_assert(MinVal <= MaxVal, "MinVal must be less than or equal to MaxVal");

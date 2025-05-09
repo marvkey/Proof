@@ -1758,12 +1758,15 @@ namespace Proof
 
 					UI::BeginPropertyGrid();
 
-					UI::AttributeDrag("Density", buoyancyComponent.Density,0.01);
+					UI::AttributeDrag("Density", buoyancyComponent.Density,0.01	);
+					PF_EC_ERROR("Density Min {} max {}", buoyancyComponent.Density.Min(), buoyancyComponent.Density.Max());
 					ImGui::SameLine();
 					UI::AttributeText("Yo wagawan");
 					UI::AttributeSlider("VoxelRelativeSize", buoyancyComponent.VoxelRelativeSize);
 					UI::AttributeDrag("DragInWater", buoyancyComponent.DragInWater,0.01);
 					UI::AttributeDrag("AngularDragInWater", buoyancyComponent.AngularDragInWater, 0.01);
+					UI::AttributeSlider("DisplacementFactor", buoyancyComponent.WaveDisplacementFactor,"How Much the water can chagne the object location");
+					UI::AttributeBool("Always stay upright",buoyancyComponent.AlwaysStayUpright,"If this objeect is intended to always stay upright, it should not tip, set to true, help save some performance");
 
 					UI::EndPropertyGrid();
 				}

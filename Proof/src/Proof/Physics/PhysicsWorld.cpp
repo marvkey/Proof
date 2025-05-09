@@ -123,9 +123,8 @@ namespace Proof {
 
 		if (m_World->IsPlaying() && lastAdvance)
 		{
-			// not actually on update
 			for (auto& [Id, actor] : m_Actors)
-				actor->OnFixedUpdate(m_SubStepSize);
+				actor->PreSimulate(m_SubStepSize);
 		}
 
 		for (auto& [entityID, controller] : m_Controllers)
@@ -330,8 +329,14 @@ namespace Proof {
 			m_Accumulator -= (float)m_NumSubSteps * m_SubStepSize;
 
 		}
+
+
 		for (uint32_t i = 0; i < m_NumSubSteps; i++)
 		{
+
+			for (auto& [Id, actor] : m_Actors)
+				actor->OnPhysicsUpdate(m_SubStepSize);
+
 			// needs to behere bcause the boyancy is not working
 			// cause the physcs is adding more Gravity force in a frame
 			// and our boyancy only adds one force per frame 
@@ -341,12 +346,14 @@ namespace Proof {
 					for (auto& [Id, actor] : m_BuoyancyActors)
 						actor->OnPhysicsUpdate(deltaTime);
 			}
+
 			m_PhysXScene->simulate(m_SubStepSize);
 			m_PhysXScene->fetchResults(true);
 		}
-
+			
 		if (m_NumSubSteps > 0)
 		{
+
 			PF_PROFILE_FUNC("Physics Trigger check");
 			//trigger objects still give persistent event if they are sleeping
 			for (auto& [triggerActorID, triggerActorData] : m_CollisionCallback.TriggersActors) 

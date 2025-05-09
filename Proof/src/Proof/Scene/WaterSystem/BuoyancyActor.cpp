@@ -78,7 +78,7 @@ namespace Proof
 						if (!fftWave->HasWaveHeightQueryID(id))
 							fftWave->PushWaveHeightQueryID(id);
 
-						fftWave->UpdateWaveHeightQueryID(id, Utils::TransformPoint(transform, pos));
+						fftWave->UpdateWaveHeightQueryID(id, Utils::LocalToWorld(pos, transform));
 					}
 
 					ApplyBuoyancy(deltaTime, fftWave, e);
@@ -96,24 +96,29 @@ namespace Proof
 
 		m_PhysicsActor->SetRotation(glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
 
-		glm::mat4 coliderTransform = m_ColliderShape->GetInitalShapeWorldTransform() ;
-
 		AABB bounds = m_ColliderShape->GetBoundingBox();
+
 		m_VoxelSize.x = bounds.GetSize().x * buoyancyComponent.VoxelRelativeSize;
 		m_VoxelSize.z = bounds.GetSize().y * buoyancyComponent.VoxelRelativeSize;
 		m_VoxelSize.y = bounds.GetSize().z * buoyancyComponent.VoxelRelativeSize;
-
-		int voxelCountPerAxis = static_cast<int>(std::round(1.0f / buoyancyComponent.VoxelRelativeSize));
+		int voxelCountPerAxis = static_cast<int>(std::round(1.0f / buoyancyComponent.VoxelRelativeSize.GetValue()));
 
 		FreeVoxels();
 		m_Voxels.reserve(voxelCountPerAxis * voxelCountPerAxis * voxelCountPerAxis);
+		{
+			Transform transfsdafasf;
+			transfsdafasf.SetTransform(m_ColliderShape->GetInitalShapeLocalTransform());
+			PF_ENGINE_INFO("Shape local pos {}", transfsdafasf.ToString());
 
-		for (int i = 0; i < voxelCountPerAxis; ++i) 
+		}
+		bool readOnlyBottomVoxels = false;
+		for (int i = 0; i < voxelCountPerAxis; ++i)
 		{
 			for (int j = 0; j < voxelCountPerAxis; ++j)
 			{
 				for (int k = 0; k < voxelCountPerAxis; ++k)
 				{
+#if 0
 					float pX = bounds.Min.x + m_VoxelSize.x * (0.5f + i);
 					float pY = bounds.Min.y + m_VoxelSize.y * (0.5f + j);
 					float pZ = bounds.Min.z + m_VoxelSize.z * (0.5f + k);
@@ -121,11 +126,19 @@ namespace Proof
 					glm::vec3 point = { pX,pY,pZ };
 
 					//if (m_ColliderShape->UseRayIsPointInsideCollider(point, glm::length(bounds.GetSize())))
-					if (m_ColliderShape->IsPointInsideCollider(point))
+					if (m_ColliderShape->IsPointInsideCollider(Utils::LocalToWorld(point, m_ColliderShape->GetInitalShapeWorldTransform())))
 					{
-						auto data = std::make_pair( UUID(),Utils::WorldToLocal(point,coliderTransform) );
+						auto data = std::make_pair( UUID(),Utils::WorldToLocal(point, m_PhysicsActor->GetTransform()) );
 						m_Voxels.emplace_back(data);
 					}
+#else
+					glm::vec3 point = m_VoxelSize * glm::vec3(i + 0.5f, j + 0.5f, k + 0.5f);
+					point += bounds.Min;
+					if (j == 0 && buoyancyComponent.AlwaysStayUpright)continue;
+
+					auto data = std::make_pair(UUID(), Utils::WorldToLocal(point, m_PhysicsActor->GetTransform()));
+					m_Voxels.emplace_back(data);
+#endif
 				}
 			}
 		}
@@ -179,9 +192,6 @@ namespace Proof
 		BuoyancyComponent& buoyancyComponent = m_Entity.GetComponent< BuoyancyComponent>();
 		float voxelHeight = bounds.GetSize().y * buoyancyComponent.VoxelRelativeSize;
 
-		//PF_EC_INFO("Voxel height {}", voxelHeight);
-	//	PF_EC_INFO("	forceSingleVoxel {}:{}:{}", forceSingleVoxel.x, forceSingleVoxel.y, forceSingleVoxel.z);
-
 		float submergedVolume = 0.0f;
 
 		Count<PhysicsActor> physicsActor = m_Entity.GetCurrentWorld()->GetPhysicsWorld()->GetActor(m_Entity);
@@ -195,7 +205,7 @@ namespace Proof
 
 			glm::vec3 worldPoint = Utils::LocalToWorld(m_Voxels[i].second,transform);
 
-			float waveHeight = wave->GetWaveheight(m_Voxels[i].first);
+			auto [waveHeight, surfaceNormal] = wave->GetWaveHeightAndDisplacment(m_Voxels[i].first);
 			float deepLevel = waveHeight - worldPoint.y + (voxelHeight / 2.0f); // how deep is the voxel
 
 
@@ -204,7 +214,8 @@ namespace Proof
 			submergedVolume += submergedFactor;
 
 
-			glm::vec3 surfaceNormal = glm::vec3(0, 1, 0); // TODO 
+			// how much the ave should displace an object
+			surfaceNormal = glm::normalize(glm::mix(glm::vec3(0, 1, 0), surfaceNormal, (float)buoyancyComponent.WaveDisplacementFactor.GetValue())); 
 
 			glm::quat surfaceRotation = Utils::FromRotation(wave->GetWater()->GetWorld()->GetWorldSpaceTransformComponent(waterEntity).GetUpVector(), surfaceNormal);
 
@@ -212,31 +223,25 @@ namespace Proof
 
 
 			glm::vec3 finalVoxelForce = surfaceRotation * (forceSingleVoxel * submergedFactor);
-			//glm::vec3 finalVoxelForce = glm::vec3(0.0f, 1.0f, 0.0f) * glm::length(forceSingleVoxel) * submergedFactor;
-
-			//PF_EC_INFO("	SubmergedFactor {}", submergedFactor);
-
-		//	PF_EC_INFO("	finalVoxelVorce {}:{}:{}", finalVoxelForce.x, finalVoxelForce.y, finalVoxelForce.z);
-		//	PF_EC_INFO("	worldPoint {}:{}:{}", worldPoint.x, worldPoint.y, worldPoint.z);
 
 			physicsActor->AddForceAtPosition(finalVoxelForce, worldPoint);
-			//physicsActor->AddForce(finalVoxelForce);
 		}
 
 		submergedVolume /= m_Voxels.size();
-
+		
 #if 1
 		// Apply drag force instead of setting drag
 		{
-			// drag force
-			glm::vec3 linearVel = physicsActor->GetLinearVelocity();
-			glm::vec3 dragForce = -linearVel * buoyancyComponent.DragInWater * submergedVolume;
-			physicsActor->AddForce(dragForce);
+			// linear damping (exponential decay)
+			float dt = FrameTime::GetWorldDeltaTime();
+			float linearDamp = glm::exp(-buoyancyComponent.DragInWater * submergedVolume * dt);
+			glm::vec3 linearVel = physicsActor->GetLinearVelocity() * linearDamp;
+			physicsActor->SetLinearVelocity(linearVel);
 
-			// angular drag force
-			glm::vec3 angularVel = physicsActor->GetAngularVelocity();
-			glm::vec3 angularDragTorque = -angularVel * buoyancyComponent.AngularDragInWater * submergedVolume;
-			physicsActor->AddTorque(angularDragTorque);
+			// angular damping
+			float angularDamp = glm::exp(-buoyancyComponent.AngularDragInWater * submergedVolume * dt);
+			glm::vec3 angularVel = physicsActor->GetAngularVelocity() * angularDamp;
+			physicsActor->SetAngularVelocity(angularVel);
 		}
 
 #else

@@ -33,7 +33,8 @@ namespace Proof
 
 		bool IsSleeping();
 		void SyncTransform();
-		void OnFixedUpdate(float deltaTime);
+		void PreSimulate(float deltaTime);
+		void OnPhysicsUpdate(float physicsFixedDeltaTime);
 
 		Entity GetEntity();
 
@@ -45,8 +46,10 @@ namespace Proof
 		glm::quat GetRotation() const { return PhysXUtils::FromPhysXQuat(m_RigidActor->getGlobalPose().q); }
 		glm::vec3 GetRotationEuler() const { return glm::eulerAngles(GetRotation()); }
 
+		glm::vec3 GetMassSpaceInertiaTensor();
+
 		void SetTransform(const glm::mat4& transform);
-		glm::mat4 GetTransform();
+		glm::mat4 GetTransform(bool takeScale = true);
 
 		void SetRotation(const glm::quat& rotation, bool autowake = true);
 		void Rotate(const glm::quat& rotation, bool autowake = true);

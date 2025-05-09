@@ -320,5 +320,29 @@ namespace Proof
 		{
 			return { DivideAndRoundUp(dividend.x, divisor), DivideAndRoundUp(dividend.y, divisor) };
 		}
+
+		inline static std::string ToString(const glm::vec2& v)
+		{
+			return "X: " + std::to_string(v.x) + ", Y: " + std::to_string(v.y);
+		}
+
+		inline static std::string ToString(const glm::vec3& v)
+		{
+			return "X: " + std::to_string(v.x) + ", Y: " + std::to_string(v.y) + ", Z: " + std::to_string(v.z);
+		}
+
+		inline static std::string ToString(const glm::vec4& v)
+		{
+			return "X: " + std::to_string(v.x) + ", Y: " + std::to_string(v.y) +
+				", Z: " + std::to_string(v.z) + ", W: " + std::to_string(v.w);
+		}
+
+		inline static std::string ToString(const glm::quat& q)
+		{
+			return "X: " + std::to_string(q.x) + ", Y: " + std::to_string(q.y) +
+				", Z: " + std::to_string(q.z) + ", W: " + std::to_string(q.w);
+		}
+
+
 	};
 }

@@ -100,6 +100,7 @@ namespace Proof
 	public:
 		SphereColliderShape(const struct SphereColliderComponent& component, const PhysicsActor& actor, class Entity entity);
 		~SphereColliderShape();
+		virtual AABB GetBoundingBox();
 
 		float GetRadius() const;
 		void SetRadius(float radius);
@@ -146,6 +147,7 @@ namespace Proof
 
 		float GetRadius() const;
 		void SetRadius(float radius);
+		virtual AABB GetBoundingBox();
 
 
 		CapsuleDirection GetDirection()const;

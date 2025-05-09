@@ -2,6 +2,7 @@
 #include <glm/glm.hpp>
 #include "Proof/Math/MathResource.h"
 #include <glm/gtx/quaternion.hpp>
+#include "Proof/Math/Math.h"
 namespace Proof
 {
 	struct Transform
@@ -16,6 +17,9 @@ namespace Proof
 			MathResource::DecomposeTransform(transform, Location, rotationQuat, Scale);
 			Rotation = glm::eulerAngles(rotationQuat);
 		}
+
+        std::string ToString();
+
 	};
 
 
@@ -79,7 +83,7 @@ namespace Proof
 
             return Positions;
         }
-
+        //InverseTransformPoint
         inline glm::vec3 WorldToLocal(const glm::vec3& worldPosition, const glm::mat4& modelMatrix)
         {
             // First, inverse the model matrix to convert world position back to local space
@@ -91,6 +95,7 @@ namespace Proof
             return localPosition;
         }
 
+        //TransformPoint
         inline glm::vec3 LocalToWorld(const glm::vec3& localPosition, const glm::mat4& modelMatrix)
         {
             // Transform the local position to world space using the model matrix

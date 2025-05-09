@@ -62,6 +62,7 @@ namespace Proof
 		float SleepThreshold = 0.005;//min 0
 		uint32_t SolverIterations = 8;
 		uint32_t SolverVelocityIterations = 2;
+		float PhysicsFixedDeltaTime = 1 / 60.0f;
 
 		BroadphaseType BroadPhaseType = BroadphaseType::AutomaticBoxPrune;
 		FrictionType FrictionModel = FrictionType::Patch;

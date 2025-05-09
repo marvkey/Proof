@@ -16,6 +16,10 @@ namespace Proof
 		void SetEntity(Entity entity);
 		void CutIntoVoxels();
 		glm::vec3 CalculateMaxBuoyancyForce(Count<class Water> water);
+
+		const std::vector<std::pair<UUID, glm::vec3>>& GetVoxels() {return m_Voxels;}; // ID and pos
+		glm::vec3 GetVoxelSize() { return m_VoxelSize; };
+
 	private:
 		std::vector<std::pair<UUID, glm::vec3>> m_Voxels; // ID and pos
 		glm::vec3 m_VoxelSize;

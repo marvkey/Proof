@@ -54,6 +54,7 @@ namespace Proof
 
 	private:
 		void OnUpdate(float dt);
+		void OnPhysicsUpdate(float physicsFixedDeltaTime);
 		virtual void SyncTransform() override;
 		void Init();
 		void GenerateCapsule();

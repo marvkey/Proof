@@ -9,10 +9,10 @@
 #include "MeshCollider.h"
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Asset/AssetManager.h"
-namespace Proof {
-
-	
-	namespace Utils {
+namespace Proof 
+{
+	namespace Utils 
+	{
 
 		static physx::PxForceMode::Enum ToPhysxForce(ForceMode mode) {
 			switch (mode)
@@ -234,13 +234,10 @@ namespace Proof {
 	}
 
 
-	void PhysicsActor::OnFixedUpdate(float deltaTime)
+	void PhysicsActor::PreSimulate(float deltaTime)
 	{
-		physx::PxTransform currentGlobalPos = m_RigidActor->getGlobalPose();
 		TransformComponent transform = m_PhysicsWorld->GetWorld()->GetWorldSpaceTransformComponent(m_Entity);
-		physx::PxTransform newTransform = PhysXUtils::ToPhysXTransform(transform);
-
-	#if 0
+	#if 1
 		// Update global pose only if location or rotation has changed
 		if (m_LastLocation != transform.Location)
 		{
@@ -258,6 +255,12 @@ namespace Proof {
 		//	return;
 		//
 		//ScriptEngine::CallMethod(m_Entity.GetComponent<ScriptComponent>().ManagedInstance, "OnPhysicsUpdate", fixedDeltaTime);
+	}
+	
+	void PhysicsActor::OnPhysicsUpdate(float deltaTime)
+	{
+		if (!IsDynamic())
+			return;
 	}
 	
 	void PhysicsActor::ClearForce(ForceMode mode )
@@ -502,20 +505,122 @@ namespace Proof {
 		m_RigidActor->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, !enableGravity);
 		m_Entity.GetComponent<RigidBodyComponent>().Gravity = enableGravity;
 	}
+	void SetBoxInertiaWithScale(physx::PxRigidDynamic* rigidBody,
+		float mass,
+		const glm::vec3& boxSize,       // Full extents, e.g. (1,1,1)
+		const glm::vec3& worldScale, BoxColliderComponent& collider)    // From transform
+	{
+		using namespace physx;
+
+		// Apply scale to box size
+		glm::vec3 scaled = boxSize * worldScale;
+
+		// Inertia tensor for box: (1/12) * m * (h² + d²), etc.
+		float Ix = (1.0f / 12.0f) * mass * (scaled.y * scaled.y + scaled.z * scaled.z);
+		float Iy = (1.0f / 12.0f) * mass * (scaled.x * scaled.x + scaled.z * scaled.z);
+		float Iz = (1.0f / 12.0f) * mass * (scaled.x * scaled.x + scaled.y * scaled.y);
+
+		PxVec3 inertia(Ix, Iy, Iz);
+
+		// Apply mass and inertia
+		rigidBody->setMass(mass);
+		rigidBody->setMassSpaceInertiaTensor(inertia);
+		rigidBody->setCMassLocalPose(PxTransform(PxVec3(PhysXUtils::ToPhysXVector( collider.Center)))); // keep CoM at center
+	}
 
 	void PhysicsActor::AddCollider(BoxColliderComponent& collider)
 	{
 		m_Colliders.push_back(Count<BoxColliderShape>::Create(collider, *this, m_Entity));
+		if (!IsDynamic())return;
+
+		physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)m_RigidActor;
+		Count<BoxColliderShape> shape = m_Colliders.back().As<BoxColliderShape>();
+		SetBoxInertiaWithScale(body, GetMass(), shape->GetSize(), m_Entity.GetCurrentWorld()->GetWorldSpaceScale(m_Entity), collider);
+	}
+
+	void SetSphereInertiaWithScale(physx::PxRigidDynamic* rigidBody,
+		float mass,
+		float radius,
+		const glm::vec3& worldScale,
+		const glm::vec3& localCenter)
+	{
+		using namespace physx;
+
+		// Uniform scale — take average (if it's nonuniform, you may want to clamp or warn)
+		float scaledRadius = radius * glm::max(glm::compMax(worldScale), 0.0001f);
+
+		// Inertia for a solid sphere: (2/5) * m * r²
+		float inertiaScalar = (2.0f / 5.0f) * mass * scaledRadius * scaledRadius;
+
+		PxVec3 inertia(inertiaScalar);
+
+		rigidBody->setMass(mass);
+		rigidBody->setMassSpaceInertiaTensor(inertia);
+		rigidBody->setCMassLocalPose(PxTransform(PhysXUtils::ToPhysXVector(localCenter)));
 	}
 
 	void PhysicsActor::AddCollider(SphereColliderComponent& collider)
 	{
 		m_Colliders.push_back(Count<SphereColliderShape>::Create(collider, *this, m_Entity));
+
+		physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)m_RigidActor;
+		Count<SphereColliderShape> shape = m_Colliders.back().As<SphereColliderShape>();
+
+		SetSphereInertiaWithScale(
+			body,
+			GetMass(),
+			shape->GetRadius(),
+			m_Entity.GetCurrentWorld()->GetWorldSpaceScale(m_Entity),
+			collider.Center
+		);
+	}
+
+	void SetCapsuleInertiaWithScale(physx::PxRigidDynamic* rigidBody,
+		float mass,
+		float radius,
+		float halfHeight,
+		const glm::vec3& worldScale,
+		const glm::vec3& localCenter)
+	{
+		using namespace physx;
+
+		// PhysX capsules are aligned along Y by default
+		float scaledRadius = radius * glm::max(glm::compMax(worldScale), 0.0001f);
+		float scaledHalfHeight = halfHeight * worldScale.y;
+
+		// Total length of cylinder part
+		float h = scaledHalfHeight * 2.0f;
+		float r = scaledRadius;
+
+		// Inertia tensor for a solid capsule aligned along Y axis
+		// Approximation from physics literature:
+		float Ix = (1.0f / 12.0f) * mass * (3 * r * r + h * h);
+		float Iy = (0.5f) * mass * r * r;
+		float Iz = Ix;
+
+		PxVec3 inertia(Ix, Iy, Iz);
+
+		rigidBody->setMass(mass);
+		rigidBody->setMassSpaceInertiaTensor(inertia);
+		rigidBody->setCMassLocalPose(PxTransform(PhysXUtils::ToPhysXVector(localCenter)));
 	}
 
 	void PhysicsActor::AddCollider(CapsuleColliderComponent& collider)
 	{
 		m_Colliders.push_back(Count<CapsuleColliderShape>::Create(collider, *this, m_Entity));
+
+		physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)m_RigidActor;
+		Count<CapsuleColliderShape> shape = m_Colliders.back().As<CapsuleColliderShape>();
+
+		SetCapsuleInertiaWithScale(
+			body,
+			GetMass(),
+			shape->GetRadius(),
+			shape->GetHeight()/2,
+			m_Entity.GetCurrentWorld()->GetWorldSpaceScale(m_Entity),
+			collider.Center
+		);
+
 	}
 
 	void PhysicsActor::AddCollider(MeshColliderComponent& collider)
@@ -578,6 +683,15 @@ namespace Proof {
 		SyncTransform();
 	}
 
+	glm::vec3 PhysicsActor::GetMassSpaceInertiaTensor()
+	{
+		if (!IsDynamic())
+			return glm::vec3(0);
+		physx::PxRigidDynamic* actor = m_RigidActor->is<physx::PxRigidDynamic>();
+
+		return PhysXUtils::FromPhysXVector( actor->getMassSpaceInertiaTensor());
+	}
+
 	void PhysicsActor::SetTransform(const glm::mat4& transform)
 	{
 		physx::PxTransform physxTransform = PhysXUtils::ToPhysXTransform(transform);
@@ -585,9 +699,24 @@ namespace Proof {
 		m_RigidActor->setGlobalPose(physxTransform);
 	}
 
-	glm::mat4 PhysicsActor::GetTransform()
+	glm::mat4 PhysicsActor::GetTransform(bool takeScale )
 	{
+#if 1
+		glm::vec3 pos = PhysXUtils::FromPhysXVector(m_RigidActor->getGlobalPose().p);
+		glm::quat rot = PhysXUtils::FromPhysXQuat(m_RigidActor->getGlobalPose().q);
+		glm::vec3 scale = m_Entity.GetCurrentWorld()->GetWorldSpaceScale(m_Entity);
+		if (takeScale == false)
+			scale = glm::vec3(1);
+		glm::mat4 transform =
+			glm::translate(glm::mat4(1.0f), pos) *
+			glm::toMat4(rot) *
+			glm::scale(glm::mat4(1.0f), scale);
+
+		return transform;
+#else
+
 		return PhysXUtils::FromPhysXMatrix(m_RigidActor->getGlobalPose());
+#endif
 	}
 
 	void PhysicsActor::SetRotation(const glm::quat& rotation, bool autowake)
@@ -641,7 +770,6 @@ namespace Proof {
 
 	glm::mat4 PhysicsActor::GetLocalCenterOfMass() const { return !IsDynamic() ? glm::mat4(1.0f) : PhysXUtils::FromPhysXTransform(m_RigidActor->is<physx::PxRigidDynamic>()->getCMassLocalPose()); }
 
-
 	void PhysicsActor::AddForceAtPosition(const glm::vec3& force, const glm::vec3& position, ForceMode forceMode)
 	{
 		PF_PROFILE_FUNC();
@@ -656,7 +784,7 @@ namespace Proof {
 		
 		actor->wakeUp();
 
-
+		
 		glm::vec3 centerOfMassWorldSpace = PhysXUtils::FromPhysXVector( actor->getGlobalPose().transform(actor->getCMassLocalPose().p));
 		glm::vec3 torque = glm::cross(position - centerOfMassWorldSpace, force);
 		switch (forceMode)
@@ -679,6 +807,20 @@ namespace Proof {
 				break;
 			}
 		}
+	}
+	void SetMassProperties(physx::PxRigidDynamic* rigidBody,
+		const glm::vec3& centerOfMass,                // same as Unity CoM
+		const glm::vec3& inertiaTensor,               // same as Unity Inertia Tensor (diagonal)
+		const glm::quat& rotation)  // same as Unity Inertia Tensor Rotation (Euler XYZ)
+	{
+		// Set custom inertia tensor (mass-space diagonal)
+		rigidBody->setMassSpaceInertiaTensor(PhysXUtils::ToPhysXVector(inertiaTensor));
+
+		physx::PxQuat pxRotation = PhysXUtils::ToPhysXQuat(rotation);
+
+		// Set Center of Mass + rotation (this rotates the inertia tensor frame)
+		physx::PxTransform massFrame(PhysXUtils::ToPhysXVector(centerOfMass), pxRotation);
+		rigidBody->setCMassLocalPose(massFrame);
 	}
 
 	void PhysicsActor::AddRigidBody()
@@ -713,6 +855,7 @@ namespace Proof {
 			body->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, rigidBodyComponent.CollisionDetection == CollisionDetectionType::Continuous);
 			body->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_SPECULATIVE_CCD, rigidBodyComponent.CollisionDetection == CollisionDetectionType::ContinuousSpeculative);
 			body->setSleepThreshold(settings.SleepThreshold);
+
 		}
 		else
 		{
@@ -736,6 +879,7 @@ namespace Proof {
 		TransformComponent& transform = m_Entity.Transform();
 		glm::vec3 scale = transform.Scale;
 		physx::PxTransform actorPose = m_RigidActor->getGlobalPose();
+
 		transform.Location = PhysXUtils::FromPhysXVector(actorPose.p);
 		if (!IsAllRotationLocked())
 			transform.SetRotation(PhysXUtils::FromPhysXQuat(actorPose.q));

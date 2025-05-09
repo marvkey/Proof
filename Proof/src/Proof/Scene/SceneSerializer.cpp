@@ -796,6 +796,9 @@ namespace Proof
 				out << YAML::Key << "VoxelRelativeSize" << buoyancyComponent.VoxelRelativeSize.GetValue();
 				out << YAML::Key << "DragInWater" << buoyancyComponent.DragInWater;
 				out << YAML::Key << "AngularDragInWater" << buoyancyComponent.AngularDragInWater;
+				out << YAML::Key << "WaveDisplacementFactor" << buoyancyComponent.WaveDisplacementFactor.GetValue();
+				out << YAML::Key << "AlwaysStayUpright" << buoyancyComponent.AlwaysStayUpright;
+
 
 				out << YAML::Key << "Floaters";
 				out << YAML::BeginSeq;//Floaters
@@ -1513,6 +1516,8 @@ namespace Proof
 					bycc.VoxelRelativeSize = buoyancyComponent["VoxelRelativeSize"].as<float>(bycc.VoxelRelativeSize.GetValue());
 					bycc.DragInWater = buoyancyComponent["DragInWater"].as<float>(bycc.DragInWater);
 					bycc.AngularDragInWater = buoyancyComponent["AngularDragInWater"].as<float>(bycc.AngularDragInWater);
+					bycc.WaveDisplacementFactor = buoyancyComponent["WaveDisplacementFactor"].as<float>(bycc.WaveDisplacementFactor.GetValue());
+					bycc.AlwaysStayUpright = buoyancyComponent["AlwaysStayUpright"].as<bool>(bycc.AlwaysStayUpright);
 
 					for (auto byc : buoyancyComponent["Floaters"])
 					{

@@ -14,6 +14,7 @@ struct SBWaveHeightQuery
     uint pad1;
 
     vec4 WorldPosition; // vec4 for padding
+    vec4 WaveDisplacement; // vec4 for padding 
 
 };
 layout(std430, set = 0, binding = 1) buffer WaveQueryBuffer {
@@ -41,6 +42,7 @@ void main() {
 
     SBWaveHeightQuery q = queries[idx];
     float waveHeight = 0.0;
+    vec3 totalDisplacement = vec3(0.0);
 
     for (int i = 0; i < u_PC.NumCascades; ++i) {
         vec4 scales = MapScales[i];
@@ -52,9 +54,14 @@ void main() {
         // Wrap world position
         vec2 wrapped = mod(mod(worldPos, tileLength) + tileLength, tileLength);
         vec2 uv = wrapped / tileLength;
+        
 
-        waveHeight += texture(u_Displacements, vec3(uv, float(i))).y * scales.z;
+        vec3 displacement = texture(u_Displacements, vec3(uv, float(i))).xyz * scales.z;
+       // waveHeight += texture(u_Displacements, vec3(uv, float(i))).y * scales.z;
+        waveHeight += displacement.y;
+        totalDisplacement += displacement;
     }
 
     queries[idx].WaveHeight = waveHeight;
+    queries[idx].WaveDisplacement.xyz = totalDisplacement;
 }

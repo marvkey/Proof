@@ -409,7 +409,10 @@ namespace Proof
             for (const auto& ref : m_FFTQueryBufferResult.Get())
             {
                 if (HasWaveHeightQueryID(ref.ID))
-                    m_WaveHeightQueryResultHeight[ref.ID] = ref.WaveHeight;
+                {
+                    m_WaveHeightAndDisplacmentQueryResult[ref.ID].first = ref.WaveHeight;
+                    m_WaveHeightAndDisplacmentQueryResult[ref.ID].second = ref.WaveDisplacment;
+                }
             }
             //TODO when multithreaded this code will not be safe
            /*
@@ -458,7 +461,7 @@ namespace Proof
 
 			    glm::vec3 pos = localPos;
 
-			    pos.y += GetWaveheight(std::get<0>(data));
+			    pos.y += GetWaveHeightAndDisplacment(std::get<0>(data)).first;
 
 			    //pos = Utils::LocalToWorld(pos, GetTransform());
 
@@ -663,25 +666,25 @@ namespace Proof
         PF_CORE_ASSERT(m_WaveHeightQueryPositons.contains(ID), "Does contain ID");
         m_WaveHeightQueryPositons.extract(ID);
 
-        if (m_WaveHeightQueryResultHeight.contains(ID))
-            m_WaveHeightQueryResultHeight.extract(ID);
+        if (m_WaveHeightAndDisplacmentQueryResult.contains(ID))
+            m_WaveHeightAndDisplacmentQueryResult.extract(ID);
     }
 
     bool FFTWave::IsWaveheightQueryReady(UUID ID)
     {
         PF_CORE_ASSERT(HasWaveHeightQueryID(ID), "ID was never pushed to be queried");
 
-        if(!m_WaveHeightQueryResultHeight.contains(ID))
+        if(!m_WaveHeightAndDisplacmentQueryResult.contains(ID))
             return false;
 
         return true;
     }
 
-    float FFTWave::GetWaveheight(UUID ID)
+    std::pair<float, glm::vec3> FFTWave::GetWaveHeightAndDisplacment(UUID ID)
     {
         PF_CORE_ASSERT(IsWaveheightQueryReady(ID), "Query Wave heigh is not ready");
 
-        return m_WaveHeightQueryResultHeight.at(ID);
+        return m_WaveHeightAndDisplacmentQueryResult.at(ID);
     }
 
     void FFTWave::InitPasses()

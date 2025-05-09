@@ -1,6 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include <glm/glm.hpp>
+#include "Proof/Utils/MultiUse.h"
 
 namespace Proof
 {
@@ -29,7 +30,7 @@ namespace Proof
 		Count<World> GetWorld();
 
 	public:
-		float Density = 1.0f;
+		ClampedValue<float, 0.001f, 1000000.f> Density = 1.0f;
 	private:
 		Count<class World> m_World;
 		Count<class Wave> m_Wave;

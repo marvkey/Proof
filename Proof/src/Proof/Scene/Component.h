@@ -764,10 +764,15 @@ namespace Proof
 
 		BuoyancyType bouyancyType = BuoyancyType::Voxels;
 		// voxels
-		float Density = 0.75;
+		ClampedValue<float, 0.001f,1000000.f> Density = 0.75;
 		ClampedValue<float, 0.0f, 1.0f> VoxelRelativeSize = 0.75;
 		float DragInWater = 1.0f;
 		float AngularDragInWater = 1.0f;
+
+		// how much the wave should move an objct from its position
+		ClampedValue<float, 0.0f, 1.0f> WaveDisplacementFactor = 1.0;
+		// good to save performance for object that shoudl not tip over
+		bool AlwaysStayUpright = false; 
 	};
 	template<class ... Component>
 	struct ComponentGroup {
