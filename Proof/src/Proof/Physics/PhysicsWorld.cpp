@@ -127,8 +127,7 @@ namespace Proof {
 				actor->PreSimulate(m_SubStepSize);
 		}
 
-		for (auto& [entityID, controller] : m_Controllers)
-			controller->OnUpdate(deltaTime);
+	
 
 		bool advance = Advance(deltaTime);
 
@@ -328,14 +327,17 @@ namespace Proof {
 			m_NumSubSteps = glm::min(static_cast<uint32_t>(m_Accumulator / m_SubStepSize), c_MaxSubSteps);
 			m_Accumulator -= (float)m_NumSubSteps * m_SubStepSize;
 
+
 		}
 
 
 		for (uint32_t i = 0; i < m_NumSubSteps; i++)
 		{
 
-			for (auto& [Id, actor] : m_Actors)
-				actor->OnPhysicsUpdate(m_SubStepSize);
+
+			Count<ScriptWorld> scriptWorld = m_World->GetScriptWorld();
+			if (scriptWorld)
+				scriptWorld->OnPhysicsUpdate(PhysicsEngine::GetSettings().PhysicsFixedDeltaTime);
 
 			// needs to behere bcause the boyancy is not working
 			// cause the physcs is adding more Gravity force in a frame
@@ -344,8 +346,10 @@ namespace Proof {
 			{
 				PF_PROFILE_SCOPE_DYNAMIC("Physics update Buoyancy Actors")
 					for (auto& [Id, actor] : m_BuoyancyActors)
-						actor->OnPhysicsUpdate(deltaTime);
+						actor->OnPhysicsUpdate(PhysicsEngine::GetSettings().PhysicsFixedDeltaTime);
 			}
+			for (auto& [entityID, controller] : m_Controllers)
+				controller->OnPhysicsUpdate(deltaTime);
 
 			m_PhysXScene->simulate(m_SubStepSize);
 			m_PhysXScene->fetchResults(true);

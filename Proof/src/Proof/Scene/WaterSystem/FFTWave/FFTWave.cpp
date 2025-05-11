@@ -174,27 +174,28 @@ namespace Proof
 
         return Count<Mesh>::Create("FFTGrid",vertices, indices);
     }
-    FFTWave::FFTWave(Count<FFTWave> other)
-        : Wave(other->m_Water, WaveType::FastFourierTransformWave)
+    
+    FFTWave::FFTWave(class Water* water, Count<FFTWave> other)
+        : Wave(water, WaveType::FastFourierTransformWave)
+
     {
+
         m_Grid = other->m_Grid;
         WaveInfo = other->WaveInfo;
         InitBuffer();
         InitTextures();
         InitPasses();
 
-        for (int i =0; i < m_Cascades.size(); i++)
+        for (int i = 0; i < m_Cascades.size(); i++)
         {
             auto casccade = m_Cascades[i];
             casccade->Settings = other->m_Cascades[i]->Settings;
         }
-
-        //InitialWaveparams();
-
-        //MeshImporter importer = MeshImporter("Assets/Meshes/clipmap_high.obj");
-        //m_Grid = Count<Mesh>::Create(importer.ImportToMeshSource());
     }
-    FFTWave::FFTWave(Count<class Water> water)
+    FFTWave::~FFTWave()
+    {
+    }
+    FFTWave::FFTWave(class Water* water)
         : Wave(water, WaveType::FastFourierTransformWave)
     {
         InitBuffer();

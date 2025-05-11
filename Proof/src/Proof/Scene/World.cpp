@@ -1088,9 +1088,6 @@ namespace Proof {
 				}
 			}
 		}
-		if (HasWorldCamera())
-		{
-		}
 
 		{
 
@@ -1603,6 +1600,7 @@ namespace Proof {
 		m_GameMode->End();
 
 		m_GameMode = nullptr;
+		m_Registry.clear(); // some components hold a shred refrence to the world sowe need to get rid of them
 	}
 	void World::DeleteEntity(Entity ent, bool deleteChildren) {
 		if(!m_EntitiesMap.contains(ent.GetUUID()))

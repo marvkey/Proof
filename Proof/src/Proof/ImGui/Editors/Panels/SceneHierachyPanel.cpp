@@ -1759,7 +1759,6 @@ namespace Proof
 					UI::BeginPropertyGrid();
 
 					UI::AttributeDrag("Density", buoyancyComponent.Density,0.01	);
-					PF_EC_ERROR("Density Min {} max {}", buoyancyComponent.Density.Min(), buoyancyComponent.Density.Max());
 					ImGui::SameLine();
 					UI::AttributeText("Yo wagawan");
 					UI::AttributeSlider("VoxelRelativeSize", buoyancyComponent.VoxelRelativeSize);

@@ -25,8 +25,8 @@ namespace Proof
 	{
 		
 	public:
-		GerstnerWave(Count<class Water> water,Count<GerstnerWave> other);
-		GerstnerWave(Count<class Water> water);
+		GerstnerWave(class Water* water,Count<GerstnerWave> other);
+		GerstnerWave(class Water* water);
 
 		void Update(float deltaTime);
 

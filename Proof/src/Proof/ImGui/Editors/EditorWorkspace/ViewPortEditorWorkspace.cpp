@@ -461,6 +461,7 @@ namespace Proof
 				break;
 			}
 		}
+
 		if (m_ViewPortEditorData.EnableSelection)
 		{
 			switch (e.GetKey())
@@ -516,6 +517,8 @@ namespace Proof
 				}
 			}
 		}
+
+		return false;
 	}
 
 	AABB GenerateBoundingBox(float iconSize, const glm::vec3& position)

@@ -1,7 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include <glm/glm.hpp>
-
+#include "Water.h"
 namespace Proof
 {
 	
@@ -16,18 +16,18 @@ namespace Proof
 	class Wave : RefCounted
 	{
 	public:
-		Wave(Count<class Water> water, WaveType type);
+		Wave(Water* water, WaveType type);
 		virtual void Update(float deltaTime) {};
 		virtual void Render(Count<class WorldRenderer> renderer) {};
 		virtual void Render2D(Count<class Renderer2D> renderer2D) {};
 
 		WaveType GetWaveType() { return m_WaveType; };
 		Count<class World> GetWorld();
-		Count<class Water> GetWater() { return m_Water; }
+		Count<class Water> GetWater()const;
 		glm::mat4 GetTransform()const;
 		glm::mat4 GetTransform();
 	protected:
-		Count<class Water> m_Water;
+		Water* m_Water; // so it does not keep teh water alive
 		WaveType m_WaveType;
 	};
 }

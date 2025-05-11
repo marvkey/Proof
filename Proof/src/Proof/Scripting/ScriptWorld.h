@@ -3,6 +3,9 @@
 #include "ScriptGCManager.h"
 #include <map>
 #include "Proof/Asset/AssetTypes.h"
+#include "Proof/Scene/World.h"
+#include "Proof/Scene/World.h"
+
 namespace Proof
 {
 	struct ScriptClassMetaData
@@ -79,7 +82,7 @@ namespace Proof
 	class ScriptWorld : RefCounted
 	{
 	public:
-		ScriptWorld(Count<class World> world);
+		ScriptWorld(class World* world);
 		~ScriptWorld();
 
 		void InstantiateScriptEntity(Entity entity);
@@ -101,10 +104,11 @@ namespace Proof
 		// first entity swap is srcEntity, // second is dstEntity
 		void PostDuplicateScriptInstance(Entity srcEntity, Entity dstEntity, std::unordered_map<UUID, UUID>& entitySwapID);
 
-		Count <class World> GetWorld()const { return m_World; }
+		Count <class World> GetWorld();
 
 		void BeginRuntime();
 		void OnUpdate(FrameTime frame);
+		void OnPhysicsUpdate(float fixedPhysicsDeltaTime);
 		void OnPostUpdate(FrameTime frame);
 		void EndRuntime();
 	private:
@@ -127,7 +131,9 @@ namespace Proof
 		static Count<ScriptWorld>CopyScriptWorld(Count<ScriptWorld> scirptWorld, Count<World> newWorld, bool useSameMemmory = false);
 	private:
 		bool m_IsRuntime = false;
-		Count<class World> m_World;
+		// weak tr it is alive whenver world is alive not only in rumtime, so it keeps world alive and not delete
+		
+		WeakCount<class World> m_World; 
 		mutable ScriptEntityClassStorage m_EntityClassesStorage;
 		mutable ScriptInstanceMap m_RuntimeEntityClassStorage;
 		std::unordered_set<ScriptGCHandle> m_CallOnCreate;// dont wanna call excactly when created because other entity systems might still be not created yet

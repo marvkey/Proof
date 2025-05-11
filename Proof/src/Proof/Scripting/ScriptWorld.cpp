@@ -12,10 +12,10 @@ namespace Proof
 {
     static std::map<UUID, WeakCount<ScriptWorld>> s_ScriptWorldReferences;
 
-	ScriptWorld::ScriptWorld(Count<class World> world)
+	ScriptWorld::ScriptWorld(World* world)
 		:m_World(world)
 	{
-		PF_CORE_ASSERT(m_World, "Needs an active world");
+		//PF_CORE_ASSERT(m_World, "Needs an active world");
 
         m_SpecificID = UUID();
 
@@ -490,7 +490,7 @@ namespace Proof
     }
     Count<ScriptWorld> ScriptWorld::CopyScriptWorld(Count<ScriptWorld> world, Count<World> newWorld, bool useSameMemmory)
     {
-        Count<ScriptWorld> newScirptWorld = Count<ScriptWorld>::Create(newWorld);
+        Count<ScriptWorld> newScirptWorld = Count<ScriptWorld>::Create(newWorld.Get());
         if (useSameMemmory)
         {
             newScirptWorld->m_EntityClassesStorage = world->m_EntityClassesStorage;
@@ -639,11 +639,18 @@ namespace Proof
 
     }
 
+    Count<class World> ScriptWorld::GetWorld()
+    {
+        if (m_World.IsValid())
+            return m_World.Lock();
+        return nullptr;
+    }
+
     void ScriptWorld::BeginRuntime()
     {
         PF_PROFILE_FUNC();
 
-        ScriptEngine::BeginRuntime(m_World);
+        ScriptEngine::BeginRuntime(GetWorld());
 
         for (auto& [enityID, classes] : m_EntityClassesStorage)
         {
@@ -654,7 +661,7 @@ namespace Proof
         }
         m_IsRuntime = true;
 
-        m_World->ForEachEnitityWith<ScriptComponent>([&](Entity entity)
+        GetWorld()->ForEachEnitityWith<ScriptComponent>([&](Entity entity)
         {
             InstantiateScriptEntity(entity);
         });
@@ -664,14 +671,14 @@ namespace Proof
     {
         PF_PROFILE_FUNC();
 
-        auto view = m_World->GetAllEntitiesWith<ScriptComponent>();
+        auto view = GetWorld()->GetAllEntitiesWith<ScriptComponent>();
 
         for(auto instanceHandle : m_CallOnCreate)
             ScriptEngine::CallMethod(instanceHandle, "OnCreate");
         m_CallOnCreate.clear();
         for (auto& [enityID, classes] : m_RuntimeEntityClassStorage)
         {
-            if (!RuntimeIsEntityScriptInstantiated(m_World->GetEntity(enityID)))continue;
+            if (!RuntimeIsEntityScriptInstantiated(GetWorld()->GetEntity(enityID)))continue;
             for (auto& [className, classMetaData] : classes.Classes)
             {
                 
@@ -680,18 +687,39 @@ namespace Proof
 
             }
         }
-                
+    }
+
+    void ScriptWorld::OnPhysicsUpdate(float fixedPhysicsDeltaTime)
+    {
+        PF_PROFILE_FUNC();
+
+        auto view = GetWorld()->GetAllEntitiesWith<ScriptComponent>();
+
+        for (auto instanceHandle : m_CallOnCreate)
+            ScriptEngine::CallMethod(instanceHandle, "OnCreate");
+        m_CallOnCreate.clear();
+        for (auto& [enityID, classes] : m_RuntimeEntityClassStorage)
+        {
+            if (!RuntimeIsEntityScriptInstantiated(GetWorld()->GetEntity(enityID)))continue;
+            for (auto& [className, classMetaData] : classes.Classes)
+            {
+
+                if (classMetaData.ScriptHandle)
+                    ScriptEngine::CallMethod(classMetaData.ScriptHandle, "OnPhysicsUpdate", fixedPhysicsDeltaTime);
+
+            }
+        }
     }
 
     void ScriptWorld::OnPostUpdate(FrameTime frame)
     {
         PF_PROFILE_FUNC();
 
-        auto view = m_World->GetAllEntitiesWith<ScriptComponent>();
+        auto view = GetWorld()->GetAllEntitiesWith<ScriptComponent>();
 
         for (auto& [enityID, classes] : m_RuntimeEntityClassStorage)
         {
-            if (!RuntimeIsEntityScriptInstantiated(m_World->GetEntity(enityID)))continue;
+            if (!RuntimeIsEntityScriptInstantiated(GetWorld()->GetEntity(enityID)))continue;
             for (auto& [className, classMetaData] : classes.Classes)
             {
 
@@ -708,7 +736,7 @@ namespace Proof
         PF_PROFILE_FUNC();
 
         // we make a copy when we are going to run the scen
-        m_World->ForEachEnitityWith<ScriptComponent>([&](Entity entity)
+        GetWorld()->ForEachEnitityWith<ScriptComponent>([&](Entity entity)
         {
             RuntimeDestroyEntityScript(entity,true);
         });

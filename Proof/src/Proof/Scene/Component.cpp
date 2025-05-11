@@ -227,6 +227,11 @@ namespace Proof
 
 	}
 
+	WaterComponent::~WaterComponent()
+	{
+		Water = nullptr;
+	}
+
 	MeshColliderComponent::MeshColliderComponent(AssetID colliderID, uint32_t submeshIndex)
 		: ColliderKey(colliderID), SubMeshIndex(submeshIndex)
 	{

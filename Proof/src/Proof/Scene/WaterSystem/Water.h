@@ -13,6 +13,7 @@ namespace Proof
 		Water(WaveType waveType);
 		Water();
 		Water(Count<Water> other);
+		virtual ~Water();
 		void Update(float deltaTime, const glm::mat4& transform);;
 		void Render(Count<class WorldRenderer> renderer);
 		void Render2D(Count<class Renderer2D> renderer2D);

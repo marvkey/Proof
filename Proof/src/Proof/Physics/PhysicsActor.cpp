@@ -4,6 +4,7 @@
 #include "PhysicsWorld.h"
 #include "PhysicsEngine.h"
 #include "Proof/Scripting/ScriptEngine.h"
+#include "Proof/Scripting/ScriptWorld.h"
 #include "PhysicsShapes.h"
 #include "PhysicsMeshCache.h"
 #include "MeshCollider.h"
@@ -259,8 +260,6 @@ namespace Proof
 	
 	void PhysicsActor::OnPhysicsUpdate(float deltaTime)
 	{
-		if (!IsDynamic())
-			return;
 	}
 	
 	void PhysicsActor::ClearForce(ForceMode mode )

@@ -712,11 +712,20 @@ namespace $NAMESPACE_NAME$
 		// is instantiated in the world at runtime
 		void OnCreate()
 		{
+			
 		}
 
 		// OnUpdate is called once every frame while this script is active in the world
 		void OnUpdate(float deltaTime)
 		{
+			
+		}
+		
+		// Runs at a fixed interval for stable physics simulation.
+		// Use this instead of OnUpdate to ensure consistent results regardless of frame rate.
+		void PhysicsUpdate(float physicsFixedDeltaTime)
+		{
+			
 		}
 
 	}

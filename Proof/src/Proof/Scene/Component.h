@@ -735,6 +735,7 @@ namespace Proof
 		WaterComponent();
 		WaterComponent(Count< class Water> water);
 		WaterComponent(const WaterComponent& other);
+		virtual ~WaterComponent();
 		Count< class Water> Water;
 	};
 

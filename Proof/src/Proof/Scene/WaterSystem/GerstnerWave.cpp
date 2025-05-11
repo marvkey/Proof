@@ -23,13 +23,13 @@
 namespace Proof
 {
 	
-	GerstnerWave::GerstnerWave(Count<class Water> water)
+	GerstnerWave::GerstnerWave(class Water* water)
 		: Wave(water, WaveType::GerstnerWave)
 	{
 		BaseInit();
 	}
 
-	GerstnerWave::GerstnerWave(Count<class Water> water, Count<GerstnerWave> other)
+	GerstnerWave::GerstnerWave(class Water* water, Count<GerstnerWave> other)
 		: Wave(water, WaveType::GerstnerWave)
 	{
 		Texture = other->Texture;

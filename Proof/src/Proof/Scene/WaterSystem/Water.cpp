@@ -18,6 +18,9 @@ namespace Proof
 	{
 		CopyWave(other->GetWave());
 	}
+	Water::~Water()
+	{
+	}
 	void Water::Update(float deltaTime, const glm::mat4& transform)
 	{
 		m_Transform = transform;
@@ -40,10 +43,10 @@ namespace Proof
 		switch (waveType)
 		{
 			case Proof::WaveType::GerstnerWave:
-				m_Wave = Count<GerstnerWave>::Create(Count<Water>(this));
+				m_Wave = Count<GerstnerWave>::Create(this);
 				break;
 			case Proof::WaveType::FastFourierTransformWave:
-				m_Wave = Count<FFTWave>::Create(Count<Water>(this));
+				m_Wave = Count<FFTWave>::Create(this);
 				break;
 			default:
 				break;
@@ -57,7 +60,7 @@ namespace Proof
 				m_Wave = Count<GerstnerWave>::Create(this,wave.As<GerstnerWave>());
 				break;
 			case Proof::WaveType::FastFourierTransformWave:
-				m_Wave = Count<FFTWave>::Create(wave.As<FFTWave>());
+				m_Wave = Count<FFTWave>::Create(this,wave.As<FFTWave>());
 				break;
 			default:
 				break;

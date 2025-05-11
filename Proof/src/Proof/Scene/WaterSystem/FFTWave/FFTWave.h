@@ -115,9 +115,9 @@ namespace Proof
 	{
 
 	public:
-		FFTWave(Count<FFTWave> other);
-		FFTWave(Count<class Water> water);
-
+		FFTWave(class Water* water);
+		FFTWave(class Water* water, Count<FFTWave> other);
+		virtual ~FFTWave();
 		static inline const float G = 9.81f;// Gravitational constant
 		// Source: https://wikiwaves.org/Ocean-Wave_Spectra#JONSWAP_Spectrum
 		static inline float JONSWAPAlpha(float windSpeed = 20.0f, float fetchLength = 550e3f) 

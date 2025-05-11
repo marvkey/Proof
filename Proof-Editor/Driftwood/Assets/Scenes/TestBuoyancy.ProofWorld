@@ -40,6 +40,44 @@ World:
         ShadowStrength: 0.5
         CastSoftShadow: true
         ShadowSoftness: 0.5
+    - Entity: 11121690616754237566
+      TagComponent:
+        Tag: buoy
+        tags: []
+      TransformComponent:
+        Location: [54.6233063, 1.70000005, 26.4334679]
+        Rotation: [0, 0, 0]
+        Scale: [10, 10, 10]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 785809237399164901
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, -10, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+      BuoyancyComponent:
+        Density: 0.5
+        VoxelRelativeSize: 0.5
+        DragInWater: 1
+        AngularDragInWater: 1
+        WaveDisplacementFactor: 1
+        AlwaysStayUpright: true
+        Floaters:
+          []
     - Entity: 17490857901337804801
       TagComponent:
         Tag: Ocean Floor
@@ -69,12 +107,12 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 15082089553182115387
+    - Entity: 8064897790537886145
       TagComponent:
         Tag: buoy
         tags: []
       TransformComponent:
-        Location: [0, 1.70000005, 0]
+        Location: [-17.5603104, 1.70000005, 0]
         Rotation: [0, 0, 0]
         Scale: [10, 10, 10]
       HierarchyComponent:
@@ -103,6 +141,122 @@ World:
         VoxelRelativeSize: 0.5
         DragInWater: 1
         AngularDragInWater: 1
+        WaveDisplacementFactor: 1
+        AlwaysStayUpright: true
+        Floaters:
+          []
+    - Entity: 5755470752974530159
+      TagComponent:
+        Tag: buoy
+        tags: []
+      TransformComponent:
+        Location: [0, 1.70000005, 42.2706375]
+        Rotation: [0, 0, 0]
+        Scale: [10, 10, 10]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 785809237399164901
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, -10, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+      BuoyancyComponent:
+        Density: 0.5
+        VoxelRelativeSize: 0.5
+        DragInWater: 1
+        AngularDragInWater: 1
+        WaveDisplacementFactor: 1
+        AlwaysStayUpright: true
+        Floaters:
+          []
+    - Entity: 15082089553182115387
+      TagComponent:
+        Tag: buoy
+        tags: []
+      TransformComponent:
+        Location: [38.2762108, 1.70000005, -52.2901344]
+        Rotation: [0, 0, 0]
+        Scale: [10, 10, 10]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 785809237399164901
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, -10, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+      BuoyancyComponent:
+        Density: 0.5
+        VoxelRelativeSize: 0.5
+        DragInWater: 1
+        AngularDragInWater: 1
+        WaveDisplacementFactor: 1
+        AlwaysStayUpright: true
+        Floaters:
+          []
+    - Entity: 3097968026498220039
+      TagComponent:
+        Tag: buoy
+        tags: []
+      TransformComponent:
+        Location: [-18.4235058, 1.70000005, -58.7012177]
+        Rotation: [0, 0, 0]
+        Scale: [10, 10, 10]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 785809237399164901
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, -10, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+      BuoyancyComponent:
+        Density: 0.5
+        VoxelRelativeSize: 0.5
+        DragInWater: 1
+        AngularDragInWater: 1
+        WaveDisplacementFactor: 1
+        AlwaysStayUpright: true
         Floaters:
           []
     - Entity: 17205612936974923961
