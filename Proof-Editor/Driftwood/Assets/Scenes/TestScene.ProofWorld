@@ -19,51 +19,17 @@ World:
         ShadowStrength: 0.5
         CastSoftShadow: true
         ShadowSoftness: 0.5
-    - Entity: 9917353022349074490
+    - Entity: 12962509876011307601
       TagComponent:
-        Tag: Camera
+        Tag: PoolBase
         tags: []
       TransformComponent:
-        Location: [0, 13.3000002, 35.7000008]
-        Rotation: [-0.263544708, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 14418320729577205795
-        Children: []
-      CameraComponent:
-        NearPlane: 0.300000012
-        FarPlane: 1000
-        FOV: 45
-        UseLocalRotation: false
-        ActiveForRendering: true
-    - Entity: 14992545909043507417
-      TagComponent:
-        Tag: Water
-        tags: []
-      TransformComponent:
-        Location: [25.7999992, 100.5, 29.6000004]
+        Location: [31, 60.2999992, 2.9000001]
         Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
+        Scale: [2.92499995, 5.9000001, 2.3499999]
       HierarchyComponent:
         ParentHandle: 40840288556461997
-        Children: []
-      WaterComponent:
-        WaveType: GerstnerWave
-        "WaveCount ": 5
-        WaveDistribution: 0.5
-        WaveDirection: [0.5, 0.5]
-        WaveSpread: 0.5
-        Color: [0.360000014, 0.513999999, 0.662999988, 1]
-        Speed: 5
-        MinMaxWavelength: [10, 25]
-        WavelengthFalloff: 0.5
-        MinMaxAmplitude: [0.5, 1]
-        AmplitudeFallOff: 0.5
-        MinMaxSteepness: [0.150000006, 0.300000012]
-        SteepnessFallOff: 0.5
-        Seed: 456
-        RandomSeed: false
-        PlaneSize: 50
+        Children: [13907699624895262551, 9540085704304022549, 17572918877192271239, 8378454719670282619, 12830920879980036996]
     - Entity: 9768848221824772904
       TagComponent:
         Tag: TestPlayer
@@ -114,17 +80,52 @@ World:
           - InputBindingContextHandler: ""
             InputBindingID: 6003628806341811560
             Active: true
-    - Entity: 12962509876011307601
+    - Entity: 9917353022349074490
       TagComponent:
-        Tag: PoolBase
+        Tag: Camera
         tags: []
       TransformComponent:
-        Location: [31, 60.2999992, 2.9000001]
+        Location: [0, 13.3000002, 35.7000008]
+        Rotation: [-0.263544708, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 14418320729577205795
+        Children: []
+      CameraComponent:
+        NearPlane: 0.300000012
+        FarPlane: 1000
+        FOV: 45
+        UseLocalRotation: false
+        ActiveForRendering: true
+    - Entity: 14992545909043507417
+      TagComponent:
+        Tag: Water
+        tags: []
+      TransformComponent:
+        Location: [25.7999992, 100.5, 29.6000004]
         Rotation: [0, -0, 0]
-        Scale: [2.92499995, 5.9000001, 2.3499999]
+        Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 40840288556461997
-        Children: [13907699624895262551, 9540085704304022549, 17572918877192271239, 8378454719670282619, 12830920879980036996]
+        Children: []
+      WaterComponent:
+        WaveType: GerstnerWave
+        Density: 1
+        "WaveCount ": 5
+        WaveDistribution: 0.5
+        WaveDirection: [0.5, 0.5]
+        WaveSpread: 0.5
+        Color: [0.360000014, 0.513999999, 0.662999988, 1]
+        Speed: 5
+        MinMaxWavelength: [10, 25]
+        WavelengthFalloff: 0.5
+        MinMaxAmplitude: [0.5, 1]
+        AmplitudeFallOff: 0.5
+        MinMaxSteepness: [0.150000006, 0.300000012]
+        SteepnessFallOff: 0.5
+        Seed: 456
+        RandomSeed: false
+        PlaneSize: 50
     - Entity: 14418320729577205795
       TagComponent:
         Tag: Head

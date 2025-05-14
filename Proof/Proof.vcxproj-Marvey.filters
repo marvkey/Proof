@@ -1,0 +1,1537 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{2DAB880B-99B4-887C-2230-9F7C8E38947C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof">
+      <UniqueIdentifier>{E220A4B3-4E8B-582A-97C9-09D00373367F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Animation">
+      <UniqueIdentifier>{51DCF850-BD3D-D65E-46AB-1C11B20B0D1E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Asset">
+      <UniqueIdentifier>{F176A18D-5D02-0F52-6613-9246D21D6B52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Asset\AssetCustomData">
+      <UniqueIdentifier>{55F8C26C-C1DB-D1AC-CADE-FFE8364198FD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Audio">
+      <UniqueIdentifier>{6350A28D-CFDB-0F52-D8EC-924644F76B52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Core">
+      <UniqueIdentifier>{7A22DF51-66F0-D257-4F84-437E3BF1AEBC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Core\Debug">
+      <UniqueIdentifier>{70A01B5B-5C2F-A524-054E-B91FF1BBB5CA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Events">
+      <UniqueIdentifier>{86BA534B-72B3-729D-9BE5-5722873D52A9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\ImGui">
+      <UniqueIdentifier>{8C372E8E-F8C2-9B52-01D4-1E476DDEF752}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\ImGui\Editors">
+      <UniqueIdentifier>{F5E7FC5C-611F-45F4-6A29-A917D6DF6BED}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\ImGui\Editors\AssetEditors">
+      <UniqueIdentifier>{DE5AE6AB-CA41-A8A3-7392-0EC15F58210A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\ImGui\Editors\EditorWorkspace">
+      <UniqueIdentifier>{3A80EE0B-A60F-B0F6-AF0B-910E1B1AEB02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\ImGui\Editors\Panels">
+      <UniqueIdentifier>{A7F23ACF-9318-0536-7C5E-8A0168232A02}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\ImGui\Editors\Panels\ContentBrowser">
+      <UniqueIdentifier>{F5E22DB3-6153-302C-2A72-AAB496A1682D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Input">
+      <UniqueIdentifier>{61722F8E-CDFD-9C52-D60E-20474219F952}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Input\ElevatedInputSystem">
+      <UniqueIdentifier>{2F7D0CB8-9B36-7762-2496-913C904E2DD2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Input\ElevatedInputSystem\ElevatedInputDevices">
+      <UniqueIdentifier>{FBF60640-E7CB-4EF3-107B-8EEFFCAE5C0A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Math">
+      <UniqueIdentifier>{FB62E451-E730-D857-D0C4-487EBC31B4BC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Physics">
+      <UniqueIdentifier>{54E64FE5-C0FC-4D7B-0974-D99C75C91E03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Platform">
+      <UniqueIdentifier>{767B4A8B-625F-0BE1-CBBF-0534B7C2F562}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Platform\Vulkan">
+      <UniqueIdentifier>{3648B92E-A20A-EDB8-EBBA-7B4557BCC596}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Platform\Vulkan\VulkanUtils">
+      <UniqueIdentifier>{8752483D-F316-472D-BC7C-77F72800E362}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Platform\Window">
+      <UniqueIdentifier>{9D473630-090A-6ABA-52BA-F846BEBB4298}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Project">
+      <UniqueIdentifier>{2887E9FB-949D-E791-DD14-73B3496AB819}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Renderer">
+      <UniqueIdentifier>{C8822766-B466-E8BB-1DC7-E20E09CAD23D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Renderer\Asset">
+      <UniqueIdentifier>{572D3CD0-4352-8B50-6C9D-70E058218A6E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Renderer\Asset\Shader">
+      <UniqueIdentifier>{1D15A57C-89F8-B3BC-92FB-E1F8FE5D7A0D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Renderer\Asset\Shader\Extras">
+      <UniqueIdentifier>{A3B79226-8F09-6A16-7828-A726641983FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Renderer\Asset\Shader\Extras\Fidelity">
+      <UniqueIdentifier>{AC6F6B4B-18AB-CB0E-21A0-489E8D5A503F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Renderer\Asset\Shader\Extras\Fidelity\spd">
+      <UniqueIdentifier>{8223CFED-EE34-7794-7786-09D4E39600CE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Renderer\UIRenderer">
+      <UniqueIdentifier>{6C6A09D2-D882-F0FB-A12F-80950D078595}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Resources">
+      <UniqueIdentifier>{CC48C5C6-38AA-A2D4-C117-E9862D78D993}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Scene">
+      <UniqueIdentifier>{7F2FDE8E-EBBA-4B53-F4CB-CE4760D6A753}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Scene\Camera">
+      <UniqueIdentifier>{177F2F79-0379-58CB-ECE5-EEDBD87EBE37}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Scene\EntitiyComponentSystem">
+      <UniqueIdentifier>{6C25E02A-5877-B71A-4196-F42A2D87D003}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Scene\GameMode">
+      <UniqueIdentifier>{2DF3FE33-1918-4EB4-4263-33442EE74CD2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Scene\WaterSystem">
+      <UniqueIdentifier>{362C2986-A239-576C-2B20-5357972C2323}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Scene\WaterSystem\FFTWave">
+      <UniqueIdentifier>{D83BC2AA-44F5-2C55-CD54-472F390DE3C4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Scripting">
+      <UniqueIdentifier>{64986B07-D0F9-4815-5967-8FC7C5C77FD4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Utils">
+      <UniqueIdentifier>{C2C30B8F-2E4F-7953-3760-FC47A36AD553}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Utils\VariableSystem">
+      <UniqueIdentifier>{5CF37374-4819-3EDB-315F-C3A61D2463A7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\Proof\Utils\samplerCPP">
+      <UniqueIdentifier>{88A27663-74B2-2234-DD6B-8752C99A11CD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\ProofApI">
+      <UniqueIdentifier>{DC302DD3-C893-BC77-7119-F52D5D5B88FA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor">
+      <UniqueIdentifier>{B3738122-9F15-ACF8-88D0-BF4C74113349}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="vendor\ImGuizmo">
+      <UniqueIdentifier>{73BF7F4C-DF4A-ED10-E85B-700554664911}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Proof\Animation\Animation.h">
+      <Filter>src\Proof\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Animation\AnimationController.h">
+      <Filter>src\Proof\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Animation\AnimationImporter.h">
+      <Filter>src\Proof\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Animation\Skeleton.h">
+      <Filter>src\Proof\Animation</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Asset\Asset.h">
+      <Filter>src\Proof\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Asset\AssetCustomData\AssetCustomDataInfo.h">
+      <Filter>src\Proof\Asset\AssetCustomData</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Asset\AssetCustomData\AssetCustomDataManager.h">
+      <Filter>src\Proof\Asset\AssetCustomData</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Asset\AssetCustomData\AssetCustomDataSerelizer.h">
+      <Filter>src\Proof\Asset\AssetCustomData</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Asset\AssetCustomData\MeshSourceSavedSettings.h">
+      <Filter>src\Proof\Asset\AssetCustomData</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Asset\AssetManager.h">
+      <Filter>src\Proof\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Asset\AssetSerelizer.h">
+      <Filter>src\Proof\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Asset\AssetTypes.h">
+      <Filter>src\Proof\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Asset\MeshImpoter.h">
+      <Filter>src\Proof\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Asset\SerializeCommon.h">
+      <Filter>src\Proof\Asset</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Audio\Audio.h">
+      <Filter>src\Proof\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Audio\AudioEngine.h">
+      <Filter>src\Proof\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Audio\AudioListenerActor.h">
+      <Filter>src\Proof\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Audio\AudioTools.h">
+      <Filter>src\Proof\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Audio\AudioUtils.h">
+      <Filter>src\Proof\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Audio\AudioWorld.h">
+      <Filter>src\Proof\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Audio\Sound.h">
+      <Filter>src\Proof\Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Application.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Assert.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Buffer.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Core.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Debug\Instrumentor.h">
+      <Filter>src\Proof\Core\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Delegate.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\FrameTime.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Hash.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Layer.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\LayerStack.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Log.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\MemoryAllocator.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Profile.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Proof.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\ProofConnect.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\ProofTypes.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\RenderThread.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\SceneCoreClasses.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\SmartPointer.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Thread.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Timer.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\UUID.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Core\Window.h">
+      <Filter>src\Proof\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Events\ControllerEvent.h">
+      <Filter>src\Proof\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Events\Event.h">
+      <Filter>src\Proof\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Events\KeyEvent.h">
+      <Filter>src\Proof\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Events\MouseEvent.h">
+      <Filter>src\Proof\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Events\WindowEvent.h">
+      <Filter>src\Proof\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\AssetEditors\AssetEditor.h">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\AssetEditors\AssetEditorDetail.h">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\AssetEditors\GuiEditorPanel.h">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\AssetEditors\InputActionPanel.h">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\AssetEditors\InputBindingContextPanel.h">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\AssetEditors\MaterialEditorPanel.h">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\AssetEditors\MeshColliderEditorPanel.h">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\AssetEditors\MeshEditorPanel.h">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\AssetEditors\ParticleSystemEditorPanel.h">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\AssetEditors\PrefabEditor.h">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\AssetManagerPanel.h">
+      <Filter>src\Proof\ImGui\Editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\EditorResources.h">
+      <Filter>src\Proof\ImGui\Editors</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\EditorWorkspace\EditorWorkspace.h">
+      <Filter>src\Proof\ImGui\Editors\EditorWorkspace</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\EditorWorkspace\ViewPortEditorWorkspace.h">
+      <Filter>src\Proof\ImGui\Editors\EditorWorkspace</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\Panels\ApplicationSettings.h">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\Panels\AssetManagerPanel.h">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\Panels\ContentBrowser\ContentBrowserPanel.h">
+      <Filter>src\Proof\ImGui\Editors\Panels\ContentBrowser</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\Panels\ContentBrowser\ContentBrowserUtils.h">
+      <Filter>src\Proof\ImGui\Editors\Panels\ContentBrowser</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\Panels\DetailsPanel.h">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\Panels\EditorSettingsPanel.h">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\Panels\ElevatedInputDeviceManagerPanel.h">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\Panels\InputPanel.h">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\Panels\Panel.h">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\Panels\PanelManager.h">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\Panels\PhysicsPanelStats.h">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\Panels\ProjectSettingsPanel.h">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\Panels\SceneHierachyPanel.h">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\Panels\ScriptImportSettingsPanel.h">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\Editors\Panels\WorldRendererPanel.h">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\ImGuiLayer.h">
+      <Filter>src\Proof\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\SelectionManager.h">
+      <Filter>src\Proof\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\UI.h">
+      <Filter>src\Proof\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\UIColors.h">
+      <Filter>src\Proof\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\UIHandlers.h">
+      <Filter>src\Proof\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\UITypes.h">
+      <Filter>src\Proof\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\UIWidgets.h">
+      <Filter>src\Proof\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ImGui\UiUtilities.h">
+      <Filter>src\Proof\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\Controller.h">
+      <Filter>src\Proof\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\ElevatedInputSystem\ElevatedActionKeyMapping.h">
+      <Filter>src\Proof\Input\ElevatedInputSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\ElevatedInputSystem\ElevatedInputDevices\ElevatedInputController.h">
+      <Filter>src\Proof\Input\ElevatedInputSystem\ElevatedInputDevices</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\ElevatedInputSystem\ElevatedInputDevices\ElevatedInputDevice.h">
+      <Filter>src\Proof\Input\ElevatedInputSystem\ElevatedInputDevices</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\ElevatedInputSystem\ElevatedInputDevices\ElevatedInputDeviceManager.h">
+      <Filter>src\Proof\Input\ElevatedInputSystem\ElevatedInputDevices</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\ElevatedInputSystem\ElevatedInputDevices\ElevatedInputMouseKeyBoard.h">
+      <Filter>src\Proof\Input\ElevatedInputSystem\ElevatedInputDevices</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\ElevatedInputSystem\ElevatedPlayer.h">
+      <Filter>src\Proof\Input\ElevatedInputSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\ElevatedInputSystem\InputAction.h">
+      <Filter>src\Proof\Input\ElevatedInputSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\ElevatedInputSystem\InputActionOutput.h">
+      <Filter>src\Proof\Input\ElevatedInputSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\ElevatedInputSystem\InputBindingContext.h">
+      <Filter>src\Proof\Input\ElevatedInputSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\ElevatedInputSystem\InputCustomizers.h">
+      <Filter>src\Proof\Input\ElevatedInputSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\ElevatedInputSystem\InputInteractions.h">
+      <Filter>src\Proof\Input\ElevatedInputSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\ElevatedInputSystem\InputKeyBinding.h">
+      <Filter>src\Proof\Input\ElevatedInputSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\ElevatedInputSystem\InputTypes.h">
+      <Filter>src\Proof\Input\ElevatedInputSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\Input.h">
+      <Filter>src\Proof\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\InputManager.h">
+      <Filter>src\Proof\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\JoyStick.h">
+      <Filter>src\Proof\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\KeyBoard.h">
+      <Filter>src\Proof\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\KeyCodes.h">
+      <Filter>src\Proof\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Input\Mouse.h">
+      <Filter>src\Proof\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Math\AABB.h">
+      <Filter>src\Proof\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Math\BasicCollision.h">
+      <Filter>src\Proof\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Math\Math.h">
+      <Filter>src\Proof\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Math\MathConvert.h">
+      <Filter>src\Proof\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Math\MathInclude.h">
+      <Filter>src\Proof\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Math\MathResource.h">
+      <Filter>src\Proof\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Math\Matrix4.h">
+      <Filter>src\Proof\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Math\Random.h">
+      <Filter>src\Proof\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Math\Ray.h">
+      <Filter>src\Proof\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Math\Transform.h">
+      <Filter>src\Proof\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Math\Vector.h">
+      <Filter>src\Proof\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Physics\MeshCollider.h">
+      <Filter>src\Proof\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Physics\PhysicsActor.h">
+      <Filter>src\Proof\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Physics\PhysicsActorBase.h">
+      <Filter>src\Proof\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Physics\PhysicsController.h">
+      <Filter>src\Proof\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Physics\PhysicsDebugger.h">
+      <Filter>src\Proof\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Physics\PhysicsEngine.h">
+      <Filter>src\Proof\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Physics\PhysicsLayerManager.h">
+      <Filter>src\Proof\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Physics\PhysicsMaterial.h">
+      <Filter>src\Proof\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Physics\PhysicsMeshCache.h">
+      <Filter>src\Proof\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Physics\PhysicsMeshCooker.h">
+      <Filter>src\Proof\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Physics\PhysicsShapes.h">
+      <Filter>src\Proof\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Physics\PhysicsSimulationCallback.h">
+      <Filter>src\Proof\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Physics\PhysicsTypes.h">
+      <Filter>src\Proof\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Physics\PhysicsUtils.h">
+      <Filter>src\Proof\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Physics\PhysicsWorld.h">
+      <Filter>src\Proof\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\Bitmap.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\Vulkan.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanAllocator.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanBuffer.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanCommandBuffer.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanComputePass.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanComputePipeline.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanDescriptorManager.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanDevice.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanFrameBuffer.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanGraphicsContext.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanGraphicsPipeline.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanImage.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanImguiLayer.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanRenderMaterial.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanRenderPass.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanRenderer.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanResourceBuffer.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanSampler.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanShader.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanShaderResource.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanSwapChain.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanTexutre.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanUtils\VulkanBufferBase.h">
+      <Filter>src\Proof\Platform\Vulkan\VulkanUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanUtils\VulkanConvert.h">
+      <Filter>src\Proof\Platform\Vulkan\VulkanUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanUtils\vk_mem_alloc.h">
+      <Filter>src\Proof\Platform\Vulkan\VulkanUtils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Vulkan\VulkanVertexArray.h">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Platform\Window\WindowsWindow.h">
+      <Filter>src\Proof\Platform\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Project\Project.h">
+      <Filter>src\Proof\Project</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Project\ProjectSerilizer.h">
+      <Filter>src\Proof\Project</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\ProofCore.h">
+      <Filter>src\Proof</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Asset\Shader\Extras\Fidelity\ffx_common_types.h">
+      <Filter>src\Proof\Renderer\Asset\Shader\Extras\Fidelity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Asset\Shader\Extras\Fidelity\ffx_core.h">
+      <Filter>src\Proof\Renderer\Asset\Shader\Extras\Fidelity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Asset\Shader\Extras\Fidelity\ffx_core_cpu.h">
+      <Filter>src\Proof\Renderer\Asset\Shader\Extras\Fidelity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Asset\Shader\Extras\Fidelity\ffx_core_glsl.h">
+      <Filter>src\Proof\Renderer\Asset\Shader\Extras\Fidelity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Asset\Shader\Extras\Fidelity\ffx_core_gpu_common.h">
+      <Filter>src\Proof\Renderer\Asset\Shader\Extras\Fidelity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Asset\Shader\Extras\Fidelity\ffx_core_gpu_common_half.h">
+      <Filter>src\Proof\Renderer\Asset\Shader\Extras\Fidelity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Asset\Shader\Extras\Fidelity\ffx_core_hlsl.h">
+      <Filter>src\Proof\Renderer\Asset\Shader\Extras\Fidelity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Asset\Shader\Extras\Fidelity\ffx_core_portability.h">
+      <Filter>src\Proof\Renderer\Asset\Shader\Extras\Fidelity</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Asset\Shader\Extras\Fidelity\spd\ffx_spd.h">
+      <Filter>src\Proof\Renderer\Asset\Shader\Extras\Fidelity\spd</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Asset\Shader\Extras\Fidelity\spd\ffx_spd_callbacks_glsl.h">
+      <Filter>src\Proof\Renderer\Asset\Shader\Extras\Fidelity\spd</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Asset\Shader\Extras\Fidelity\spd\ffx_spd_callbacks_hlsl.h">
+      <Filter>src\Proof\Renderer\Asset\Shader\Extras\Fidelity\spd</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Asset\Shader\Extras\Fidelity\spd\ffx_spd_downsample.h">
+      <Filter>src\Proof\Renderer\Asset\Shader\Extras\Fidelity\spd</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Asset\Shader\Extras\Fidelity\spd\ffx_spd_resources.h">
+      <Filter>src\Proof\Renderer\Asset\Shader\Extras\Fidelity\spd</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\AssetThumbnailGenerator.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Buffer.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Colors.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\CommandBuffer.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\CommandQueue.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\ComputePass.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\ComputePipeline.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\DebugMeshRenderer.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\DebugRenderer.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Font.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\FrameBuffer.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\GraphicsContext.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\GraphicsPipeLine.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\HosekDataRGB.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Image.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\ImageUtils.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\MSDFData.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\MeshWorkShop.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\ParticleSystem.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\RenderMaterial.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\RenderPass.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Renderer.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Renderer2D.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\RendererAPI.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\RendererResouce.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\RendererSampler.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\RenderereCustomTypeSet.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\SamplerFactory.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Shader.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\SwapChain.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Texture.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\UIRenderer\UIMenu.h">
+      <Filter>src\Proof\Renderer\UIRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\UIRenderer\UIPanel.h">
+      <Filter>src\Proof\Renderer\UIRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\UIRenderer\UIRenderer.h">
+      <Filter>src\Proof\Renderer\UIRenderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\UniformBuffer.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Vertex.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\VertexArray.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Viewport.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\WorldRenderer.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\WorldRendererBuffers.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\WorldRendererSettings.h">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Resources\EnumReflection.h">
+      <Filter>src\Proof\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Resources\ExternalCreations.h">
+      <Filter>src\Proof\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\Camera\Camera.h">
+      <Filter>src\Proof\Scene\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\Camera\EditorCamera.h">
+      <Filter>src\Proof\Scene\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\Camera\OrthagraphicCamera.h">
+      <Filter>src\Proof\Scene\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\Camera\SceneCamera.h">
+      <Filter>src\Proof\Scene\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\CollisionInfo.h">
+      <Filter>src\Proof\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\Component.h">
+      <Filter>src\Proof\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\EntitiyComponentSystem\ECS.h">
+      <Filter>src\Proof\Scene\EntitiyComponentSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\Entity.h">
+      <Filter>src\Proof\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\ExampleSccripts.h">
+      <Filter>src\Proof\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\GameMode\GameMode.h">
+      <Filter>src\Proof\Scene\GameMode</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\GameMode\LocalGameMode.h">
+      <Filter>src\Proof\Scene\GameMode</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\Material.h">
+      <Filter>src\Proof\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\Mesh.h">
+      <Filter>src\Proof\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\Prefab.h">
+      <Filter>src\Proof\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\SceneSerializer.h">
+      <Filter>src\Proof\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\SceneUtils.h">
+      <Filter>src\Proof\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\ScheduledTimer.h">
+      <Filter>src\Proof\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\Script.h">
+      <Filter>src\Proof\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\WaterSystem\BuoyancyActor.h">
+      <Filter>src\Proof\Scene\WaterSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\WaterSystem\FFTWave\FFTWave.h">
+      <Filter>src\Proof\Scene\WaterSystem\FFTWave</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\WaterSystem\GerstnerWave.h">
+      <Filter>src\Proof\Scene\WaterSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\WaterSystem\Water.h">
+      <Filter>src\Proof\Scene\WaterSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\WaterSystem\WaterSystem.h">
+      <Filter>src\Proof\Scene\WaterSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\WaterSystem\Wave.h">
+      <Filter>src\Proof\Scene\WaterSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scene\World.h">
+      <Filter>src\Proof\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scripting\ScriptBuilder.h">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scripting\ScriptEngine.h">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scripting\ScriptField.h">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scripting\ScriptFile.h">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scripting\ScriptFunc.h">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scripting\ScriptGCManager.h">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scripting\ScriptImportSettings.h">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scripting\ScriptRawTypes.h">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scripting\ScriptRegistry.h">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scripting\ScriptTypes.h">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scripting\ScriptUtils.h">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Scripting\ScriptWorld.h">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Utils\ContainerUtils.h">
+      <Filter>src\Proof\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Utils\FileSystem.h">
+      <Filter>src\Proof\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Utils\MultiUse.h">
+      <Filter>src\Proof\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Utils\PersistentDataManager.h">
+      <Filter>src\Proof\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Utils\PlatformUtils.h">
+      <Filter>src\Proof\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Utils\StringUtils.h">
+      <Filter>src\Proof\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Utils\VariableSystem\Variable.h">
+      <Filter>src\Proof\Utils\VariableSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Utils\VariableSystem\VariableField.h">
+      <Filter>src\Proof\Utils\VariableSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Utils\VariableSystem\VariableFieldTypes.h">
+      <Filter>src\Proof\Utils\VariableSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Utils\VariableSystem\VariableStorage.h">
+      <Filter>src\Proof\Utils\VariableSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Utils\VariableSystem\VariableUtils.h">
+      <Filter>src\Proof\Utils\VariableSystem</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ProofApI\ProofAPI.h">
+      <Filter>src\ProofApI</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proofprch.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\ImGuizmo\ImGuizmo.h">
+      <Filter>vendor\ImGuizmo</Filter>
+    </ClInclude>
+    <ClInclude Include="vendor\stb_image.h">
+      <Filter>vendor</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Proof\Renderer\Asset\Shader\PBR\Water\FFTWaves\FFT\FFTSampleWaveHeight.glsl" />
+    <ClInclude Include="src\Proof\Scene\WaterSystem\FFTWave\FFTClipMap.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Proof\Animation\Animation.cpp">
+      <Filter>src\Proof\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Animation\AnimationImporter.cpp">
+      <Filter>src\Proof\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Animation\Skeleton.cpp">
+      <Filter>src\Proof\Animation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Asset\AssetCustomData\AssetCustomDataInfo.cpp">
+      <Filter>src\Proof\Asset\AssetCustomData</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Asset\AssetCustomData\AssetCustomDataManager.cpp">
+      <Filter>src\Proof\Asset\AssetCustomData</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Asset\AssetCustomData\AssetCustomDataSerelizer.cpp">
+      <Filter>src\Proof\Asset\AssetCustomData</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Asset\AssetCustomData\MeshSourceSavedSettings.cpp">
+      <Filter>src\Proof\Asset\AssetCustomData</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Asset\AssetManager.cpp">
+      <Filter>src\Proof\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Asset\AssetSerelizer.cpp">
+      <Filter>src\Proof\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Asset\AssetTypes.cpp">
+      <Filter>src\Proof\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Asset\MeshImpoter.cpp">
+      <Filter>src\Proof\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Asset\SerializeCommon.cpp">
+      <Filter>src\Proof\Asset</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Audio\Audio.cpp">
+      <Filter>src\Proof\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Audio\AudioEngine.cpp">
+      <Filter>src\Proof\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Audio\AudioEngineBuild.cpp">
+      <Filter>src\Proof\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Audio\AudioListenerActor.cpp">
+      <Filter>src\Proof\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Audio\AudioUtils.cpp">
+      <Filter>src\Proof\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Audio\Sound.cpp">
+      <Filter>src\Proof\Audio</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Core\Application.cpp">
+      <Filter>src\Proof\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Core\Core.cpp">
+      <Filter>src\Proof\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Core\FrameTime.cpp">
+      <Filter>src\Proof\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Core\LayerStack.cpp">
+      <Filter>src\Proof\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Core\Log.cpp">
+      <Filter>src\Proof\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Core\MemoryAllocator.cpp">
+      <Filter>src\Proof\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Core\Profile.cpp">
+      <Filter>src\Proof\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Core\RenderThread.cpp">
+      <Filter>src\Proof\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Core\SceneCoreClasses.cpp">
+      <Filter>src\Proof\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Core\Timer.cpp">
+      <Filter>src\Proof\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Core\UUID.cpp">
+      <Filter>src\Proof\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Core\Window.cpp">
+      <Filter>src\Proof\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Events\ControllerEvent.cpp">
+      <Filter>src\Proof\Events</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\AssetEditors\AssetEditor.cpp">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\AssetEditors\AssetEditorDetail.cpp">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\AssetEditors\GuiEditorPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\AssetEditors\InputActionPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\AssetEditors\InputBindingContextPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\AssetEditors\MaterialEditorPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\AssetEditors\MeshColliderEditorPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\AssetEditors\MeshEditorPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\AssetEditors\ParticleSystemEditorPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\AssetEditors\PrefabEditor.cpp">
+      <Filter>src\Proof\ImGui\Editors\AssetEditors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\EditorResources.cpp">
+      <Filter>src\Proof\ImGui\Editors</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\EditorWorkspace\EditorWorkspace.cpp">
+      <Filter>src\Proof\ImGui\Editors\EditorWorkspace</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\EditorWorkspace\ViewPortEditorWorkspace.cpp">
+      <Filter>src\Proof\ImGui\Editors\EditorWorkspace</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\Panels\ApplicationSettings.cpp">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\Panels\AssetManagerPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\Panels\ContentBrowser\ContentBrowserPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\Panels\ContentBrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\Panels\ContentBrowser\ContentBrowserUtils.cpp">
+      <Filter>src\Proof\ImGui\Editors\Panels\ContentBrowser</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\Panels\DetailsPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\Panels\EditorSettingsPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\Panels\ElevatedInputDeviceManagerPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\Panels\InputPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\Panels\Panel.cpp">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\Panels\PanelManager.cpp">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\Panels\PhysicsPanelStats.cpp">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\Panels\ProjectSettingsPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\Panels\SceneHierachyPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\Panels\ScriptImportSettingsPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\Editors\Panels\WorldRendererPanel.cpp">
+      <Filter>src\Proof\ImGui\Editors\Panels</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\ImGuiLayer.cpp">
+      <Filter>src\Proof\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\SelectionManager.cpp">
+      <Filter>src\Proof\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\UI.cpp">
+      <Filter>src\Proof\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\UIColors.cpp">
+      <Filter>src\Proof\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\UIHandlers.cpp">
+      <Filter>src\Proof\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\UIWidgets.cpp">
+      <Filter>src\Proof\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\ImGui\UiUtilities.cpp">
+      <Filter>src\Proof\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Input\Controller.cpp">
+      <Filter>src\Proof\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Input\ElevatedInputSystem\ElevatedInputDevices\ElevatedInputController.cpp">
+      <Filter>src\Proof\Input\ElevatedInputSystem\ElevatedInputDevices</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Input\ElevatedInputSystem\ElevatedInputDevices\ElevatedInputDeviceManager.cpp">
+      <Filter>src\Proof\Input\ElevatedInputSystem\ElevatedInputDevices</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Input\ElevatedInputSystem\ElevatedInputDevices\ElevatedInputMouseKeyBoard.cpp">
+      <Filter>src\Proof\Input\ElevatedInputSystem\ElevatedInputDevices</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Input\ElevatedInputSystem\ElevatedPlayer.cpp">
+      <Filter>src\Proof\Input\ElevatedInputSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Input\ElevatedInputSystem\InputAction.cpp">
+      <Filter>src\Proof\Input\ElevatedInputSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Input\ElevatedInputSystem\InputBindingContext.cpp">
+      <Filter>src\Proof\Input\ElevatedInputSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Input\ElevatedInputSystem\InputInteractions.cpp">
+      <Filter>src\Proof\Input\ElevatedInputSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Input\ElevatedInputSystem\InputKeyBinding.cpp">
+      <Filter>src\Proof\Input\ElevatedInputSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Input\ElevatedInputSystem\InputTypes.cpp">
+      <Filter>src\Proof\Input\ElevatedInputSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Input\Input.cpp">
+      <Filter>src\Proof\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Input\InputManager.cpp">
+      <Filter>src\Proof\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Input\Mouse.cpp">
+      <Filter>src\Proof\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Math\BasicCollision.cpp">
+      <Filter>src\Proof\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Math\MathResource.cpp">
+      <Filter>src\Proof\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Physics\PhysicsActor.cpp">
+      <Filter>src\Proof\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Physics\PhysicsController.cpp">
+      <Filter>src\Proof\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Physics\PhysicsDebugger.cpp">
+      <Filter>src\Proof\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Physics\PhysicsEngine.cpp">
+      <Filter>src\Proof\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Physics\PhysicsLayerManager.cpp">
+      <Filter>src\Proof\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Physics\PhysicsMaterial.cpp">
+      <Filter>src\Proof\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Physics\PhysicsMeshCache.cpp">
+      <Filter>src\Proof\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Physics\PhysicsMeshCooker.cpp">
+      <Filter>src\Proof\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Physics\PhysicsShapes.cpp">
+      <Filter>src\Proof\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Physics\PhysicsSimulationCallback.cpp">
+      <Filter>src\Proof\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Physics\PhysicsUtils.cpp">
+      <Filter>src\Proof\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Physics\PhysicsWorld.cpp">
+      <Filter>src\Proof\Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\Bitmap.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\Vulkan.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanAllocator.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanBuffer.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanCommandBuffer.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanComputePass.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanComputePipeline.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanDescriptorManager.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanDevice.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanFrameBuffer.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanGraphicsContext.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanGraphicsPipeline.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanImage.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanImguiLayer.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanRenderMaterial.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanRenderPass.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanRenderer.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanResourceBuffer.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanSampler.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanShader.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanSwapChain.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanTexutre.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Vulkan\VulkanVertexArray.cpp">
+      <Filter>src\Proof\Platform\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Window\WindowPlatformUtils.cpp">
+      <Filter>src\Proof\Platform\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Window\WindowsScriptBuilder.cpp">
+      <Filter>src\Proof\Platform\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Platform\Window\WindowsWindow.cpp">
+      <Filter>src\Proof\Platform\Window</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Project\Project.cpp">
+      <Filter>src\Proof\Project</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Project\ProjectSerilizer.cpp">
+      <Filter>src\Proof\Project</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\AssetThumbnailGenerator.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\Buffer.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\CommandBuffer.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\CommandQueue.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\ComputePass.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\ComputePipeline.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\DebugMeshRenderer.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\DebugRenderer.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\Font.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\FrameBuffer.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\GraphicsContext.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\GraphicsPipeLine.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\Image.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\ImageUtils.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\MeshWorkShop.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\ParticleSystem.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\RenderMaterial.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\RenderPass.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\Renderer.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\Renderer2D.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\RendererAPI.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\RendererSampler.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\RenderereCustomTypeSet.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\Shader.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\SwapChain.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\Texture.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\UIRenderer\UIMenu.cpp">
+      <Filter>src\Proof\Renderer\UIRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\UIRenderer\UIPanel.cpp">
+      <Filter>src\Proof\Renderer\UIRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\UIRenderer\UIRenderer.cpp">
+      <Filter>src\Proof\Renderer\UIRenderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\UniformBuffer.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\Vertex.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\VertexArray.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Renderer\WorldRenderer.cpp">
+      <Filter>src\Proof\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Resources\ExternalCreations.cpp">
+      <Filter>src\Proof\Resources</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\Camera\Camera.cpp">
+      <Filter>src\Proof\Scene\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\Camera\EditorCamera.cpp">
+      <Filter>src\Proof\Scene\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\Camera\OrthagraphicCamera.cpp">
+      <Filter>src\Proof\Scene\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\Camera\SceneCamera.cpp">
+      <Filter>src\Proof\Scene\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\Component.cpp">
+      <Filter>src\Proof\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\EntitiyComponentSystem\ECS.cpp">
+      <Filter>src\Proof\Scene\EntitiyComponentSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\Entity.cpp">
+      <Filter>src\Proof\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\GameMode\LocalGameMode.cpp">
+      <Filter>src\Proof\Scene\GameMode</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\Material.cpp">
+      <Filter>src\Proof\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\Mesh.cpp">
+      <Filter>src\Proof\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\Prefab.cpp">
+      <Filter>src\Proof\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\SceneSerializer.cpp">
+      <Filter>src\Proof\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\Script.cpp">
+      <Filter>src\Proof\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\WaterSystem\BuoyancyActor.cpp">
+      <Filter>src\Proof\Scene\WaterSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\WaterSystem\FFTWave\FFTWave.cpp">
+      <Filter>src\Proof\Scene\WaterSystem\FFTWave</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\WaterSystem\GerstnerWave.cpp">
+      <Filter>src\Proof\Scene\WaterSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\WaterSystem\Water.cpp">
+      <Filter>src\Proof\Scene\WaterSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\WaterSystem\WaterSystem.cpp">
+      <Filter>src\Proof\Scene\WaterSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\WaterSystem\Wave.cpp">
+      <Filter>src\Proof\Scene\WaterSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\World.cpp">
+      <Filter>src\Proof\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scripting\SCRIPTFUNC.CPP">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scripting\ScriptEngine.cpp">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scripting\ScriptField.cpp">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scripting\ScriptGCManager.cpp">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scripting\ScriptImportSettings.cpp">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scripting\ScriptRegistry.cpp">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scripting\ScriptUtils.cpp">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scripting\ScriptWorld.cpp">
+      <Filter>src\Proof\Scripting</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Utils\FileSystem.cpp">
+      <Filter>src\Proof\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Utils\PersistentDataManager.cpp">
+      <Filter>src\Proof\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Utils\StringUtils.cpp">
+      <Filter>src\Proof\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Utils\VariableSystem\Variable.cpp">
+      <Filter>src\Proof\Utils\VariableSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Utils\VariableSystem\VariableStorage.cpp">
+      <Filter>src\Proof\Utils\VariableSystem</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Utils\samplerCPP\samplerBlueNoiseErrorDistribution_128x128_OptimizedFor_2d2d2d2d_1spp.cpp">
+      <Filter>src\Proof\Utils\samplerCPP</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proofprch.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
+    <ClCompile Include="vendor\ImGuizmo\ImGuizmo.cpp">
+      <Filter>vendor\ImGuizmo</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Proof\Scene\SceneUtils.cpp" />
+    <ClCompile Include="src\Proof\Scene\WaterSystem\FFTWave\FFTClipMap.cpp" />
+  </ItemGroup>
+</Project>

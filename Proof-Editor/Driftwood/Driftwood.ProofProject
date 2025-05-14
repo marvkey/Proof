@@ -5,7 +5,7 @@ Project:
   StartWorld: 0
   ScriptModuleDirectory: Binaries/ScriptApp
   OnCloseStartWorldEditLastOpen: true
-  StartWorldEdit: 6890206917520790392
+  StartWorldEdit: 282095217865711875
   Input:
     ActionMapping:
       []

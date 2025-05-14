@@ -40,6 +40,23 @@ World:
         HosekWilkieTurbidity: 4
         HosekWilkieGroundReflectance: 0.100000001
         PreethamTurbidity: 4
+    - Entity: 534809590626788377
+      TagComponent:
+        Tag: Camera
+        tags: []
+      TransformComponent:
+        Location: [0, 13.3000002, 35.7000008]
+        Rotation: [-0.263544708, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 1059656669603847335
+        Children: []
+      CameraComponent:
+        NearPlane: 0.300000012
+        FarPlane: 1000
+        FOV: 45
+        UseLocalRotation: false
+        ActiveForRendering: true
     - Entity: 17529283325493608271
       TagComponent:
         Tag: TestPlayer
@@ -70,7 +87,7 @@ World:
                 Type: InputAction
                 Data: 12371603639197638862
       MeshColliderComponent:
-        ColliderID: 13487579784090746161
+        ColliderID: 1673904557958584095
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0
@@ -95,6 +112,8 @@ World:
         VoxelRelativeSize: 0.75
         DragInWater: 1
         AngularDragInWater: 1
+        WaveDisplacementFactor: 1
+        AlwaysStayUpright: false
         Floaters:
           - Floater: ""
             EntityID: 13234523174882156880
@@ -120,34 +139,6 @@ World:
             Drag: 0.5
             AngularDrag: 12
             BuoyancyStrength: 3
-    - Entity: 534809590626788377
-      TagComponent:
-        Tag: Camera
-        tags: []
-      TransformComponent:
-        Location: [0, 13.3000002, 35.7000008]
-        Rotation: [-0.263544708, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 1059656669603847335
-        Children: []
-      CameraComponent:
-        NearPlane: 0.300000012
-        FarPlane: 1000
-        FOV: 45
-        UseLocalRotation: false
-        ActiveForRendering: true
-    - Entity: 1059656669603847335
-      TagComponent:
-        Tag: Head
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 17529283325493608271
-        Children: [534809590626788377]
     - Entity: 10296132144757632783
       TagComponent:
         Tag: Floater
@@ -159,6 +150,17 @@ World:
       HierarchyComponent:
         ParentHandle: 17529283325493608271
         Children: []
+    - Entity: 1059656669603847335
+      TagComponent:
+        Tag: Head
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17529283325493608271
+        Children: [534809590626788377]
     - Entity: 13234523174882156880
       TagComponent:
         Tag: Floater

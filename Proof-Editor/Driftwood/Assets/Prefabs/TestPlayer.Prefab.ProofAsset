@@ -1,0 +1,158 @@
+AssetType: Prefab
+ID: 5397101746872070976
+EntityOwner: 4573970493791748332
+Entities:
+  - Entity: 17439216464490820653
+    TagComponent:
+      Tag: Floater
+      tags: []
+    TransformComponent:
+      Location: [3.5, 3.58699989, -6.3920002]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 4573970493791748332
+      Children: []
+  - Entity: 15946925889735470471
+    TagComponent:
+      Tag: Floater
+      tags: []
+    TransformComponent:
+      Location: [-3, 3.58699989, -6.39219713]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 4573970493791748332
+      Children: []
+  - Entity: 1561991289786345988
+    TagComponent:
+      Tag: Floater
+      tags: []
+    TransformComponent:
+      Location: [-3.60897779, 2.5, 6.63939905]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 4573970493791748332
+      Children: []
+  - Entity: 4573970493791748332
+    TagComponent:
+      Tag: TestPlayer
+      tags: []
+    TransformComponent:
+      Location: [0, 3.5999999, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: [9246873946843389748, 1561991289786345988, 11446026693132883884, 15946925889735470471, 17439216464490820653]
+    MeshComponent:
+      MeshAssetPointerID: 5062657810340108268
+    ScriptComponent:
+      Scripts:
+        - Script: Driftwood.PlayerMovement
+          ScriptClassName: Driftwood.PlayerMovement
+          ScriptName: Driftwood.PlayerMovement
+          Fields:
+            - NameID: Driftwood.PlayerMovement.FowardForce
+              Type: Float
+              Data: 10
+        - Script: Driftwood.PlayerInput
+          ScriptClassName: Driftwood.PlayerInput
+          ScriptName: Driftwood.PlayerInput
+          Fields:
+            - NameID: Driftwood.PlayerInput.MoveSideWaysAction
+              Type: InputAction
+              Data: 12371603639197638862
+    MeshColliderComponent:
+      ColliderID: 1673904557958584095
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+    PlayerInputComponent:
+      InputBindings:
+        - InputBindingContextHandler: ""
+          InputBindingID: 6003628806341811560
+          Active: true
+    BuoyancyComponent:
+      Density: 0.75
+      VoxelRelativeSize: 0.75
+      DragInWater: 1
+      AngularDragInWater: 1
+      WaveDisplacementFactor: 1
+      AlwaysStayUpright: false
+      Floaters:
+        - Floater: ""
+          EntityID: 13234523174882156880
+          SubmersionDepth: 1
+          Drag: 0.5
+          AngularDrag: 12
+          BuoyancyStrength: 3
+        - Floater: ""
+          EntityID: 1327769956017990348
+          SubmersionDepth: 1
+          Drag: 0.5
+          AngularDrag: 12
+          BuoyancyStrength: 3
+        - Floater: ""
+          EntityID: 10296132144757632783
+          SubmersionDepth: 1
+          Drag: 0.5
+          AngularDrag: 12
+          BuoyancyStrength: 3
+        - Floater: ""
+          EntityID: 13842604328340830833
+          SubmersionDepth: 1
+          Drag: 0.5
+          AngularDrag: 12
+          BuoyancyStrength: 3
+  - Entity: 9246873946843389748
+    TagComponent:
+      Tag: Head
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 4573970493791748332
+      Children: [2119664885943679747]
+  - Entity: 2119664885943679747
+    TagComponent:
+      Tag: Camera
+      tags: []
+    TransformComponent:
+      Location: [0, 13.3000002, 35.7000008]
+      Rotation: [-0.263544708, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 9246873946843389748
+      Children: []
+    CameraComponent:
+      NearPlane: 0.300000012
+      FarPlane: 1000
+      FOV: 45
+      UseLocalRotation: false
+      ActiveForRendering: true
+  - Entity: 11446026693132883884
+    TagComponent:
+      Tag: Floater
+      tags: []
+    TransformComponent:
+      Location: [4.11839294, 2.83270097, 6.31703472]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 4573970493791748332
+      Children: []
