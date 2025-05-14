@@ -516,6 +516,11 @@ namespace Proof
 
 		//if (m_ActiveWorld->m_CurrentState == WorldState::Play)
 		//	InputManager::OnEvent(e);
+		if (!ImGui::GetIO().WantTextInput)
+		{
+			dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
+		}
+
 
 		s_EditorData->ElevatedInputManager->OnEvent(e);
 		if (m_ActiveWorld->IsPlaying())
@@ -526,6 +531,9 @@ namespace Proof
 			
 			//	Mouse::SetCursorMode(CursorMode::Locked);
 		}
+
+		
+
 		AssetEditorPanel::OnEvent(e);
 
 		//m_EditorCamera.OnEvent(e);
@@ -533,10 +541,7 @@ namespace Proof
 		s_EditorData->PanelManager->OnEvent(e);
 		s_EditorData->EditorWorkspaceManager->OnEvent(e);
 
-		if (!ImGui::GetIO().WantTextInput)
-		{
-			dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
-		}
+		
 	}
 	bool openNewWorld = false;
 	AssetID newWorldID = 0;
@@ -826,6 +831,7 @@ namespace Proof
 
 			case KeyBoardKey::D:
 				{
+
 					if (isViewportOrHierieachyFocused && control)
 					{
 						auto selectedEntities = SelectionManager::GetSelections(SelectionContext::Scene);
@@ -2280,6 +2286,7 @@ namespace Proof
 		m_ActiveWorld->EndRuntime();      
 		s_EditorData->ElevatedInputManager->OnEventDelegate.Unbind();
 
+		m_ActiveWorld = nullptr;
 		m_ActiveWorld = m_EditorWorld;
 		s_PlayWorldData = nullptr;
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
