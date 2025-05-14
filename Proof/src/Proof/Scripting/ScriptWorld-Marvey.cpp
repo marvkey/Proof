@@ -12,10 +12,10 @@ namespace Proof
 {
     static std::map<UUID, WeakCount<ScriptWorld>> s_ScriptWorldReferences;
 
-    ScriptWorld::ScriptWorld(World* world)
-        :m_World(world)
-    {
-        //PF_CORE_ASSERT(m_World, "Needs an active world");
+	ScriptWorld::ScriptWorld(World* world)
+		:m_World(world)
+	{
+		//PF_CORE_ASSERT(m_World, "Needs an active world");
 
         m_SpecificID = UUID();
 
@@ -24,11 +24,11 @@ namespace Proof
             m_SpecificID = UUID();
         }
         s_ScriptWorldReferences[m_SpecificID] = this;
-    }
-    ScriptWorld::~ScriptWorld()
-    {
+	}
+	ScriptWorld::~ScriptWorld()
+	{
         s_ScriptWorldReferences.erase(m_SpecificID);
-    }
+	}
     const std::map<UUID, WeakCount<ScriptWorld>>& ScriptWorld::GetScriptWorlds()
     {
         return s_ScriptWorldReferences;
@@ -110,8 +110,8 @@ namespace Proof
         return nullptr;
     }
 
-    void ScriptWorld::InstantiateScriptEntity(Entity entity)
-    {
+	void ScriptWorld::InstantiateScriptEntity(Entity entity)
+	{
         PF_PROFILE_FUNC();
 
         if (!entity.HasComponent<ScriptComponent>())
@@ -153,18 +153,18 @@ namespace Proof
                 script.ScriptMetadates.erase(script.ScriptMetadates.begin() + i);
             }
         }
-    }
+	}
 
-    void ScriptWorld::ScriptEntityPushScript(Entity entity, const std::string& classFullName)
-    {
+	void ScriptWorld::ScriptEntityPushScript(Entity entity, const std::string& classFullName)
+	{
         if (m_IsRuntime)
             RuntimeScriptEntityPushScript(entity, classFullName);
         else
             EditorScriptEntityPushScript(entity, classFullName);
-    }
-
-    void ScriptWorld::EditorScriptEntityPushScript(Entity entity, const std::string& classFullName)
-    {
+	}
+   
+	void ScriptWorld::EditorScriptEntityPushScript(Entity entity, const std::string& classFullName)
+	{
         PF_PROFILE_FUNC();
 
         PF_CORE_ASSERT(m_EntityClassesStorage.contains(entity.GetUUID()), fmt::format("Entity {} is not contained in Script Engine ", entity.GetName()));
@@ -189,13 +189,13 @@ namespace Proof
         // in case we want to view in ditorc
         if (m_IsRuntime)
         {
-            if (m_EntityClassesStorage[entity.GetUUID()].Classes.contains(classFullName))
+            if(m_EntityClassesStorage[entity.GetUUID()].Classes.contains(classFullName))
                 return;
         }
         auto& scriptEngineData = m_EntityClassesStorage[entity.GetUUID()].Classes[(classFullName)];
 
         scriptEngineData.className = classFullName;
-
+       
         for (auto fieldName : managedClass->Fields)
         {
             ScriptField* scriptField = ScriptRegistry::GetFieldByName(fieldName);
@@ -210,12 +210,12 @@ namespace Proof
             else if (scriptField->IsEnum())
             {
                 scriptEngineData.Fields[fieldName] = Count<EnumFieldStorage>::Create(scriptField);
-
+               
             }
             else
             {
                 scriptEngineData.Fields[fieldName] = Count<FieldStorage>::Create(scriptField);
-
+               
             }
             if (ScriptImportSettings::HasClass(scriptEngineData.className))
             {
@@ -238,9 +238,9 @@ namespace Proof
 
         if (!scriptComponent.HasScript(classFullName))
             scriptComponent.ScriptMetadates.emplace_back(classFullName);
-    }
-    void ScriptWorld::RuntimeScriptEntityPushScript(Entity entity, const std::string& classFullName)
-    {
+	}
+	void ScriptWorld::RuntimeScriptEntityPushScript(Entity entity, const std::string& classFullName)
+	{
         PF_PROFILE_FUNC();
 
         PF_CORE_ASSERT(m_RuntimeEntityClassStorage.contains(entity.GetUUID()), fmt::format("Entity {} is not contained in Script Engine ", entity.GetName()));
@@ -274,7 +274,7 @@ namespace Proof
         if (m_EntityClassesStorage.contains(entity.GetUUID()))
         {
             alreadyExist = true;
-            ScriptClassMetaData* classMetaData = m_EntityClassesStorage.at(entity.GetUUID()).GetClassMetaData(classFullName);
+            ScriptClassMetaData* classMetaData =  m_EntityClassesStorage.at(entity.GetUUID()).GetClassMetaData(classFullName);
             if (classMetaData)
             {
                 classMetaData->ScriptHandle = instanceHandle;
@@ -286,7 +286,7 @@ namespace Proof
                 }
             }
         }
-
+        
         if (!scriptComponent.HasScript(classFullName))
             scriptComponent.ScriptMetadates.emplace_back(ScriptComponentsClassesData{ classFullName,instanceHandle });
         else
@@ -314,7 +314,7 @@ namespace Proof
         m_CallOnCreate.insert({ instanceHandle });
         //ScriptEngine::CallMethod(instanceHandle, "OnCreate");
 
-    }
+	}
     void ScriptWorld::ScriptEntityDeleteScript(Entity entity, const std::string& classFullName)
     {
         if (m_IsRuntime)
@@ -322,7 +322,7 @@ namespace Proof
         else
             EditorScriptEntityDeleteScript(entity, classFullName);
     }
-
+    
     void ScriptWorld::EditorScriptEntityDeleteScript(Entity entity, const std::string& classFullName)
     {
         if (!entity.HasComponent<ScriptComponent>())
@@ -337,7 +337,7 @@ namespace Proof
         if (!entityClassContainer)
             return;
 
-        if (!entityClassContainer->HasClassMetaData(classFullName))
+        if(!entityClassContainer->HasClassMetaData(classFullName))
             return;
 
 
@@ -378,7 +378,7 @@ namespace Proof
 
         if (m_EntityClassesStorage.contains(entity.GetUUID()))
         {
-            if (m_EntityClassesStorage.at(entity.GetUUID()).Classes.contains(classFullName))
+            if(m_EntityClassesStorage.at(entity.GetUUID()).Classes.contains(classFullName))
                 EditorScriptEntityDeleteScript(entity, classFullName);
         }
     }
@@ -399,7 +399,7 @@ namespace Proof
     {
         return m_RuntimeEntityClassStorage.contains(entity.GetUUID());
     }
-    void ScriptWorld::DestroyEntityScript(Entity entity, bool clear)
+    void ScriptWorld::DestroyEntityScript(Entity entity, bool clear )
     {
         if (m_IsRuntime)
         {
@@ -407,7 +407,7 @@ namespace Proof
             return;
         }
 
-        EditorDestroyEntityScript(entity, clear);
+        EditorDestroyEntityScript(entity,clear);
     }
     void ScriptWorld::DestroyEntityScript(Entity entity)
     {
@@ -416,8 +416,8 @@ namespace Proof
     void ScriptWorld::EditorDestroyEntityScript(Entity entity, bool clear)
     {
         PF_PROFILE_FUNC()
-            if (!entity.HasComponent<ScriptComponent>())
-                return;
+        if (!entity.HasComponent<ScriptComponent>())
+            return;
 
         if (!m_EntityClassesStorage.contains(entity.GetUUID()))
         {
@@ -449,17 +449,17 @@ namespace Proof
         if (clear)
         {
             auto& sc = entity.GetComponent<ScriptComponent>();
-            for (auto& [className, metadata] : m_RuntimeEntityClassStorage.at(entity.GetUUID()).Classes)
+            for (auto& [className,metadata] : m_RuntimeEntityClassStorage.at(entity.GetUUID()).Classes)
                 ScriptEntityDeleteScript(entity, metadata.ClassName);
             sc.ScriptMetadates.clear();
         }
         m_RuntimeEntityClassStorage.erase(entity.GetUUID());
 
 
-#if 0
+        #if 0
         if (EditorIsEntityScriptInstantiated(entity))
         {
-#if 0
+            #if 0
             for (auto it = m_EntityClassesStorage.at(entity.GetUUID()).Classes.begin(); it != m_EntityClassesStorage.at(entity.GetUUID()).Classes.end(); /* No increment here */)
             {
                 const auto& [className, classMetadata] = *it;
@@ -471,7 +471,7 @@ namespace Proof
                 }
                 else
                 {
-                    // Move to the next element.
+                 // Move to the next element.
                     ++it;
                 }
             }
@@ -480,12 +480,12 @@ namespace Proof
             {
                 m_EntityClassesStorage.erase(entity.GetUUID());
             }
-#endif
+            #endif
             // make a copy of this world when we want to play the world
             m_EntityClassesStorage.erase(entity.GetUUID());
 
         }
-#endif
+        #endif
 
     }
     Count<ScriptWorld> ScriptWorld::CopyScriptWorld(Count<ScriptWorld> world, Count<World> newWorld, bool useSameMemmory)
@@ -517,11 +517,11 @@ namespace Proof
 
             Entity srcentity = world->GetWorld()->TryGetEntityWithUUID(entityID);
             Entity dstentity = newWorld->TryGetEntityWithUUID(entityID);
-            newScirptWorld->DuplicateScriptInstance(srcentity, dstentity);
+            newScirptWorld->DuplicateScriptInstance(srcentity,dstentity);
         }
         return newScirptWorld;
     }
-
+   
 
     void ScriptWorld::DuplicateScriptInstance(Entity srcEntity, Entity dstEntity)
     {
@@ -542,7 +542,7 @@ namespace Proof
 
         InstantiateScriptEntity(dstEntity);
         if (!IsEntityScriptInstantiated(dstEntity))return;
-        ScriptClassesContainerMetaData* srcClassesMetaData = srcScriptWorld->GetEntityClassesContainer(srcEntity, true);
+        ScriptClassesContainerMetaData* srcClassesMetaData =  srcScriptWorld->GetEntityClassesContainer(srcEntity,true);
         if (!srcClassesMetaData)
             return;
 
@@ -550,7 +550,7 @@ namespace Proof
         {
             for (auto& [fieldName, fieldStorage] : classMetaData.Fields)
             {
-                if (fieldStorage)
+                if(fieldStorage)
                     m_EntityClassesStorage[dstEntity.GetUUID()].Classes[className].Fields[fieldName]->CopyFrom(fieldStorage);
             }
         }
@@ -566,11 +566,11 @@ namespace Proof
 
         if (!IsEntityScriptInstantiated(dstEntity))return;
 
-        ScriptClassesContainerMetaData* srcClassesMetaData = srcScriptWorld->GetEntityClassesContainer(srcEntity, true);
+        ScriptClassesContainerMetaData* srcClassesMetaData = srcScriptWorld->GetEntityClassesContainer(srcEntity,true);
         if (!srcClassesMetaData)
             return;
 
-        ScriptClassesContainerMetaData* dstClassesMetaData = GetEntityClassesContainer(dstEntity, true);
+        ScriptClassesContainerMetaData* dstClassesMetaData = GetEntityClassesContainer(dstEntity,true);
 
         for (auto& [className, classMetaData] : srcClassesMetaData->Classes)
         {
@@ -608,10 +608,10 @@ namespace Proof
                             }
                         }
                     }
-
+                    
                 }
                 // just  a normal storage
-                else if (fieldStorage->GetFieldInfo()->IsEnum() == false)
+                else if(fieldStorage->GetFieldInfo()->IsEnum() == false)
                 {
                     Count<FieldStorage> storage = fieldStorage.As<FieldStorage>();
 
@@ -662,9 +662,9 @@ namespace Proof
         m_IsRuntime = true;
 
         GetWorld()->ForEachEnitityWith<ScriptComponent>([&](Entity entity)
-            {
-                InstantiateScriptEntity(entity);
-            });
+        {
+            InstantiateScriptEntity(entity);
+        });
     }
 
     void ScriptWorld::OnUpdate(FrameTime frame)
@@ -673,7 +673,7 @@ namespace Proof
 
         auto view = GetWorld()->GetAllEntitiesWith<ScriptComponent>();
 
-        for (auto instanceHandle : m_CallOnCreate)
+        for(auto instanceHandle : m_CallOnCreate)
             ScriptEngine::CallMethod(instanceHandle, "OnCreate");
         m_CallOnCreate.clear();
         for (auto& [enityID, classes] : m_RuntimeEntityClassStorage)
@@ -681,9 +681,9 @@ namespace Proof
             if (!RuntimeIsEntityScriptInstantiated(GetWorld()->GetEntity(enityID)))continue;
             for (auto& [className, classMetaData] : classes.Classes)
             {
-
-                if (classMetaData.ScriptHandle)
-                    ScriptEngine::CallMethod(classMetaData.ScriptHandle, "OnUpdate", frame.Get());
+                
+                if(classMetaData.ScriptHandle)
+                    ScriptEngine::CallMethod(classMetaData.ScriptHandle, "OnUpdate",frame.Get());
 
             }
         }
@@ -737,11 +737,12 @@ namespace Proof
 
         // we make a copy when we are going to run the scen
         GetWorld()->ForEachEnitityWith<ScriptComponent>([&](Entity entity)
-            {
-                RuntimeDestroyEntityScript(entity, true);
-            });
+        {
+            RuntimeDestroyEntityScript(entity,true);
+        });
         m_IsRuntime = false;
         ScriptEngine::EndRuntime();
     }
 
 }
+

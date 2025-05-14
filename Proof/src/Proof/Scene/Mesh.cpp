@@ -104,16 +104,59 @@ namespace Proof
         Count<MeshSource> instance = this;
         Renderer::Submit([instance]() mutable
             {
-                instance->m_Vertices.clear();
-                instance->m_Indices.clear();
+               // instance->m_Vertices.clear();
+               // instance->m_Indices.clear();
             });
+    }
+    inline Count<MeshSource> MeshSource::CombineMeshes(const std::string& name,const std::vector<Count<MeshSource>>& source)
+    {
+        std::vector<Vertex> combinedVertices;
+        std::vector<Index> combinedIndices;
+        std::vector<SubMesh> combinedSubMeshes;
+
+        uint32_t vertexOffset = 0;
+        uint32_t subMeshIndex = 0;
+
+        for (auto& mesh : source)
+        {
+            const auto& vertices = mesh->GetVertices();
+            const auto& indices = mesh->GetIndices();
+            const auto& subMeshes = mesh->GetSubMeshes();
+
+            // Append vertices
+            combinedVertices.insert(combinedVertices.end(), vertices.begin(), vertices.end());
+
+            // Adjust and append indices
+            for (const auto& idx : indices)
+            {
+                combinedIndices.push_back({
+                    idx.V1 + vertexOffset,
+                    idx.V2 + vertexOffset,
+                    idx.V3 + vertexOffset
+                    });
+            }
+
+            // Adjust and append submeshes
+            for (const auto& sm : subMeshes)
+            {
+                SubMesh newSubMesh = sm;
+                newSubMesh.BaseVertex += vertexOffset;
+                newSubMesh.BaseIndice += static_cast<uint32_t>(combinedIndices.size()) - indices.size();
+                newSubMesh.SubMeshIndex = subMeshIndex++;
+                combinedSubMeshes.push_back(newSubMesh);
+            }
+
+            vertexOffset += static_cast<uint32_t>(vertices.size());
+        }
+
+        return Count<MeshSource>::Create(name, combinedVertices, combinedIndices, combinedSubMeshes);
     }
     void MeshSource::Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices)
     {
         SubMesh subMesh;
         subMesh.BaseVertex = 0;
-        subMesh.BaseIndex = 0;
-        subMesh.IndexCount = indices.size() * 3u;
+        subMesh.BaseIndice = 0;
+        subMesh.IndiceCount = indices.size() * 3u;
         subMesh.VertexCount = vertices.size();
         subMesh.MaterialIndex = 0;
         subMesh.Name = name;
@@ -133,8 +176,8 @@ namespace Proof
         Count<MeshSource> instance = this;
         Renderer::Submit([instance]() mutable
             {
-                instance->m_Vertices.clear();
-                instance->m_Indices.clear();
+               // instance->m_Vertices.clear();
+               // instance->m_Indices.clear();
             });
         m_Materials = Count<MaterialTable>::Create();
 
@@ -267,9 +310,6 @@ namespace Proof
 
     std::vector<Vertex> MeshSource::GetVertices() const
     {
-        if(m_VertexBuffer ==nullptr)
-            return std::vector<Vertex>();
-
 
         if (!m_Vertices.empty())
             return m_Vertices;
@@ -278,9 +318,6 @@ namespace Proof
 
     std::vector<Index> MeshSource::GetIndices() const
     {
-        if(m_IndexBuffer ==nullptr)
-            return std::vector<Index>();
-
         if (!m_Indices.empty())
             return m_Indices;
         return m_IndexBuffer->GetDataAs<Index>();
@@ -486,6 +523,75 @@ namespace Proof
             index++;
         }
         return subMeshes;
+    }
+
+    Count<Mesh> Mesh::CombineMeshes(const std::string& name, const std::vector<Count<Mesh>>& sources)
+    {
+        std::vector<Vertex> combinedVertices;
+        std::vector<Index> combinedIndices;
+        std::vector<SubMesh> combinedSubmeshes;
+
+        uint32_t baseVertex = 0;
+        uint32_t baseIndex = 0;
+        uint32_t subMeshIndex = 0;
+
+        for (auto& source : sources)
+        {
+            glm::mat4 transform = source->GetTransform();
+            auto meshSource = source->GetMeshSource();
+            auto& submeshIndices = source->GetSubMeshes();
+            auto vertices = meshSource->GetVertices();
+            auto indices = meshSource->GetIndices();
+
+            // Apply transform to each vertex
+            for (auto& v : vertices)
+            {
+                Vertex transformed = v;
+                transformed.Position = glm::vec3(transform * glm::vec4(v.Position, 1.0f));
+                transformed.Normal = glm::normalize(glm::mat3(transform) * v.Normal); // only rotate
+                combinedVertices.push_back(transformed);
+            }
+
+            for (auto subIndex : submeshIndices)
+            {
+                const SubMesh& sub = meshSource->GetSubMesh(subIndex);
+                SubMesh newSub = sub;
+                newSub.BaseVertex = baseVertex;
+                newSub.BaseIndice = combinedIndices.size();
+                newSub.SubMeshIndex = subMeshIndex++;
+                newSub.Transform = transform * sub.Transform;
+                newSub.BoundingBox = sub.BoundingBox.ScaleAABB(transform);
+                combinedSubmeshes.push_back(newSub);
+
+                for (uint32_t i = 0; i < sub.IndiceCount/3; i++)
+                {
+                   // PF_ENGINE_INFO(" indices size{}, subMeshIndexCount {}, iterator {}", indices.size(), sub.IndexCount, i);
+                    Index oldIndex = indices[sub.BaseIndice + i];
+                    Index newIndex = {
+                        oldIndex.V1 + baseVertex,
+                        oldIndex.V2 + baseVertex,
+                        oldIndex.V3 + baseVertex
+                    };
+                    combinedIndices.push_back(newIndex);
+                }
+            }
+
+            baseVertex = combinedVertices.size();
+            baseIndex = combinedIndices.size();
+        }
+
+        return Count<Mesh>::Create(name, combinedVertices, combinedIndices);
+    }
+
+    void MeshBase::SetTransform(const glm::mat4& transform)
+    {
+        m_MeshMatrix = transform;
+
+        glm::vec3 scale;
+        MathResource::DecomposeTransform(transform, m_Translation, m_RotationDeg, scale);
+        m_RotationDeg = glm::degrees(m_RotationDeg);
+
+        m_Scale = glm::max(scale.x, glm::max(scale.y, scale.z));
     }
 
     void MeshBase::ArrangeMaterialTable()

@@ -32,7 +32,13 @@ namespace Proof
     };
     namespace Utils
     {
-
+        // crates matrix form location, rotation, scale
+        inline glm::mat4 MatrixTRS(glm::vec3 location, glm::quat rotation, glm::vec3 scale)
+        {
+            return glm::translate(glm::mat4(1.0f), location)
+                * glm::toMat4(rotation)
+                * glm::scale(glm::mat4(1.0f), scale);
+        }
         inline glm::quat QuaternionProperToGlm(QuaternionProper proper)
         {
             glm::quat quat;

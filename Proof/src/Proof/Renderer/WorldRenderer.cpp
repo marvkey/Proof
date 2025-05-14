@@ -4390,7 +4390,7 @@ namespace Proof
 			renderPass->PushData(pushName, pushData.Get());
 		}
 		const SubMesh& subMesh = meshSource->GetSubMeshes()[subMeshIndex];
-		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndiceCount, instanceCount, subMesh.BaseIndice, subMesh.BaseVertex);
 	}
 	void WorldRenderer::RenderDynamicMesh(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount, const Buffer& pushData, const std::string& pushName)
 	{
@@ -4404,7 +4404,7 @@ namespace Proof
 			renderPass->PushData(pushName, pushData.Get());
 		}
 		const SubMesh& subMesh = meshSource->GetSubMeshes()[subMeshIndex];
-		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndiceCount, instanceCount, subMesh.BaseIndice, subMesh.BaseVertex);
 	}
 
 	void WorldRenderer::RenderMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount)
@@ -4419,7 +4419,7 @@ namespace Proof
 		Count<RenderMaterial> renderMaterial = material;
 
 		Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
-		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndiceCount, instanceCount, subMesh.BaseIndice, subMesh.BaseVertex);
 	}
 
 	void WorldRenderer::RenderDynamicMeshWithMaterial(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<RenderMaterial>& material, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount)
@@ -4434,7 +4434,7 @@ namespace Proof
 		Count<RenderMaterial> renderMaterial = material;
 
 		Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
-		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndiceCount, instanceCount, subMesh.BaseIndice, subMesh.BaseVertex);
 	}
 
 	void WorldRenderer::RenderMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount)
@@ -4453,7 +4453,7 @@ namespace Proof
 				: mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();
 
 			Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
-			Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+			Renderer::DrawElementIndexed(commandBuffer, subMesh.IndiceCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
 		}
 	#endif
 
@@ -4467,7 +4467,7 @@ namespace Proof
 			: mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();
 
 		Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
-		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndiceCount, instanceCount, subMesh.BaseIndice, subMesh.BaseVertex);
 	}
 
 	void WorldRenderer::RenderDynamicMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount)
@@ -4486,7 +4486,7 @@ namespace Proof
 				: mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();
 
 			Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
-			Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+			Renderer::DrawElementIndexed(commandBuffer, subMesh.IndiceCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
 		}
 	#endif
 
@@ -4499,7 +4499,7 @@ namespace Proof
 			: mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();
 
 		Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
-		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndexCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndiceCount, instanceCount, subMesh.BaseIndice, subMesh.BaseVertex);
 	}
 
 	void WorldRenderer::ClearPass(Count<RenderPass> renderPass, bool explicitClear)

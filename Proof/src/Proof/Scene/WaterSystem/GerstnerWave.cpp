@@ -22,7 +22,7 @@
 
 namespace Proof
 {
-	
+
 	GerstnerWave::GerstnerWave(class Water* water)
 		: Wave(water, WaveType::GerstnerWave)
 	{
@@ -190,7 +190,7 @@ namespace Proof
 		PF_PROFILE_FUNC();
 		if (!world)
 			return;
- 		if (!world->IsPlaying())return;
+		if (!world->IsPlaying())return;
 		auto  buoyancyEntities = world->GetAllEntitiesWith<BuoyancyComponent, RigidBodyComponent>();
 		for (auto e : buoyancyEntities)
 		{

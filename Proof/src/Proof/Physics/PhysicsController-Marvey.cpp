@@ -14,7 +14,7 @@ namespace Proof
 	//https://www.youtube.com/watch?v=e94KggaEAr4&t=9s&ab_channel=iHeartGameDev
 	PhysicsController::PhysicsController(Count<class PhysicsWorld> world, Entity entity)
 		:
-		PhysicsActorBase(world, PhysicsControllerType::Controller, entity)
+		PhysicsActorBase(world, PhysicsControllerType::Controller,entity)
 	{
 		Init();
 	}
@@ -92,7 +92,7 @@ namespace Proof
 		desc.contactOffset = controller.SkinOffset;                                                     // TODO: get from component
 		desc.material = &m_Material->GetPhysxMaterial();
 		desc.upDirection = PhysXUtils::ToPhysXVector(Math::GetUpVector());
-
+		
 		PF_CORE_ASSERT(desc.isValid(), "Box Controller is not valid");
 		m_Controller = m_PhysicsWorld->GetPhysXControllerManager()->createController(desc);
 
@@ -126,7 +126,7 @@ namespace Proof
 		m_Controller->setStepOffset(stepOffset);
 		m_Entity.GetComponent<CharacterControllerComponent>().StepOffset = stepOffset;
 	}
-
+	
 	bool PhysicsController::SetSimulationData(uint32_t layerId)
 	{
 
@@ -164,7 +164,7 @@ namespace Proof
 		// Set the new position for the character controller
 		m_Controller->setPosition(PhysXUtils::ToPhysXExtendedVector(newPosition));
 	}
-
+	
 	bool PhysicsController::IsGrounded() const
 	{
 		return m_CollisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN;
@@ -200,7 +200,7 @@ namespace Proof
 	}
 	void PhysicsController::OnUpdate(float dt)
 	{
-
+		
 	}
 	void PhysicsController::OnPhysicsUpdate(float physicsFixedDeltaTime)
 	{
@@ -228,3 +228,4 @@ namespace Proof
 		transform.Location = GetLocation();
 	}
 }
+

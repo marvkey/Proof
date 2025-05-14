@@ -142,7 +142,7 @@ namespace Proof
 
 		struct FFTWaveInfo
 		{
-			FFTWaveMapSize OceanSize = FFTWaveMapSize::SIZE_1024;
+			FFTWaveMapSize OceanSize = FFTWaveMapSize::SIZE_512;
 			ClampedValue<int, 1, 8> NumCascades = 3;
 			ClampedValue<float, 0.0f, 1.0f> NormalStrength = 0.2f;
 			ClampedValue<float, 0.0f, 1.0f> Roughness= 0.2f;

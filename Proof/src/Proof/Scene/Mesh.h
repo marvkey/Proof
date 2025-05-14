@@ -84,10 +84,15 @@ namespace Proof
     struct SubMesh 
     {
         std::string Name,NodeName;
-        uint32_t BaseVertex;
-        uint32_t BaseIndex;
-        uint32_t IndexCount;
         uint32_t VertexCount;
+        uint32_t BaseVertex;
+
+        uint32_t BaseIndice; // Offset into std::vector<Index>
+        uint32_t IndiceCount;  // Number of Indexes * 3
+
+        uint32_t GetBaseIndex() { return BaseIndice / 3; }
+        uint32_t GetIndexCount() { return IndiceCount / 3; }
+
         uint32_t MaterialIndex;
         glm::mat4 LocalTransform;
         glm::mat4 Transform;
@@ -137,6 +142,7 @@ namespace Proof
         MeshSource(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable>, AABB boundingBox);
         MeshSource(const std::string& name,const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& submeshes);
 
+        static inline Count<MeshSource> CombineMeshes(const std::string& name,const std::vector<Count<MeshSource>>& source);
         void Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices);
         void Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable> materials, AABB boundingBox);
         AABB GetBoundingBox() { return m_BoundingBox; }
@@ -218,6 +224,8 @@ namespace Proof
         virtual void SetSubMeshes(const std::vector<uint32_t>& submeshes = {})= 0;
         virtual Count<MeshSource> GetMeshSource() = 0;
 
+
+        void SetTransform(const glm::mat4& transform);
         void SetTranslation(glm::vec3 translation) { m_Translation = translation; RecalculateMatrix(); }
         void SetRotationDeg(glm::vec3 rotation) { m_RotationDeg = rotation; RecalculateMatrix(); }
         void SetScale(float scale) { m_Scale = scale; RecalculateMatrix();}
@@ -259,6 +267,8 @@ namespace Proof
         const std::string& GetName()const{
             return m_Name;
         }
+        static Count<Mesh> CombineMeshes(const std::string& name, const std::vector<Count<Mesh>>& source);
+
         void Reset(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes = {});
         void Reset(const std::string& name, std::vector<Vertex> vertices, std::vector<Index>indices);
 

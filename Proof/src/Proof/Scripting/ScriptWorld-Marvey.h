@@ -73,7 +73,7 @@ namespace Proof
 	private:
 		mutable std::unordered_map<std::string, RuntimeScriptClassMetaData> Classes;
 		friend class ScriptEngine;
-		friend class ScriptWorld;
+		friend class ScriptWorld;	
 	};
 
 	using ScriptInstanceMap = std::unordered_map<UUID, RuntimeScriptClassesContainerMetaData>;
@@ -123,17 +123,17 @@ namespace Proof
 		bool EditorIsEntityScriptInstantiated(Entity entity);
 		bool RuntimeIsEntityScriptInstantiated(Entity entity);
 
-		void DestroyEntityScript(Entity entity, bool clear);
+		void DestroyEntityScript(Entity entity, bool clear );
 		void EditorDestroyEntityScript(Entity entity, bool clear);
-		void RuntimeDestroyEntityScript(Entity entity, bool clear);
+		void RuntimeDestroyEntityScript(Entity entity, bool clear);	
 
 	private:
 		static Count<ScriptWorld>CopyScriptWorld(Count<ScriptWorld> scirptWorld, Count<World> newWorld, bool useSameMemmory = false);
 	private:
 		bool m_IsRuntime = false;
 		// weak tr it is alive whenver world is alive not only in rumtime, so it keeps world alive and not delete
-
-		WeakCount<class World> m_World;
+		
+		WeakCount<class World> m_World; 
 		mutable ScriptEntityClassStorage m_EntityClassesStorage;
 		mutable ScriptInstanceMap m_RuntimeEntityClassStorage;
 		std::unordered_set<ScriptGCHandle> m_CallOnCreate;// dont wanna call excactly when created because other entity systems might still be not created yet

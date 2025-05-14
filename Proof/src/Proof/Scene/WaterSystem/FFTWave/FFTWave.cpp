@@ -22,6 +22,7 @@
 #include "Proof/Asset/MeshImpoter.h"
 #include "Proof/Renderer/MeshWorkShop.h"
 #include "Proof/Asset/AssetManager.h"
+#include "FFTClipMap.h"
 
 #include "Proof/Platform/Vulkan/Vulkan.h"
 #include "Proof/Platform/Vulkan/VulkanCommandBuffer.h"
@@ -97,8 +98,9 @@ namespace Proof
         rt.Usage = ImageUsage::Storage;
         rt.Layers = numLayers;
         rt.Transfer = true;
+        rt.Mips = Utils::GetMipLevelCount(width, height);
 
-        auto tex = Image2D::Create(rt, wrap, filter);
+        auto tex = Image2D::Create(rt, SamplerFactory::GetTrilinear());
         return tex;
     }
 
@@ -195,6 +197,10 @@ namespace Proof
     FFTWave::~FFTWave()
     {
     }
+
+    const float VertexDensity = 35;
+    const int ClipMapLevels = 7;
+    const float MinMeshScale = 15;
     FFTWave::FFTWave(class Water* water)
         : Wave(water, WaveType::FastFourierTransformWave)
     {
@@ -202,8 +208,9 @@ namespace Proof
         InitTextures();
         InitPasses();
         InitialWaveparams();
-        MeshImporter importer = MeshImporter("Assets/Meshes/clipmap_high.obj");
-        m_Grid = Count<Mesh>::Create(importer.ImportToMeshSource());
+       // MeshImporter importer = MeshImporter("Assets/Meshes/clipmap_high.obj");
+       // m_Grid = Count<Mesh>::Create(importer.ImportToMeshSource());
+        m_Grid = FFTClipMap::BuildClipMapPlane(VertexDensity, ClipMapLevels);
 
         //m_Grid = MeshWorkShop::GeneratePlane(1024, 1024);
         AssetManager::CreateRuntimeAsset(m_Grid.As<Asset>(), "FFTGRID");
@@ -324,13 +331,10 @@ namespace Proof
             
             {
                 // Replace this with your actual FFT ocean grid scale
-                float minMeshScale = 1.0f;
-                int vertexDensity = 256;
-
 				
-                int clipLevelHalfSize = vertexDensity / 2;
-                int pow = glm::floor(std::max(0.0f, glm::log2(std::abs(renderer->GetCameraUBData().Position.y) / (2.0f * minMeshScale)) + 1));
-                float meshScale = minMeshScale / clipLevelHalfSize * std::pow(2, pow);
+                int clipLevelHalfSize = FFTClipMap::ClipLevelHalfSize(VertexDensity);
+                int pow = glm::floor(std::max(0.0f, glm::log2(std::abs(renderer->GetCameraUBData().Position.y) / (2.0f * MinMeshScale)) + 1));
+                float meshScale = MinMeshScale / clipLevelHalfSize * std::pow(2, pow);
 
                 // Send these as uniform
                 ubf.MinMeshScale= meshScale;
@@ -440,7 +444,9 @@ namespace Proof
 
 
    
-        renderer->SubmitMesh(m_Grid, m_RenderMaterial, glm::mat4(1.0f));
+        renderer->SubmitMesh(m_Grid, m_RenderMaterial, GetTransform());
+        //renderer->SubmitMesh(m_Grid, m_Grid->GetMaterialTable(),GetTransform());
+
 
         m_OldWaveInfo = WaveInfo;
 

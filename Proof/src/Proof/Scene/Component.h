@@ -162,7 +162,7 @@ namespace Proof
 				// Extract the rotation matrix from the transform matrix
 
 			// Get the forward vector from the rotation matrix
-			glm::vec3 forward = glm::normalize(GetRotationMatrix() * glm::vec4(Math::GetFowardVector(), 1));
+			glm::vec3 forward = glm::normalize(GetRotationMatrix() * glm::vec4(Math::GetForwardVector(), 1));
 
 			// origininally how it was
 			//glm::vec3 forward = glm::normalize(rotationMatrix * glm::vec3(0.0f, 0.0f, -1.0f));

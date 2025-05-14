@@ -59,5 +59,10 @@ namespace Proof
 			return { newMin, newMax };
 		}
 
+		void Encapsulate(const AABB& other)
+		{
+			Min = glm::min(Min, other.Min);
+			Max = glm::max(Max, other.Max);
+		}
 	};
 }

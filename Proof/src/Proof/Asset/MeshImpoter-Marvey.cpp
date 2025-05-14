@@ -260,7 +260,7 @@ namespace Proof
 
 					//meshSource->m_TriangleCache[m].emplace_back(meshSource->m_Vertices[index.V1 + submesh.BaseVertex], meshSource->m_Vertices[index.V2 + submesh.BaseVertex], meshSource->m_Vertices[index.V3 + submesh.BaseVertex]);
 				}
-				PF_ENGINE_TRACE("	SubMesh Name: {} Index: {} MaterialIndex: {} VertexCount: {} IndexCount: {}", submesh.Name, m, submesh.MaterialIndex, submesh.VertexCount
+				PF_ENGINE_TRACE("	SubMesh Name: {} Index: {} MaterialIndex: {} VertexCount: {} IndiceCount: {}", submesh.Name, m, submesh.MaterialIndex, submesh.VertexCount
 					, submesh.IndiceCount);
 			}
 

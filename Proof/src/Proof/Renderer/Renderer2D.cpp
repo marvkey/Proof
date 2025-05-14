@@ -471,7 +471,7 @@ namespace Proof {
 
 		glm::vec3 localUp = orientation * Math::GetUpVector();
 		glm::vec3 localRight = orientation * Math::GetRightVector();
-		glm::vec3 localForward = orientation * Math::GetFowardVector();
+		glm::vec3 localForward = orientation * Math::GetForwardVector();
 
 		glm::vec3 basePositionOffset = drawFromBase ? glm::vec3(0) : (localUp * height * 0.5f);
 		glm::vec3 basePosition = position - basePositionOffset;

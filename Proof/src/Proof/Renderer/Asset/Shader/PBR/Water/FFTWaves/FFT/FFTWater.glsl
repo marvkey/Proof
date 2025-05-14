@@ -19,9 +19,9 @@ layout(set = 0, binding = 0) uniform WaterUniforms
 
     int NumCascades;
     float NormalStrength;
-
-	float ClipMap_Scale;
+    float ClipMap_Scale;
     float ClipMap_LevelHalfSize;
+    
     vec3  ClipMap_ViewerPosition;
 
 
@@ -65,10 +65,9 @@ vec3 ClipMap_VertexSnap(vec3 positionOS, vec2 uv) {
 }
 void Vertex(inout PBRVertexInput vertexInput)
 {
- //vec3 positionOS = vertexInput.VertexPosition;
-  //  vec2 uv = positionOS.xz;
 
-    //vec3 worldPosClipmap = ClipMap_VertexSnap(positionOS, uv);
+
+    //vertexInput.VertexPosition = ClipMap_VertexSnap(vertexInput.VertexPosition, vertexInput.TexCoords);
     Output.UV = vertexInput.VertexPosition.xz;
 
     vec3 displacement = vec3(0.0);
@@ -175,6 +174,7 @@ vec3 Normal = vec3(0);
 
 void Fragment(inout PBRData pbrData)
 {
+
     float map_size = float(textureSize(u_Normals, 0).x);
 	float dist = length(PBR_Input.VertexPosition.xz);
 
@@ -189,11 +189,7 @@ void Fragment(inout PBRData pbrData)
 
         vec3 coords = vec3(uv, float(i));
         float ppm = map_size * min(scales.x, scales.y);
-
-       // gradient += mix(texture_bicubic(coords), texture(u_Normals, coords), min(1.0, ppm * 0.1)).xyw * vec3(scales.ww, 1.0);
-float blend = clamp((ppm - 1.0) / 2.0, 0.0, 1.0); // 0 = bicubic, 1 = bilinear
-vec4 normalSample = mix(texture_bicubic(coords), texture(u_Normals, coords), blend);
-        gradient += normalSample.xyz;
+       gradient  += mix(texture_bicubic(coords), texture(u_Normals, coords), min(1.0, ppm * 0.1)).xyw * vec3(scales.ww, 1.0);
 
 	}
 	
@@ -229,7 +225,6 @@ float ggx_distribution(in float cos_theta, in float alpha) {
 
 void LightLateUpdate(inout vec3 lightDirection, inout vec3 diffuseBRDF, inout vec3 specularBRDF,DirectionalLight currentLight)
 {
-
     vec3 halfway= normalize(m_PBRParams.View + lightDirection);
 
     float dot_nl = max(2e-5, dot(Normal, lightDirection));
