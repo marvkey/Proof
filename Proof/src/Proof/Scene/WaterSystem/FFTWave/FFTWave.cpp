@@ -135,7 +135,12 @@ namespace Proof
 
     }
 
-
+    glm::ivec2 GetCenterPlaneSize(int vertexDensity, int overlap)
+    {
+        int halfSize = FFTClipMap::ClipLevelHalfSize(vertexDensity);
+        int size = 2 * halfSize + overlap;
+        return glm::ivec2(size, size);
+    }
     Count<Mesh> GenerateGrid(int gridDimension, float texCoordScale =2.0f)
     {
         std::vector<Vertex> vertices;
@@ -240,7 +245,8 @@ namespace Proof
 
         if (WaveInfo.ViewWaveHeight && m_SampleWaveheightAtPos.empty())
         {
-            std::vector<glm::vec3> positions = Utils::SamplePlanePoints((uint64_t)WaveInfo.OceanSize);
+         //   std::vector<glm::vec3> positions = Utils::SamplePlanePoints((uint64_t)WaveInfo.OceanSize);
+            std::vector<glm::vec3> positions = Utils::SamplePlanePoints(GetCenterPlaneSize(VertexDensity,2).x);
 
             for (int i = 0; i < positions.size(); i++)
             {

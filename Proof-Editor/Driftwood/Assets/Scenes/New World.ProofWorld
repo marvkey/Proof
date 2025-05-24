@@ -19,6 +19,63 @@ World:
         ShadowStrength: 0.5
         CastSoftShadow: true
         ShadowSoftness: 0.5
+    - Entity: 1081364716169993502
+      TagComponent:
+        Tag: water
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      WaterComponent:
+        WaveType: FastFourierTransformWave
+        Density: 1
+        OceanSize: SIZE_512
+        NumCascades: 2
+        NormalStrength: 1
+        Roughness: 0.289999992
+        WaterColor: [0, 0.560000002, 1, 1]
+        FoamColor: [0.774513006, 0.959259272, 0.866886139]
+        DisplacementScale: 1.55999994
+        NormalScale: 1
+        WindSpeedScale: 1
+        SwellScale: 1
+        DetailScale: 1.76999998
+        SpreadScale: 1
+        FoamTimeScale: 1
+        WhitecapScale: 1.62
+        FoamGrowthScale: 1
+        FoamDecayScale: 1
+        Cascades:
+          - Cascade: 0
+            TileLength: [400, 400]
+            DisplacementScale: 0.587000012
+            NormalScale: 2
+            WindSpeed: 2
+            WindDirection: 299
+            FetchLength: 550
+            Swell: 2
+            Detail: 0.25
+            Spread: 0.200000003
+            FoamTimeScale: 1
+            Whitecap: 0.5
+            FoamAmount: 5
+          - Cascade: 1
+            TileLength: [200, 200]
+            DisplacementScale: 1
+            NormalScale: 1
+            WindSpeed: 2
+            WindDirection: 134
+            FetchLength: 550
+            Swell: 0.800000012
+            Detail: 0.25
+            Spread: 0.200000003
+            FoamTimeScale: 1
+            Whitecap: 0.5
+            FoamAmount: 5
     - Entity: 18172648884993435431
       TagComponent:
         Tag: Sky Light
@@ -34,67 +91,9 @@ World:
         TintColor: [1, 1, 1]
         SkyBoxLod: 0
         MapRotation: 0
-        Intensity: 1
+        Intensity: 0.699999988
         EnvironmentState: PreethamSky
         TextureDataImage: 0
         HosekWilkieTurbidity: 4
         HosekWilkieGroundReflectance: 0.100000001
         PreethamTurbidity: 4
-    - Entity: 2776637928116335842
-      TagComponent:
-        Tag: Cube
-        tags: []
-      TransformComponent:
-        Location: [0, 5, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-      BoxColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Dynamic
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 1592551691406307730
-      TagComponent:
-        Tag: Plane
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 56
-      MeshColliderComponent:
-        ColliderID: 3016699440421064266
-        IsTrigger: false
-        UseSharedShape: false
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete

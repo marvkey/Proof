@@ -11,6 +11,7 @@ namespace Proof
 	EditorWorkspaceManager::~EditorWorkspaceManager()
 	{
 	}
+#if 0
 	void EditorWorkspace::Render()
 	{
 		if (!m_IsOpen)
@@ -20,7 +21,42 @@ namespace Proof
 		// TODO SetNextWindowSizeConstraints requires a max constraint that's above 0. For now we're just setting it to a large value
 		{
 			OnWindowStylePush();
-			ImGui::SetNextWindowSizeConstraints({200,400}, {FLT_MAX,FLT_MAX });
+
+			ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+			ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+			//ImGui::SetNextWindowSizeConstraints({200,400}, {FLT_MAX,FLT_MAX });
+			ImGui::Begin(m_TitleAndID.c_str(), &m_IsOpen, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
+			m_CurrentSize = ImGui::GetWindowSize();
+			if (ImGui::IsWindowFocused())
+				m_IsFocused = true;
+			else
+				m_IsFocused = false;
+			m_ImGuiWindow = ImGui::GetCurrentWindow();
+			m_IsHovered = ImGui::IsWindowHovered();
+			OnWindowStylePop();
+			{
+				OnImGuiRender();
+			}
+
+			ImGui::End();
+			ImGui::PopStyleVar();
+		}
+		if (was_open && !m_IsOpen)
+			OnClose();
+	}
+#endif
+	void EditorWorkspace::Render()
+	{
+		if (!m_IsOpen)
+			return;
+
+		bool was_open = m_IsOpen;
+		// TODO SetNextWindowSizeConstraints requires a max constraint that's above 0. For now we're just setting it to a large value
+		{
+			OnWindowStylePush();
+
+			//ImGui::SetNextWindowSizeConstraints({200,400}, {FLT_MAX,FLT_MAX });
 			ImGui::Begin(m_TitleAndID.c_str(), &m_IsOpen, GetWindowFlags());
 			m_CurrentSize = ImGui::GetWindowSize();
 			if (ImGui::IsWindowFocused())
@@ -33,6 +69,7 @@ namespace Proof
 			{
 				OnImGuiRender();
 			}
+
 			ImGui::End();
 		}
 		if (was_open && !m_IsOpen)

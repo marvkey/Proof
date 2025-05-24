@@ -543,6 +543,7 @@ namespace Proof
 
 		
 	}
+#define SCREEN_VEIWPORT_ID "SCREEN VIEWPORT"
 	bool openNewWorld = false;
 	AssetID newWorldID = 0;
 	void Editore3D::OnAttach() 
@@ -580,7 +581,7 @@ namespace Proof
 		Count<WorldRenderer> renderer;
 		{
 			//s_EditorData->EditorWorkspaceManager->AddWorkspace<("Viewport")
-			renderer = s_EditorData->EditorWorkspaceManager->AddWorkspace<ViewPortEditorWorkspace>("Viewport", true, "Viewport", ViewPortEditorData{ false,false,std::bind(&Editore3D::UI_HandleAssetDrop, this) })->GetWorldRenderer();
+			renderer = s_EditorData->EditorWorkspaceManager->AddWorkspace<ViewPortEditorWorkspace>(SCREEN_VEIWPORT_ID, true, "Viewport", ViewPortEditorData{ false,false,std::bind(&Editore3D::UI_HandleAssetDrop, this) })->GetWorldRenderer();
 			s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
 		}
 #if 0
@@ -764,7 +765,8 @@ namespace Proof
 
 		bool control = IsKeyPressedEditor(KeyBoardKey::LeftControl) || IsKeyPressedEditor(KeyBoardKey::RightControl);
 		bool shift = IsKeyPressedEditor(KeyBoardKey::LeftShift) || IsKeyPressedEditor(KeyBoardKey::RightShift);
-		bool isViewportOrHierieachyFocused = UI::IsWindowFocused("Scene Hierarchy") || s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>("Viewport")->IsFocusedOrHovered();
+		bool alt = IsKeyPressedEditor(KeyBoardKey::LeftAlt) || IsKeyPressedEditor(KeyBoardKey::RightAlt);
+		bool isViewportOrHierieachyFocused = UI::IsWindowFocused("Scene Hierarchy") || s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>(SCREEN_VEIWPORT_ID)->IsFocusedOrHovered();
 
 		
 		//UI::is
@@ -784,6 +786,16 @@ namespace Proof
 					if (control)
 					{
 						Math::ChangeBool(s_EditorData->PanelManager->GetPanelData(SCENE_HIERARCHY_PANEL_ID)->IsOpen);
+						return true;
+					}
+
+					if (control == false && alt == true)
+					{
+						if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
+							PlayWorld();
+						else if (m_ActiveWorld->m_CurrentState == WorldState::Play)
+							SetWorldEdit();						
+						
 						return true;
 					}
 					break;
@@ -846,6 +858,8 @@ namespace Proof
 						if(!selectedEntities.empty())
 							return true;
 					}
+
+				
 					break;
 
 				}
@@ -906,6 +920,12 @@ namespace Proof
 					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
 					{
 						s_EditorData->GuizmoType = ImGuizmo::OPERATION::SCALE;
+						return true;
+					}
+
+					if (control == false && alt == true)
+					{
+						Math::ChangeBool(s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>(SCREEN_VEIWPORT_ID)->m_PlayMode.EjectFromPlayer);
 						return true;
 					}
 					break;
@@ -1568,7 +1588,7 @@ namespace Proof
 		if (state == "Stop")
 		{
 			ImGui::SameLine();
-			ImGui::Checkbox("Detach Player", &s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>("Viewport")->m_PlayMode.EjectFromPlayer);
+			ImGui::Checkbox("Detach Player", &s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>(SCREEN_VEIWPORT_ID)->m_PlayMode.EjectFromPlayer);
 		}
 		ImGui::End();
 
@@ -2268,6 +2288,8 @@ namespace Proof
 			tenareaxWorld = m_ActiveWorld;
 			s_EditorData->ElevatedInputManager->OnEventDelegate.Bind<&EventDeleta>();
 		}
+
+		s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>(SCREEN_VEIWPORT_ID)->SetFullScreen();
 	}
 	void Editore3D::SimulateWorld() 
 	{
@@ -2295,6 +2317,8 @@ namespace Proof
 		tenareaxWorld = nullptr;
 
 		PF_EC_INFO("World Edit {} {} ElapsedTime: {}", m_ActiveWorld->GetName(), oldState,Utils::String::DurationToString(s_PlayTimer.ElapsedMillis()));
+
+		s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>(SCREEN_VEIWPORT_ID)->RemoveFullScreen();
 
 	}
 	void Editore3D::PauseWorld() 

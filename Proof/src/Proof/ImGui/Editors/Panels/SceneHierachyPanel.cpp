@@ -2025,7 +2025,6 @@ namespace Proof
 
 							if (UI::AttributeTreeNode("Debugs", false, 3, 3))
 							{
-								auto cascade = fftWave->GetCascades().at(0);
 								UI::ViewDebugImage("Spectrum", cascade->SpectrumMap);
 								UI::ViewDebugImage("Displacement", cascade->DisplacementMap);
 								UI::ViewDebugImage("Normal", cascade->NormalMap);

@@ -174,7 +174,6 @@ vec3 Normal = vec3(0);
 
 void Fragment(inout PBRData pbrData)
 {
-
     float map_size = float(textureSize(u_Normals, 0).x);
 	float dist = length(PBR_Input.VertexPosition.xz);
 

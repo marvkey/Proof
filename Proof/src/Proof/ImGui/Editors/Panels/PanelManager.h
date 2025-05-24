@@ -65,7 +65,7 @@ namespace Proof
 			if (m_Panels.find(id) != m_Panels.end())
 				return m_Panels.at(id).Panel.As<TPanel>();
 
-			PF_EC_ERROR("PanelManager", "Couldn't find panel with id '{0}'", strID);
+			PF_EC_ERROR("PanelManage Couldn't find panel with id '{0}'", strID);
 			return nullptr;
 		}
 		const std::unordered_map < uint32_t, PanelData>& GetPanels()const { return m_Panels; }

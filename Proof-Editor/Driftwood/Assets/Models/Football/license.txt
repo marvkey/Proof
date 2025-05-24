@@ -1,0 +1,11 @@
+Model Information:
+* title:	Soccer Ball
+* source:	https://sketchfab.com/3d-models/soccer-ball-0a96f1f19afc432bb22c3d74da546338
+* author:	Scott VanArsdale (https://sketchfab.com/vanart)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Soccer Ball" (https://sketchfab.com/3d-models/soccer-ball-0a96f1f19afc432bb22c3d74da546338) by Scott VanArsdale (https://sketchfab.com/vanart) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

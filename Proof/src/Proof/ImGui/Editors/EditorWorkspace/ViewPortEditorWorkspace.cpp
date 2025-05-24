@@ -325,118 +325,122 @@ namespace Proof
 		if (m_ViewPortEditorData.HandleOnImGuiDrop)
 			m_ViewPortEditorData.HandleOnImGuiDrop();
 
-		//left toolbar
+		if (m_SetFullScreen == false)
 		{
-			auto data = BeginTollBarWindow(("##DropDown" + m_TitleAndID).c_str(), 1, UIToolbarAlign::Left, 14.0f);
-			TollbarButton(EditorResources::DropdownIcon);
-			EndToolbarWindow();
 
-			BeginTollBarWindow(("##View" + m_TitleAndID).c_str(), 1, UIToolbarAlign::Left, data.xOffset + data.Width + 14);
-			if (TollbarButton(EditorResources::ViewIcon))
-				ImGui::OpenPopup(("##" + m_TitleAndID + "ViewSettings").c_str());
+			//left toolbar
 			{
-				// 30 for each attributes
-			//	ImGui::SetNextWindowSize({ 200, 120.0f });
+				auto data = BeginTollBarWindow(("##DropDown" + m_TitleAndID).c_str(), 1, UIToolbarAlign::Left, 14.0f);
+				TollbarButton(EditorResources::DropdownIcon);
+				EndToolbarWindow();
+
+				BeginTollBarWindow(("##View" + m_TitleAndID).c_str(), 1, UIToolbarAlign::Left, data.xOffset + data.Width + 14);
+				if (TollbarButton(EditorResources::ViewIcon))
+					ImGui::OpenPopup(("##" + m_TitleAndID + "ViewSettings").c_str());
+				{
+					// 30 for each attributes
+				//	ImGui::SetNextWindowSize({ 200, 120.0f });
 #if 1
-				ImGui::SetNextWindowSizeConstraints({ 200, 30 }, { FLT_MAX, FLT_MAX });
-				std::string name = ("##" + m_TitleAndID + "ViewSettings").c_str();
-				if (UI::BeginPopup(name.c_str(), ImGuiWindowFlags_AlwaysAutoResize))
-				{
-					UI::BeginPropertyGrid();
-					
-					UI::EnumCombo("ViewImage", m_EditorImage);
-					UI::AttributeBool("LightGrid", m_WorldRenderer->DebugOptions.LightDebugOptions.ShowLightGrid,
-						"Shows How much point and spot light is affecting a certain area");
+					ImGui::SetNextWindowSizeConstraints({ 200, 30 }, { FLT_MAX, FLT_MAX });
+					std::string name = ("##" + m_TitleAndID + "ViewSettings").c_str();
+					if (UI::BeginPopup(name.c_str(), ImGuiWindowFlags_AlwaysAutoResize))
+					{
+						UI::BeginPropertyGrid();
 
-					UI::EnumCombo("PhysicsColliders", m_WorldRenderer->DebugOptions.PhysicsDebugOptions.ShowPhysicsColliders);
+						UI::EnumCombo("ViewImage", m_EditorImage);
+						UI::AttributeBool("LightGrid", m_WorldRenderer->DebugOptions.LightDebugOptions.ShowLightGrid,
+							"Shows How much point and spot light is affecting a certain area");
 
-					UI::AttributeBool("ShadowCascades", m_WorldRenderer->DebugOptions.ShadowDebugOptions.ShowCascades);
-					UI::AttributeBool("Icons", m_ShowComponentsIcon);
+						UI::EnumCombo("PhysicsColliders", m_WorldRenderer->DebugOptions.PhysicsDebugOptions.ShowPhysicsColliders);
 
-					UI::AttributeBool("Show Bounding Boxes", m_ShowBoundingBoxes);
-					UI::EndPropertyGrid();
+						UI::AttributeBool("ShadowCascades", m_WorldRenderer->DebugOptions.ShadowDebugOptions.ShowCascades);
+						UI::AttributeBool("Icons", m_ShowComponentsIcon);
 
-					UI::EndPopup();
-				}
+						UI::AttributeBool("Show Bounding Boxes", m_ShowBoundingBoxes);
+						UI::EndPropertyGrid();
+
+						UI::EndPopup();
+					}
 #endif
-			}
-			EndToolbarWindow();
-		}
-
-		// right toolbar
-		{
-			auto data = BeginTollBarWindow(("##Gizmo" + m_TitleAndID).c_str(), 5, UIToolbarAlign::Right, -250.0f);
-			const ImColor c_SelectedGizmoButtonColor = UI::Colours::Theme::Accent;
-			const ImColor c_UnselectedGizmoButtonColor = ImColor(0,0,0,0);
-
-			ImColor buttonTint = m_GizmoType == -1 ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
-			if (TollbarButton(EditorResources::PointerIcon, buttonTint))
-				m_GizmoType = -1;
-			UI::SetTooltip("NoTransformation");
-
-			buttonTint = m_GizmoType == ImGuizmo::OPERATION::TRANSLATE ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
-			if (TollbarButton(EditorResources::TranslationIcon, buttonTint))
-				m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
-			UI::SetTooltip("Translate");
-
-			buttonTint = m_GizmoType == ImGuizmo::OPERATION::ROTATE ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
-			if (TollbarButton(EditorResources::RotationIcon, buttonTint))
-				m_GizmoType = ImGuizmo::OPERATION::ROTATE;
-			UI::SetTooltip("Rotate");
-
-			buttonTint = m_GizmoType == ImGuizmo::OPERATION::SCALE ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
-			if (TollbarButton(EditorResources::ScaleIcon, buttonTint))
-				m_GizmoType = ImGuizmo::OPERATION::SCALE;
-			UI::SetTooltip("Scale");
-			
-			buttonTint = m_GizmoType == ImGuizmo::OPERATION::UNIVERSALV2 ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
-			if (TollbarButton(EditorResources::UniversalTransformIcon, buttonTint))
-				m_GizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
-			UI::SetTooltip("Universal Transform");
-
-			EndToolbarWindow();
-
-			BeginTollBarWindow(("##GizmoSpace" + m_TitleAndID).c_str(), 2, UIToolbarAlign::Right, -175);
-
-			buttonTint = m_GizmoMode == ImGuizmo::MODE::WORLD ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
-			if (TollbarButton(EditorResources::WorldSpaceIcon, buttonTint))
-				m_GizmoMode = ImGuizmo::MODE::WORLD;
-			UI::SetTooltip("World Space");
-
-			buttonTint = m_GizmoMode == ImGuizmo::MODE::LOCAL ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
-			if (TollbarButton(EditorResources::LocalSpaceIcon, buttonTint))
-				m_GizmoMode = ImGuizmo::MODE::LOCAL;
-			UI::SetTooltip("Local Space");
-
-			EndToolbarWindow();
-
-			BeginTollBarWindow(("##Camera" + m_TitleAndID).c_str(), 1, UIToolbarAlign::Right, -125);
-			if (TollbarButton(EditorResources::CameraIcon))
-			{
-				ImGui::OpenPopup(("##" + m_TitleAndID + "CameraSettings").c_str());
-			}
-			{
-				//UI::ScopedStyleColor popupBG(ImGuiCol_PopupBg, UI::ColourWithMultipliedValue(UI::Colours::Theme::Background, 1.6f).Value);
-
-				ImGui::SetNextWindowSize({ 200, 60.0f });
-				if (UI::BeginPopup(("##" + m_TitleAndID+"CameraSettings").c_str(), ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
-				{
-
-					UI::BeginPropertyGrid();
-					float cameraSpeed = m_Camera.GetSpeed();
-					UI::AttributeDrag("Speed", cameraSpeed, m_Camera.MIN_SPEED, m_Camera.MAX_SPEED);
-					m_Camera.SetSpeed(cameraSpeed);
-
-					float cameraFov = m_Camera.GetFOV();
-					UI::AttributeDrag("FieldOfView", cameraFov, m_Camera.MIN_FOV, m_Camera.MIN_FOV);
-					m_Camera.SetFOV(cameraFov);
-
-					m_Camera.Recalculate();
-					UI::EndPropertyGrid();
-					UI::EndPopup();
 				}
+				EndToolbarWindow();
 			}
-			EndToolbarWindow();
+
+			// right toolbar
+			{
+				auto data = BeginTollBarWindow(("##Gizmo" + m_TitleAndID).c_str(), 5, UIToolbarAlign::Right, -250.0f);
+				const ImColor c_SelectedGizmoButtonColor = UI::Colours::Theme::Accent;
+				const ImColor c_UnselectedGizmoButtonColor = ImColor(0, 0, 0, 0);
+
+				ImColor buttonTint = m_GizmoType == -1 ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
+				if (TollbarButton(EditorResources::PointerIcon, buttonTint))
+					m_GizmoType = -1;
+				UI::SetTooltip("NoTransformation");
+
+				buttonTint = m_GizmoType == ImGuizmo::OPERATION::TRANSLATE ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
+				if (TollbarButton(EditorResources::TranslationIcon, buttonTint))
+					m_GizmoType = ImGuizmo::OPERATION::TRANSLATE;
+				UI::SetTooltip("Translate");
+
+				buttonTint = m_GizmoType == ImGuizmo::OPERATION::ROTATE ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
+				if (TollbarButton(EditorResources::RotationIcon, buttonTint))
+					m_GizmoType = ImGuizmo::OPERATION::ROTATE;
+				UI::SetTooltip("Rotate");
+
+				buttonTint = m_GizmoType == ImGuizmo::OPERATION::SCALE ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
+				if (TollbarButton(EditorResources::ScaleIcon, buttonTint))
+					m_GizmoType = ImGuizmo::OPERATION::SCALE;
+				UI::SetTooltip("Scale");
+
+				buttonTint = m_GizmoType == ImGuizmo::OPERATION::UNIVERSALV2 ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
+				if (TollbarButton(EditorResources::UniversalTransformIcon, buttonTint))
+					m_GizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
+				UI::SetTooltip("Universal Transform");
+
+				EndToolbarWindow();
+
+				BeginTollBarWindow(("##GizmoSpace" + m_TitleAndID).c_str(), 2, UIToolbarAlign::Right, -175);
+
+				buttonTint = m_GizmoMode == ImGuizmo::MODE::WORLD ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
+				if (TollbarButton(EditorResources::WorldSpaceIcon, buttonTint))
+					m_GizmoMode = ImGuizmo::MODE::WORLD;
+				UI::SetTooltip("World Space");
+
+				buttonTint = m_GizmoMode == ImGuizmo::MODE::LOCAL ? c_SelectedGizmoButtonColor : c_UnselectedGizmoButtonColor;
+				if (TollbarButton(EditorResources::LocalSpaceIcon, buttonTint))
+					m_GizmoMode = ImGuizmo::MODE::LOCAL;
+				UI::SetTooltip("Local Space");
+
+				EndToolbarWindow();
+
+				BeginTollBarWindow(("##Camera" + m_TitleAndID).c_str(), 1, UIToolbarAlign::Right, -125);
+				if (TollbarButton(EditorResources::CameraIcon))
+				{
+					ImGui::OpenPopup(("##" + m_TitleAndID + "CameraSettings").c_str());
+				}
+				{
+					//UI::ScopedStyleColor popupBG(ImGuiCol_PopupBg, UI::ColourWithMultipliedValue(UI::Colours::Theme::Background, 1.6f).Value);
+
+					ImGui::SetNextWindowSize({ 200, 60.0f });
+					if (UI::BeginPopup(("##" + m_TitleAndID + "CameraSettings").c_str(), ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
+					{
+
+						UI::BeginPropertyGrid();
+						float cameraSpeed = m_Camera.GetSpeed();
+						UI::AttributeDrag("Speed", cameraSpeed, m_Camera.MIN_SPEED, m_Camera.MAX_SPEED);
+						m_Camera.SetSpeed(cameraSpeed);
+
+						float cameraFov = m_Camera.GetFOV();
+						UI::AttributeDrag("FieldOfView", cameraFov, m_Camera.MIN_FOV, m_Camera.MIN_FOV);
+						m_Camera.SetFOV(cameraFov);
+
+						m_Camera.Recalculate();
+						UI::EndPropertyGrid();
+						UI::EndPopup();
+					}
+				}
+				EndToolbarWindow();
+			}
 		}
 
 	}
@@ -884,12 +888,70 @@ namespace Proof
 	void ViewPortEditorWorkspace::OnWindowStylePush()
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
+
+		if (m_SetFullScreen)
+		{
+			const ImGuiViewport* viewport = ImGui::GetMainViewport();
+			ImGui::SetNextWindowPos(viewport->Pos);
+			ImGui::SetNextWindowSize(viewport->Size);
+			ImGui::SetNextWindowViewport(viewport->ID);
+
+			ImGuiWindowFlags m_Flags =
+				ImGuiWindowFlags_NoDecoration |
+				ImGuiWindowFlags_NoMove |
+				ImGuiWindowFlags_NoSavedSettings |
+				ImGuiWindowFlags_NoDocking |
+				ImGuiWindowFlags_NoBringToFrontOnFocus |
+				ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoDecoration;
+
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+
+			//m_SetFullScreen = false;
+		}
+		else if (m_RemoveFullScreen)
+		{
+			if (m_WasDocked && m_SavedDockID != 0) {
+				ImGui::SetNextWindowDockID(m_SavedDockID);
+			}
+			m_SavedDockID = 0;
+			m_WasDocked = false;
+			m_RemoveFullScreen = false;
+		}
 	}
 	void ViewPortEditorWorkspace::OnWindowStylePop()
 	{
-		ImGui::PopStyleVar();
+		if (m_SetFullScreen)
+		{
+
+			ImGui::PopStyleVar(2);
+		}
+		else
+		{
+			ImGui::PopStyleVar(1);
+
+		}
+
 	}
 
+	void ViewPortEditorWorkspace::SetFullScreen()
+	{
+		// Save dock state
+		ImGuiWindow* window = ImGui::FindWindowByName(m_TitleAndID.c_str());
+		if (window && window->DockId != 0) {
+			m_SavedDockID = window->DockId;
+			m_WasDocked = true;
+		}
+		else {
+			m_WasDocked = false;
+		}
+
+		m_SetFullScreen = true;
+	}
+	void ViewPortEditorWorkspace::RemoveFullScreen()
+	{
+		m_SetFullScreen = false;
+		m_RemoveFullScreen = true;
+	}
 	void ViewPortEditorWorkspace::DrawGizmos()
 	{
 		//if (!IsHovered() || !IsFocused())

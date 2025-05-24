@@ -933,6 +933,7 @@ namespace Proof {
 			break;
 			case Proof::EnvironmentState::EnvironmentTexture:
 			{
+#if 0
 				if (!AssetManager::HasAsset(environment->m_EnvironmentTexture.Image))
 				{
 					environment->m_EnvironmentTexture.Image = 0;
@@ -959,7 +960,7 @@ namespace Proof {
 				if (foundInAssetManager)
 					break;
 
-				
+#endif
 				auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(environment->m_EnvironmentTexture.Image).Path);
 				//auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(AssetManager::GetAsset<Texture2D>(environment->m_EnvironmentTexture.Image)->GetPath()).Path);
 				auto [irradiance, prefilter] = Renderer::CreateEnvironmentMap(path);

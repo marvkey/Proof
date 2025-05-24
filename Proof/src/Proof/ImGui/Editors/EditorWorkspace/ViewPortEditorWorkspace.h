@@ -41,6 +41,9 @@ namespace Proof
 		virtual void OnImGuiRender();
 		virtual void OnUpdate(FrameTime ts);
 		virtual void OnEvent(class Event& e);
+
+		void SetFullScreen();
+		void RemoveFullScreen();
 		Count<class WorldRenderer> GetWorldRenderer() { return m_WorldRenderer;}
 	protected:
 		virtual void OnWindowStylePush();
@@ -53,6 +56,8 @@ namespace Proof
 		void OnRender2D();
 		void DrawIcons();
 		void DrawBoundingBoxes();
+		virtual ImGuiWindowFlags GetWindowFlags() { return m_Flags; }
+
 	private:
 
 		struct PlayMode
@@ -81,6 +86,12 @@ namespace Proof
 		bool m_ShowBoundingBoxes = false;
 		glm::vec4 m_BoundingBoxColor = { 1.0f, 0.9f, 0.2f, 1.0f };
 
+		bool m_SetFullScreen = false;
+		bool m_RemoveFullScreen = false;
+		bool m_WasDocked = false;
+		ImGuiID m_SavedDockID = 0;
+
+		ImGuiWindowFlags m_Flags = 0;
 		friend class Editore3D;
 	};
 }

@@ -1,10 +1,16 @@
 Assets:
+  - Asset: 5551980263049877979
+    Type: Mesh
+    Path: Meshes\BeachBall.Mesh.ProofAsset
   - Asset: 890189201012343458
     Type: World
     Path: Scenes\TestScene.ProofWorld
   - Asset: 16828794601913637151
     Type: Material
     Path: Materials\m_Red.Material.ProofAsset
+  - Asset: 7565966619091803417
+    Type: Texture
+    Path: Models\WoodenLog\textures\log1_occlusion.jpg
   - Asset: 13004967076466772727
     Type: Material
     Path: Materials\m_White.Material.ProofAsset
@@ -17,18 +23,27 @@ Assets:
   - Asset: 5461393239524366491
     Type: Texture
     Path: Models\jetski-20201027t232239z-001\textures\StingrayPBS1SG_baseColor.png
+  - Asset: 11653903399906417081
+    Type: MeshSourceFile
+    Path: Models\Basketball\scene.gltf
   - Asset: 16430391847963516997
     Type: PhysicsMaterial
     Path: Physics\Materials\pm_Slippery.PhysicsMaterial.ProofAsset
   - Asset: 4070791257353169978
     Type: ScriptFile
     Path: Scripts\PlayerInput.cs
-  - Asset: 12371603639197638862
-    Type: InputAction
-    Path: Inputs\Actions\IA_MoveSideWays.InputAction.ProofAsset
+  - Asset: 8210831704697790221
+    Type: Mesh
+    Path: Meshes\ContainerBox.Mesh.ProofAsset
+  - Asset: 8789262448576597029
+    Type: MeshSourceFile
+    Path: Models\BeachBall\scene.gltf
   - Asset: 5887741440318754892
     Type: MeshSourceFile
     Path: Models\jetski-20201027t232239z-001\scene.gltf
+  - Asset: 12371603639197638862
+    Type: InputAction
+    Path: Inputs\Actions\IA_MoveSideWays.InputAction.ProofAsset
   - Asset: 6003628806341811560
     Type: InputBindingContext
     Path: Inputs\IB_PlayerMovementInputBinding.InputBindingContext.ProofAsset
@@ -44,6 +59,9 @@ Assets:
   - Asset: 5062657810340108268
     Type: Mesh
     Path: Mesh\JetskiCompleted.Mesh.ProofAsset
+  - Asset: 8697691998881883524
+    Type: Texture
+    Path: Models\WoodenLog\textures\internal_ground_ao_texture.jpeg
   - Asset: 15296045491271304012
     Type: Material
     Path: Materials\m_lambert1.Material.ProofAsset
@@ -56,6 +74,9 @@ Assets:
   - Asset: 17236951069357854769
     Type: Texture
     Path: Models\kawasaki-310xultra-jet-ski\textures\JetSki_Completed_JetSki_Material_Metallic.png
+  - Asset: 10815631354774738004
+    Type: Texture
+    Path: Models\Football\textures\initialShadingGroup_baseColor.jpeg
   - Asset: 1559445481780771238
     Type: Texture
     Path: Models\kawasaki-310xultra-jet-ski\textures\AO.png
@@ -68,9 +89,15 @@ Assets:
   - Asset: 2663063277029508446
     Type: Texture
     Path: Models\kawasaki-310xultra-jet-ski\textures\JetSki_Completed_JetSki_Material_Normal.png
+  - Asset: 12340448635893291969
+    Type: Mesh
+    Path: Meshes\Basketball.Mesh.ProofAsset
   - Asset: 9631707631607995299
     Type: Material
     Path: Materials\Transparant.Material.ProofAsset
+  - Asset: 15925579859843982180
+    Type: Texture
+    Path: Models\WoodenLog\textures\log1_diffuse.jpg
   - Asset: 6508493049314716236
     Type: ScriptFile
     Path: Scripts\FollowXZ.cs
@@ -98,9 +125,15 @@ Assets:
   - Asset: 6640835730003835717
     Type: World
     Path: Scenes\New World.ProofWorld
+  - Asset: 2169445919720334617
+    Type: Mesh
+    Path: Meshes\Football.Mesh.ProofAsset
   - Asset: 10732699188280844646
     Type: MeshSourceFile
     Path: Models\port_mesh_buoy\scene.gltf
+  - Asset: 9269222668386847718
+    Type: Mesh
+    Path: Meshes\Canoe.Mesh.ProofAsset
   - Asset: 785809237399164901
     Type: Mesh
     Path: Meshes\buoy.Mesh.ProofAsset
@@ -110,3 +143,30 @@ Assets:
   - Asset: 282095217865711875
     Type: World
     Path: Scenes\TestForVideos.ProofWorld
+  - Asset: 12404091441546479777
+    Type: MeshSourceFile
+    Path: Models\Canoe\scene.gltf
+  - Asset: 10691868206113316396
+    Type: Texture
+    Path: Models\ContainerBox\textures\closed_box_metallicRoughness.png
+  - Asset: 3795561054607065529
+    Type: MeshSourceFile
+    Path: Models\ContainerBox\scene.gltf
+  - Asset: 1619965783769353455
+    Type: Texture
+    Path: Models\ContainerBox\textures\closed_box_baseColor.png
+  - Asset: 1868021384348310646
+    Type: Texture
+    Path: Models\ContainerBox\textures\closed_box_normal.png
+  - Asset: 656039210336475404
+    Type: MeshSourceFile
+    Path: Models\Football\scene.gltf
+  - Asset: 16711803516185903796
+    Type: Texture
+    Path: Models\Football\textures\initialShadingGroup_metallicRoughness.png
+  - Asset: 2934253308770435629
+    Type: Texture
+    Path: Models\Football\textures\initialShadingGroup_normal.png
+  - Asset: 15132882438383873522
+    Type: Texture
+    Path: Models\WoodenLog\textures\log1_normal.jpg

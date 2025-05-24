@@ -788,7 +788,7 @@ namespace Proof {
 						{
 
 							//renderer2D->DrawDebugCube(Utils::LocalToWorld(voxelPos, physicsActor->GetTransform()), glm::vec3(0), bouyancyActor->GetVoxelSize() *0.8f, Colors::Magenta);
-							renderer2D->DrawDebugCube(Utils::LocalToWorld(voxelPos, transform), glm::vec3(0), bouyancyActor->GetVoxelSize() *0.8f, Colors::Magenta);
+							renderer2D->DrawDebugCube(Utils::LocalToWorld(voxelPos, transform), glm::vec3(0), bouyancyActor->GetVoxelSize()*0.3f, Colors::Magenta);
 						}
 					}
 				}
