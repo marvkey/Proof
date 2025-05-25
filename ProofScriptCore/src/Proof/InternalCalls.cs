@@ -282,7 +282,7 @@ namespace Proof
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void RigidBodyComponent_SetAngularDrag(ulong entityID, ref float angularDrag);
 
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        [MethodImplAttribute(MethodImplOptions.InternalCall)] 
         internal extern static uint RigidBodyComponent_GetLayer(ulong entityID);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void RigidBodyComponent_SetLayer(ulong entityID, ref uint layer);

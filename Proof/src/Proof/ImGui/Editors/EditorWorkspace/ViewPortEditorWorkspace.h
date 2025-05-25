@@ -43,6 +43,7 @@ namespace Proof
 		virtual void OnEvent(class Event& e);
 
 		void SetFullScreen();
+		bool IsFullScreen() { return m_SetFullScreen; }
 		void RemoveFullScreen();
 		Count<class WorldRenderer> GetWorldRenderer() { return m_WorldRenderer;}
 	protected:

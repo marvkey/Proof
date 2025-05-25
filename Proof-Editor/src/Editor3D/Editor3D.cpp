@@ -945,6 +945,17 @@ namespace Proof
 				}
 				break;
 			}
+
+			case KeyBoardKey::F11:
+			{
+				Count< ViewPortEditorWorkspace> viewport = s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>(SCREEN_VEIWPORT_ID);
+				if (viewport->IsFullScreen())
+					viewport->RemoveFullScreen();
+				else
+					viewport->SetFullScreen();
+
+				break;
+			}
 		}
 		return false;
 	}
@@ -2289,7 +2300,6 @@ namespace Proof
 			s_EditorData->ElevatedInputManager->OnEventDelegate.Bind<&EventDeleta>();
 		}
 
-		s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>(SCREEN_VEIWPORT_ID)->SetFullScreen();
 	}
 	void Editore3D::SimulateWorld() 
 	{
@@ -2318,7 +2328,6 @@ namespace Proof
 
 		PF_EC_INFO("World Edit {} {} ElapsedTime: {}", m_ActiveWorld->GetName(), oldState,Utils::String::DurationToString(s_PlayTimer.ElapsedMillis()));
 
-		s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>(SCREEN_VEIWPORT_ID)->RemoveFullScreen();
 
 	}
 	void Editore3D::PauseWorld() 

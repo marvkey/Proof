@@ -25,15 +25,20 @@ namespace Driftwood
 				m_PlayerInputComponent.BindAction(MoveSideWaysAction, InteractionEvent.Triggered, MoveSideWays);
 			}
 
-			m_PlayerMovement = this.As<PlayerMovement>();
+			m_PlayerMovement = GetScript<PlayerMovement>();
 		}
 
 		// OnUpdate is called once every frame while this script is active in the world
 		void OnUpdate(float deltaTime)
 		{
-		}
+        }
 
-		void MoveSideWays(InputActionOutput actionOutput)
+        void OnPhysicsUpdate(float fixedPhysicsetlaTime)
+        {
+        }
+
+
+        void MoveSideWays(InputActionOutput actionOutput)
 		{
 			if(m_PlayerMovement != null)
 			{

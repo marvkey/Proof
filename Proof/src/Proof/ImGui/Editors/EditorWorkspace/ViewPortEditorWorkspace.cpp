@@ -949,6 +949,9 @@ namespace Proof
 	}
 	void ViewPortEditorWorkspace::RemoveFullScreen()
 	{
+		if (m_SetFullScreen == false) // hase tobe set to true 
+			return;
+
 		m_SetFullScreen = false;
 		m_RemoveFullScreen = true;
 	}

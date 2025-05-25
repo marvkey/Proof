@@ -53,12 +53,12 @@ Assets:
   - Asset: 16335704901017713052
     Type: Mesh
     Path: Mesh\Jetski.Mesh.ProofAsset
-  - Asset: 13541951023650058868
-    Type: World
-    Path: Scenes\TestWater.ProofWorld
   - Asset: 5062657810340108268
     Type: Mesh
     Path: Mesh\JetskiCompleted.Mesh.ProofAsset
+  - Asset: 13541951023650058868
+    Type: World
+    Path: Scenes\TestWater.ProofWorld
   - Asset: 8697691998881883524
     Type: Texture
     Path: Models\WoodenLog\textures\internal_ground_ao_texture.jpeg

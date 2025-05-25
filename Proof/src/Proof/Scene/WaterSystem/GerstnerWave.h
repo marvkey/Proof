@@ -34,7 +34,7 @@ namespace Proof
 		void Render2D(Count<class Renderer2D> renderere2D);
 
 		Count<Texture2D> Texture; //default white texture
-
+			
 		struct alignas(16) WaterDataInfo
 		{
 			glm::vec4 Color{ 0.36f,0.514f,0.663f,1.0f };

@@ -99,8 +99,8 @@ namespace Proof
 		AABB bounds = m_ColliderShape->GetBoundingBox();
 
 		m_VoxelSize.x = bounds.GetSize().x * buoyancyComponent.VoxelRelativeSize;
-		m_VoxelSize.z = bounds.GetSize().y * buoyancyComponent.VoxelRelativeSize;
-		m_VoxelSize.y = bounds.GetSize().z * buoyancyComponent.VoxelRelativeSize;
+		m_VoxelSize.y = bounds.GetSize().y * buoyancyComponent.VoxelRelativeSize;
+		m_VoxelSize.z = bounds.GetSize().z * buoyancyComponent.VoxelRelativeSize;
 		int voxelCountPerAxis = static_cast<int>(std::round(1.0f / buoyancyComponent.VoxelRelativeSize.GetValue()));
 
 		FreeVoxels();
@@ -111,7 +111,6 @@ namespace Proof
 			PF_ENGINE_INFO("Shape local pos {}", transfsdafasf.ToString());
 
 		}
-		bool readOnlyBottomVoxels = false;
 		for (int i = 0; i < voxelCountPerAxis; ++i)
 		{
 			for (int j = 0; j < voxelCountPerAxis; ++j)
