@@ -949,6 +949,7 @@ namespace Proof
 			case KeyBoardKey::F11:
 			{
 				Count< ViewPortEditorWorkspace> viewport = s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>(SCREEN_VEIWPORT_ID);
+				
 				if (viewport->IsFullScreen())
 					viewport->RemoveFullScreen();
 				else

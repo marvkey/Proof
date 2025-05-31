@@ -1,5 +1,6 @@
 #include "Proofprch.h"	
 #include "ComputePass.h"
+#include "ComputePipeline.h"
 #include "Proof/Platform//Vulkan/VulkanComputePass.h"
 #include "RenderPass.h"
 #include "Renderer.h"
@@ -16,5 +17,9 @@ namespace Proof
 		}
 		PF_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
+	}
+	Count<ComputePass> ComputePass::Create(const std::string& debugName, Count<class Shader> shader)
+	{
+		return ComputePass::Create(ComputePassConfiguration{ debugName, ComputePipeline::Create(ComputePipelineConfig{ debugName,shader }) });
 	}
 }

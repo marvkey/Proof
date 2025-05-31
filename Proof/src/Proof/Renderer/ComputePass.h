@@ -1,6 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Proof/Math/Vector.h"
+#include "Buffer.h"
 #include <glm/glm.hpp>
 namespace Proof
 {
@@ -14,6 +15,7 @@ namespace Proof
 	{
 	public:
 		static Count<ComputePass> Create(const ComputePassConfiguration& config);
+		static Count<ComputePass> Create(const std::string& debugName, Count<class Shader> shader);
 		virtual void SetInput(std::string_view name, Count<class UniformBuffer> buffer) = 0;
 		virtual void SetInput(std::string_view name, Count<class Texture2D> iamge) = 0;
 		virtual void SetInput(std::string_view name, Count<class StorageBuffer> buffer) = 0;
@@ -27,6 +29,7 @@ namespace Proof
 		void virtual SetInput(std::string_view name, Count<class Image>image) = 0;
 		void virtual SetInput(std::string_view name, const std::vector< Count<class Image2D>>& images) = 0;
 		virtual void PushData(std::string_view name, const void* data) = 0;
+		virtual void PushData(Buffer data) = 0;
 		void virtual AddGlobalInput(Count<class GlobalBufferSet> globalInputs) = 0;
 
 		virtual void Dispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ) = 0;

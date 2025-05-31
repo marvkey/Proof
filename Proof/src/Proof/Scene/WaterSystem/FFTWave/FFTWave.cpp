@@ -457,6 +457,10 @@ namespace Proof
         m_OldWaveInfo = WaveInfo;
 
         m_HasInitialRun = true;
+
+        m_SpectrumTexture->GenerateMips();
+        m_DisplacementMap->GenerateMips();
+        m_NormalMap->GenerateMips();
     }
 
     void FFTWave::Render2D(Count<class Renderer2D> renderer2D)

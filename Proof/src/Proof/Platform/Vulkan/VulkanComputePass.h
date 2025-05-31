@@ -26,7 +26,11 @@ namespace Proof
 		void virtual AddGlobalInput(Count<class GlobalBufferSet> globalInputs);
 
 		virtual void PushData(std::string_view name, const void* data);
+
+		virtual void PushData(Buffer data);
+
 		virtual void RT_PushData(std::string_view name, const void* data);
+		virtual void RT_PushData(uint32_t size,const void* data);
 		void Dispatch(uint32_t groupCountX,uint32_t groupCountY,uint32_t groupCountZ);
 		virtual const ComputePassConfiguration& GetConfig()const { return m_Config; }
 		virtual Count<class ComputePipeline> GetComputePipeline()const { return m_Config.Pipeline; }

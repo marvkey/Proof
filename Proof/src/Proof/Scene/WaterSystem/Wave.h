@@ -9,7 +9,8 @@ namespace Proof
 	enum class WaveType
 	{
 		GerstnerWave = 1,// better for small bodies of water
-		FastFourierTransformWave // use for large bodies of water
+		FastFourierTransformWave, // use for large bodies of water
+		RealisticFastFourierTransformWave 
 	};
 
 

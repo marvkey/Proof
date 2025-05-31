@@ -41,6 +41,7 @@
 #include "Proof/Scene/WaterSystem/Water.h"
 #include "Proof/Scene/WaterSystem/GerstnerWave.h"
 #include "Proof/Scene/WaterSystem/FFTWave/FFTWave.h"
+#include "Proof/Scene/WaterSystem/FFTWave/FFTWaveRealistic.h"
 //include those before stdlig.h
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/ParticleSystem.h"
@@ -2038,8 +2039,56 @@ namespace Proof
 					}
 
 				}
+#endif
+
+
+				if (water->GetWaveType() == WaveType::RealisticFastFourierTransformWave)
+				{
+					Count<FFTWaveRealistic> fftWave = water->GetWave().As<FFTWaveRealistic>();
+					UI::BeginPropertyGrid();
+					UI::EndPropertyGrid();
+#if 1
+
+					UI::ViewDebugImage("Noise Texure", fftWave->GetNoiseTexture());
+
+					for (auto cascade : fftWave->GetCascades())
+					{
+						UI::ScopedID scopeID(fmt::format("FFt waterCascade Settings {}", cascade->GetCascadeIndex()).c_str());
+						if (UI::AttributeTreeNode(fmt::format("Cascade {}", cascade->GetCascadeIndex()), false, 3, 3))
+						{
+							if (UI::AttributeTreeNode("Debugs", false, 3, 3))
+							{
+								UI::AttributeText("Initial Spectrum");
+
+								UI::ViewDebugImage("Initial Spectrum Map", cascade->GetInitialSpectrumMap());
+								UI::ViewDebugImage("Precomputed Data", cascade->GetPrecomputedData());
+								UI::ViewDebugImage("Buffer Map", cascade->GetInitialSpectrumBufferMap());
+
+								UI::Separator();
+								UI::AttributeText("Cascade Settings Map");
+
+								UI::ViewDebugImage("Displacement Map", cascade->GetDisplacementMap());
+								UI::ViewDebugImage("Derivatives Map", cascade->GetDerivativesMap());
+								UI::ViewDebugImage("Turbulence Map", cascade->GetTurbulenceMap());
+								UI::ViewDebugImage("Turbulence2 Map", cascade->GetTurbulence2Map());
+
+								UI::Separator();
+
+								UI::AttributeText("Derivatives");
+								UI::ViewDebugImage("DxDz", cascade->GetDxDz());
+								UI::ViewDebugImage("DyDxz", cascade->GetDyDxz());
+								UI::ViewDebugImage("DyxDyz", cascade->GetDyxDyz());
+								UI::ViewDebugImage("DxxDzz", cascade->GetDxxDzz());
+
+								UI::EndTreeNode();
+							}
+							UI::EndTreeNode();
+
+						}
+					}
+#endif
+				}
 				
-			#endif
 
 			});
 		DrawComponents<AudioComponent>("Audio", entity, [](AudioComponent& audio)

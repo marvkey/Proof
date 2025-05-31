@@ -3,6 +3,7 @@
 #include "Wave.h"
 #include "GerstnerWave.h"
 #include"FFTWave/FFTWave.h"
+#include"FFTWave/FFTWaveRealistic.h"
 
 namespace Proof
 {
@@ -48,6 +49,9 @@ namespace Proof
 			case Proof::WaveType::FastFourierTransformWave:
 				m_Wave = Count<FFTWave>::Create(this);
 				break;
+			case Proof::WaveType::RealisticFastFourierTransformWave:
+				m_Wave = Count<FFTWaveRealistic>::Create(this);
+				break;
 			default:
 				break;
 		}
@@ -61,6 +65,8 @@ namespace Proof
 				break;
 			case Proof::WaveType::FastFourierTransformWave:
 				m_Wave = Count<FFTWave>::Create(this,wave.As<FFTWave>());
+			case Proof::WaveType::RealisticFastFourierTransformWave:
+				m_Wave = Count<FFTWaveRealistic>::Create(this,wave.As<FFTWaveRealistic>());
 				break;
 			default:
 				break;

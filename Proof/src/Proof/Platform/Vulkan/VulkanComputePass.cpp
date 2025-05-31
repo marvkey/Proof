@@ -293,6 +293,19 @@ namespace Proof
 			buffer.Release();
 		});
 	}
+	void VulkanComputePass::PushData(Buffer data)
+	{
+		Buffer buffer;
+		buffer.Allocate(data.Size);
+		buffer.Copy(data);
+
+		Count<VulkanComputePass> instance = this;
+		Renderer::Submit([instance, buffer]()mutable
+			{
+				instance->RT_PushData(buffer.Size,buffer.Data);
+				buffer.Release();
+			});
+	}
 	void VulkanComputePass::RT_PushData(std::string_view name, const void* data)
 	{
 		PF_CORE_ASSERT(m_RenderPassEnabled, "Cannot dispatch unless start a compute pass");
@@ -303,4 +316,12 @@ namespace Proof
 		vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(), m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
 			pushRange.stageFlags, pushRange.offset, pushRange.size, data);
 	}
+
+	void VulkanComputePass::RT_PushData(uint32_t size, const void* data)
+	{
+		PF_CORE_ASSERT(size != 0);
+		vkCmdPushConstants(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(), m_Config.Pipeline.As<VulkanComputePipeline>()->GetPipelinelayout(),
+			VK_SHADER_STAGE_COMPUTE_BIT, 0, size, data);
+	}
+
 }

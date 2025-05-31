@@ -197,6 +197,7 @@ namespace Proof {
 		// water
 		ShaderLibrary->LoadShader("GerstnerWave", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/GerstnerWave.glsl");
 
+		// FFT Waves
 		ShaderLibrary->LoadShader("FFTOceanSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanSpectrum.glsl");
 		ShaderLibrary->LoadShader("FFTOceanButterfly", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanButterfly.glsl");
 		ShaderLibrary->LoadShader("FFTOceanModulateSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanModulateSpectrum.glsl");
@@ -205,6 +206,17 @@ namespace Proof {
 		ShaderLibrary->LoadShader("FFTOceanUnpack", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanUnpack.glsl");
 		ShaderLibrary->LoadShader("FFTWater", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTWater.glsl");
 		ShaderLibrary->LoadShader("FFTSampleWaveHeight", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTSampleWaveheight.glsl");
+
+
+		//FFT Waves Realistic
+		ShaderLibrary->LoadShader("FFTInitialSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTInitialSpectrum.glsl");
+		ShaderLibrary->LoadShader("FFTConjugatedSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTConjugatedSpectrum.glsl");
+		ShaderLibrary->LoadShader("FFTHorizontalStepinverse", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTHorizontalStepinverse.glsl");
+		ShaderLibrary->LoadShader("FFTPermute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTPermute.glsl");
+		ShaderLibrary->LoadShader("FFTPrecomputeTwiddleFactorsAndInputIndices", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTPrecomputeTwiddleFactorsAndInputIndices.glsl");
+		ShaderLibrary->LoadShader("FFTTextureMerger", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTTextureMerger.glsl");
+		ShaderLibrary->LoadShader("FFTTimeDependentSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTTimeDependentSpectrum.glsl");
+		ShaderLibrary->LoadShader("FFTVerticalStepInverse", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTVerticalStepInverse.glsl");
 
 		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
