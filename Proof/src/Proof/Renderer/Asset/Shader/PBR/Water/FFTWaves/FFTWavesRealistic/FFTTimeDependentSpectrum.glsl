@@ -12,7 +12,7 @@ layout(binding = 3) uniform sampler2D WavesData;
 
 layout(push_constant) restrict readonly uniform PushConstants {
     float Time;
-};
+}u_PC;
 
 layout(binding = 5, rg32f) uniform writeonly image2D DxDz;
 layout(binding = 6, rg32f) uniform writeonly image2D DyDxz;
@@ -29,7 +29,7 @@ void main() {
     ivec2 id = ivec2(gl_GlobalInvocationID.xy);
 
     vec4 wave = texelFetch(WavesData, id, 0);
-    float phase = wave.w * Time;
+    float phase = wave.w * u_PC.Time;
     vec2 exponent = vec2(cos(phase), sin(phase));
 
     vec4 h0 = texelFetch(H0, id, 0);

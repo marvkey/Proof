@@ -133,7 +133,7 @@ namespace Proof
     void FFTWaveRealisticCascade::FillSettingsStruct(const DisplaySpectrumSettings& display, UBSpectrumSettings& settings)
     {
         settings.Scale = display.Scale;
-        settings.Angle = static_cast<float>(display.WindDirection) / 180.0f * Math::PIE();
+        settings.Angle = glm::radians((float)display.WindDirection);
         settings.SpreadBlend = display.SpreadBlend;
         settings.Swell = std::max(0.01f, static_cast<float>(display.Swell));
         settings.Alpha = JonswapAlpha(g, display.Fetch, display.WindSpeed);
@@ -158,7 +158,7 @@ namespace Proof
 
 
         m_TimeDependentSpectrum->SetInput("H0", m_InitialSpectrumContainer.m_InitialSpectrumMap);
-        m_TimeDependentSpectrum->SetInput("WavesData", m_InitialSpectrumContainer.m_PrecomputedData);
+        m_TimeDependentSpectrum->SetInput("WavesData", m_InitialSpectrumContainer.m_WavesData);
 
         m_TimeDependentSpectrum->SetInput("DxDz", m_DxDz);
 		m_TimeDependentSpectrum->SetInput("DyDxz", m_DyDxz);
@@ -213,11 +213,10 @@ namespace Proof
         //time dependent
         {
             Renderer::BeginComputePass(cmdBuffer, m_TimeDependentSpectrum);
-            m_TimeDependentSpectrum->PushData(Buffer(&time, sizeof(float)));
+            m_TimeDependentSpectrum->PushData("u_PC", &time);
             m_TimeDependentSpectrum->Dispatch({ Size/ WorkGroup, Size / WorkGroup,1 });
             Renderer::EndComputePass(m_TimeDependentSpectrum);
         }
-
         // calculate IFFTs of complex apmpatudes
         {
             wave->IFFT2D(m_DxDz, m_CascadeBufferMap);
@@ -226,24 +225,24 @@ namespace Proof
 			wave->IFFT2D(m_DxxDzz, m_CascadeBufferMap);
         }
 
-        float deltaTime = FrameTime::GetWorldDeltaTime() / 1000;
+        float deltaTime = FrameTime::GetWorldDeltaTime()/1000 ;
 
         if (deltaTime > 0.5) 
         {
             // avoid too big delta time
-            deltaTime = 0.5;
+           deltaTime = 0.5;
         }
 
         {
 			m_PingPongTurbulence = !m_PingPongTurbulence;
 
             m_TextureMergePass->SetInput("TurbulenceRead", m_PingPongTurbulence ? m_TurbulenceMap : m_Turbulence2Map);
-            m_TextureMergePass->SetInput("TurbulenceWrite", m_PingPongTurbulence ? m_TurbulenceMap : m_Turbulence2Map);
+            m_TextureMergePass->SetInput("TurbulenceWrite", m_PingPongTurbulence ? m_Turbulence2Map : m_TurbulenceMap);
 
 
             Renderer::BeginComputePass(cmdBuffer, m_TextureMergePass);
             glm::vec2 data = {wave->Settings.lambda,deltaTime };
-            m_TextureMergePass->PushData(Buffer(&data, sizeof(data)));
+            m_TextureMergePass->PushData("u_PC",&data);
             m_TextureMergePass->Dispatch({ Size/ WorkGroup ,Size / WorkGroup,1 });
             Renderer::EndComputePass(m_TextureMergePass);
         }
@@ -266,19 +265,47 @@ namespace Proof
         float GravityAcceleration;
         float Depth;
     };
+    struct alignas(16) UBOceanSettings {
+        glm::vec4 Color;         // _Color
+        glm::vec4 FoamColor;     // _FoamColor
+        glm::vec4 SSSColor;      // _SSSColor
 
+        float SSSStrength;       // _SSSStrength
+        float Roughness;         // _Roughness
+        float RoughnessScale;    // _RoughnessScale
+        float MaxGloss;          // _MaxGloss
+
+        float FoamBiasLOD0;      // _FoamBiasLOD0
+        float FoamBiasLOD1;      // _FoamBiasLOD1
+        float FoamBiasLOD2;      // _FoamBiasLOD2
+        float FoamScale;         // _FoamScale
+
+        float ContactFoam;       // _ContactFoam
+        float padding[3];        // pad to 16-byte alignment (std140 rules)
+    };
+
+    struct alignas(16) UBOceanParams {
+        float LengthScale0;      // float
+        float LengthScale1;
+        float LengthScale2;
+        float LOD_scale;
+
+        float SSSBase;
+        float SSSScale;
+        float padding[2];        // pad to 16 bytes (std140)
+    };
     FFTWaveRealisticCascade::InitialSpectrumContainer::InitialSpectrumContainer(Count<Texture2D> noiseTexture, uint32_t cascadeIndex)
     {
         m_InitialSpectrumPass = ComputePass::Create(fmt::format("FFT Initial specturm cascade {}",cascadeIndex),Renderer::GetShader("FFTInitialSpectrum"));
 
         m_InitialSpectrumMap = CreateStorageTexture(fmt::format("FFT initial spectrum Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA32F);
-        m_PrecomputedData = CreateStorageTexture(fmt::format("FFT Precompute Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA32F);
+        m_WavesData = CreateStorageTexture(fmt::format("FFT Precompute Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA32F);
         m_BufferMap = CreateStorageTexture(fmt::format("FFT Buffer map Cascade {}", cascadeIndex), Size, Size, ImageFormat::RG32F);
 
         m_SpectrumParameters = UniformBufferSet::Create(sizeof(UBSpectrumSettings) * 2); // 2 of these
         m_ParamBuffer = UniformBufferSet::Create(sizeof(UBCascadeSettings));
         
-        m_InitialSpectrumPass->SetInput("WavesData", m_PrecomputedData);
+        m_InitialSpectrumPass->SetInput("WavesData", m_WavesData);
         m_InitialSpectrumPass->SetInput("H0K", m_BufferMap);
         m_InitialSpectrumPass->SetInput("Noise", noiseTexture);
         m_InitialSpectrumPass->SetInput("SpectrumParams", m_SpectrumParameters);
@@ -292,8 +319,9 @@ namespace Proof
 
     }
 
+    std::vector<UBSpectrumSettings> contain(2);
 
-    void FFTWaveRealisticCascade::InitialSpectrumContainer::Generate(uint32_t lengthScale, uint32_t cutOfflow, uint32_t CutOffHigh, Count<RenderCommandBuffer> cmdBuffer)
+    void FFTWaveRealisticCascade::InitialSpectrumContainer::Generate(Count<class FFTWaveRealistic> waveRealistic,uint32_t lengthScale, uint32_t cutOfflow, uint32_t CutOffHigh, Count<RenderCommandBuffer> cmdBuffer)
     {
         const uint32_t WorkGroup = 8;
 
@@ -305,15 +333,22 @@ namespace Proof
         settings.GravityAcceleration = g;
         settings.Depth = 3;
 
-        m_ParamBuffer->SetData(Renderer::GetCurrentFrameInFlight(), Buffer(&settings, sizeof(settings)));
+
+        m_ParamBuffer->SetData(Renderer::GetCurrentFrameInFlight(), Buffer(&settings, sizeof(UBCascadeSettings)));
+
+        {
+            FFTWaveRealisticCascade::FillSettingsStruct(waveRealistic->Settings.Local, contain[0]);
+            FFTWaveRealisticCascade::FillSettingsStruct(waveRealistic->Settings.Swell, contain[1]);
 
 
+			m_SpectrumParameters->SetData(Renderer::GetCurrentFrameInFlight(), Buffer((void*)contain.data(), sizeof(UBSpectrumSettings) * contain.size()));
+        }
         Renderer::BeginComputePass(cmdBuffer, m_InitialSpectrumPass);
         m_InitialSpectrumPass->Dispatch({ Size / WorkGroup ,Size / WorkGroup,1 });
         Renderer::EndComputePass(m_InitialSpectrumPass);
 
         Renderer::BeginComputePass(cmdBuffer, m_ConjuagatedSpectrumPass);
-        m_InitialSpectrumPass->Dispatch({ Size / WorkGroup ,Size / WorkGroup,1 });
+        m_ConjuagatedSpectrumPass->Dispatch({ Size / WorkGroup ,Size / WorkGroup,1 });
         Renderer::EndComputePass(m_ConjuagatedSpectrumPass);
 
     }
@@ -323,44 +358,111 @@ namespace Proof
         Init();
 
     }
+	float startTime = 0.0f;
     FFTWaveRealistic::FFTWaveRealistic(Water* water, Count<FFTWaveRealistic> other)
         : Wave(water, WaveType::RealisticFastFourierTransformWave)
     {
         Init();
+		startTime = FrameTime::GetTime() / 1000;
     }
     FFTWaveRealistic::~FFTWaveRealistic()
     {
     }
+
+    float CustomLog(float x, float base)
+    {
+        return glm::log(x) / glm::log(base);
+    }
     void FFTWaveRealistic::Render(Count<class WorldRenderer> renderer)
     {
         Renderer::BeginCommandBuffer(m_CommandBuffer);
-        if (m_InitilizedPrecompute == false)
+        //if (m_InitilizedPrecompute == false)
         {
             Renderer::BeginComputePass(Renderer::GetRendererCommandBuffer(), m_TwiddleFacorsPass);
             {
                 glm::uvec2 data{ 1,Size };
                 m_TwiddleFacorsPass->PushData("params", &data);
             }
-            const int logSize = static_cast<int>(glm::log2((float)Size));
+            const int logSize = static_cast<int>(CustomLog(Size,2));
+           
+
             const uint32_t WorkGroup = 8;
 
-            m_TwiddleFacorsPass->Dispatch({ logSize / WorkGroup,Size / 2 / WorkGroup,1 });
+            m_TwiddleFacorsPass->Dispatch({ logSize ,Size / 2 / WorkGroup,1 });
 
             Renderer::EndComputePass(m_TwiddleFacorsPass);
             m_InitilizedPrecompute = true;
+            std::array<uint32_t, 3> lengthScales = { 250,17,5 };
+
+
+            uint32_t boundary1 = 0.0001f;
+            for (int i = 0; i < m_Cascades.size(); i++)
+            {
+                const auto boundary2 = i < lengthScales.size() - 1 ? 2 * glm::pi<float>() / lengthScales[i + 1] * 6 : 9999;
+                m_Cascades[i]->m_InitialSpectrumContainer.Generate(Count<FFTWaveRealistic>(this), lengthScales[i], boundary1, boundary2, m_CommandBuffer);
+                boundary1 = boundary2;
+            }
+
         }
+
+
+        
+
         for(auto cascade : m_Cascades)
-          cascade->CalculateWavesAtTime(m_CommandBuffer,Count<FFTWaveRealistic>(this), FrameTime::GetTime());
+          cascade->CalculateWavesAtTime(m_CommandBuffer,Count<FFTWaveRealistic>(this), (FrameTime::GetTime()/1000) - startTime);
+
+
 
         Renderer::EndCommandBuffer(m_CommandBuffer);
         Renderer::SubmitCommandBuffer(m_CommandBuffer);
+
+        {
+
+            m_RenderMaterial->Set("f_Turbulence_c0", m_Cascades[0]->GetActiveTurbulence());
+            m_RenderMaterial->Set("f_Turbulence_c1", m_Cascades[1]->GetActiveTurbulence());
+            m_RenderMaterial->Set("f_Turbulence_c2", m_Cascades[2]->GetActiveTurbulence());
+
+            {
+                UBOceanParams oceanParams;
+                oceanParams.LengthScale0 = m_Cascades[0]->CascadeSettings.Length;
+                oceanParams.LengthScale1 = m_Cascades[1]->CascadeSettings.Length;
+                oceanParams.LengthScale2 = m_Cascades[2]->CascadeSettings.Length;
+
+                oceanParams.SSSBase = Settings.SSSBase;
+                oceanParams.LOD_scale = Settings.LODScale;
+                oceanParams.SSSScale = Settings.SSSScale;
+
+                m_UBOceanParamsBuffer->SetData(Renderer::GetCurrentFrameInFlight(), Buffer(&oceanParams, sizeof(oceanParams)));
+
+            }
+
+            {
+                UBOceanSettings oceanSettings;
+                oceanSettings.Color = Settings.Color;
+                oceanSettings.FoamColor = Settings.FoamColor;
+                oceanSettings.SSSColor = Settings.SSSColor;
+                oceanSettings.SSSStrength = Settings.SSSStrength;
+                oceanSettings.Roughness = Settings.Roughness;
+                oceanSettings.RoughnessScale = Settings.RoughnessScale;
+                oceanSettings.MaxGloss = Settings.MaxGloss;
+                oceanSettings.FoamBiasLOD0 = Settings.FoamBiasLOD0;
+                oceanSettings.FoamBiasLOD1 = Settings.FoamBiasLOD1;
+                oceanSettings.FoamBiasLOD2 = Settings.FoamBiasLOD2;
+                oceanSettings.FoamScale = Settings.FoamScale;
+                oceanSettings.ContactFoam = Settings.ContactFoam;
+
+                m_UBOceanSettingsBuffer->SetData(Renderer::GetCurrentFrameInFlight(), Buffer(&oceanSettings, sizeof(oceanSettings)));
+            }
+        }
+		renderer->SubmitMesh(m_Grid, m_RenderMaterial,GetTransform());
 
     }
     void FFTWaveRealistic::IFFT2D(Count<Image2D> inputImage, Count<Image2D> bufferImage)
     {
         const uint32_t WorkGroup = 8;
 
-        const int logSize = static_cast<int>(glm::log2((float)Size));
+        
+        const uint32_t logSize = static_cast<int>(CustomLog(Size, 2));
 
         bool pingPong = false;
 		// horizontal pass
@@ -371,10 +473,10 @@ namespace Proof
                 pingPong = !pingPong;
                 glm::uvec2 data{ i,Size };
 
-                m_HorizontalStep[0]->PushData("params", &data);
 				m_HorizontalStep[0]->SetInput("InputBuffer", pingPong ? inputImage : bufferImage);
 				m_HorizontalStep[0]->SetInput("OutputBuffer", pingPong ? bufferImage : inputImage);
 
+                m_HorizontalStep[0]->PushData("params", &data);
 				m_HorizontalStep[0]->Dispatch({ Size / WorkGroup ,Size / WorkGroup,1 });
 
 				ReesourceWait(pingPong ? bufferImage : inputImage, m_CommandBuffer);    
@@ -391,10 +493,10 @@ namespace Proof
                 pingPong = !pingPong;
                 glm::uvec2 data{ i,Size };
 
-                m_VerticalStep[0]->PushData("params", &data);
                 m_VerticalStep[0]->SetInput("InputBuffer", pingPong ? inputImage : bufferImage);
                 m_VerticalStep[0]->SetInput("OutputBuffer", pingPong ? bufferImage : inputImage);
 
+                m_VerticalStep[0]->PushData("params", &data);
                 m_VerticalStep[0]->Dispatch({ Size / WorkGroup ,Size / WorkGroup,1 });
 
                 ReesourceWait(pingPong ? bufferImage : inputImage, m_CommandBuffer);
@@ -418,8 +520,13 @@ namespace Proof
 
     float NormalRandom()
     {
-        return glm::cos(2 * glm::pi<float>() * Random::Real<float>(0,1)) * glm::sqrt(-2 * glm::log(Random::Real<float>(0, 1)));
+        return glm::cos(2 * glm::pi<float>() * Random::Real<float>(0,1)) * glm::sqrt(-2 * Math::Loge(Random::Real<float>(0, 1)));
     }
+    const float VertexDensity = 35;
+    const int ClipMapLevels = 7;
+    const float MinMeshScale = 15;
+
+
     void FFTWaveRealistic::Init()
     {
         m_InitilizedPrecompute = false;
@@ -449,7 +556,8 @@ namespace Proof
 		m_TwiddleFacorsPass = ComputePass::Create("FFT Twiddle Factors Pass", Renderer::GetShader("FFTPrecomputeTwiddleFactorsAndInputIndices"));
 
 
-       const int logSize = static_cast<int>(glm::log2((float)Size));
+       const int logSize = static_cast<int>(CustomLog(Size, 2));
+
        const uint32_t WorkGroup = 8;
 		m_CommandBuffer = RenderCommandBuffer::Create("FFT Wave Realistic Command Buffer");
 #if 0
@@ -483,12 +591,55 @@ namespace Proof
 
 
         m_Cascades.resize(3);
+        std::array<uint32_t, 3> lengthScales = { 250,17,5 };
 
         for (int i = 0; i < m_Cascades.size(); i++)
         {
+
             if(m_Cascades[i] == nullptr)
 				m_Cascades[i] = Count<FFTWaveRealisticCascade>::Create(i, Size, m_NoiseTexture);
+			m_Cascades[i]->CascadeSettings.Length = lengthScales[i];
         }
+
+       
+        m_Grid = FFTClipMap::BuildClipMapPlane(VertexDensity, ClipMapLevels);
+        AssetManager::CreateRuntimeAsset(m_Grid.As<Asset>(), "FFTGRID");
+
+		m_RenderMaterial = RenderMaterial::Create("FFT Wave Realistic Material",Renderer::GetShader("FFTRealisticWater"));
+
+		m_UBOceanSettingsBuffer = UniformBufferSet::Create(sizeof(UBOceanSettings));
+		m_UBOceanParamsBuffer = UniformBufferSet::Create(sizeof(UBOceanParams));
+
+        m_RenderMaterial->Set("_Displacement_c0", m_Cascades[0]->GetDerivativesMap());
+        m_RenderMaterial->Set("_Displacement_c1", m_Cascades[1]->GetDerivativesMap());
+        m_RenderMaterial->Set("_Displacement_c2", m_Cascades[2]->GetDerivativesMap());
+
+        m_RenderMaterial->Set("f_Derivatives_c0", m_Cascades[0]->GetDerivativesMap());
+        m_RenderMaterial->Set("f_Derivatives_c1", m_Cascades[1]->GetDerivativesMap());
+        m_RenderMaterial->Set("f_Derivatives_c2", m_Cascades[2]->GetDerivativesMap());
+
+		m_RenderMaterial->Set("OceanSettings", m_UBOceanSettingsBuffer);
+        m_RenderMaterial->Set("fOceanParams", m_UBOceanParamsBuffer);
+        m_RenderMaterial->Set("OceanParams", m_UBOceanParamsBuffer);
+		m_RenderMaterial->Set("f_FoamTexture", Renderer::GetWhiteTexture());
+
+        Settings.Local.Scale = 0.5f;
+        Settings.Local.WindSpeed = 1.5f;
+        Settings.Local.WindDirection = -29.81f;
+        Settings.Local.Fetch = 100000.0f;
+        Settings.Local.SpreadBlend = 1.0f;
+        Settings.Local.Swell = 0.198f;
+        Settings.Local.PeakEnhancement = 3.3f;
+        Settings.Local.ShortWavesFade = 0.01f;
+
+        Settings.Swell.Scale = 0.5f;
+        Settings.Swell.WindSpeed = 1.5f;
+        Settings.Swell.WindDirection = 90.0f;
+        Settings.Swell.Fetch = 300000.0f;
+        Settings.Swell.SpreadBlend = 1.0f;
+        Settings.Swell.Swell = 1.0f;
+        Settings.Swell.PeakEnhancement = 3.3f;
+        Settings.Swell.ShortWavesFade = 0.01f;
 
     }
 }

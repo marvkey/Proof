@@ -217,6 +217,7 @@ namespace Proof {
 		ShaderLibrary->LoadShader("FFTTextureMerger", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTTextureMerger.glsl");
 		ShaderLibrary->LoadShader("FFTTimeDependentSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTTimeDependentSpectrum.glsl");
 		ShaderLibrary->LoadShader("FFTVerticalStepInverse", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTVerticalStepInverse.glsl");
+		ShaderLibrary->LoadShader("FFTRealisticWater", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTRealisticWater.glsl");
 
 		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);

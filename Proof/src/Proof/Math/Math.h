@@ -345,5 +345,25 @@ namespace Proof
 		{
 			return { DivideAndRoundUp(dividend.x, divisor), DivideAndRoundUp(dividend.y, divisor) };
 		}
+
+		template<typename T>// natural logarithm (base e)
+		inline static T Loge(T x) {
+			return glm::log(x); // natural logarithm (base e)
+		}
+
+		template<typename T> // change of base formula
+		T Log(T x, T base) {
+			return glm::log(x) / glm::log(base);
+		}
+
+		template<typename T>
+		inline static T Log2(T x) {
+			return glm::log2(x);
+		}
+
+		template<typename T>
+		inline static T Log10(T x) {
+			return Math::Log(x,10);
+		}
 	};
 }

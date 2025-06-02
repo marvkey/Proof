@@ -2050,6 +2050,12 @@ namespace Proof
 #if 1
 
 					UI::ViewDebugImage("Noise Texure", fftWave->GetNoiseTexture());
+					//UI::ViewDebugImage("Precompute dataMap", fftWave->GetPrcomuteData());
+
+					{
+
+						//UI::Image(fftWave->GetPrcomuteData().As<Image>(), ImVec2{ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().x}, {0, 1}, {1, 0});
+					}
 
 					for (auto cascade : fftWave->GetCascades())
 					{
@@ -2061,20 +2067,22 @@ namespace Proof
 								UI::AttributeText("Initial Spectrum");
 
 								UI::ViewDebugImage("Initial Spectrum Map", cascade->GetInitialSpectrumMap());
-								UI::ViewDebugImage("Precomputed Data", cascade->GetPrecomputedData());
-								UI::ViewDebugImage("Buffer Map", cascade->GetInitialSpectrumBufferMap());
+								UI::ViewDebugImage("cascade Buffer ma", cascade->GetInitialSpectrumBufferMap());
+								UI::ViewDebugImage("Waves data", cascade->GetWavesData());
 
 								UI::Separator();
 								UI::AttributeText("Cascade Settings Map");
 
 								UI::ViewDebugImage("Displacement Map", cascade->GetDisplacementMap());
-								UI::ViewDebugImage("Derivatives Map", cascade->GetDerivativesMap());
 								UI::ViewDebugImage("Turbulence Map", cascade->GetTurbulenceMap());
 								UI::ViewDebugImage("Turbulence2 Map", cascade->GetTurbulence2Map());
+								UI::ViewDebugImage("Cascade Buffer map", cascade->GetCascadeBufferMap());
 
 								UI::Separator();
 
 								UI::AttributeText("Derivatives");
+
+								UI::ViewDebugImage("Derivatives Map", cascade->GetDerivativesMap());
 								UI::ViewDebugImage("DxDz", cascade->GetDxDz());
 								UI::ViewDebugImage("DyDxz", cascade->GetDyDxz());
 								UI::ViewDebugImage("DyxDyz", cascade->GetDyxDyz());

@@ -379,7 +379,7 @@ namespace Proof
                 if(m_InitialCompile)
                      PF_CORE_ASSERT(false);
                 
-                return false;
+                return false; 
             }
            
         }

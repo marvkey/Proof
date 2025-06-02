@@ -8,7 +8,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 layout(push_constant) restrict readonly uniform PushConstants {
     float Lambda;
     float DeltaTime;
-};
+}u_PC;
 
 // === Textures ===
 layout(binding = 1, rgba16f) uniform writeonly image2D Displacement;
@@ -31,17 +31,17 @@ void main() {
     vec2 dxx_dzz = texelFetch(Dxx_Dzz, id, 0).xy;
 
     // Displacement output
-    vec4 disp = vec4(Lambda * dx_dz.x, dy_dxz.x, Lambda * dx_dz.y, 0.0);
+    vec4 disp = vec4(u_PC.Lambda * dx_dz.x, dy_dxz.x, u_PC.Lambda * dx_dz.y, 0.0);
     imageStore(Displacement, id, disp);
 
     // Derivatives output
-    vec4 deriv = vec4(dyx_dyz.x, dyx_dyz.y, dxx_dzz.x * Lambda, dxx_dzz.y * Lambda);
+    vec4 deriv = vec4(dyx_dyz.x, dyx_dyz.y, dxx_dzz.x * u_PC.Lambda, dxx_dzz.y * u_PC.Lambda);
     imageStore(Derivatives, id, deriv);
 
     // Turbulence calculation
-    float jacobian = (1.0 + Lambda * dxx_dzz.x) * (1.0 + Lambda * dxx_dzz.y) - Lambda * Lambda * dy_dxz.y * dy_dxz.y;
+    float jacobian = (1.0 + u_PC.Lambda * dxx_dzz.x) * (1.0 + u_PC.Lambda * dxx_dzz.y) - u_PC.Lambda * u_PC.Lambda * dy_dxz.y * dy_dxz.y;
 
-    float turbulence = texelFetch(TurbulenceRead, id, 0).r + DeltaTime * 0.5 / max(jacobian, 0.5);
+    float turbulence = texelFetch(TurbulenceRead, id, 0).r + u_PC.DeltaTime * 0.5 / max(jacobian, 0.5);
     turbulence = min(jacobian, turbulence);
 
     imageStore(TurbulenceWrite, id, vec4(turbulence, turbulence, turbulence, 1.0));

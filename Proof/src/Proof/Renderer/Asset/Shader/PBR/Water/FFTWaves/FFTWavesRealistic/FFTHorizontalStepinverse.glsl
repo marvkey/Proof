@@ -27,17 +27,18 @@ vec2 complexMult(vec2 a, vec2 b) {
 
 // === Main ===
 void main() {
-    ivec3 id = ivec3(gl_GlobalInvocationID);
-    ivec2 coord = ivec2(params.Step, id.x);
+    ivec2 id = ivec2(gl_GlobalInvocationID.xy);
+    
+    // Load precomputed twiddle factor data
+    vec4 data = texelFetch(PrecomputedData, ivec2(params.Step, id.x), 0);
+    ivec2 inputsIndices = ivec2(data.b, data.a);  // .ba becomes .zw in GLSL
 
-    vec4 data = texelFetch(PrecomputedData, coord, 0);
-    ivec2 inputIndices = ivec2(int(data.b), int(data.a));  // Note: .a/.b are reversed vs WGSL
-
-    vec2 input0 = texelFetch(InputBuffer, ivec2(inputIndices.x, id.y), 0).xy;
-    vec2 input1 = texelFetch(InputBuffer, ivec2(inputIndices.y, id.y), 0).xy;
+    vec2 input0 = texelFetch(InputBuffer, ivec2(inputsIndices.x, id.y), 0).xy;
+    vec2 input1 = texelFetch(InputBuffer, ivec2(inputsIndices.y, id.y), 0).xy;
 
     vec2 twiddle = vec2(data.r, -data.g); // Invert imaginary part
-    vec2 result = input0 + complexMult(twiddle, input1);
 
-    imageStore(OutputBuffer, ivec2(id.x, id.y), vec4(result, 0.0, 0.0));
+   // Perform butterfly operation
+    vec2 result = input0 + complexMult(vec2(data.r, -data.g), input1);
+    imageStore(OutputBuffer, id, vec4(result, 0.0, 0.0));
 }

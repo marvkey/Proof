@@ -11,12 +11,13 @@ layout(binding = 6, rg32f) uniform writeonly image2D OutputBuffer;
 
 void main() {
     ivec2 id = ivec2(gl_GlobalInvocationID.xy);
-
-    vec2 dataFetch = texelFetch(InputBuffer, id, 0).xy;
+    // Load input value
+    vec2 inpute = texelFetch(InputBuffer, id, 0).xy;
 
     // Multiply by (-1)^((x + y) % 2)
     float sign = 1.0 - 2.0 * float((id.x + id.y) % 2);
-    vec2 result = dataFetch * sign;
 
-    imageStore(OutputBuffer, id, vec4(result, 0.0, 0.0));
+
+    imageStore(OutputBuffer, id, vec4(inpute * sign, 0.0, 0.0));
+
 }

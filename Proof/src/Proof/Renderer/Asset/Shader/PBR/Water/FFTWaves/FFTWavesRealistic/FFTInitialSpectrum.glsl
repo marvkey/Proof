@@ -19,6 +19,7 @@ layout(std140, binding = 5) uniform Params {
     float LengthScale;
     float CutoffHigh;
     float CutoffLow;
+
     float GravityAcceleration;
     float Depth;
 };
@@ -31,6 +32,7 @@ struct SpectrumParameter {
     float angle;
     float spreadBlend;
     float swell;
+
     float alpha;
     float peakOmega;
     float gamma;
@@ -38,19 +40,21 @@ struct SpectrumParameter {
 };
 
 // === SpectrumParameters Buffer ===
-layout(std430, binding = 6) readonly buffer SpectrumParams {
+layout(std140, binding = 6) uniform SpectrumParams{
     SpectrumParameter elements[];
 } spectrums;
 
 // === Functions ===
-float frequency(float k, float g, float depth) {
-    return sqrt(g * k * tanh(min(k * depth, 20.0)));
+float frequency(float k, float g, float depth)
+{
+	return sqrt(g * k * tanh(min(k * depth, 20)));
 }
 
-float frequencyDerivative(float k, float g, float depth) {
-    float th = tanh(min(k * depth, 20.0));
-    float ch = cosh(k * depth);
-    return g * (depth * k / (ch * ch) + th) / frequency(k, g, depth) / 2.0;
+float frequencyDerivative(float k, float g, float depth)
+{
+	float th = tanh(min(k * depth, 20));
+	float ch = cosh(k * depth);
+	return g * (depth * k / ch / ch + th) / frequency(k, g, depth) / 2;
 }
 
 float normalisationFactor(float s) {
@@ -80,22 +84,38 @@ float directionSpectrum(float theta, float omega, SpectrumParameter pars) {
 }
 
 float TMACorrection(float omega, float g, float depth) {
-    float omegaH = omega * sqrt(depth / g);
-    if (omegaH <= 1.0) return 0.5 * omegaH * omegaH;
-    if (omegaH < 2.0) return 1.0 - 0.5 * pow(2.0 - omegaH, 2.0);
-    return 1.0;
+   float omegaH = omega * sqrt(depth / g);
+	if (omegaH <= 1)
+		return 0.5 * omegaH * omegaH;
+	if (omegaH < 2)
+		return 1.0 - 0.5 * (2.0 - omegaH) * (2.0 - omegaH);
+	return 1;
 }
 
 float JONSWAP(float omega, float g, float depth, SpectrumParameter pars) {
-    float sigma = omega <= pars.peakOmega ? 0.07 : 0.09;
-    float r = exp(-(omega - pars.peakOmega) * (omega - pars.peakOmega) / (2.0 * sigma * sigma * pars.peakOmega * pars.peakOmega));
-    float oneOverOmega = 1.0 / omega;
-    float peakOmegaOverOmega = pars.peakOmega / omega;
+    float sigma =0;
+    if(omega <= pars.peakOmega)
+    {
+        sigma = 0.07;
+    }
+    else
+    {
+        sigma = 0.09;
+    }
 
-    return pars.scale * TMACorrection(omega, g, depth) * pars.alpha * g * g *
-           pow(oneOverOmega, 5.0) *
-           exp(-1.25 * pow(peakOmegaOverOmega, 4.0)) *
-           pow(abs(pars.gamma), r);
+
+  float r = exp(-(omega - pars.peakOmega) * (omega - pars.peakOmega)
+		/ 2 / sigma / sigma / pars.peakOmega / pars.peakOmega);
+	
+	float oneOverOmega = 1 / omega;
+	float peakOmegaOverOmega = pars.peakOmega / omega;
+
+    //return pars.alpha;
+	return pars.scale * TMACorrection(omega, g, depth) * pars.alpha * g * g
+	//return pars.scale * TMACorrection(omega, g, depth) * 1 * g * g
+		* oneOverOmega * oneOverOmega * oneOverOmega * oneOverOmega * oneOverOmega
+		* exp(-1.25 * peakOmegaOverOmega * peakOmegaOverOmega * peakOmegaOverOmega * peakOmegaOverOmega)
+		* pow(abs(pars.gamma), r);
 }
 
 float shortWavesFade(float kLength, SpectrumParameter pars) {
@@ -131,12 +151,16 @@ void main() {
                         directionSpectrum(kAngle, omega, swell) *
                         shortWavesFade(kLength, swell);
         }
-
+        //if(spectrum < 0.1)
+        //    spectrum =1.0f; // temporary somehign wrong with teh JONSWAP
         vec2 noise = texelFetch(Noise, id, 0).xy;
         float factor = sqrt(2.0 * spectrum * abs(dOmegadk) / kLength * deltaK * deltaK);
-        imageStore(H0K, id, vec4(noise * factor, 0.0, 0.0));
+        imageStore(H0K, id, vec4(noise *JONSWAP(omega, GravityAcceleration, Depth, local) , 0.0, 0.0));
     } else {
         imageStore(H0K, id, vec4(0.0));
+
         imageStore(WavesData, id, vec4(k.x, 1.0, k.y, 0.0));
     }
+
+
 }
