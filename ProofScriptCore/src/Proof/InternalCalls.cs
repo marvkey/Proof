@@ -131,7 +131,13 @@ namespace Proof
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_SetRotation(ulong entityID, ref Vector3 rotation);
 
-		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TransformComponent_GetRotationQuat(ulong entityID, out Quaternion rotation);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TransformComponent_SetRotationQuat(ulong entityID, ref Quaternion rotation);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static void TransformComponent_GetScale(ulong entityID, out Vector3 scale);
 
 		[MethodImplAttribute(MethodImplOptions.InternalCall)]

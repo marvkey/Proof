@@ -520,6 +520,8 @@ namespace Proof
 				}
 			}
 		}
+
+		return false;
 	}
 
 	AABB GenerateBoundingBox(float iconSize, const glm::vec3& position)

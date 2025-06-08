@@ -32,6 +32,11 @@ namespace Proof
 						CreatePlayer(newEntity.GetUUID());
 						e.GetComponent<PlayerStartComponent>().Used = true;
 					}
+					else if (e.GetComponent<PlayerStartComponent>().DontSpawn)
+					{
+						CreatePlayer(e.GetUUID(), e.GetComponent<PlayerStartComponent>().InputPlayer);
+						e.GetComponent<PlayerStartComponent>().Used = true;
+					}
 				}
 
 			});

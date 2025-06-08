@@ -29,7 +29,7 @@ void main() {
     ivec2 id = ivec2(gl_GlobalInvocationID.xy);
 
     vec4 wave = texelFetch(WavesData, id, 0);
-    float phase = wave.w * u_PC.Time;
+    float phase = wave.w * 1000;
     vec2 exponent = vec2(cos(phase), sin(phase));
 
     vec4 h0 = texelFetch(H0, id, 0);

@@ -209,6 +209,7 @@ namespace Proof
     
     void FFTWaveRealisticCascade::CalculateWavesAtTime(Count<RenderCommandBuffer> cmdBuffer, Count<FFTWaveRealistic> wave,float time)
     {
+        // TODO PROBLEMIS IN ONE OF THESE FUNCITON
         const uint32_t WorkGroup = 8;
         //time dependent
         {

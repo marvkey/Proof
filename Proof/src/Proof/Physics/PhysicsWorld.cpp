@@ -418,6 +418,38 @@ namespace Proof {
 		}
 
 	}
+	class CustomQueryFilterCallbackEntity : public physx::PxQueryFilterCallback
+	{
+	public:
+		CustomQueryFilterCallbackEntity(const std::unordered_set<uint64_t>& ignoreEntities)
+			:m_IgnoreEntities(ignoreEntities)
+		{
+		}
+
+		virtual physx::PxQueryHitType::Enum preFilter(
+			const physx::PxFilterData& filterData,
+			const physx::PxShape* shape,
+			const physx::PxRigidActor* actor,
+			physx::PxHitFlags& queryFlags) override
+		{
+			Count<PhysicsActorBase> physicsActor = (PhysicsActorBase*)actor->userData;
+			// Check if the entity should be ignored
+			if (m_IgnoreEntities.contains(physicsActor->GetEntity().GetUUID().Get()))
+			{
+				return physx::PxQueryHitType::eNONE; // block not intrested
+			}
+
+			// Otherwise, allow it to be hit
+			return physx::PxQueryHitType::eBLOCK;
+		}
+
+		virtual physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit)
+		{
+				return physx::PxQueryHitType::eBLOCK; 
+		};
+	private:
+		const std::unordered_set<uint64_t>& m_IgnoreEntities;
+	};
 	class CustomQueryFilterCallback : public physx::PxQueryFilterCallback
 	{
 	public:
@@ -497,6 +529,33 @@ namespace Proof {
 			result = m_PhysXScene->raycast(PhysXUtils::ToPhysXVector(origin), PhysXUtils::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo, physx::PxHitFlag::eDEFAULT, filter,&customFilter);
 		}
 
+
+		if (result)
+		{
+			physx::PxRaycastHit& closestHit = hitInfo.block;
+
+			Count<PhysicsActorBase> object = (PhysicsActorBase*)closestHit.actor->userData;
+			outHit->HitEntity = object->GetEntity().GetUUID();
+			outHit->Position = PhysXUtils::FromPhysXVector(closestHit.position);
+			outHit->Normal = PhysXUtils::FromPhysXVector(closestHit.normal);
+			outHit->Distance = closestHit.distance;
+			outHit->HitCollider = (ColliderShape*)(closestHit.shape->userData);
+			return result;
+		}
+
+		return result;
+	}
+	bool PhysicsWorld::RayCast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit, const std::unordered_set<uint64_t>& ignoreIDs)
+	{
+		PF_PROFILE_FUNC();
+
+		physx::PxRaycastBuffer hitInfo;
+		bool result;
+		CustomQueryFilterCallbackEntity customFilter(ignoreIDs);
+
+		physx::PxQueryFilterData filter = physx::PxQueryFilterData();
+		filter.flags |= physx::PxQueryFlag::ePREFILTER;
+		result = m_PhysXScene->raycast(PhysXUtils::ToPhysXVector(origin), PhysXUtils::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo, physx::PxHitFlag::eDEFAULT, filter, &customFilter);
 
 		if (result)
 		{

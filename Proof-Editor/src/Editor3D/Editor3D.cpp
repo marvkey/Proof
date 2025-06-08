@@ -218,6 +218,8 @@ namespace Proof
 	static bool s_DetachPlayer = false;
 	static bool SaveSceneDialouge = false;
 	Editore3D* Editore3D::s_Instance = nullptr;
+
+	
 	PopupState NewProjectState = PopupState::None;
 	std::filesystem::path NewProjectDir;
 	std::string NewProjectName;
@@ -283,6 +285,18 @@ namespace Proof
 		//	!=
 		//	Application::Get()->GetWindow()->KeyboardClicked.end();
 		return Input::IsKeyClicked(key);
+	}
+
+	bool Editore3D::AllowEditorShortcutsInPlayMode()
+	{
+		if (!m_ActiveWorld->IsPlaying())
+			return true; // yes can still call funcitons
+
+		if (m_ActiveWorld->IsPlaying() && s_DetachPlayer == true) // if palying and detached then yeah can still call funcionts
+			return true;
+
+		if(m_ActiveWorld->IsPlaying() && s_DetachPlayer == false)
+			return false; // cannot call anyting now
 	}
 
 
@@ -760,8 +774,8 @@ namespace Proof
 		// Shortcuts
 
 		ImGuiIO& io = ImGui::GetIO();
-		if (!io.WantCaptureKeyboard) // ths means that an imgui text field is being used
-			return false;
+		//if (!io.WantCaptureKeyboard) // ths means that an imgui text field is being used
+		//	return false;
 
 		bool control = IsKeyPressedEditor(KeyBoardKey::LeftControl) || IsKeyPressedEditor(KeyBoardKey::RightControl);
 		bool shift = IsKeyPressedEditor(KeyBoardKey::LeftShift) || IsKeyPressedEditor(KeyBoardKey::RightShift);
@@ -773,29 +787,63 @@ namespace Proof
 		//basically means that m_editor camera is beign used 
 		if (Input::IsMouseButtonPressed(MouseButton::ButtonRight) == true)
 			return false;
+
+		switch (e.GetKey())
+		{
+			case KeyBoardKey::F11:
+			{
+				Count< ViewPortEditorWorkspace> viewport = s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>(SCREEN_VEIWPORT_ID);
+
+				if (viewport->IsFullScreen())
+					viewport->RemoveFullScreen();
+				else
+					viewport->SetFullScreen();
+
+				return true;
+				break;
+			}
+
+			case KeyBoardKey::P:
+			{
+				if (control == false && alt == true)
+				{
+					if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
+						PlayWorld();
+					else if (m_ActiveWorld->m_CurrentState == WorldState::Play)
+						SetWorldEdit();
+
+					return true;
+				}
+			}
+
+			case KeyBoardKey::Escape:
+			{
+				if (m_ActiveWorld->IsPlaying())
+				{
+					s_DetachPlayer = false;
+					Mouse::SetCursorMode(CursorMode::Normal);
+				}
+
+				return true;
+			}
+		}
+
+		// for keys that are not as essintial
+		if (!AllowEditorShortcutsInPlayMode())
+			return false;
 		switch (e.GetKey())
 		{
 			
 			case KeyBoardKey::F:
 				{
 					//m_EditorCamera.SetPosition(	s_EditorData->PanelManager->GetPanel<SceneHierachyPanel>(SCENE_HIERARCHY_PANEL_ID)->GetSelectedEntity().Transform().Location);
-					return true;
+					return false;
 				}
 			case KeyBoardKey::P:
 				{
 					if (control)
 					{
 						Math::ChangeBool(s_EditorData->PanelManager->GetPanelData(SCENE_HIERARCHY_PANEL_ID)->IsOpen);
-						return true;
-					}
-
-					if (control == false && alt == true)
-					{
-						if (m_ActiveWorld->m_CurrentState == WorldState::Edit)
-							PlayWorld();
-						else if (m_ActiveWorld->m_CurrentState == WorldState::Play)
-							SetWorldEdit();						
-						
 						return true;
 					}
 					break;
@@ -828,7 +876,11 @@ namespace Proof
 					}
 				// no right button pressed that means that we are using the editor camera
 					if (m_ViewPortFocused && Input::IsMouseButtonPressed(MouseButton::ButtonRight) == false)
+					{
 						s_EditorData->GuizmoType = ImGuizmo::OPERATION::UNIVERSALV2;
+						return true;
+					}
+
 					break;
 				}
 			case KeyBoardKey::S:
@@ -943,18 +995,6 @@ namespace Proof
 						return true;
 					}
 				}
-				break;
-			}
-
-			case KeyBoardKey::F11:
-			{
-				Count< ViewPortEditorWorkspace> viewport = s_EditorData->EditorWorkspaceManager->GetWorkspace<ViewPortEditorWorkspace>(SCREEN_VEIWPORT_ID);
-				
-				if (viewport->IsFullScreen())
-					viewport->RemoveFullScreen();
-				else
-					viewport->SetFullScreen();
-
 				break;
 			}
 		}

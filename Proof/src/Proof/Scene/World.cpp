@@ -63,7 +63,18 @@ namespace Proof {
 	}
 	World::~World()
 	{
+		auto group = m_Registry.group<CameraComponent>();
+		for(auto e : group)
+			m_Registry.destroy((entt::entity)e);
+
 		m_Registry.clear();
+
+		m_Registry.on_construct<MeshColliderComponent>().disconnect(this);
+		m_Registry.on_destroy<MeshColliderComponent>().disconnect(this);
+
+		m_Registry.on_construct<WaterComponent>().disconnect(this);
+
+
 	}
 	bool World::HasEntity(UUID ID)const {
 		if (ID == 0)

@@ -84,6 +84,9 @@
     <Reference Include="System.Data.Entity" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Assets\Scripts\PlayerInput.cs">
+      <Link>Assets\Scripts\PlayerInput.cs</Link>
+    </Compile>
     <Compile Include="..\..\Assets\Scripts\PlayerMovement.cs">
       <Link>Assets\Scripts\PlayerMovement.cs</Link>
     </Compile>

@@ -4,6 +4,7 @@
 #include "Proof/Math/Math.h"
 #include "Proof/Asset/AssetTypes.h"
 #include "Proof/Utils/MultiUse.h"
+#include <fmt/format.h>
 #include <imgui.h>
 #include <glm/glm.hpp>
 #include <unordered_set>
@@ -52,6 +53,7 @@ namespace Proof::UI
 
 		return changed;
 	}
+	
 
 	bool IsWindowFocused(const char* windowName, const bool checkRootWindow = true);
 
@@ -59,6 +61,41 @@ namespace Proof::UI
 	bool AttributeInputRawText(const std::string& label, char* buffer, uint32_t bufferSize = 256, ImGuiInputTextFlags text_flags = 0, const std::string& helpMessage = "");
 	bool AttributeBool(const std::string& label, bool& value, const std::string& helpMessage = "");
 	bool AttributeLabels(const std::string& label, const std::vector<std::string>& customLabels, bool* values, const std::string& helpMessage = "");
+
+
+	template<class TEnum>
+	static inline bool AttributeBoolEnum(const std::string& label, TEnum& value, const std::unordered_set<TEnum>& excludedValues = {}, const std::string& helpMessage = "")
+	{
+		bool changed = false;
+		int count = 0;
+
+		EnumReflection::ForEach<TEnum>([&](auto val)
+			{
+				if (excludedValues.contains(val))
+					return;
+
+				auto name = std::string(EnumReflection::EnumString(val));
+				std::string labele = fmt::format("Count: {} Name:{}", count, name);
+
+				ImGui::PushID(labele.c_str());
+
+				bool currentState = EnumReflection::HasAnyFlags(value, val);
+
+				if (UI::AttributeBool(EnumReflection::EnumString(val), currentState))
+				{
+					if (currentState)
+						EnumReflection::AddFlags(value, val);
+					else
+						EnumReflection::RemoveFlags(value, val);
+
+					changed = true;
+				}
+				ImGui::PopID();
+				count++;
+			});
+
+		return changed;
+	}
 
 	bool AttributeTextBar(const std::string& label, const std::string& text);
 	bool AttributeText(const std::string& text);

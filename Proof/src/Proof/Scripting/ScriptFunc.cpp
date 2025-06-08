@@ -513,6 +513,33 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		#endif
 		entity.GetComponent<TransformComponent>().SetRotationEuler(glm::radians(*rotation));
 	};
+
+	static void TransformComponent_GetRotationQuat(UUID entityID, QuaternionProper* quaternion) 
+	{
+		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
+	#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("TransformComponent.SetRotation - entity is invalid");
+			return;
+		}
+	#endif
+		*quaternion = Utils::GlmToQuaternionProper(entity.GetComponent< TransformComponent>().GetRotation());
+	};
+
+	static void TransformComponent_SetRotationQuat(UUID entityID, QuaternionProper* quaternion) 
+	{
+		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
+	#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("TransformComponent.SetRotation - entity is invalid");
+			return;
+		}
+	#endif
+		entity.GetComponent<TransformComponent>().SetRotation(Utils::QuaternionProperToGlm(*quaternion));
+	};
+
 	static void TransformComponent_GetScale(uint64_t entityID, glm::vec3* outScale) {
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
 		#if PF_ENABLE_DEBUG
@@ -1983,7 +2010,6 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (inRaycastData->ExcludeEntities)
 		{
-			PF_CORE_ASSERT(false,"Does not support exclude entities yet");
 			/*
 			size_t excludeEntitiesCount = mono_array_length(inRaycastData->ExcludeEntities);
 			std::unordered_set<UUID> entityIDs(excludeEntitiesCount);
@@ -1994,6 +2020,17 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			}
 			success = scene->GetPhysicsScene()->RaycastExcludeEntities(inRaycastData->Origin, inRaycastData->Direction, inRaycastData->MaxDistance, &tempHit, entityIDs);
 			*/
+
+			size_t excludeEntitiesCount = mono_array_length(inRaycastData->ExcludeEntities);
+			std::unordered_set<uint64_t> entityIDs(excludeEntitiesCount);
+			for (size_t i = 0; i < excludeEntitiesCount; i++)
+			{
+				uint64_t entityID = mono_array_get(inRaycastData->ExcludeEntities, uint64_t, i);
+				entityIDs.insert(entityID);
+			}
+
+			success = scene->GetPhysicsWorld()->RayCast(inRaycastData->Origin, inRaycastData->Direction, inRaycastData->MaxDistance, &tempHit, entityIDs);
+
 		}
 		else
 		{
@@ -4231,6 +4268,8 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(TransformComponent_SetLocation);
 			PF_ADD_INTERNAL_CALL(TransformComponent_GetRotation);
 			PF_ADD_INTERNAL_CALL(TransformComponent_SetRotation);
+			PF_ADD_INTERNAL_CALL(TransformComponent_SetRotationQuat);
+			PF_ADD_INTERNAL_CALL(TransformComponent_GetRotationQuat);
 			PF_ADD_INTERNAL_CALL(TransformComponent_GetScale);
 			PF_ADD_INTERNAL_CALL(TransformComponent_SetScale);
 			PF_ADD_INTERNAL_CALL(TransformComponent_GetForwardVector);

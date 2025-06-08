@@ -62,7 +62,20 @@ namespace Proof
 			}
 		}
 
-		public Proof.Vector3 Scale
+        public Proof.Quaternion RotationQuat
+        {
+            get
+            {
+                InternalCalls.TransformComponent_GetRotationQuat(Entity.ID, out Proof.Quaternion rotation);
+                return rotation;
+            }
+            set
+            {
+                InternalCalls.TransformComponent_SetRotationQuat(Entity.ID, ref value);
+            }
+        }
+
+        public Proof.Vector3 Scale
 		{
 			get
 			{

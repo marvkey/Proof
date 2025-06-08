@@ -1,10 +1,10 @@
 AssetType: InputBindingContext
-ID: 2752931872386719743
+ID: 5002844255029031354
 InputBindings:
-  - InputActionID: 79562978522739842
+  - InputActionID: 4812082715384783110
     KeyBindings:
       - InputKeyBindingType: Bundle
-        InputKeyBindingBundleName: WSAD
+        InputKeyBindingBundleName: ""
         InputKeyBundleKeys:
           - InputKeyBindingBundleType: PositiveX
             InputKeySettings:
@@ -30,25 +30,18 @@ InputBindings:
             InputKeySettings:
               InputKeyBindingType: Key
               InputKeyName: Invalid
-  - InputActionID: 16418331729819770218
+  - InputActionID: 11013441240331562467
     KeyBindings:
       - InputKeyBindingType: Key
         InputKeyName: MouseMoveAxisXY
-  - InputActionID: 6796162255588270144
-    KeyBindings:
-      - InputKeyBindingType: Key
-        InputKeyName: Shift
-    InputInteractions:
-      - InputInteractionType: MultiTap
-        InteractionThreshold: 0.5
-        TapCount: 2
-        TapSpacing: 0.75
-        TapTime: 0.200000003
-  - InputActionID: 4210104826145374856
+        InputCustomizers:
+          - InputCustomizerType: Scale
+            Scale: [0.200000003, 0.200000003, 1]
+  - InputActionID: 11692785166767351247
     KeyBindings:
       - InputKeyBindingType: Key
         InputKeyName: SpaceBar
     InputInteractions:
       - InputInteractionType: ClickRelease
-        InteractionThreshold: 0.5
+        InteractionThreshold: 0.25
         Mode: Click

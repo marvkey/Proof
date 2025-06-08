@@ -119,6 +119,9 @@ vec3 PBR_DirectionalLighting()
     {
                //https://github.com/Angelo1211/HybridRenderingEngine/blob/master/assets/shaders/PBRClusteredShader.frag
         DirectionalLight currentLight= u_DirectionalLightData.Lights[i];
+        if(currentLight.Intensity == 0.0)
+            continue;
+
         vec3 Li = -normalize(currentLight.Direction);
         vec3 Lradiance = currentLight.Color * currentLight.Intensity;
         vec3 Lh = normalize(Li + m_PBRParams.View);
@@ -168,14 +171,13 @@ vec3 PBR_CalculateIBL()
         vec3 diffuseIBL = m_PBRParams.AlbedoColor * irradiance;
 
         int specularTextureLevels = textureQueryLevels(u_PrefilterMap);
-		vec3 specularIrradiance = textureLod(u_PrefilterMap, Lr,specularTextureLevels * m_PBRParams.Roughness).rgb;
+		vec3 specularIrradiance = textureLod(u_PrefilterMap,RotateVectorAboutY(0.0, Lr),specularTextureLevels * m_PBRParams.Roughness).rgb;
 
-        vec2 specularBRDF  = texture(u_BRDFLUT, vec2(m_PBRParams.NdotV,1.0 - m_PBRParams.Roughness)).rg;
+        //vec2 specularBRDF  = texture(u_BRDFLUT, vec2(m_PBRParams.NdotV,1.0 - m_PBRParams.Roughness)).rg;
+        vec2 specularBRDF  = texture(u_BRDFLUT, vec2(m_PBRParams.NdotV,m_PBRParams.Roughness)).rg;
 
-        //TODO Fix why brdf is causing shader bug
-        //of a grey dot
+		//vec3 specularIBL = specularIrradiance * (m_PBRParams.F0 * specularBRDF.x + specularBRDF.y) ; 
 		vec3 specularIBL = specularIrradiance * (F * specularBRDF.x + specularBRDF.y) ; 
-		//vec3 specularIBL = specularIrradiance * (m_PBRParams.F0 ) ; 
 
         iblEfeect += kd * diffuseIBL + specularIBL;
         iblEfeect = iblEfeect * (u_SkyBoxInfo.Intensity) * (u_SkyBoxInfo.TintColor); 

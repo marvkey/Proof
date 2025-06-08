@@ -66,7 +66,8 @@ namespace Proof
 
 		void AddRadialImpulse(const glm::vec3& origin, float radius, float strength, enum class EFalloffMode falloff = EFalloffMode::Constant, bool velocityChange = false);
 
-		bool RayCast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit,const std::string& layerName = std::string());
+		bool RayCast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit, const std::string& layerName = std::string());
+		bool RayCast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit,const std::unordered_set<uint64_t>& ignoreIDs);
 		bool SphereCast(const glm::vec3& origin, const glm::vec3& direction, float radius, float maxDistance, RaycastHit* outHit);
 		//bool RaycastExcludeEntities(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit, const std::unordered_set<UUID>& excludedEntities);
 	private:

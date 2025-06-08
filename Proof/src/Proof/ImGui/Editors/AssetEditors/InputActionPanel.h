@@ -17,4 +17,5 @@ namespace Proof
 	};
 
 	void EditInputInteractions(std::vector<Count<class InputInteraction>>& interaction);
+	void EditInputCustomizers(std::vector<Count<class InputCustomizer>>& interaction);
 }

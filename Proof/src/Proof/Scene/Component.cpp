@@ -44,6 +44,7 @@ namespace Proof
 		, CastShadow(other.CastShadow)
 		, MaterialTable(Count<class MaterialTable>::CreateFrom(other.MaterialTable))
 	{
+		
 	}
 	SkyLightComponent::SkyLightComponent()
 	{

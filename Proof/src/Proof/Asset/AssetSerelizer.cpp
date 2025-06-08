@@ -719,6 +719,10 @@ namespace $NAMESPACE_NAME$
 		{
 		}
 
+		// OnPhysicsUpdate is called at a fixed timestep for physics-related logic
+		void OnPhysicsUpdate(float fixedPhysicsDeltaTime)
+		{
+		}
 	}
 }
 )";
@@ -766,6 +770,7 @@ namespace $NAMESPACE_NAME$
 		out << YAML::Key << "OutputValueBehavior" << YAML::Value << EnumReflection::EnumString(inputAction->OutputValueBehavior);
 
 		SerializeCommon::SerializeInputInteractions(out,inputAction->Interactions);
+		SerializeCommon::SerializeInputCustomizers(out, inputAction->Customizers);
 
 		out << YAML::EndMap;
 		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
@@ -788,6 +793,7 @@ namespace $NAMESPACE_NAME$
 			(EnumReflection::EnumString(InputActionOutputValueBehavior::MaximumAbsolute)));
 
 		SerializeCommon::LoadInputInteractions(data, inputAction->Interactions);
+		SerializeCommon::LoadInputCustomizers(data, inputAction->Customizers);
 
 		SetID(assetData, inputAction);
 		return inputAction;
@@ -813,6 +819,8 @@ namespace $NAMESPACE_NAME$
 			out << YAML::Key << "InputActionID" << YAML::Value << binding.InputAction->GetID();
 			SerializeCommon::SerializeInputKeyBindings(out, binding.KeyBindings);
 			SerializeCommon::SerializeInputInteractions(out, binding.Interactions);
+			SerializeCommon::SerializeInputCustomizers(out, binding.Customizers);
+
 			out << YAML::EndMap;
 		}
 		out << YAML::EndSeq;//InputBindings
@@ -850,6 +858,7 @@ namespace $NAMESPACE_NAME$
 
 			SerializeCommon::DeserializeInputKeyBindings(inputBinding, binding->KeyBindings);
 			SerializeCommon::LoadInputInteractions(inputBinding, binding->Interactions);
+			SerializeCommon::LoadInputCustomizers(inputBinding, binding->Customizers);
 		}
 
 		out:

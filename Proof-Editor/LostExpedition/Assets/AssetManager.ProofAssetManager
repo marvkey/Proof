@@ -1,25 +1,34 @@
 Assets:
-  - Asset: 6008892438028944133
+  - Asset: 1948765517176594391
     Type: Material
-    Path: Material\Red.Material.ProofAsset
-  - Asset: 115254331577300070
+    Path: Materials\m_Black.Material.ProofAsset
+  - Asset: 1896371110154550254
     Type: World
     Path: Scenes\TestScene.ProofWorld
-  - Asset: 79562978522739842
-    Type: InputAction
-    Path: Input\PlayerInput\Actions\Move.InputAction.ProofAsset
-  - Asset: 10191089239069135583
+  - Asset: 7659929436396046509
+    Type: Material
+    Path: Materials\m_Green.Material.ProofAsset
+  - Asset: 11429414779761748679
     Type: ScriptFile
     Path: Scripts\PlayerMovement.cs
-  - Asset: 2752931872386719743
+  - Asset: 441154320061695158
+    Type: ScriptFile
+    Path: Scripts\PlayerInput.cs
+  - Asset: 4812082715384783110
+    Type: InputAction
+    Path: Input\PlayerMovement\IA_Movement.InputAction.ProofAsset
+  - Asset: 18216177543223532629
+    Type: World
+    Path: Scenes\New World.ProofWorld
+  - Asset: 5002844255029031354
     Type: InputBindingContext
-    Path: Input\PlayerInput\PlayerMovementBindingContext.InputBindingContext.ProofAsset
-  - Asset: 16418331729819770218
+    Path: Input\PlayerMovement\IB_PlayerMovement.InputBindingContext.ProofAsset
+  - Asset: 11013441240331562467
     Type: InputAction
-    Path: Input\PlayerInput\Actions\Look.InputAction.ProofAsset
-  - Asset: 6796162255588270144
+    Path: Input\PlayerMovement\IA_Rotation.InputAction.ProofAsset
+  - Asset: 5896697494919537015
+    Type: PhysicsMaterial
+    Path: Physics\Materials\pm_slipper.PhysicsMaterial.ProofAsset
+  - Asset: 11692785166767351247
     Type: InputAction
-    Path: Input\PlayerInput\Actions\TriggerFastMove.InputAction.ProofAsset
-  - Asset: 4210104826145374856
-    Type: InputAction
-    Path: Input\PlayerInput\Actions\Jump.InputAction.ProofAsset
+    Path: Input\PlayerMovement\IA_Jump.InputAction.ProofAsset

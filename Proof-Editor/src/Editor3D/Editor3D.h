@@ -23,6 +23,10 @@ namespace Proof {
 		static bool IsKeyPressedEditor(KeyBoardKey Key);
 		static bool IsKeyClickedEditor(KeyBoardKey Key);
 		bool m_ViewPortFocused = false;
+
+		Count<class World> GetActiveWorld() { return m_ActiveWorld; }
+		// returns true if not in play mode
+		bool AllowEditorShortcutsInPlayMode(); 
 	private:
 		struct KeyBoardShowEvent {
 			bool ShowAll = false;

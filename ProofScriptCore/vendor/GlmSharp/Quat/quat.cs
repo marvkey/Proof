@@ -378,6 +378,18 @@ namespace Proof
 
         #region Static Properties
         
+        // added by proof
+
+        public static Vector3 Eular(Quaternion quat)
+        {
+            return new Vector3((float)quat.EulerAngles.x, (float)quat.EulerAngles.y, (float)quat.EulerAngles.z);
+        }
+
+        public static Quaternion EularToQuat(Vector3 eular)
+        {
+            return new Quaternion(eular);
+        }
+
         /// <summary>
         /// Predefined all-zero Quaternionernion
         /// </summary>

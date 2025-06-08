@@ -73,7 +73,7 @@ namespace Proof {
 
         SetMetalness(0.0f);
         SetRoughness(0.4f);
-        SetEmission(0.f);
+        SetEmission(0.4f); // default objects looks so dull wihtout a little emission
         SetNormalTextureToggle(false);
 
         SetTiling({ 1,1 });

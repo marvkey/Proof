@@ -546,6 +546,7 @@ namespace Proof
 
 				out << YAML::Key << "InputPlayer" << YAML::Value << EnumReflection::EnumString(playerStart.InputPlayer);
 				out << YAML::Key << "PlayerPrefab" << YAML::Value << playerStart.Player.GetAssetID();
+				out << YAML::Key << "DontSpawn" << YAML::Value << playerStart.DontSpawn;
 				out << YAML::EndMap; // PlayerStartComponent
 
 			}
@@ -1334,6 +1335,7 @@ namespace Proof
 				{
 					auto& psc = NewEntity.AddComponent<PlayerStartComponent>();
 					psc.InputPlayer = EnumReflection::StringEnum<Players>(playerStartComponent["InputPlayer"].as<std::string>());
+					psc.DontSpawn = playerStartComponent["DontSpawn"].as<bool>();
 					psc.Player = playerStartComponent["PlayerPrefab"].as<AssetID>();
 				}
 			}

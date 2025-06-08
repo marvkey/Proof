@@ -417,17 +417,6 @@ namespace Proof
 		float FarPlane = 1000.f;
 		float FovDeg = 45;
 
-		struct CameraViewportRect 
-		{
-			glm::vec2 Position;   // Position of the viewport (top-left corner)
-			glm::vec2 Size;       // Size of the viewport (width, height)
-
-			// Constructor for convenience
-			CameraViewportRect(const glm::vec2& pos = glm::vec2(0.0f, 0.0f), const glm::vec2& sz = glm::vec2(800.0f, 600.0f))
-				: Position(pos), Size(sz) {}
-
-		};
-
 		// render using local rotation 
 		bool UseLocalRotation = false;
 		bool ActiveForRendering = true; // is it active to be used as a scene camera for rendering
@@ -633,10 +622,12 @@ namespace Proof
 	struct PlayerStartComponent
 	{
 		PlayerStartComponent() = default;
+		bool DontSpawn = false; // temporary (will not be abel to use the prefab then)
 		AssetKey<AssetType::Prefab> Player;
 		// if its not none then only that player can be spawned here, so like if its one player one has to get spawned here
 		// if none then any player can be spawned here doenst matter
 		Players InputPlayer = Players::None; 
+
 		bool Used = false;// this is not exposed to usr, it just basicallymeasn use all unused start component before using this
 	};
 	struct PlayerInputComponent 
@@ -783,7 +774,7 @@ namespace Proof
 		ComponentGroup<IDComponent, TagComponent, HierarchyComponent, TransformComponent, PrefabComponent,
 		MeshComponent,DynamicMeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent, CharacterControllerComponent,
 		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent, RigidBodyComponent, // rigid body should be here due to if we spawn entity we want to check if it has any collider then we add rigidbody on it
-		ScriptComponent, TextComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent, AudioListenerComponent,
+		ScriptComponent, TextComponent,PlayerStartComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent, AudioListenerComponent,
 		WaterComponent, BuoyancyComponent>;
 	
 

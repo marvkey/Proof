@@ -227,7 +227,7 @@ namespace Proof
 		if (isElevatedKeyOpen)
 		{
 			EditInputInteractions(elevatedInputKey.Interactions);
-
+			EditInputCustomizers(elevatedInputKey.Customizers);
 			for (int i = 0; i < elevatedInputKey.KeyBindings.size(); i++)
 			{
 				if (!ViewInputKeyBinding(elevatedInputKey.InputAction, elevatedInputKey.KeyBindings[i], selected))
@@ -375,6 +375,7 @@ namespace Proof
 			}
 
 			EditInputInteractions(selectedInputKeyBinding->Interactions);
+			EditInputCustomizers(selectedInputKeyBinding->Customizers);
 		}
 		
 		ImGui::EndChild();

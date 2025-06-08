@@ -2,6 +2,7 @@
 #include "SerializeCommon.h"
 #include "Proof/Resources/ExternalCreations.h"
 #include "Proof/Input/ElevatedInputSystem/InputInteractions.h"
+#include "Proof/Input/ElevatedInputSystem/InputCustomizers.h"
 #include "Proof/Input/ElevatedInputSystem/InputKeyBinding.h"
 
 #include "Proof/Scripting/ScriptField.h"
@@ -9,7 +10,36 @@
 #include "Proof/Scripting/ScriptFile.h"
 namespace Proof
 {
+	static void SerializeInputCustomizer(YAML::Emitter& out, Count<class InputCustomizer> inputCustomizer)
+	{
+		out << YAML::BeginMap; // Customizers
 
+		out << YAML::Key << "InputCustomizerType" << YAML::Value << EnumReflection::EnumString(inputCustomizer->GetCustomizerType());
+
+		switch (inputCustomizer->GetCustomizerType())
+		{
+			case InputCustomizerType::Default:
+			break;
+			case InputCustomizerType::Scale:
+			{
+				auto scaleCustomizer = inputCustomizer.As<InputCustomizerScale>();
+				out << YAML::Key << "Scale" << YAML::Value << scaleCustomizer->Scale;
+				break;
+			}
+			case InputCustomizerType::Invert:
+			{
+				auto invertCustomizer = inputCustomizer.As<InputCustomizerInvert>();
+				out << YAML::Key << "InvertedAxes" << YAML::Value << (uint8_t)invertCustomizer->InvertedAxes;
+				break;
+			}
+
+		default:
+			break;
+		}
+
+		out << YAML::EndMap;// Customizers
+
+	}
 	static void SerializeInputInteraction(YAML::Emitter& out, Count<class InputInteraction> inputInteraction)
 	{
 		out << YAML::BeginMap; // Interaction
@@ -105,6 +135,36 @@ namespace Proof
 		interactions.push_back(inputInteraction);
 
 	}
+
+	void LoadInputCustomizer(YAML::Node& inInteraction, std::vector<Count<class InputCustomizer>>& customizers)
+	{
+		InputCustomizerType interactionMode = EnumReflection::StringEnum<InputCustomizerType>(inInteraction["InputCustomizerType"].as<std::string>(EnumReflection::EnumString(InputInteractionType::Default)));
+
+		if (interactionMode == InputCustomizerType::Default)
+			return;
+
+		auto inputCustomizer = InputCustomizer::CreateInputInteraction(interactionMode);
+		switch (interactionMode)
+		{
+			case Proof::InputCustomizerType::Default:
+				break;
+
+			case Proof::InputCustomizerType::Scale:
+			{
+				auto scaleCustomizer = inputCustomizer.As<InputCustomizerScale>();
+				scaleCustomizer->Scale = inInteraction["Scale"].as<glm::vec3>(scaleCustomizer->Scale);
+				break;
+			}
+
+			case Proof::InputCustomizerType::Invert:
+			{
+				auto invertCustomizer = inputCustomizer.As<InputCustomizerInvert>();
+				invertCustomizer->InvertedAxes = (InputCustomizerInvertAxis)inInteraction["InvertedAxes"].as<uint8_t>(0);
+				break;
+			}
+		}
+		customizers.emplace_back(inputCustomizer);
+	}
 	void SerializeCommon::LoadInputInteractions(YAML::Node& inData, std::vector<Count<class InputInteraction>>& interactions)
 	{
 		if (!inData["InputInteractions"])return;
@@ -116,6 +176,33 @@ namespace Proof
 		for (auto interaction : inputInteractions)
 		{
 			LoadInputInteraction(interaction, interactions);
+		}
+	}
+	void SerializeCommon::SerializeInputCustomizers(YAML::Emitter& out, const std::vector<Count<class InputCustomizer>>& customizers)
+	{
+		if (customizers.empty())
+			return;
+
+		out << YAML::Key << "InputCustomizers" << YAML::BeginSeq; //Customizers
+
+		for (auto& customizer : customizers)
+		{
+			SerializeInputCustomizer(out, customizer);
+		}
+		out << YAML::EndSeq;//Interactions
+	}
+	void SerializeCommon::LoadInputCustomizers(YAML::Node& inData, std::vector<Count<class InputCustomizer>>& customizers)
+	{
+
+		if (!inData["InputCustomizers"])return;
+		auto inputCustomizers = inData["InputCustomizers"];
+
+		if (!inputCustomizers.IsSequence())
+			return;
+
+		for (auto customizer : inputCustomizers)
+		{
+			LoadInputCustomizer(customizer, customizers);
 		}
 	}
 	static void SerializeInputKeyBinding(YAML::Emitter& out, Count<class InputKeyBindingBase> keyBinding)
@@ -164,6 +251,7 @@ namespace Proof
 		SerializeCommon::SerializeInputKeyBindings(out, modifiers,true);
 
 		SerializeCommon::SerializeInputInteractions(out, keyBinding->Interactions);
+		SerializeCommon::SerializeInputCustomizers(out, keyBinding->Customizers);
 		out << YAML::EndMap;// KeyBinding
 	}
 
@@ -239,6 +327,7 @@ namespace Proof
 			}
 		}
 		SerializeCommon::LoadInputInteractions(inData, keyBindingBase->Interactions);
+		SerializeCommon::LoadInputCustomizers(inData, keyBindingBase->Customizers);
 
 	}
 	void SerializeCommon::DeserializeInputKeyBindings(YAML::Node& inData, std::vector<Count<class InputKeyBindingBase>>& bindings, bool modifierKeys)

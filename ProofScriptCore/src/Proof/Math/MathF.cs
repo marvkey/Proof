@@ -28,6 +28,11 @@ namespace Proof
             return radians * 180f / Mathf.PI;
         }
 
+        public static Vector3 RadiansToDegrees(Vector3 radians)
+        {
+            return radians * (180f / Mathf.PI);
+        }
+
         public static float Sin(float value) => (float)Math.Sin(value);
         public static float Cos(float value) => (float)Math.Cos(value);
         public static float Acos(float value) => (float)Math.Acos(value);
