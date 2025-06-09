@@ -216,8 +216,23 @@ namespace Proof
 	{
 		m_WorldRenderer->SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 
-		switch (m_WorldContext->GetState())
+		WorldState state = m_WorldContext->GetState();
+		switch (state)
 		{
+
+		case Proof::WorldState::Edit:
+		{
+			m_Camera.SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
+			m_Camera.SetActive(IsFocused() || IsHovered());
+			m_Camera.OnUpdate(ts);
+			m_WorldContext->OnRenderEditor(m_WorldRenderer, ts, m_Camera);
+			m_WorldContext->OnUpdateEditor(ts);
+
+			OnRender2D();
+
+			break;
+		}
+
 		case Proof::WorldState::Play:
 		{
 			if (m_WorldContext->HasWorldCamera() && !m_PlayMode.EjectFromPlayer )
@@ -255,18 +270,7 @@ namespace Proof
 		{
 			break;
 		}
-		case Proof::WorldState::Edit:
-		{
-			m_Camera.SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
-			m_Camera.SetActive(IsFocused() || IsHovered());
-			m_Camera.OnUpdate(ts);
-			m_WorldContext->OnRenderEditor(m_WorldRenderer, ts, m_Camera);
-			m_WorldContext->OnUpdateEditor(ts);
-
-			OnRender2D();
-
-			break;
-		}
+	
 		default:
 			break;
 		}

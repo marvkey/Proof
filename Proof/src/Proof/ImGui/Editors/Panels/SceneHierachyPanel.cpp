@@ -46,7 +46,7 @@
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/ParticleSystem.h"
 
-#include "misc/cpp/imgui_stdlib.h"
+//#include "misc/cpp/imgui_stdlib.h"
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scripting/ScriptWorld.h"
 #include "Proof/ImGui/UiUtilities.h"
@@ -1475,42 +1475,7 @@ namespace Proof
 		DrawComponents<PlayerHUDComponent>("Player HUD", entity, [](PlayerHUDComponent& playerHud)
 			{
 				UI::AttributeDrawUITable(playerHud.HudTable);
-			/*
-			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
-			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
-			bool open = ImGui::TreeNodeEx("HudCadfasd", treeNodeFlags, "HUd Table");
-			if (!open)return;
-			ImGui::SameLine();
-			if(ImGui::Button("+")) {
-				playerHud.HudTable->Panels(playerHud, nullptr);
-			}
-			for (auto& [index, hud] : playerHud.HudTable->GetPanels())
-			{
-				UI::ScopedID scope(&index);
-				std::string name = hud != nullptr ? hud->Name : "null";
-				UI::AttributeTextBar(fmt::format("Index {}", index), name);
-				if (hud != nullptr)
-				{
-					ImGui::SameLine();
-					ImGui::Checkbox("Visible", &hud->Visible);
-				}
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString<AssetType>(AssetType::UIPanel).c_str()))
-					{
-						uint64_t Data = *(const uint64_t*)payload->Data;
-						if (AssetManager::HasAsset(Data))
-						{
-							auto ui = AssetManager::GetAsset<UIPanel>(Data);
-							playerHud.HudTable->SetUI(index, ui);
-						}
-					}
-					ImGui::EndDragDropTarget();
-				}
-			}
-			ImGui::TreePop();
-			*/
-		});
+			});
 	#endif
 		DrawComponents<WaterComponent>("Water Component", entity, [](WaterComponent& waterComponent)
 			{

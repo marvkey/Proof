@@ -94,6 +94,16 @@ namespace Proof
 			glm::inverse(cameraComp.UseLocalRotation ? m_World->GetWorldSpaceTransformUsingLocalRotation(worldCameraEntity) : m_World->GetWorldSpaceTransform(worldCameraEntity)));
 
 		m_World->OnRender(renderer, time, sceneCamera, m_World->GetWorldSpaceLocation(worldCameraEntity), cameraComp.NearPlane, cameraComp.FarPlane, cameraComp.FovDeg);
+		if (!m_Players.empty())
+		{
+			auto& player = m_Players[0];// assume only index is player 1
+			Entity e = m_World->TryGetEntityWithUUID(player.PlayerUUID);
+			if (e.IsValid())
+			{
+				if (e.HasComponent<PlayerHUDComponent>())
+					RenderHUD(e.GetUUID(), renderer);
+			}
+		}
 	}
 	void LocalGameMode::RenderRuntimeMultiPlayer(Count<class WorldRenderer> renderer, FrameTime time)
 	{
@@ -308,6 +318,10 @@ namespace Proof
 		{
 			playerEntity.AddComponent<InternalPlayerInputComponent>().m_InputPlayer = player;
 
+			LocalMultiplayerPlayer player;
+			player.PlayerUUID = playerEntity.GetUUID();
+			player.Renderer = nullptr;
+			m_Players.push_back(player);
 		}
 	}
 
@@ -335,5 +349,29 @@ namespace Proof
 
 			});
 	}
+	void LocalGameMode::RenderHUD(UUID entityID, Count<WorldRenderer> renderer)
+	{
+		auto e = m_World->GetEntity(entityID);
+		if (!e.HasComponent<PlayerHUDComponent>())
+			return;
+		PlayerHUDComponent& hudComponent = e.GetComponent<PlayerHUDComponent>();
+
+		auto hudTable = hudComponent.HudTable;
+
+		auto& layers = hudTable->GetLayers();
+
+		for (int i = layers.size() - 1; i >= 0; i--)
+		{
+			auto& layer = hudTable->GetLayer(i);
+
+			for (int j = layer.GetUIPanels().size() - 1; j >= 0; j--)
+			{
+				Count<UIPanelInstance> panelInstance = layer.GetUIPanels().at(j);
+				UIRenderer::DrawUI(panelInstance->GetInstanceMenu(), renderer->GetRenderer2D(), renderer->GetScreenData().FullResolution.x, renderer->GetScreenData().FullResolution.y);
+
+			}
+		}
+	}
+	
 }
 

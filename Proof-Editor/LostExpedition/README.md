@@ -1,1 +1,18 @@
 # Lost-Expedition
+bin/
+bin-int/
+.vs/
+.idea/
+# Visual Studio files and folder
+.vs/
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
+**.obj
+**.mtl 
+**.fbx 
+**.png 
+**.jpg 
+**.dll 
+**.lib

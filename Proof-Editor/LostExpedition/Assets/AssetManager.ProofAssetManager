@@ -2,33 +2,69 @@ Assets:
   - Asset: 1948765517176594391
     Type: Material
     Path: Materials\m_Black.Material.ProofAsset
+  - Asset: 11013441240331562467
+    Type: InputAction
+    Path: Input\PlayerMovement\IA_Rotation.InputAction.ProofAsset
+  - Asset: 1804100413018170951
+    Type: Texture
+    Path: Models\Pistol\textures\Pistol_Normal.png
   - Asset: 1896371110154550254
     Type: World
     Path: Scenes\TestScene.ProofWorld
   - Asset: 7659929436396046509
     Type: Material
     Path: Materials\m_Green.Material.ProofAsset
-  - Asset: 11429414779761748679
-    Type: ScriptFile
-    Path: Scripts\PlayerMovement.cs
-  - Asset: 441154320061695158
-    Type: ScriptFile
-    Path: Scripts\PlayerInput.cs
   - Asset: 4812082715384783110
     Type: InputAction
     Path: Input\PlayerMovement\IA_Movement.InputAction.ProofAsset
+  - Asset: 203935453544904822
+    Type: ScriptFile
+    Path: Scripts\HealthComponent.cs
   - Asset: 18216177543223532629
     Type: World
     Path: Scenes\New World.ProofWorld
   - Asset: 5002844255029031354
     Type: InputBindingContext
     Path: Input\PlayerMovement\IB_PlayerMovement.InputBindingContext.ProofAsset
-  - Asset: 11013441240331562467
-    Type: InputAction
-    Path: Input\PlayerMovement\IA_Rotation.InputAction.ProofAsset
+  - Asset: 6248028451720167464
+    Type: Texture
+    Path: Models\Pistol\textures\Pistol_Metallic.png
   - Asset: 5896697494919537015
     Type: PhysicsMaterial
     Path: Physics\Materials\pm_slipper.PhysicsMaterial.ProofAsset
   - Asset: 11692785166767351247
     Type: InputAction
     Path: Input\PlayerMovement\IA_Jump.InputAction.ProofAsset
+  - Asset: 15329971953129210005
+    Type: Texture
+    Path: Models\Pistol\textures\Pistol_Roughness.png
+  - Asset: 12226295763662669733
+    Type: MeshSourceFile
+    Path: Models\Pistol\source\Pistol.fbx
+  - Asset: 14406167083753920302
+    Type: Texture
+    Path: Models\Pistol\textures\Pistol_BaseColor.png
+  - Asset: 12713853379028340398
+    Type: Texture
+    Path: Models\Pistol\textures\Pistol_Occlusion.png
+  - Asset: 15530846312733877534
+    Type: Texture
+    Path: Models\Pistol\textures\internal_ground_ao_texture.jpeg
+  - Asset: 7382233147466968749
+    Type: Mesh
+    Path: Meshes\Pistol.Mesh.ProofAsset
+  - Asset: 10785136772344387073
+    Type: InputBindingContext
+    Path: Input\Weapon\IB_Weapons.InputBindingContext.ProofAsset
+  - Asset: 1490467677047270823
+    Type: InputAction
+    Path: Input\Weapon\IA_WeaponActivate.InputAction.ProofAsset
+  - Asset: 12113877820451625735
+    Type: Material
+    Path: Materials\m_Red.Material.ProofAsset
+  - Asset: 18446508233467783024
+    Type: Prefab
+    Path: Prefabs\Muzzle Flash.Prefab.ProofAsset
+  - Asset: 15995043814273079981
+    Type: UIPanel
+    Path: UI\Gun UI.UIPanel.ProofAsset

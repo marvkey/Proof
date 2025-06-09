@@ -54,13 +54,17 @@
 	bool SelectionManager::IsEntityOrAncestorSelected(SelectionContext contextID, const Entity entity)
 	{
 		Entity e = entity;
-		while (e)
+		while (e.IsValid())
 		{
 			if (IsSelected(contextID, e.GetUUID()))
 			{
 				return true;
 			}
-			e = e.GetParent();
+			if (e.HasParent())
+				e = e.GetParent();
+			else
+				break;
+
 		}
 		return false;
 	}

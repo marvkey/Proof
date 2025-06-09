@@ -133,6 +133,8 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		return physicsScene->GetActor(entity);
 	}
 	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityHasComponentFuncs;
+	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityAddComponentFuncs;
+	static std::unordered_map<MonoType*, std::function<bool(Entity)>> s_EntityRemoveComponentFuncs;
 	namespace ScriptFuncUtils
 	{
 		
@@ -327,7 +329,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		memcpy(mono_array_addr(*theArray, uint64_t, 0), objects.data(), objects.size() * sizeof(uint64_t));
 		#endif
 	}
-	static void World_DeleteEntity(uint64_t entityID, bool deleteChildren) 
+	static void World_DeleteEntity(uint64_t entityID, bool deleteChildren, float time) 
 	{
 		Count<World> world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world, "world is nullptr");
@@ -340,7 +342,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			return;
 		}
 		#endif
-		world->DeleteEntity(entity, deleteChildren);
+		world->DeleteEntity(entity, deleteChildren, time);
 	}
 
 	//static void World_OpenWorld(AssetID worldID, uint32_t playerCount ) {
@@ -372,6 +374,21 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		memcpy(mono_array_addr(*theArray, uint64_t, 0), objects.data(), objects.size() * sizeof(uint64_t));
 		#endif
 	}
+
+	static void Entity_AddChild(uint64_t entityID, uint64_t child)
+	{
+		Count <World> world = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(world, "world is nullptr");
+		Entity entity = world->GetEntity(entityID);
+
+		PF_CORE_ASSERT(entity, "Entity is null");
+		Entity childEntity = world->TryGetEntityWithUUID(child);
+		if (childEntity)
+		{
+			entity.AddChild(childEntity);
+		}
+	}
+
 	static bool Entity_HasComponent(uint64_t entityID, MonoReflectionType* componentType) {
 		if (entityID == 0)return false;
 		Count<World> world = ScriptEngine::GetWorldContext();
@@ -384,6 +401,46 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		// second paremter is calling the funciton
 		return s_EntityHasComponentFuncs.at(managedType)(entity);
 	}
+
+	static bool Entity_AddComponent(uint64_t entityID, MonoReflectionType* componentType)
+	{
+		if (entityID == 0)return false;
+		Count<World> world = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(world, "world is nullptr");
+		Entity entity = world->GetEntity(entityID);
+		PF_CORE_ASSERT(entity, "Entity is null");
+
+		MonoType* managedType = mono_reflection_type_get_type(componentType);
+		PF_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "mangaed type does not exist");
+
+		if (s_EntityHasComponentFuncs.at(managedType)(entity) == false) //no component
+		{
+			return s_EntityAddComponentFuncs.at(managedType)(entity);
+		}
+
+		return false;
+	}
+
+	static bool Entity_RemoveComponent(uint64_t entityID, MonoReflectionType* componentType)
+	{
+		if (entityID == 0)return false;
+		Count<World> world = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(world, "world is nullptr");
+		Entity entity = world->GetEntity(entityID);
+		PF_CORE_ASSERT(entity, "Entity is null");
+
+		MonoType* managedType = mono_reflection_type_get_type(componentType);
+		PF_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "mangaed type does not exist");
+
+		if (s_EntityHasComponentFuncs.at(managedType)(entity) == true) //no component
+		{
+			return s_EntityRemoveComponentFuncs.at(managedType)(entity);
+		}
+
+		return false;
+
+	}
+
 
 	static MonoObject* GetScriptInstance(UUID entityID, MonoString* classFullName)
 	{
@@ -4171,6 +4228,15 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 					return;
 				}
 				s_EntityHasComponentFuncs[managedType] = [](Entity entity) { return entity.HasComponent<Component>(); };
+				s_EntityAddComponentFuncs[managedType] = [](Entity entity) 
+					{
+						if (entity.HasComponent<Component>())
+							return false;
+						entity.AddComponent<Component>(); 
+
+						return true;
+					};
+				s_EntityRemoveComponentFuncs[managedType] = [](Entity entity) { return entity.RemoveComponent<Component>(); };
 				PF_ENGINE_TRACE("	ScriptFuncs Component Registered {}", managedTypename);
 			}(), ...); //... keep expanding templates
 	}
@@ -4249,9 +4315,12 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		//Entity 
 		{
 			PF_ADD_INTERNAL_CALL(Entity_HasComponent);
+			PF_ADD_INTERNAL_CALL(Entity_RemoveComponent);
+			PF_ADD_INTERNAL_CALL(Entity_AddComponent);
 			PF_ADD_INTERNAL_CALL(GetScriptInstance);
 			PF_ADD_INTERNAL_CALL(Entity_GetParent);
 			PF_ADD_INTERNAL_CALL(Entity_GetChildren);
+			PF_ADD_INTERNAL_CALL(Entity_AddChild);
 		}
 		//AssetID
 		{

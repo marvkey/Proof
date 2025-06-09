@@ -1,0 +1,25 @@
+AssetType: Prefab
+ID: 18446508233467783024
+EntityOwner: 15910072956752318309
+Entities:
+  - Entity: 15910072956752318309
+    TagComponent:
+      Tag: MucleFlash
+      tags: []
+    TransformComponent:
+      Location: [0, -0.634000003, 1.94200003]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []
+    PointLightComponent:
+      Color: [1, 1, 1]
+      Intensity: 1
+      MinRadius: 0
+      Radius: 3
+      Falloff: 1
+      CastsShadows: false
+      SoftShadows: false
+      ShadowStrength: 0.5
+      ShadowSoftness: 0.5

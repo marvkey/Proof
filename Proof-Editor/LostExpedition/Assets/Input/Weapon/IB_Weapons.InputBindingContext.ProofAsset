@@ -1,0 +1,7 @@
+AssetType: InputBindingContext
+ID: 10785136772344387073
+InputBindings:
+  - InputActionID: 1490467677047270823
+    KeyBindings:
+      - InputKeyBindingType: Key
+        InputKeyName: LeftMouseButton

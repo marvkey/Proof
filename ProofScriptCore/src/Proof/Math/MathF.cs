@@ -66,6 +66,13 @@ namespace Proof
         public static float Abs(float value) => Math.Abs(value);
         public static int Abs(int value) => Math.Abs(value);
 
+        public static float SmoothStep(float edge0, float edge1, float x)
+        {
+            // Scale, bias and saturate x to 0..1 range
+            x = Mathf.Clamp((x - edge0) / (edge1 - edge0),0,1);
+            // Evaluate polynomial
+            return x * x * (3 - 2 * x);
+        }
 
         public static Proof.Vector3 Abs(Proof.Vector3 value)
         {

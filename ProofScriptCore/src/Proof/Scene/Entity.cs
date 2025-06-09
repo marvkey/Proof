@@ -57,6 +57,12 @@ namespace Proof
             get => Transform.Scale;
             set => Transform.Scale = value;
         }
+
+        public Proof.Quaternion RotationQuat
+        {
+            get => Transform.RotationQuat;
+            set => Transform.RotationQuat = value;
+        }
         public void ApplyCameraRotate()
 		{
 			InternalCalls.ApplyCameraRotate(ID);
@@ -79,13 +85,33 @@ namespace Proof
             }
             return entityList;
         }
-		public bool HasComponent<T>() where T : Component, new()
+
+        public void AddChild(Entity e)
+        {
+            InternalCalls.Entity_AddChild(ID, e.ID);    
+        }
+
+
+        public bool HasComponent<T>() where T : Component, new()
         {
 			Type componentType = typeof(T);
 			return InternalCalls.Entity_HasComponent(ID, componentType);
 		}
 
-		public void SetAction(string ActionName, InputState state, Action func) 
+        public bool AddComponent<T>() where T : Component, new()
+        {
+            Type componentType = typeof(T);
+            return InternalCalls.Entity_AddComponent(ID, componentType);
+        }
+       
+
+        public bool RemoveComponent<T>() where T : Component, new()
+        {
+            Type componentType = typeof(T);
+            return InternalCalls.Entity_RemoveComponent(ID, componentType);
+        }
+
+        public void SetAction(string ActionName, InputState state, Action func) 
 		{
 			if (!HasComponent<PlayerInputComponent>())
 				return;
@@ -129,7 +155,14 @@ namespace Proof
         public T GetScript<T>() where T : Entity, new()
         {
             object instance = InternalCalls.GetScriptInstance(ID, typeof(T).FullName);
+            if(instance == null)
+                return null;
             return instance as T;
+        }
+
+        public bool HasScript<T>() where T : Entity, new()
+        {
+            return GetScript<T>() != null;
         }
         public string Name
 		{
@@ -151,6 +184,8 @@ namespace Proof
         protected virtual void OnCreate() { }
         protected virtual void OnUpdate(float ts) { }
         protected virtual void OnPostUpdate(float ts) { }
+        protected virtual void OnPhysicsUpdate(float fixedPhysicsDeltaTime) { }
+
         protected virtual void OnDestroy() { }
 
         private void OnCollisionEnterInternal(ulong id) => CollisionEnterEvent?.Invoke(new Entity(id));

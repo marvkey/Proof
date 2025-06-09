@@ -53,15 +53,20 @@ namespace Proof
         // Create entities in new scene
         // in reverse order
         auto idView = srcSceneRegistry.view<UICoreComponent>();
-        std::for_each(idView.rbegin(), idView.rend(), [&](auto e) {
+        auto begin = idView.begin();
+        auto end = idView.end();
+
+        while (end != begin) {
+            --end;
+            entt::entity e = *end;
+
             UICoreComponent coreComponent = srcSceneRegistry.get<UICoreComponent>(e);
             UIElement newElement = newMenu->CreateElement(coreComponent.GetName(), coreComponent.GetElementID(), coreComponent.ElementType);
             enttMap[coreComponent.GetElementID()] = (entt::entity)newElement;
-            });
+        }
 
         // Copy components 
         CopyComponent(UIAllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
-
         return newMenu;
     }
 

@@ -14,15 +14,19 @@ namespace Proof
 			case Proof::VariableTypes::Int:
 			case Proof::VariableTypes::Float:
 				m_VariableBuffer.Allocate(sizeof(float));// using float or size of float or int same size
+				m_VariableBuffer.Fill(0);
 				break;
 			case Proof::VariableTypes::Vec2:
 				m_VariableBuffer.Allocate(sizeof(glm::vec2));
+				m_VariableBuffer.Fill(0);
 				break;
 			case Proof::VariableTypes::Vec3:
 				m_VariableBuffer.Allocate(sizeof(glm::vec3));
+				m_VariableBuffer.Fill(0);
 				break;
 			case Proof::VariableTypes::Vec4:
 				m_VariableBuffer.Allocate(sizeof(glm::vec4));
+				m_VariableBuffer.Fill(0);
 				break;
 			case Proof::VariableTypes::String:
 				m_VariableBuffer.Allocate(sizeof(256 * sizeof(char)));

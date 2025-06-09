@@ -33,7 +33,7 @@ namespace Proof
 
 	enum class AssetSelectionContext
 	{
-		Prefab,GUIPanel
+		Prefab,GUIPanel,VariableRegistry
 	};
 
 	class AssetSelectionManager

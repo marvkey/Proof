@@ -35,5 +35,6 @@ namespace Proof
 		Count<class Renderer2D> m_Renderer;
 		bool m_NeedsSaving = true;
 		Count<class UIPanel> m_UIPanel = nullptr;
+		Count<class VariableRegistrySubPanel> m_VariableRegistrySubPanel;
 	};
 }

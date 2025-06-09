@@ -10,5 +10,6 @@ if %errorlevel% neq 0 (
 )
 
 popd
+pause
 
 		

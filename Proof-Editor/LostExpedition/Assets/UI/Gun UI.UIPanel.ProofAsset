@@ -1,0 +1,18 @@
+AssetType: UIPanel
+ID: 15995043814273079981
+UIElements:
+  - UIElement: 12378187212626751595
+    UICoreComponent:
+      ElementID: 12378187212626751595
+      Name: Text
+      UIElementType: Text
+      Position: [0, 0]
+      Rotation: [0, 0]
+      Size: [100, 100]
+      AnchorMinimum: [0.5, 0.5]
+      AnchorMaximum: [0.5, 0.5]
+    UITextComponent:
+      Text: +
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1

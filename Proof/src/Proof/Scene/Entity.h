@@ -33,11 +33,12 @@ namespace Proof{
 		template<class... T>
 		bool HasComponent()const {
 
-			return m_World->m_Registry.all_of<T...>(m_EntityHandle);
+			
+			return m_World->m_Registry.has<T...>(m_EntityHandle);
 		}
 		template<class... T>
 		bool HasAnyComponent()const {
-			return m_World->m_Registry.any_of<T...>(m_EntityHandle);
+			return m_World->m_Registry.any<T...>(m_EntityHandle);
 		}
 		template<class T,typename... Args>
 		T& AddComponent(Args&&... args) {
@@ -130,7 +131,34 @@ namespace Proof{
 		World* GetCurrentWorld()const {
 			return m_World;
 		}
-		operator bool() const { return m_EntityHandle != entt::null && m_World != nullptr && m_World->m_Registry.valid(m_EntityHandle); }
+
+		bool IsValid() const
+		{
+
+			if (m_EntityHandle == entt::null)
+				return false;
+
+			if (m_World == nullptr)
+				return false;
+
+			if (!m_World->m_Registry.valid(m_EntityHandle))
+				return false;
+
+			return true;
+		}
+		operator bool() const 
+		{
+			if (m_EntityHandle == entt::null)
+				return false;
+
+			if (m_World == nullptr)
+				return false;
+
+			if (!m_World->m_Registry.valid(m_EntityHandle))
+				return false;
+
+			return true;
+		}
 
 		bool operator==(const Entity& other) const {
 			return m_EntityHandle == other.m_EntityHandle && m_World == other.m_World;

@@ -1,0 +1,4 @@
+AssetType: InputAction
+ID: 1490467677047270823
+OutputType: Bool
+OutputValueBehavior: MaximumAbsolute

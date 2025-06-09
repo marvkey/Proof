@@ -8,11 +8,12 @@ namespace Proof {
 	UIPanel::UIPanel()
 	{
 		Menu = Count<class UIMenu>::Create();
+		VariableTable = Count<VariableRegistry>::Create();
 	}
 	UIPanel::UIPanel(Count<UIPanel> panel)
 	{
 		Menu = UIMenu::Copy(panel->Menu);
-
+		VariableTable = Count<VariableRegistry>::Create();
 	}
 	
 	UIPanelInstance::UIPanelInstance(Count<UIPanel> panel)

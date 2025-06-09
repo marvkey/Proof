@@ -38,6 +38,8 @@ namespace Proof
         void GenerateMultiplayerPipeLines();
 
         void RenderWorldHUD(Count<class WorldRenderer> renderer);
+
+        void RenderHUD(UUID entityID, Count<WorldRenderer> renderer);
     private:
         LocalGameModeState m_LocalGameModeSate;
         Count<class RenderPass> m_PlayerGridPass;

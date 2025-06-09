@@ -206,7 +206,7 @@ namespace Proof
 		template<class... T>
 		bool HasComponent()const 
 		{
-			return m_Menu->m_Registry.all_of<T...>(m_UIElementHandle);
+			return m_Menu->m_Registry.has<T...>(m_UIElementHandle);
 		}
 
 		UIElementType GetElementType()const

@@ -20,7 +20,7 @@ namespace Proof
 		template<typename T>
 		T GetValue() const
 		{
-			if (!IsArray)
+			if (!m_IsArray)
 			{
 				return m_VariableField.As<PrimitiveVariableStorage>()->GetValue<T>();
 			}
@@ -29,7 +29,7 @@ namespace Proof
 		template<typename T>
 		void SetValue(const T& value)
 		{
-			if (!IsArray)
+			if (!m_IsArray)
 			{
 				m_VariableField.As<PrimitiveVariableStorage>()->SetValue<T>(value);
 			}
@@ -39,11 +39,15 @@ namespace Proof
 		{
 			return m_VariableField;
 		};
+		VariableTypes GetType() { return m_Type; }
+		bool IsArray() { return m_IsArray; }
 
+		void SetType(VariableTypes type);
+		void SetIsArray(bool isArray);
 	public:
-		VariableTypes Type = VariableTypes::Float;
-		bool IsArray = false;
 	private:
+		VariableTypes m_Type = VariableTypes::Float;
+		bool m_IsArray = false;
 		UUID m_UUID = 0;
 		Count<class VariableStorage> m_VariableField = nullptr;
 		friend class VariableRegistry;
@@ -54,16 +58,26 @@ namespace Proof
 	public:
 		VariableRegistry() = default;
 		VariableRegistry(const VariableRegistry& other) = default;
-		void SetVariable(std::string_view name, Variable var);
-		void RemoveVariable(std::string_view name);
-		bool HasVariable(std::string_view name)const;
 
+		Variable& AddVariable(VariableTypes vartype);
 		Variable& GetVariable(std::string_view name);
-		const std::unordered_map<std::string, Variable>& GetVariables()const { return m_Variables; }
-		const std::unordered_map<std::string, Variable>& GetVariables() { return m_Variables; }
+		Variable& GetVariable(UUID id);
+
+		std::string GetVariableAsName(UUID id);
+		bool HasVariable(std::string_view name)const;
+		bool HasVariable(UUID id)const;
+		void UpdateVariableName(std::string_view oldName, std::string_view newName);
+
+		void RemoveVariable(std::string_view name);
+		const std::unordered_map<std::string, UUID>& GetVariablesNames()const { return m_VariablesNames; }
+		const std::unordered_map<std::string, UUID>& GetVariablesNames() { return m_VariablesNames; }
+		
+		const std::unordered_map<UUID, Variable>& GetVariables()const { return m_VariableIds; }
+		const std::unordered_map<UUID, Variable>& GetVariables(){ return m_VariableIds; }
+
 
 	private:
-		std::unordered_map<std::string, Variable> m_Variables;
-		std::unordered_map<UUID, std::string> m_VariableIds;
+		std::unordered_map<std::string, UUID> m_VariablesNames;
+		std::unordered_map<UUID, Variable> m_VariableIds;
 	};
 }

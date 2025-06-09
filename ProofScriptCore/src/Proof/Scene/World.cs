@@ -50,7 +50,17 @@ namespace Proof
 
             return new Entity(entityID);
         }
+        public static Entity Instantiate(Prefab prefab, Proof.Vector3 location, Entity parent)
+        {
+            if (parent == null)
+                return null;
 
+            Entity InstantiatedEntity = Instantiate(prefab, new Vector3(0));
+            parent.AddChild(InstantiatedEntity);
+
+            InstantiatedEntity.Location = location;
+            return InstantiatedEntity;
+        }
         public static Entity TryFindEntityByTag(string tag)
         {
             ulong id = InternalCalls.World_TryFindEntityByTag(tag);
@@ -60,9 +70,9 @@ namespace Proof
             return new Entity(id);
         }
 
-        public static void DeleteEntity(Entity entity, bool deleteChildren = true)
+        public static void DeleteEntity(Entity entity, bool deleteChildren = true,float time = 0.0f)
         {
-            InternalCalls.World_DeleteEntity(entity.ID, deleteChildren);
+            InternalCalls.World_DeleteEntity(entity.ID, deleteChildren,time);
         }
 
         public static float GetDeltaTime()

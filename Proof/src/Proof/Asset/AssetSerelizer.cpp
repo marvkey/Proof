@@ -487,6 +487,8 @@ namespace Proof {
 			out << YAML::Key << "Position" << YAML::Value << coreComponent.Transform.Position;
 			out << YAML::Key << "Rotation" << YAML::Value << coreComponent.Transform.Rotation;
 			out << YAML::Key << "Size" << YAML::Value << coreComponent.Transform.Size;
+			out << YAML::Key << "AnchorMinimum" << YAML::Value << coreComponent.Transform.Anchor.Minimum;
+			out << YAML::Key << "AnchorMaximum" << YAML::Value << coreComponent.Transform.Anchor.Maximum;
 			out << YAML::EndMap; // CoreComponent
 		}
 
@@ -550,6 +552,8 @@ namespace Proof {
 					transform.Position = coreComponent["Position"].as<glm::vec2>(transform.Position);
 					transform.Rotation = coreComponent["Rotation"].as<glm::vec2>(transform.Rotation);
 					transform.Size = coreComponent["Size"].as<glm::vec2>(transform.Size);
+					transform.Anchor.Minimum = coreComponent["AnchorMinimum"].as<glm::vec2>(transform.Anchor.Minimum);
+					transform.Anchor.Maximum = coreComponent["AnchorMaximum"].as<glm::vec2>(transform.Anchor.Maximum);
 				}
 			}
 

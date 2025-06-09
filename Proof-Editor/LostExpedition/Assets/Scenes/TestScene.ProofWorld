@@ -16,7 +16,7 @@ World:
         TintColor: [1, 1, 1]
         SkyBoxLod: 0
         MapRotation: 0
-        Intensity: 1
+        Intensity: 0.5
         EnvironmentState: PreethamSky
         TextureDataImage: 0
         HosekWilkieTurbidity: 4
@@ -44,7 +44,7 @@ World:
         Tag: Directional Light
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [-0.0270984769, 0.0406479686, -0.0385721028]
         Rotation: [1.39626336, 0.17453292, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -52,22 +52,33 @@ World:
         Children: []
       DirectionalLightComponent:
         Color: [1, 1, 1]
-        Intensity: 1
+        Intensity: 0.100000001
         CastShadow: true
         ShadowStrength: 0.5
         CastSoftShadow: true
         ShadowSoftness: 0.5
+    - Entity: 13002574944404870795
+      TagComponent:
+        Tag: WeaponHolder
+        tags: []
+      TransformComponent:
+        Location: [1.09892821, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 10869204382231457587
+        Children: []
     - Entity: 10869204382231457587
       TagComponent:
         Tag: Player
         tags: []
       TransformComponent:
-        Location: [0, 6.69999981, 0]
+        Location: [0, 2, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
-        Children: [15432167700584823006]
+        Children: [15432167700584823006, 13002574944404870795]
       MeshComponent:
         MeshAssetPointerID: 50
         MaterialTable:
@@ -98,10 +109,20 @@ World:
               - NameID: LostExpedition.PlayerMovement.JumpForce
                 Type: Float
                 Data: 10
+          - Script: LostExpedition.WeaponManager
+            ScriptClassName: LostExpedition.WeaponManager
+            ScriptName: LostExpedition.WeaponManager
+            Fields:
+              - NameID: LostExpedition.WeaponManager.WeaponHandleSlot
+                Type: Entity
+                Data: 13002574944404870795
           - Script: LostExpedition.PlayerInput
             ScriptClassName: LostExpedition.PlayerInput
             ScriptName: LostExpedition.PlayerInput
             Fields:
+              - NameID: LostExpedition.PlayerInput.ActivateWeaponAction
+                Type: InputAction
+                Data: 1490467677047270823
               - NameID: LostExpedition.PlayerInput.MoveAction
                 Type: InputAction
                 Data: 4812082715384783110
@@ -132,18 +153,40 @@ World:
           - InputBindingContextHandler: ""
             InputBindingID: 5002844255029031354
             Active: true
+          - InputBindingContextHandler: ""
+            InputBindingID: 10785136772344387073
+            Active: true
       PlayerStartComponent:
         InputPlayer: Player0
         PlayerPrefab: 0
         DontSpawn: true
+      PlayerHUDComponent:
+        UITable:
+          - Layer: Menu
+            Visible: true
+            Panels:
+              []
+          - Layer: Modal
+            Visible: true
+            Panels:
+              []
+          - Layer: Content
+            Visible: true
+            Panels:
+              []
+          - Layer: HUD
+            Visible: true
+            Panels:
+              - PanelID: 15995043814273079981
+                Visible: true
     - Entity: 4525501726541901185
       TagComponent:
         Tag: Plane
         tags: []
       TransformComponent:
-        Location: [0, -1.89999998, 0]
+        Location: [0, -1.89962769, 0]
         Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
+        Scale: [10, 1, 10]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
@@ -154,7 +197,7 @@ World:
             AssetID: 7659929436396046509
             Index: 0
       MeshColliderComponent:
-        ColliderID: 13145741192960869483
+        ColliderID: 31636766755097588
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 5896697494919537015
@@ -169,3 +212,121 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 16039414171671641192
+      TagComponent:
+        Tag: Pistol
+        tags: []
+      TransformComponent:
+        Location: [0, -1.41635358, 2.69922113]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [2074435996451250117]
+      MeshComponent:
+        MeshAssetPointerID: 7382233147466968749
+      ScriptComponent:
+        Scripts:
+          - Script: LostExpedition.Gun
+            ScriptClassName: LostExpedition.Gun
+            ScriptName: LostExpedition.Gun
+            Fields:
+              - NameID: LostExpedition.Gun.MuzzleFlash
+                Type: Prefab
+                Data: 18446508233467783024
+              - NameID: LostExpedition.Gun.MuzzleFlashPos
+                Type: Entity
+                Data: 2074435996451250117
+              - NameID: LostExpedition.Gun.RecoilAngle
+                Type: Float
+                Data: 5
+              - NameID: LostExpedition.Gun.Damage
+                Type: Float
+                Data: 10
+              - NameID: LostExpedition.Gun.maxDistance
+                Type: Float
+                Data: 500
+              - NameID: LostExpedition.Gun.SpreadAngle
+                Type: Float
+                Data: 1
+              - NameID: LostExpedition.Gun.FireRate
+                Type: Float
+                Data: 0.230000004
+              - NameID: LostExpedition.Gun.ReloadTime
+                Type: Float
+                Data: 1.5
+              - NameID: LostExpedition.Gun.MagazineSize
+                Type: Int32
+                Data: 30
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: false
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: true
+        CollisionDetection: Discrete
+    - Entity: 17640493804854245811
+      TagComponent:
+        Tag: Enemy
+        tags: []
+      TransformComponent:
+        Location: [0, 3.21700001, -13.043582]
+        Rotation: [0, 0, 0]
+        Scale: [10, 10, 10]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        MaterialTable:
+          - Material: ""
+            AssetID: 12113877820451625735
+            Index: 0
+      ScriptComponent:
+        Scripts:
+          - Script: LostExpedition.HealthComponent
+            ScriptClassName: LostExpedition.HealthComponent
+            ScriptName: LostExpedition.HealthComponent
+            Fields:
+              - NameID: LostExpedition.HealthComponent.Health
+                Type: Float
+                Data: 100
+              - NameID: LostExpedition.HealthComponent.MaxHealth
+                Type: Float
+                Data: 100
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 2074435996451250117
+      TagComponent:
+        Tag: Muzzle flash pos
+        tags: []
+      TransformComponent:
+        Location: [0, 0.383000016, -0.703744411]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 16039414171671641192
+        Children: []

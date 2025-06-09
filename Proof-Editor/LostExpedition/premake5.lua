@@ -67,7 +67,7 @@ project "ProofScriptCore"
 group ""
 
 project "LostExpedition"
-	location "Source/ScriptApp"
+	location "%{wks.location}"
 	kind "SharedLib"
 	language "C#"
 	dotnetframework "4.7.2"
@@ -79,6 +79,11 @@ project "LostExpedition"
 	files 
 	{
 		"Assets/**.cs", 
+
+	}
+   includedirs 
+	{
+		"%{wks.location}/Assets",
 	}
 	links
 	{

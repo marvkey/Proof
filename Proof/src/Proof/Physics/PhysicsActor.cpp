@@ -78,8 +78,11 @@ namespace Proof
 	}
 	bool PhysicsActor::IsDynamic()const
 	{
-		
-		return m_Entity.GetComponent<RigidBodyComponent>().RigidBodyType == RigidBodyType::Dynamic;
+		if (!m_Entity.HasComponent<RigidBodyComponent>())
+			return false;
+
+		auto& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
+		return rigidBody.RigidBodyType == RigidBodyType::Dynamic;
 	}
 
 	void PhysicsActor::AddForce(glm::vec3 force, ForceMode mode, bool autoWake)

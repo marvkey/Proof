@@ -77,7 +77,7 @@ namespace Proof
         internal extern static ulong World_TryFindEntityByTag(string message);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern	static void World_DeleteEntity(ulong entityID, bool deleteChildren);
+        internal extern	static void World_DeleteEntity(ulong entityID, bool deleteChildren,float time);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void World_Restart();
@@ -99,9 +99,17 @@ namespace Proof
         //returns entity of id
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void Entity_GetChildren(ulong entityID, ref ulong[] types);
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void Entity_AddChild(ulong entityID, ulong childID);
 
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static bool Entity_HasComponent(ulong entityID, Type componentType);
+
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Entity_AddComponent(ulong entityID, Type componentType); 
+
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool Entity_RemoveComponent(ulong entityID, Type componentType);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static object GetScriptInstance(ulong entityID, string scrptName);

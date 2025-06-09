@@ -63,10 +63,6 @@ namespace Proof {
 	}
 	World::~World()
 	{
-		auto group = m_Registry.group<CameraComponent>();
-		for(auto e : group)
-			m_Registry.destroy((entt::entity)e);
-
 		m_Registry.clear();
 
 		m_Registry.on_construct<MeshColliderComponent>().disconnect(this);
@@ -820,6 +816,23 @@ namespace Proof {
 
 	void World::DeleteEntitiesfromQeue()
 	{
+
+		for (auto it = m_EnttiesDeletAfterTime.begin(); it != m_EnttiesDeletAfterTime.end(); ) 
+		{
+			it->second -= FrameTime::GetWorldDeltaTime();
+			if (it->second <= 0.0f)
+			{
+				m_EntityDeleteQueue.insert(it->first);
+				
+				it = m_EnttiesDeletAfterTime.erase(it);
+			}
+			else
+			{
+				++it;
+			}
+		}
+
+		
 		// job to remove entites does not care if has child or not
 		for (auto& ID : m_EntityDeleteQueue)
 		{
@@ -865,12 +878,17 @@ namespace Proof {
 
 	void World::OnScriptAdded(entt::registry& component, entt::entity entityID)
 	{
-		//ScriptMeathod::OnCreate({ entityID,this });
+		if (m_ScriptWorld == nullptr)
+			return;
+
+		Entity e = { entityID, this };
+		m_ScriptWorld->InstantiateScriptEntity(e);
 	}
 
 	void World::OnScriptDelete(entt::registry& component, entt::entity entityID)
 	{
-		//ScriptMeathod::OnDestroy({ entityID,this }); 
+		Entity e = { entityID, this };
+		m_ScriptWorld->DestroyEntityScript(e);
 	}
 	void World::OnWaterComponentCreate(entt::registry& registry, entt::entity entityID)
 	{
@@ -1019,7 +1037,7 @@ namespace Proof {
 				player->OnUpdate(DeltaTime);
 			}
 		}
-
+#if 0
 		{
 			PF_PROFILE_FUNC("World::OnUpdate - Audio");
 			{
@@ -1099,7 +1117,7 @@ namespace Proof {
 				}
 			}
 		}
-
+#endif
 		{
 
 			ForEachEnitityWith<WaterComponent>([&](Entity e)
@@ -1511,7 +1529,8 @@ namespace Proof {
 	//static void CopyComponent
 	Count<World> World::Copy(Count<World> worldToCopy) {
 		Count<World> newWorld = Count<World>::Create();
-		
+#if 1
+
 		newWorld->Name = worldToCopy->Name;
 		//newWorld->m_ID = worldToCopy->GetID();
 	
@@ -1522,18 +1541,24 @@ namespace Proof {
 		// Create entities in new scene
 		// in reverse order
 		auto idView = srcSceneRegistry.view<IDComponent>();
-		std::for_each(idView.rbegin(), idView.rend(), [&](auto e) {
+		auto begin = idView.begin();
+		auto end = idView.end();
+
+		while (end != begin) {
+			--end;
+			entt::entity e = *end;
+
 			EntityID uuid = srcSceneRegistry.get<IDComponent>(e).GetID();
 			const auto& name = srcSceneRegistry.get<TagComponent>(e).Tag;
 			Entity newEntity = newWorld->CreateEntity(name, uuid);
 			enttMap[uuid] = (entt::entity)newEntity;
-		});
+		}
 
 		// Copy components (except IDComponent )
 		CopyComponent(AllComponents{}, dstSceneRegistry, srcSceneRegistry, enttMap);
 
 		newWorld->m_ScriptWorld = ScriptWorld::CopyScriptWorld(worldToCopy->GetScriptWorld(), newWorld);
-
+#endif
 		return newWorld;
 	}
 
@@ -1553,8 +1578,13 @@ namespace Proof {
 		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
 		m_Registry.on_destroy<RigidBodyComponent>().connect < &World::OnRigidBodyComponentDelete>(this);
 
+
+		m_Registry.on_construct<ScriptComponent>().connect<&World::OnScriptAdded>(this);
+		m_Registry.on_destroy<ScriptComponent>().connect < &World::OnScriptDelete>(this);
+
+
 		Count<World> instance = this;
-		AudioEngine::BeginContext(instance);
+		//AudioEngine::BeginContext(instance);
 		m_ScriptWorld->BeginRuntime();
 
 
@@ -1605,7 +1635,7 @@ namespace Proof {
 		m_Registry.on_construct<ScriptComponent>().disconnect(this);
 		m_Registry.on_destroy<ScriptComponent>().disconnect(this);
 		
-		AudioEngine::EndContext();
+		//AudioEngine::EndContext();
 		m_PhysicsWorld->EndWorld();
 		m_PhysicsWorld = nullptr;
 		m_GameMode->End();
@@ -1613,18 +1643,36 @@ namespace Proof {
 		m_GameMode = nullptr;
 		//m_Registry.clear(); // some components hold a shred refrence to the world sowe need to get rid of them
 	}
-	void World::DeleteEntity(Entity ent, bool deleteChildren) {
-		if(!m_EntitiesMap.contains(ent.GetUUID()))
-			return;
-		m_EntityDeleteQueue.insert(ent.GetUUID());
-		if (deleteChildren)
-		{
-			ent.EachChild([&](Entity childEntity) {
-				DeleteEntity(childEntity, true);
-			});
-		}
 
+	void World::DeleteEntity(class Entity ent, bool deleteChildren , float time)
+	{
+		UUID enttUUID = ent.GetUUID();
+		if (!HasEntity(enttUUID))
+			return;
+		if (time <= 0.0f)
+		{
+			m_EntityDeleteQueue.insert(ent.GetUUID());
+			if (deleteChildren)
+			{
+				ent.EachChild([&](Entity childEntity) 
+					{
+						DeleteEntity(childEntity, true);
+					});
+			}
+		}
+		else
+		{
+			m_EnttiesDeletAfterTime[ent.GetUUID()] = time;
+
+			if (deleteChildren)
+			{
+				ent.EachChild([&](Entity childEntity) {
+					DeleteEntity(childEntity, true, time);
+					});
+			}
+		}
 	}
+
 
 	void World::ConvertToWorldSpaceTransform(Entity entity)
 	{

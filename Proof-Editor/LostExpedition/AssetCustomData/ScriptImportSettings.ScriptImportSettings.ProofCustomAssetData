@@ -1,8 +1,21 @@
 ScriptImportSettings:
   Scripts:
+    - Script: LostExpedition.Gun
+      ScriptName: LostExpedition.Gun
+      Fields:
+        - NameID: LostExpedition.Gun.MuzzleFlash
+          Type: Prefab
+          Data: 0
+    - Script: LostExpedition.HealthComponent
+      ScriptName: LostExpedition.HealthComponent
+      Fields:
+        []
     - Script: LostExpedition.PlayerInput
       ScriptName: LostExpedition.PlayerInput
       Fields:
+        - NameID: LostExpedition.PlayerInput.ActivateWeaponAction
+          Type: InputAction
+          Data: 0
         - NameID: LostExpedition.PlayerInput.MoveAction
           Type: InputAction
           Data: 0
@@ -12,7 +25,15 @@ ScriptImportSettings:
         - NameID: LostExpedition.PlayerInput.JumpAction
           Type: InputAction
           Data: 0
+    - Script: LostExpedition.WeaponManager
+      ScriptName: LostExpedition.WeaponManager
+      Fields:
+        []
     - Script: LostExpedition.PlayerMovement
       ScriptName: LostExpedition.PlayerMovement
+      Fields:
+        []
+    - Script: LostExpedition.Weapon
+      ScriptName: LostExpedition.Weapon
       Fields:
         []

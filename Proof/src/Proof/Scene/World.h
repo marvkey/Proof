@@ -99,7 +99,7 @@ namespace Proof {
 		Entity GetEntity(UUID id);
 		Entity TryGetEntityByTag(const std::string& tag);
 		// entities get added to a que and deleted at teh e end of the frame
-		void DeleteEntity(class Entity ent, bool deleteChildren = true);
+		void DeleteEntity(class Entity ent, bool deleteChildren = true, float time = 0.0f);
 		//only workdsd if it does not have a parent
 		void ConvertToWorldSpaceTransform(Entity entity);
 
@@ -210,6 +210,7 @@ namespace Proof {
 		bool m_RigidBodyOnConstruct = true;
 		std::function<void(AssetID)> m_OnWorldTransitionCallback;
 		std::unordered_set< UUID> m_EntityDeleteQueue;
+		std::unordered_map<UUID,float> m_EnttiesDeletAfterTime;
 		Count<class ScriptWorld> m_ScriptWorld;
 		entt::registry m_Registry;
 		Count<class PhysicsWorld> m_PhysicsWorld = nullptr;

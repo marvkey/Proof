@@ -109,7 +109,7 @@ project "ProofScriptCore"
 group ""
 
 project "$PROJECT_NAME$"
-	location "Source/ScriptApp"
+	location "%{wks.location}"
 	kind "SharedLib"
 	language "C#"
 	dotnetframework "4.7.2"

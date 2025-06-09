@@ -14,7 +14,7 @@ namespace Proof
 		UIPanel();
 		UIPanel(Count<UIPanel> panel);
 		Count<class UIMenu> Menu;
-	///	Count<class VariableRegistry> m_VariableTable;
+		Count<class VariableRegistry> VariableTable;
 	};
 
 	class UIPanelInstance : public RefCounted

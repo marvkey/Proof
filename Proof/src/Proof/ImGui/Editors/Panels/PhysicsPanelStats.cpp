@@ -21,6 +21,7 @@ namespace Proof
 
 	void PhysicsStatsPanel::SetWorldContext(const Count<World>& context)
 	{
+		return;
 		if (context == nullptr)
 			m_PhysicsWorld = nullptr;
 		else
