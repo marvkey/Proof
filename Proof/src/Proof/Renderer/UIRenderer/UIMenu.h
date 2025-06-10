@@ -5,7 +5,7 @@
 #include "Proof/Core/UUID.h"
 #include "Proof/Renderer/Vertex.h"
 #include "Proof/Utils/VariableSystem/VariableFieldTypes.h"
-
+#include "Proof/Utils/MultiUse.h"
 #include <glm/glm.hpp>
 #include <entt/entt.hpp>
 namespace Proof
@@ -15,7 +15,8 @@ namespace Proof
 		None = 0,
 		Button,
 		Image,
-		Text
+		Text,
+		ProgressBar,
 	};
 
 	enum class UIPositionAnchor
@@ -122,6 +123,13 @@ namespace Proof
 		TextParams TextConfig;
 		Count<Font> Font = Font::GetDefault();
 	};
+
+	struct UIProggresBarComponent
+	{
+		ClampedValue<float,0.0f,1.0f> Proggress = 1.0f; 
+		glm::vec4 FillColor = { 1.0f, 0.0f, 0.0f, 1.0f };
+		glm::vec4 BackgroundColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+	};
 	class UIElement;
 	class UIMenu : RefCounted
 	{
@@ -168,7 +176,6 @@ namespace Proof
 		{
 			return m_UIElementsNameMap.contains(name);
 		}
-
 
 		void SetName(UIElement element, const std::string& name);
 	private:
@@ -265,9 +272,9 @@ namespace Proof
 	};
 	// a ui component needs one of these
 	using UIAllComponents =
-		UIComponentGroup<UICoreComponent, UIImageComponent, UIButtonComponent, UITextComponent>;
+		UIComponentGroup<UICoreComponent, UIImageComponent, UIButtonComponent, UITextComponent, UIProggresBarComponent>;
 
 	// an uiElement needs only one of this 
 	using UIExclusiveComponentGroup =
-		UIComponentGroup<UIImageComponent, UIButtonComponent, UITextComponent>;
+		UIComponentGroup<UIImageComponent, UIButtonComponent, UITextComponent, UIProggresBarComponent>;
 }

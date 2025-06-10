@@ -113,6 +113,9 @@ namespace Proof
             case Proof::UIElementType::Text:
                 m_Registry.emplace<UITextComponent>(uiElement);
                 break;
+			case Proof::UIElementType::ProgressBar:
+				m_Registry.emplace<UIProggresBarComponent>(uiElement);
+				break;
             default:
                 break;
         }

@@ -506,6 +506,19 @@ namespace Proof {
 				out << YAML::EndMap; // UITextComponent
 			}
 		}
+		{
+			if (element.HasComponent<UIProggresBarComponent>())
+			{
+				auto& proggressComponent = element.GetComponent<UIProggresBarComponent>();
+
+				out << YAML::Key << "UIProggresBarComponent";
+				out << YAML::BeginMap; // UIProggresBarComponent
+				out << YAML::Key << "Proggress" << YAML::Value << proggressComponent.Proggress.GetValue();
+				out << YAML::Key << "FillColor" << YAML::Value << proggressComponent.FillColor;
+				out << YAML::Key << "BackgroundColor" << YAML::Value << proggressComponent.BackgroundColor;
+				out << YAML::EndMap; // UIProggresBarComponent
+			}
+		}
 		out << YAML::EndMap; // Element
 
 	}
@@ -566,6 +579,17 @@ namespace Proof {
 					src.TextConfig.Kerning = textComponent["Kerning"].as<float>();
 					src.TextConfig.LineSpacing = textComponent["LineSpacing"].as<float>();
 					src.Text = textComponent["Text"].as<std::string>();
+				}
+			}
+
+			{
+				auto proggressComponent = uiElement["UIProggresBarComponent"];
+				if (proggressComponent)
+				{
+					auto& src = newUIElement.GetComponent<UIProggresBarComponent>();
+					src.Proggress = proggressComponent["Proggress"].as<float>(src.Proggress.GetValue());
+					src.FillColor = proggressComponent["FillColor"].as<glm::vec4>(src.FillColor);
+					src.BackgroundColor = proggressComponent["BackgroundColor"].as<glm::vec4>(src.BackgroundColor);
 				}
 			}
 		}

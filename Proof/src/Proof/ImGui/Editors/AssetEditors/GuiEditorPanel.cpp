@@ -96,6 +96,10 @@ namespace Proof
 		{
 			element = m_UIPanel->Menu->CreateElement(UIElementType::Image);
 		}
+		if (ImGui::MenuItem("Proggress Bar"))
+		{
+			element = m_UIPanel->Menu->CreateElement(UIElementType::ProgressBar);
+		}
 		if (element)
 		{
 			element.GetComponent<UICoreComponent>().Transform.Size = glm::vec2{ 30 };
@@ -298,7 +302,6 @@ namespace Proof
 
 		DrawElementType<UITextComponent>(element, [&](UITextComponent& text)
 			{
-
 				UI::AttributeInputTextMultiline("", text.Text, 0);
 			
 				UI::BeginPropertyGrid();
@@ -308,6 +311,16 @@ namespace Proof
 				UI::AttributeDrag("Line Spacing", text.TextConfig.LineSpacing, 0.025);
 				UI::EndPropertyGrid();
 			});
+
+		DrawElementType<UIProggresBarComponent>(element, [&](UIProggresBarComponent& proggressBar)
+			{
+				UI::BeginPropertyGrid();
+				UI::AttributeDrag("Progress", proggressBar.Proggress,0.01);
+				UI::AttributeColor("Fill Color", proggressBar.FillColor);
+				UI::AttributeColor("Background Color", proggressBar.BackgroundColor);
+				UI::EndPropertyGrid();
+			});
+
 		
 	}
 	void GuiEditorPanel::RenderViewPortPanel()
