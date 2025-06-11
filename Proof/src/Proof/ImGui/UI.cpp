@@ -441,7 +441,10 @@ namespace Proof::UI
     {
         AttributeLabel(label.c_str());
         ImGui::NextColumn();
-        ImGui::PushItemWidth(-1);
+        if (!UI::IsNoEndnextColumnActive())
+        {
+            ImGui::PushItemWidth(-1);
+        }
         UI::PushItemDisabled();
        // ImGui::BeginDisabled(true);
         ImGui::InputText(fmt::format("##{0}", label).c_str(), (char*)text.c_str(), text.size(), ImGuiInputTextFlags_ReadOnly);
@@ -450,9 +453,11 @@ namespace Proof::UI
         
         if (IsItemDisabled())
            DrawItemActivityOutline(2.0f, true);
-
-        ImGui::PopItemWidth();
-        ImGui::NextColumn();
+        if (!UI::IsNoEndnextColumnActive())
+        {
+            ImGui::PopItemWidth();
+            ImGui::NextColumn();
+        }
 
         return false;
     }
@@ -718,11 +723,16 @@ namespace Proof::UI
             UI::HelpMarker(helpMessage);
         }
         ImGui::NextColumn();
-        ImGui::PushItemWidth(-1);
+        if (!UI::IsNoEndnextColumnActive())
+            ImGui::PushItemWidth(-1);
 
         bModified = ImGui::SliderScalar(s_IDBuffer, type, &value, &min, &max, format, flags);
-        ImGui::PopItemWidth();
-        ImGui::NextColumn();
+
+        if (!UI::IsNoEndnextColumnActive())
+        {
+            ImGui::PopItemWidth();
+            ImGui::NextColumn();
+        }
 
         HandleModified(bModified);
         return bModified;
@@ -835,11 +845,15 @@ namespace Proof::UI
             UI::HelpMarker(helpMessage);
         }
         ImGui::NextColumn();
-        ImGui::PushItemWidth(-1);
+        if(!UI::IsNoEndnextColumnActive())
+            ImGui::PushItemWidth(-1);
         bModified = ImGui::DragScalar(s_IDBuffer, dataType, &value, speed, &min, &max, format, flags);
 
-        ImGui::PopItemWidth();
-        ImGui::NextColumn();
+        if (!UI::IsNoEndnextColumnActive())
+        {
+            ImGui::PopItemWidth();
+            ImGui::NextColumn();
+        }
         HandleModified(bModified);
         return bModified;
     }
@@ -911,11 +925,15 @@ namespace Proof::UI
             UI::HelpMarker(helpMessage);
         }
         ImGui::NextColumn();
-        ImGui::PushItemWidth(-1);
+        if (!UI::IsNoEndnextColumnActive())
+            ImGui::PushItemWidth(-1);
 
         bModified = ImGui::DragScalarN(s_IDBuffer, dataType, &value,(int)count, speed, &min, &max, format, flags);
-        ImGui::PopItemWidth();
-        ImGui::NextColumn();
+        if (!UI::IsNoEndnextColumnActive())
+		{
+			ImGui::PopItemWidth();
+			ImGui::NextColumn();
+		}
         HandleModified(bModified);
         return bModified;
     }
@@ -947,11 +965,15 @@ namespace Proof::UI
             UI::HelpMarker(helpMessage);
         }
         ImGui::NextColumn();
-        ImGui::PushItemWidth(-1);
+        if (!UI::IsNoEndnextColumnActive())
+            ImGui::PushItemWidth(-1);
 
         bModified = ImGui::ColorEdit3(s_IDBuffer, &value.x);
-        ImGui::PopItemWidth();
-        ImGui::NextColumn();
+		if (!UI::IsNoEndnextColumnActive())
+		{
+			ImGui::PopItemWidth();
+			ImGui::NextColumn();
+		}
         HandleModified(bModified);
         return bModified;
     }
@@ -969,18 +991,21 @@ namespace Proof::UI
             UI::HelpMarker(helpMessage);
         }
         ImGui::NextColumn();
-        ImGui::PushItemWidth(-1);
+		if (!UI::IsNoEndnextColumnActive()) 
+            ImGui::PushItemWidth(-1);
 
         bModified = ImGui::ColorEdit4(s_IDBuffer, &value.x);
-        ImGui::PopItemWidth();
-        ImGui::NextColumn();
+        if (!UI::IsNoEndnextColumnActive())
+        {
+            ImGui::PopItemWidth();
+            ImGui::NextColumn();
+        }
         HandleModified(bModified);
         return bModified;
     }
 
     bool AttributeButton(const std::string& label, const std::string& buttonText, const ImVec2& size)
     {
-
         ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
         AttributeLabel(label.c_str());
         ImGui::NextColumn();
@@ -990,6 +1015,18 @@ namespace Proof::UI
 
         ImGui::PopItemWidth();
         ImGui::NextColumn();
+        return result;
+    }
+
+    bool AttributeButton(const std::string& buttonText, const ImVec2& size)
+    {
+        ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 3.f);
+
+        bool result = ImGui::Button(buttonText.c_str(), size);
+        if (UI::IsNoEndnextColumnActive())
+        {
+            ImGui::NextColumn();
+        }
         return result;
     }
 

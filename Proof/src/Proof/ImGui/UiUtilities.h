@@ -15,6 +15,9 @@ namespace Proof::UI
 		/// Lines
 		void Underline(bool fullWidth = false, float offsetX = 0.0f, float offsetY = -1.0f);
 	}
+	void PushNoEndNextColumn();
+	void PopNoEndNextColumn();
+	bool IsNoEndnextColumnActive();
 	void HandleModified(bool value);
 	static void Separator()
 	{

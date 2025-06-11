@@ -40,30 +40,7 @@ namespace Proof
 		: VariableStorage(other.m_Type)
 
 	{
-		switch (other.m_Type)
-		{
-			case Proof::VariableTypes::None:
-				PF_CORE_ASSERT(false, "Variable type cannot be none");
-				break;
-			case Proof::VariableTypes::Int:
-			case Proof::VariableTypes::Float:
-				m_VariableBuffer.Allocate(sizeof(float));// using float or size of float or int same size
-				break;
-			case Proof::VariableTypes::Vec2:
-				m_VariableBuffer.Allocate(sizeof(glm::vec2));
-				break;
-			case Proof::VariableTypes::Vec3:
-				m_VariableBuffer.Allocate(sizeof(glm::vec3));
-				break;
-			case Proof::VariableTypes::Vec4:
-				m_VariableBuffer.Allocate(sizeof(glm::vec4));
-				break;
-			case Proof::VariableTypes::String:
-				m_VariableBuffer = {};
-				break;
-			default:
-				break;
-		}
+		m_VariableBuffer.Allocate(other.m_VariableBuffer.Size);
 		m_VariableBuffer.Copy(other.GetBuffer().Data, other.GetBuffer().Size);
 	}
 

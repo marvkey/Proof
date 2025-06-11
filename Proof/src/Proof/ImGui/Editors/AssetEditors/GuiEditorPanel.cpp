@@ -14,6 +14,7 @@
 #include "Proof/ImGui/UI.h"
 #include "Proof/ImGui/UiUtilities.h"
 #include "Proof/ImGui/UIHandlers.h"
+#include "Proof/ImGui/UIVariable.h"
 #include "Proof/Renderer/Renderer2D.h"
 #include "Proof/Core/Application.h"
 #include "Proof/ImGui/Editors/VariableRegistrySubPanel.h"
@@ -314,8 +315,8 @@ namespace Proof
 
 		DrawElementType<UIProggresBarComponent>(element, [&](UIProggresBarComponent& proggressBar)
 			{
+				UI::BindableVariableAttributeSlider("Progress", proggressBar.Proggress, m_UIPanel->VariableTable);
 				UI::BeginPropertyGrid();
-				UI::AttributeDrag("Progress", proggressBar.Proggress,0.01);
 				UI::AttributeColor("Fill Color", proggressBar.FillColor);
 				UI::AttributeColor("Background Color", proggressBar.BackgroundColor);
 				UI::EndPropertyGrid();

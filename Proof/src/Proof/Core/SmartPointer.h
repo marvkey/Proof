@@ -51,16 +51,23 @@ namespace Proof{
 		public:
 			static void AddToLiveReference(void* instance)
 			{
+				if (instance == nullptr)
+					return;
 				uintptr_t memoryAddress = uintptr_t(instance);
 				s_LiveReferences.insert(memoryAddress);
 			};
 			static void RemoveFromLiveReference(void* instance)
 			{
+				if (instance == nullptr)
+					return;
 				uintptr_t memoryAddress = uintptr_t(instance);
 				s_LiveReferences.erase(memoryAddress);
 			}
 			static bool IsLive(void* instance)
 			{
+				if (instance == nullptr)
+					return false;
+
 				uintptr_t memoryAddress = uintptr_t(instance);
 
 				return s_LiveReferences.contains(memoryAddress);
@@ -401,7 +408,7 @@ namespace Proof{
 			return *this;
 		}
 
-		bool IsValid()const { return m_Instance ? RefUtils::IsLive((void*)m_Instance) : false; }
+		bool IsValid()const { return m_Instance != nullptr ? RefUtils::IsLive((void*)m_Instance) : false; }
 		operator bool()const { return IsValid(); };
 
 		Count<T> Lock() const { // convert to shared_ptr

@@ -13,7 +13,7 @@ namespace Proof
 
 		UIPanel();
 		UIPanel(Count<UIPanel> panel);
-		Count<class UIMenu> Menu;
+		Count<class UIMenu> Menu; // gonna support multiple menus in the future,for like a settins 
 		Count<class VariableRegistry> VariableTable;
 	};
 

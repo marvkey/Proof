@@ -4,7 +4,7 @@
 #include "Proof/Renderer/Font.h"
 #include "Proof/Core/UUID.h"
 #include "Proof/Renderer/Vertex.h"
-#include "Proof/Utils/VariableSystem/VariableFieldTypes.h"
+#include "Proof/Utils/VariableSystem/VariableRegistryFieldTypes.h"
 #include "Proof/Utils/MultiUse.h"
 #include <glm/glm.hpp>
 #include <entt/entt.hpp>
@@ -126,7 +126,7 @@ namespace Proof
 
 	struct UIProggresBarComponent
 	{
-		ClampedValue<float,0.0f,1.0f> Proggress = 1.0f; 
+		BindableClampedFloat<0.0f, 1.0f> Proggress = { 1.0f };
 		glm::vec4 FillColor = { 1.0f, 0.0f, 0.0f, 1.0f };
 		glm::vec4 BackgroundColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	};

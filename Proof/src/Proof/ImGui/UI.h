@@ -167,6 +167,7 @@ namespace Proof::UI
 	bool AttributeColor(const std::string& label, glm::vec4& value, const std::string& helpMessage = "");
 
 	bool AttributeButton(const std::string& label, const std::string& buttonText, const ImVec2& size = ImVec2(0, 0));
+	bool AttributeButton(const std::string& buttonText, const ImVec2& size = ImVec2(0, 0));
 
 	bool AttributeInputTextMultiline(const std::string& label, std::string& value, ImGuiInputTextFlags flags);
 

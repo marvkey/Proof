@@ -117,7 +117,7 @@ namespace Proof {
                 {
                     float originalWidth = scale.x;
 
-                    scale.x *= progressBar.Proggress; // Scale width based on progress (0 to 1)
+                    scale.x *= progressBar.Proggress.GetValue().GetValue(); // Scale width based on progress (0 to 1)
 					glm::vec3 offset = glm::vec3(0.0f); // Initialize offset to zero
 
 					// since engien scalees from center, teh translation needs to be adjusted

@@ -56,7 +56,7 @@ namespace Proof
 
 		flags |= ImGuiTreeNodeFlags_SpanFullWidth;
 
-		Variable& var = registry->GetVariable(variableID);
+		Count<Variable> var = registry->GetVariable(variableID);
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)variableID.Get(), flags, registry->GetVariableAsName(variableID).c_str());
 		if (ImGui::IsItemClicked())
 		{
@@ -86,21 +86,21 @@ namespace Proof
 		}
 		UI::BeginPropertyGrid(3);
 
-		Variable& var = registry->GetVariable(variableID);
+		Count<Variable> var = registry->GetVariable(variableID);
 		{
-			auto type = var.GetType();
+			auto type = var->GetType();
 			if (UI::EnumCombo("Type", type, { VariableTypes::None }))
-				var.SetType(type);
+				var->SetType(type);
 		}
 		{
-			bool isArray = var.IsArray();
+			bool isArray = var->IsArray();
 			ImGui::Checkbox("IsArray", &isArray);
 		}
 		UI::EndPropertyGrid();
 
 
 		UI::BeginPropertyGrid();
-		UI::VariableAttributeSlider("Default Value", var);
+		UI::VariableAttribute("Default Value", var);
 		UI::EndPropertyGrid();
 	}
 

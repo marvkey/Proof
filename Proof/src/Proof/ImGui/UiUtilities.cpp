@@ -9,6 +9,19 @@
 
 namespace Proof::UI
 {
+	bool NoEndNextColumn = false;
+	void PushNoEndNextColumn()
+	{
+		NoEndNextColumn = true;
+	}
+	void PopNoEndNextColumn()
+	{
+		NoEndNextColumn = false;
+	}
+	bool IsNoEndnextColumnActive()
+	{
+		return NoEndNextColumn;
+	}
 	void HandleModified(bool value)
 	{
 		Application::Get()->GetImguiLayer()->UpdateCurrentModifiedType(value);
