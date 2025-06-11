@@ -14,6 +14,7 @@
 #include "Proof/Renderer/UIRenderer/UIMenu.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Utils/ContainerUtils.h"
+#include "UIVariable.h"
 
 #pragma region AssetsInclude
 #include "Proof/Scene/Mesh.h"
@@ -675,6 +676,11 @@ namespace Proof::UI
 						if (ImGui::Button(UI::GenerateLabelID("X"), ImVec2{ prevItemHeight, prevItemHeight }))
 						{
 							layer.PopIndex(layerIndex);
+						}
+
+						if (panelInstance != nullptr)
+						{
+							UI::EditVariableInstance(panelInstance->GetVariableRegistryInstance());
 						}
 						ImGui::PopID();
 					}

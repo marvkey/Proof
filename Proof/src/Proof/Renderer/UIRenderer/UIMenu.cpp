@@ -153,4 +153,21 @@ namespace Proof
         element.GetComponent<UICoreComponent>().m_Name = newName;
 
     }
+    void UIMenu::SetVariableStorageSet(Count<class VariableSetStorage> storageSet)
+    {
+        for (auto& [uiElementId, uiElement] : m_UIElementsMap)
+        {
+            switch (uiElement.GetElementType())
+            {
+                case UIElementType::ProgressBar:
+                {
+                    auto& progressBar = uiElement.GetComponent<UIProggresBarComponent>();
+					progressBar.Proggress.ChangeStorageSet(storageSet);
+                }
+                break;
+            default:
+                break;
+            }
+        }
+    }
 }

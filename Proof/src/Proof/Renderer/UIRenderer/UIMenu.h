@@ -178,6 +178,8 @@ namespace Proof
 		}
 
 		void SetName(UIElement element, const std::string& name);
+		void SetVariableStorageSet(Count <class VariableSetStorage> storageSet);
+		
 	private:
 		std::unordered_map<UIElementID, UIElement> m_UIElementsMap;
 		std::unordered_map<std::string, UIElementID> m_UIElementsNameMap;

@@ -1,6 +1,20 @@
 AssetType: UIPanel
 ID: 15995043814273079981
 UIElements:
+  - UIElement: 1478596912009886605
+    UICoreComponent:
+      ElementID: 1478596912009886605
+      Name: ProgressBar
+      UIElementType: ProgressBar
+      Position: [30, 30]
+      Rotation: [0, 0]
+      Size: [271.75, 30]
+      AnchorMinimum: [0.5, 0.5]
+      AnchorMaximum: [0.5, 0.5]
+    UIProggresBarComponent:
+      Proggress: 0.5
+      FillColor: [1, 0, 0, 1]
+      BackgroundColor: [1, 1, 1, 1]
   - UIElement: 12378187212626751595
     UICoreComponent:
       ElementID: 12378187212626751595

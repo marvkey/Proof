@@ -82,13 +82,13 @@ namespace Proof {
         {
             case UIElementType::Button:
             {
-                auto button = element.GetComponent< UIButtonComponent>();
+                auto& button = element.GetComponent< UIButtonComponent>();
                 renderer->DrawQuad(finalTransform, button.TintColor,button.Texture == nullptr ? Renderer::GetWhiteTexture() : button.Texture);
                 break;
             }
             case UIElementType::Image:
             {
-                auto image = element.GetComponent< UIImageComponent>();
+                auto& image = element.GetComponent< UIImageComponent>();
                 renderer->DrawQuad(finalTransform, image.TintColor,image.Texture == nullptr ? Renderer::GetWhiteTexture() : image.Texture);
                 break;
             }

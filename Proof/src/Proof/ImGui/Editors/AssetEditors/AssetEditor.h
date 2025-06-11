@@ -17,6 +17,7 @@ namespace Proof
 
 		virtual void OnUpdate(FrameTime ts);
 		virtual void OnEvent(class Event& e);
+
 		// of the editore 3d
 		virtual void SetWorldContext(const Count<class World>& context) {}
 		virtual void OnImGuiRender() {};

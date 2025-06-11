@@ -71,7 +71,7 @@ namespace Proof
 	private:
 		std::unordered_map<UUID, Count<Variable>> m_VariableIds;
 		friend class VariableRegistry;
-		friend class VariabeleRegistryInstance;
+		friend class VariableRegistryInstance;
 	};
 
 	class VariableRegistry : RefCounted
@@ -120,7 +120,7 @@ namespace Proof
 		void SyncWithRegistry();
 		bool HasVariable(UUID id) const
 		{
-			return m_InstanceVariables.contains(id);
+			return m_VariableSetStorage->m_VariableIds.contains(id);
 		}
 
 		bool HasVariable(const std::string& name) const
@@ -136,8 +136,8 @@ namespace Proof
 
 		Count<Variable> GetVariable(UUID id)
 		{
-			auto it = m_InstanceVariables.find(id);
-			return (it != m_InstanceVariables.end()) ? it->second : nullptr;
+			auto it = m_VariableSetStorage->m_VariableIds.find(id);
+			return (it != m_VariableSetStorage->m_VariableIds.end()) ? it->second : nullptr;
 		}
 
 		Count<Variable> GetVariable(const std::string& name)
@@ -150,13 +150,34 @@ namespace Proof
 			return nullptr;
 		}
 
-		const std::unordered_map<UUID, Count<Variable>>& GetVariables() const { return m_InstanceVariables; }
+		const std::unordered_map<UUID, Count<Variable>>& GetVariables() const { return m_VariableSetStorage->m_VariableIds; }
 
 		std::unordered_map<std::string, Count<Variable>> GetNamedVariables();
 
+		Count<VariableRegistry> GetVariableRegistry() const
+		{
+			return m_Registry;
+		}
+
+		Count<VariableRegistry> GetVariableRegistry() 
+		{
+			return m_Registry;
+		}
+
+
+		Count< VariableSetStorage> GetVariabelSetStorage() const
+		{
+			return m_VariableSetStorage;
+		}
+
+		Count< VariableSetStorage> GetVariabelSetStorage()
+		{
+			return m_VariableSetStorage;
+		}
 	private:
 		Count<VariableRegistry> m_Registry;
-		std::unordered_map<UUID, Count<Variable>> m_InstanceVariables;
+		Count< VariableSetStorage> m_VariableSetStorage = Count<VariableSetStorage>::Create();
+
 	};
 
 	template<class T, VariableTypes VT>
@@ -170,6 +191,22 @@ namespace Proof
 		BindableVariable& operator=(T newVal) {
 			SetValue(newVal);
 			return *this;
+		}
+
+		void ChangeStorageSet(Count<VariableSetStorage> storage)
+		{
+			CheckVariable();
+
+			if (m_VariableLinkID == 0)
+				return;
+
+			if (!storage->HasVariable(m_VariableLinkID))
+				return;
+
+			if (storage->GetVariable(m_VariableLinkID)->GetType() != VT)
+				return;
+
+			m_VariableSetStorage = storage.Get();
 		}
 		// if this is true , tehn a storage has to be applied
 		void SetUseAsVariable(bool use, Count<VariableSetStorage> storage = nullptr)

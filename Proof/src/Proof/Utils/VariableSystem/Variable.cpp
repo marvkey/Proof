@@ -107,11 +107,11 @@ namespace Proof
 		PF_CORE_ASSERT(m_Registry, "VariableRegistryInstance must have a valid registry");
 		SyncWithRegistry(); // Ensure sync with registry
 
-		for (auto& [uuid, var] : other->m_InstanceVariables)
+		for (auto& [uuid, var] : other->m_VariableSetStorage->m_VariableIds)
 		{
 			if (HasVariable(uuid))
 			{
-				m_InstanceVariables[uuid] = Count<Variable>::Create(var);
+				m_VariableSetStorage->m_VariableIds[uuid] = Count<Variable>::Create(var);
 			}
 		}
 	}
@@ -121,7 +121,7 @@ namespace Proof
 			 // Add or update variables
 		for (const auto& [uuid, registryVar] : m_Registry->GetVariables())
 		{
-			auto& instanceVar = m_InstanceVariables[uuid];
+			auto& instanceVar = m_VariableSetStorage->m_VariableIds[uuid];
 
 			if (!instanceVar)
 			{
@@ -141,10 +141,10 @@ namespace Proof
 		}
 
 		// Remove variables no longer in registry
-		for (auto it = m_InstanceVariables.begin(); it != m_InstanceVariables.end();)
+		for (auto it = m_VariableSetStorage->m_VariableIds.begin(); it != m_VariableSetStorage->m_VariableIds.end();)
 		{
 			if (!m_Registry->HasVariable(it->first))
-				it = m_InstanceVariables.erase(it);
+				it = m_VariableSetStorage->m_VariableIds.erase(it);
 			else
 				++it;
 		}

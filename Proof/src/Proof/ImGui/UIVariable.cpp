@@ -96,17 +96,19 @@ namespace Proof::UI
         return modified;
     }	
 
-    bool EditVariableRegistryRaw(Count<VariableRegistry> registry)
+    bool EditVariableInstance(Count<VariableRegistryInstance> instance)
     {
+		if (instance == nullptr)
+			return false;
 		bool modified = false;
 
 		BeginPropertyGrid();
 
-		for (auto& [id, var] : registry->GetVariables())
+		for (auto& [id, var] : instance->GetVariableRegistry()->GetVariables())
 		{
-			Count<Variable> nonConstVar = registry->GetVariable(id);
+			Count<Variable> nonConstVar = instance->GetVariable(id);
 			PushID();
-			modified |= VariableAttribute(registry->GetVariableAsName(id), nonConstVar);
+			modified |= VariableAttribute(instance->GetVariableRegistry()->GetVariableAsName(id), nonConstVar);
 			PopID();
 		}
 

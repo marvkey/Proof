@@ -68,10 +68,56 @@ namespace Proof
 
 	void GuiEditorPanel::Save()
 	{
-		if (m_UIPanel != nullptr)
+		if (m_UIPanel != nullptr )
 		{
-			m_NeedsSaving = false;
-			AssetManager::SaveAsset(m_UIPanel->GetID());
+			if (m_CurrentMainWorld == NULL || m_CurrentMainWorld->GetState() != WorldState::Edit)
+			{
+				PF_EC_ERROR("Cannot compile and save when world is play or simulate");
+			}
+			else
+			{
+				m_NeedsSaving = false;
+				AssetManager::SaveAsset(m_UIPanel->GetID());
+			}
+		}
+	}
+
+	void RecompileHudTable(Count<UITable> hudTable, Count<UIPanel> panel)
+	{
+		for (auto& layer : hudTable->GetLayers())
+		{
+			for (auto panelInstance : layer.GetUIPanels())
+			{
+				if (panelInstance->GetUIPanel() == panel)
+				{
+					// recompile the panel
+					panelInstance->SyncWithPanel();
+				}
+			}
+		}
+	}
+	void GuiEditorPanel::Compile()
+	{
+		for (auto worldWeak : World::GetAllActiveWorlds())
+		{
+			if (!worldWeak.IsValid())
+				continue;
+
+			auto world = worldWeak.Lock();
+
+			if (world->GetState() != WorldState::Edit)
+				continue;
+
+			world->ForEachEnitityWith<PlayerHUDComponent>([&](Entity e) 
+				{
+					
+					RecompileHudTable(e.GetComponent<PlayerHUDComponent>().HudTable, m_UIPanel);
+				});
+
+			world->ForEachEnitityWith<WorldHUDComponent>([&](Entity e)
+				{
+					RecompileHudTable(e.GetComponent<WorldHUDComponent>().HudTable, m_UIPanel);
+				});
 		}
 	}
 	void GuiEditorPanel::OnImGuiRender()
@@ -326,5 +372,9 @@ namespace Proof
 	}
 	void GuiEditorPanel::RenderViewPortPanel()
 	{
+	}
+	void GuiEditorPanel::SetWorldContext(const Count<class World>& context)
+	{
+		m_CurrentMainWorld = context;
 	}
 }

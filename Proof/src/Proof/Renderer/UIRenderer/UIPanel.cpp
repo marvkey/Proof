@@ -20,20 +20,37 @@ namespace Proof {
 	{
 		SetPanelInstance(panel);
 	}
+
 	UIPanelInstance::UIPanelInstance(Count<UIPanelInstance> panel)
 	{
 		m_UIPanel = panel->GetUIPanel();
 		m_InstanceMenu = UIMenu::Copy(panel->GetInstanceMenu());
+		m_VariableRegistryInstance = Count<VariableRegistryInstance>::Create(panel->m_VariableRegistryInstance);
+
+		m_InstanceMenu->SetVariableStorageSet(m_VariableRegistryInstance->GetVariabelSetStorage());
 	}
 
 	UIPanelInstance::UIPanelInstance()
 	{
 		m_InstanceMenu = Count<UIMenu>::Create();
 	}
+
+	void UIPanelInstance::SyncWithPanel()
+	{
+		if (m_UIPanel)
+		{
+			m_InstanceMenu = UIMenu::Copy(m_UIPanel->Menu);
+			if (m_VariableRegistryInstance == nullptr || m_VariableRegistryInstance->GetVariableRegistry() != m_UIPanel->VariableTable)
+				m_VariableRegistryInstance = Count<VariableRegistryInstance>::Create(m_UIPanel->VariableTable);
+			else
+				m_VariableRegistryInstance->SyncWithRegistry();
+		}
+
+	}
 	void UIPanelInstance::SetPanelInstance(Count<UIPanel> panel)
 	{
 		m_UIPanel = panel;
-		m_InstanceMenu =  UIMenu::Copy(panel->Menu);
+		SyncWithPanel();
 	}
 
 	void UILayer::PopIndex(int index)

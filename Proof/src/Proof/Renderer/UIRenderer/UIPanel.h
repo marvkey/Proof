@@ -13,7 +13,12 @@ namespace Proof
 
 		UIPanel();
 		UIPanel(Count<UIPanel> panel);
-		Count<class UIMenu> Menu; // gonna support multiple menus in the future,for like a settins 
+		// gonna support multiple menus in the future,for like settings,
+		// have a menu for the game, a menu for the settings, voluem settings,
+		// graphics settings, 
+		// menus can be turned of or on
+	
+		Count<class UIMenu> Menu; 
 		Count<class VariableRegistry> VariableTable;
 	};
 
@@ -33,15 +38,20 @@ namespace Proof
 		{
 			return m_InstanceMenu;
 		}
+
+		void SyncWithPanel();
 		bool Visible = true;
 		void SetPanelInstance(Count<UIPanel> panel);
-	private:
-		
-	private:
 
+		Count<class VariableRegistryInstance> GetVariableRegistryInstance() 
+		{
+			return m_VariableRegistryInstance;
+		}
+
+	private:
 		Count<UIPanel> m_UIPanel;
 		Count<UIMenu> m_InstanceMenu;
-		Count<class VariableRegistry> m_VariableTable;
+		Count<class VariableRegistryInstance> m_VariableRegistryInstance;
 	};
 	class UILayer
 	{

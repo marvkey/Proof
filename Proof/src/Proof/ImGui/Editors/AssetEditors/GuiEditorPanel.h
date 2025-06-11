@@ -20,6 +20,7 @@ namespace Proof
 		virtual void OnEvent(class Event& e);
 		virtual bool IsSaved() { return !m_NeedsSaving; }
 		virtual void Save();
+		void Compile();
 	private:
 		void AddItemMenu();
 		void RenderHierarchyPanel();
@@ -28,6 +29,7 @@ namespace Proof
 		void RenderViewPortPanel();
 		template<typename T, typename UIFunction>
 		void DrawElementType(class UIElement element, UIFunction function);
+		virtual void SetWorldContext(const Count<class World>& context);
 
 	private:
 		glm::vec2 m_WindowSize = { 0,0 };
@@ -36,5 +38,7 @@ namespace Proof
 		bool m_NeedsSaving = true;
 		Count<class UIPanel> m_UIPanel = nullptr;
 		Count<class VariableRegistrySubPanel> m_VariableRegistrySubPanel;
+
+		Count<class World> m_CurrentMainWorld; // world of editor 3d
 	};
 }

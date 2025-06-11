@@ -158,6 +158,9 @@ namespace Proof {
 		{
 			return m_GameMode;
 		}
+		static std::vector<WeakCount<World>>&const GetAllActiveWorlds();
+
+
 	private:
 		RuntimeConfiguration m_RuntimeConfig;
 

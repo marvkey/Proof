@@ -592,6 +592,7 @@ namespace Proof
 
 		Count< ContentBrowserPanel> contentBrowser = s_EditorData->PanelManager->AddPanel<ContentBrowserPanel>(CONTENT_BROWSER_PANEL_ID, "Content Browser", true);
 		s_EditorData->PanelManager->SetWorldContext(m_EditorWorld);
+
 		Count<WorldRenderer> renderer;
 		{
 			//s_EditorData->EditorWorkspaceManager->AddWorkspace<("Viewport")
@@ -625,7 +626,7 @@ namespace Proof
 
 		AssetEditorPanel::RegisterDefaultEditors();
 
-
+		AssetEditorPanel::SetSceneContext(m_ActiveWorld);
 		s_EditorData->PlayButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/PlayButton.png");
 		s_EditorData->PauseButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/PauseButton .png");
 		s_EditorData->SimulateButtonTexture = Texture2D::Create(TextureConfiguration(), "Resources/Icons/MainPanel/SimulateButton.png");
@@ -1903,6 +1904,7 @@ namespace Proof
 		m_EditorWorld = Count<World>::Create();
 		m_ActiveWorld = m_EditorWorld;
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
+		AssetEditorPanel::SetSceneContext(m_ActiveWorld);
 	}
 	void Editore3D::OpenWorld(AssetID ID)
 	{
@@ -1931,6 +1933,8 @@ namespace Proof
 
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
+		AssetEditorPanel::SetSceneContext(m_ActiveWorld);
+
 		SelectionManager::DeselectAll();
 
 		m_ActiveWorld->SetWorldTransitionCallback([this](AssetID id) { openNewWorld = true; newWorldID = id; });
@@ -2334,6 +2338,8 @@ namespace Proof
 		m_ActiveWorld->StartRuntime();
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
+		AssetEditorPanel::SetSceneContext(m_ActiveWorld);
+
 		s_PlayTimer.Reset();
 
 		{
@@ -2364,6 +2370,7 @@ namespace Proof
 		s_PlayWorldData = nullptr;
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
+		AssetEditorPanel::SetSceneContext(m_ActiveWorld);
 		s_DetachPlayer = false;
 		tenareaxWorld = nullptr;
 

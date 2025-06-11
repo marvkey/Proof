@@ -10,7 +10,7 @@
 namespace Proof::UI
 {
 	bool VariableAttribute(const std::string& label, Count<Variable> value);
-	bool EditVariableRegistryRaw(Count<VariableRegistry> registry);
+	bool EditVariableInstance(Count<VariableRegistryInstance> instance);
 
 	bool VariablesSearchUp(const char* ID,Count<VariableRegistry> registry, VariableTypes variableTypes, UUID& selected, bool allowClear = true, const char* hint ="Search Variables", ImVec2 size = ImVec2{ 250.0f, 350.0f });
 

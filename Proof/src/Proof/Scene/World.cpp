@@ -46,15 +46,21 @@
 #include "GameMode/LocalGameMode.h"
 #include "Proof/Scripting/ScriptWorld.h"
 #include <glm/gtx/euler_angles.hpp>
+#include "Proof/Utils/ContainerUtils.h"
 namespace Proof {
 
 	struct RuntimeSavedData
 	{
 		std::unordered_map<std::string, ScopeBuffer> m_datas;
 	};
+
+	static inline std::vector<WeakCount<World>> AllActiveWorlds;
+
 	World::World(const std::string& name, UUID ID):
 		Name(name)
 	{
+		AllActiveWorlds.emplace_back(WeakCount<World>(this));
+
 		m_ScriptWorld = Count<ScriptWorld>::Create(this);
 		Init();
 		m_DebugRenderer = Count<DebugRenderer>::Create();
@@ -69,8 +75,7 @@ namespace Proof {
 		m_Registry.on_destroy<MeshColliderComponent>().disconnect(this);
 
 		m_Registry.on_construct<WaterComponent>().disconnect(this);
-
-
+		Utils::Remove(AllActiveWorlds, WeakCount<World>(this));
 	}
 	bool World::HasEntity(UUID ID)const {
 		if (ID == 0)
@@ -1301,6 +1306,11 @@ namespace Proof {
 		else
 			PF_ENGINE_WARN("Cannot Transition World - no callback set");
 
+	}
+
+	std::vector<WeakCount<World>>& const World::GetAllActiveWorlds()
+	{
+		return AllActiveWorlds;
 	}
 
 	void World::PrefabCopyEntity(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity,bool includeChildren)
