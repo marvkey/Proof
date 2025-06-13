@@ -4,23 +4,14 @@
 #include <glm/glm.hpp>
 namespace Proof
 {
-	Count<Variable> VariableRegistry::AddVariable(VariableTypes vartype)
-	{
-		std::string actualName = Utils::String::GenerateUniqueName("NewVariable", m_VariablesNames);
+	
 
-		UUID uuid = UUID();
-		m_VariableSetStorage->m_VariableIds[uuid] = Count<Variable>::Create(vartype);
-
-		m_VariableSetStorage->m_VariableIds[uuid]->m_UUID = uuid;
-		m_VariablesNames[actualName] = uuid;
-		return GetVariable(actualName);
-	}
 
 	void VariableRegistry::RemoveVariable(std::string_view name)
 	{
 		PF_CORE_ASSERT(HasVariable(name), "Does not contain the variable");
 
-		m_VariableSetStorage->m_VariableIds.erase(GetVariable(name)->m_UUID);
+		m_VariableSetStorage->m_VariableIds.erase(GetVariable(name.data())->m_UUID);
 		m_VariablesNames.erase(name.data());
 	}
 	std::string VariableRegistry::GetVariableAsName(UUID id)
@@ -42,12 +33,14 @@ namespace Proof
 	{
 		return m_VariableSetStorage->m_VariableIds.contains(id);
 	}
-	Count<Variable> VariableRegistry::GetVariable(std::string_view name)
+
+	Count<Variable> VariableRegistry::GetVariable(const std::string& name)
 	{
 		PF_CORE_ASSERT(HasVariable(name), "Does not contain the variable");
 
-		return m_VariableSetStorage->m_VariableIds.at(m_VariablesNames.at(name.data()));
+		return m_VariableSetStorage->m_VariableIds.at(m_VariablesNames.at(name));
 	}
+
 	Count<Variable> VariableRegistry::GetVariable(UUID id)
 	{
 		PF_CORE_ASSERT(HasVariable(id), "Does not contain the variable");
@@ -83,6 +76,7 @@ namespace Proof
 			m_VariableField = Count<PrimitiveVariableStorage>::CreateFrom(var->m_VariableField.As<PrimitiveVariableStorage>());
 		}
 	}
+
 	void Variable::SetType(VariableTypes type)
 	{
 		if (!IsArray())
@@ -127,6 +121,7 @@ namespace Proof
 			{
 				// New variable, match type and array flag
 				instanceVar = Count<Variable>::Create(registryVar->GetType(), registryVar->IsArray());
+				instanceVar->m_UUID = uuid; // Ensure UUID is set correctly
 			}
 			else
 			{
@@ -136,6 +131,7 @@ namespace Proof
 					// Optionally preserve old value if types are convertible, otherwise reset
 					instanceVar->SetType(registryVar->GetType());
 					instanceVar->SetIsArray(registryVar->IsArray());
+					instanceVar->m_UUID = uuid; // Ensure UUID is set correctly
 				}
 			}
 		}

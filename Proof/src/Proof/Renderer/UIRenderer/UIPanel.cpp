@@ -27,7 +27,7 @@ namespace Proof {
 		m_InstanceMenu = UIMenu::Copy(panel->GetInstanceMenu());
 		m_VariableRegistryInstance = Count<VariableRegistryInstance>::Create(panel->m_VariableRegistryInstance);
 
-		m_InstanceMenu->SetVariableStorageSet(m_VariableRegistryInstance->GetVariabelSetStorage());
+		m_InstanceMenu->SetVariableStorageSet(m_VariableRegistryInstance->GetVariableSetStorage());
 	}
 
 	UIPanelInstance::UIPanelInstance()

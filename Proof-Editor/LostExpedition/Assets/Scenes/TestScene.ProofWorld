@@ -148,14 +148,6 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-      PlayerInputComponent:
-        InputBindings:
-          - InputBindingContextHandler: ""
-            InputBindingID: 5002844255029031354
-            Active: true
-          - InputBindingContextHandler: ""
-            InputBindingID: 10785136772344387073
-            Active: true
       PlayerStartComponent:
         InputPlayer: Player0
         PlayerPrefab: 0
@@ -179,6 +171,13 @@ World:
             Panels:
               - PanelID: 15995043814273079981
                 Visible: true
+                VariableRegistry:
+                  VariableRegistryID: 10837619597107920878
+                  Variables:
+                    - Name: HealthPercent
+                      Type: Float
+                      UUID: 11164312810867335053
+                      Data: 0.300000012
     - Entity: 4525501726541901185
       TagComponent:
         Tag: Plane
@@ -197,7 +196,7 @@ World:
             AssetID: 7659929436396046509
             Index: 0
       MeshColliderComponent:
-        ColliderID: 31636766755097588
+        ColliderID: 13295878218950906441
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 5896697494919537015

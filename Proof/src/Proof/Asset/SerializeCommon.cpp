@@ -8,8 +8,10 @@
 #include "Proof/Scripting/ScriptField.h"
 #include "Proof/Scripting/ScriptWorld.h"
 #include "Proof/Scripting/ScriptFile.h"
+
+#include "Proof/Utils/VariableSystem/Variable.h"
 namespace Proof
-{
+{ 
 	static void SerializeInputCustomizer(YAML::Emitter& out, Count<class InputCustomizer> inputCustomizer)
 	{
 		out << YAML::BeginMap; // Customizers
@@ -929,6 +931,206 @@ namespace Proof
 		else
 		{
 			LoadScriptFieldStorage(scriptField, fieldStorage.As<FieldStorage>(), scriptFieldType);
+		}
+	}
+
+	void SerializeCommon::SaveVariable(YAML::Emitter& out, Count<class Variable> fieldStorage)
+	{
+		if (fieldStorage->IsArray())
+			PF_CORE_ASSERT(false);
+
+		out << YAML::Key << "Type" << YAML::Value << EnumReflection::EnumString(fieldStorage->GetType());
+		out << YAML::Key << "UUID" << YAML::Value << fieldStorage->GetUUID().Get();
+		out << YAML::Key << "Data" << YAML::Value;
+
+		switch (fieldStorage->GetType())
+		{
+		case VariableTypes::Bool:
+		{
+			out << fieldStorage->GetValue<bool>();
+			break;
+		}
+		case VariableTypes::Int:
+		{
+			out << fieldStorage->GetValue<int>();
+			break;
+		}
+		case VariableTypes::Float:
+		{
+			out << fieldStorage->GetValue<float>();
+			break;
+		}
+
+		case VariableTypes::Vec2:
+		{
+			out << fieldStorage->GetValue<glm::vec2>();
+			break;
+		}
+		case VariableTypes::Vec3:
+		{
+			out << fieldStorage->GetValue<glm::vec3>();
+			break;
+		}
+		case VariableTypes::Vec4:
+		{
+			out << fieldStorage->GetValue<glm::vec4>();
+			break;
+		}
+		case VariableTypes::String:
+		{
+			out << fieldStorage->GetValue<std::string>();
+			break;
+		}
+		default:
+			PF_CORE_ASSERT(false, "Unsupported variable type for serialization");
+			break;
+		}
+
+	}
+	Count<class Variable> SerializeCommon::LoadVariable(YAML::iterator::value_type& scriptField)
+	{
+		if (!scriptField["Data"])
+			return nullptr;
+		Count<class Variable> fieldStorage = Count<Variable>::Create();
+
+		auto dataNode = scriptField["Data"];
+		fieldStorage->SetType(EnumReflection::StringEnum<VariableTypes>(scriptField["Type"].as<std::string>()));
+		fieldStorage->m_UUID = UUID(scriptField["UUID"].as<uint64_t>(0));
+
+		if (fieldStorage->GetType() == VariableTypes::None)
+		{
+			PF_CORE_ASSERT(false, "Variable type is None, cannot load variable");
+			return nullptr;
+		}
+		if (!dataNode)
+			return fieldStorage;
+
+		switch (fieldStorage->GetType())
+		{
+			case VariableTypes::Bool:
+			{
+				fieldStorage->SetValue(dataNode.as<bool>());
+				break;
+			}
+
+			case VariableTypes::Int:
+			{
+				fieldStorage->SetValue(dataNode.as<int>());
+				break;
+			}
+			
+			case VariableTypes::Float:
+			{
+				fieldStorage->SetValue(dataNode.as<float>());
+				break;
+			}
+
+			case VariableTypes::Vec2:
+			{
+				fieldStorage->SetValue(dataNode.as<glm::vec2>());
+				break;
+			}
+
+			case VariableTypes::Vec3:
+			{
+				fieldStorage->SetValue(dataNode.as<glm::vec3>());
+				break;
+			}
+
+			case VariableTypes::Vec4:
+			{
+				fieldStorage->SetValue(dataNode.as<glm::vec4>());
+				break;
+			}	
+
+			case VariableTypes::String:
+			{
+				fieldStorage->SetValue(dataNode.as<std::string>());
+				break;
+			}
+			default:
+				PF_CORE_ASSERT(false, "Unsupported variable type for deserialization");
+				break;
+		}
+
+		return fieldStorage;
+	}
+
+	void SaveVariableRegistryCommon(YAML::Emitter& out, Count<VariableSetStorage> storage, Count<VariableRegistry> registry)
+	{
+		out << YAML::Key << "VariableRegistry";
+		out << YAML::BeginMap;// VariableRegistry
+		out << YAML::Key << "VariableRegistryID" << YAML::Value << registry->SpecialID;
+		out << YAML::Key << "Variables" << YAML::Value << YAML::BeginSeq; // variables
+		for (auto& [id, variable] : storage->GetVariables())
+		{
+			out << YAML::BeginMap;//variable
+			out << YAML::Key << "Name" << YAML::Value << registry->GetVariableAsName(id);
+			SerializeCommon::SaveVariable(out, variable);
+			out << YAML::EndMap; // variable
+		}
+		out << YAML::EndSeq;// variables
+		out << YAML::EndMap; // VariableRegistry
+	}
+
+	void SerializeCommon::SaveVariableRegistry(YAML::Emitter& out, Count<VariableRegistry> registry)
+	{
+		SaveVariableRegistryCommon(out, registry->GetVariableSetStorage(), registry);
+	}
+
+	void SerializeCommon::LoadVariableRegistry(YAML::Node& registryNode, Count< VariableRegistry> registry)
+	{
+		auto node = registryNode["VariableRegistry"];
+		if (!node)
+			return;
+
+		registry->SpecialID = node["VariableRegistryID"].as<uint64_t>(0);
+		auto variables = node["Variables"];
+		if (!variables)
+			return;
+
+		for (auto variable : variables)
+		{
+			std::string name = variable["Name"].as<std::string>();
+
+			Count<Variable> templateVar = SerializeCommon::LoadVariable(variable);
+
+			if (templateVar)
+			{
+				auto actualVar = registry->AddVariable(templateVar->GetType(), name, templateVar->GetUUID());
+				actualVar->CopyValueFrom(templateVar);
+			}
+		}
+	}
+
+	void SerializeCommon::SaveVariableRegistryInstance(YAML::Emitter& out, Count<VariableRegistryInstance> registryInstance)
+	{
+		SaveVariableRegistryCommon(out, registryInstance->GetVariableSetStorage(), registryInstance->GetVariableRegistry());
+	}
+
+	void SerializeCommon::LoadVariableRegistryInstance(YAML::Node& registryNode, Count< VariableRegistryInstance> registry)
+	{
+		auto node = registryNode["VariableRegistry"];
+		if (!node)
+			return;
+
+		auto variables = node["Variables"];
+		if (!variables)
+			return;
+
+		for (auto variable : variables)
+		{
+			Count<Variable> templateVar = SerializeCommon::LoadVariable(variable);
+
+			if (templateVar)
+			{
+				if (registry->HasVariable(templateVar->GetUUID()))
+				{
+					
+					registry->GetVariables().at(templateVar->GetUUID())->CopyValueFrom(templateVar);
+				}
+				
+			}
 		}
 	}
 }

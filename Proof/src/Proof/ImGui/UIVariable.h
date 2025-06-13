@@ -65,7 +65,7 @@ namespace Proof::UI
 			auto uuid = val.GetVariableID();
 			if (UI::VariablesSearchUp(searchValidvalidVariablesID.c_str(), registry, VariableTypes::Int, uuid))
 			{
-				val.SetUseAsVariable(true, registry->GetVariabelSetStorage());
+				val.SetUseAsVariable(true, registry->GetVariableSetStorage());
 				val.SetVariable(uuid);
 				modified = true;
 			}
@@ -108,7 +108,7 @@ namespace Proof::UI
 			auto uuid = val.GetVariableID();
 			if (UI::VariablesSearchUp(searchValidvalidVariablesID.c_str(), registry, VariableTypes::Float, uuid))
 			{
-				val.SetUseAsVariable(true, registry->GetVariabelSetStorage());
+				val.SetUseAsVariable(true, registry->GetVariableSetStorage());
 				val.SetVariable(uuid);
 				modified = true;
 			}

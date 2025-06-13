@@ -1,28 +1,21 @@
 AssetType: UIPanel
 ID: 15995043814273079981
+VariableRegistry:
+  VariableRegistryID: 10837619597107920878
+  Variables:
+    - Name: HealthPercent
+      Type: Float
+      UUID: 11164312810867335053
+      Data: 0.75
 UIElements:
-  - UIElement: 1478596912009886605
+  - UIElement: 10524752796049348329
     UICoreComponent:
-      ElementID: 1478596912009886605
-      Name: ProgressBar
-      UIElementType: ProgressBar
-      Position: [30, 30]
-      Rotation: [0, 0]
-      Size: [271.75, 30]
-      AnchorMinimum: [0.5, 0.5]
-      AnchorMaximum: [0.5, 0.5]
-    UIProggresBarComponent:
-      Proggress: 0.5
-      FillColor: [1, 0, 0, 1]
-      BackgroundColor: [1, 1, 1, 1]
-  - UIElement: 12378187212626751595
-    UICoreComponent:
-      ElementID: 12378187212626751595
+      ElementID: 10524752796049348329
       Name: Text
       UIElementType: Text
       Position: [0, 0]
       Rotation: [0, 0]
-      Size: [100, 100]
+      Size: [50, 50]
       AnchorMinimum: [0.5, 0.5]
       AnchorMaximum: [0.5, 0.5]
     UITextComponent:
@@ -30,3 +23,19 @@ UIElements:
       Color: [1, 1, 1, 1]
       Kerning: 0
       LineSpacing: 1
+  - UIElement: 10347195124389774461
+    UICoreComponent:
+      ElementID: 10347195124389774461
+      Name: ProgressBar
+      UIElementType: ProgressBar
+      Position: [30, 30]
+      Rotation: [0, 0]
+      Size: [281.5, 54.5]
+      AnchorMinimum: [0.5, 0.5]
+      AnchorMaximum: [0.5, 0.5]
+    UIProggresBarComponent:
+      Proggress:
+        Value: 0.75
+        BindedVariableID: 11164312810867335053
+      FillColor: [1, 0, 0, 1]
+      BackgroundColor: [1, 1, 1, 1]

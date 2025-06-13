@@ -27,6 +27,7 @@
 #include "Proof/Scene/WaterSystem/GerstnerWave.h"
 #include "Proof/Scene/WaterSystem/FFTWave/FFTWave.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
+#include "Proof/Utils/VariableSystem/Variable.h"
 #include "Proof/Renderer/ParticleSystem.h"
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
@@ -582,7 +583,9 @@ namespace Proof
 							AssetID assetID = panel->GetUIPanel() == nullptr ? (AssetID)0 : panel->GetUIPanel()->GetID();
 							out << YAML::Key << "PanelID" << YAML::Value << assetID;
 							out << YAML::Key << "Visible" << YAML::Value << panel->Visible;
-
+							
+							if(assetID != 0)
+								SerializeCommon::SaveVariableRegistryInstance(out, panel->GetVariableRegistryInstance());
 							out << YAML::EndMap;// panel
 						}
 						out << YAML::EndSeq;//Panels
@@ -1348,6 +1351,7 @@ namespace Proof
 					auto& phc = NewEntity.AddComponent<PlayerHUDComponent>();
 
 					Count<UITable> table = Count<UITable>::Create();
+					table->ClearLayers();
 					for (auto layer : playerHudComponent["UITable"])
 					{
 						auto& newLayer = table->AddLayer(layer["Layer"].as<std::string>("Unnamed"));
@@ -1363,9 +1367,14 @@ namespace Proof
 							if (uiAsset.IsValid())
 								newPanelInstance->SetPanelInstance(uiAsset.GetAsset<UIPanel>());
 							newPanelInstance->Visible = panel["Visible"].as<bool>(true);
+
+							if(uiAsset.IsValid())
+								SerializeCommon::LoadVariableRegistryInstance(panel, newPanelInstance->GetVariableRegistryInstance());
 						}
 
 					}
+
+					phc.HudTable = table;
 				}
 			#endif
 			}

@@ -2,6 +2,7 @@
 #include "Proof/Core/Core.h"
 #include "VariableUtils.h"
 #include "VariableStorage.h"
+#include "Proof/Utils/StringUtils.h"
 
 namespace Proof
 {
@@ -12,7 +13,7 @@ namespace Proof
 		bool UseAsVariable = false;
 		UUID VariableID;
 	};
-	struct Variable : public RefCounted
+	class Variable : public RefCounted
 	{
 	public:
 		Variable(VariableTypes type = VariableTypes::Float, bool isArray = false);
@@ -36,6 +37,14 @@ namespace Proof
 			}
 		}
 
+		void CopyValueFrom(Count<Variable> other)
+		{
+			if (other->m_IsArray == m_IsArray && other->m_Type == m_Type)
+			{
+				m_VariableField.As<PrimitiveVariableStorage>()->SetValueBuffer(other->m_VariableField.As<PrimitiveVariableStorage>()->GetBuffer());
+
+			}
+		}
 		Count<class VariableStorage> GetVariableStorage()
 		{
 			return m_VariableField;
@@ -54,6 +63,8 @@ namespace Proof
 		UUID m_UUID = 0;
 		Count<class VariableStorage> m_VariableField = nullptr;
 		friend class VariableRegistry;
+		friend class VariableRegistryInstance;
+		friend class SerializeCommon;
 	};
 	class VariableSetStorage : public RefCounted
 	{
@@ -68,20 +79,36 @@ namespace Proof
 		{
 			return m_VariableIds.contains(id);
 		}
+
+		const std::unordered_map<UUID, Count<Variable>>& GetVariables()const { return m_VariableIds; }
+		const std::unordered_map<UUID, Count<Variable>>& GetVariables() { return m_VariableIds; }
 	private:
 		std::unordered_map<UUID, Count<Variable>> m_VariableIds;
 		friend class VariableRegistry;
 		friend class VariableRegistryInstance;
 	};
 
-	class VariableRegistry : RefCounted
+	class VariableRegistry : public RefCounted
 	{
 	public:
+
 		VariableRegistry() = default;
 		VariableRegistry(Count<VariableRegistry> other);
 
-		Count<Variable> AddVariable(VariableTypes vartype);
-		Count<Variable> GetVariable(std::string_view name);
+		Count<Variable> AddVariable(VariableTypes vartype, const std::string& name = "NewVariable", UUID ID = UUID())
+		{
+				std::string actualName = Utils::String::GenerateUniqueName(name, m_VariablesNames);
+
+				if (HasVariable(ID))
+					ID = UUID();
+				m_VariableSetStorage->m_VariableIds[ID] = Count<Variable>::Create(vartype);
+
+				m_VariableSetStorage->m_VariableIds[ID]->m_UUID = ID;
+				m_VariablesNames[actualName] = ID;
+				return GetVariable(actualName);
+		}
+
+		Count<Variable> GetVariable(const std::string& name);
 		Count<Variable> GetVariable(UUID id);
 
 		std::string GetVariableAsName(UUID id);
@@ -96,16 +123,17 @@ namespace Proof
 		const std::unordered_map<UUID, Count<Variable>>& GetVariables()const { return m_VariableSetStorage->m_VariableIds; }
 		const std::unordered_map<UUID, Count<Variable>>& GetVariables(){ return m_VariableSetStorage->m_VariableIds; }
 
-		Count< VariableSetStorage> GetVariabelSetStorage() const
+		Count< VariableSetStorage> GetVariableSetStorage() const
 		{
 			return m_VariableSetStorage;
 		}
 
-		Count< VariableSetStorage> GetVariabelSetStorage() 
+		Count< VariableSetStorage> GetVariableSetStorage() 
 		{
 			return m_VariableSetStorage;
 		}
-
+	public:
+		UUID SpecialID = UUID(); // not used for anything, just to identify the registry for imgui
 	private:
 		std::unordered_map<std::string, UUID> m_VariablesNames;
 		Count< VariableSetStorage> m_VariableSetStorage = Count<VariableSetStorage>::Create();
@@ -165,12 +193,12 @@ namespace Proof
 		}
 
 
-		Count< VariableSetStorage> GetVariabelSetStorage() const
+		Count< VariableSetStorage> GetVariableSetStorage() const
 		{
 			return m_VariableSetStorage;
 		}
 
-		Count< VariableSetStorage> GetVariabelSetStorage()
+		Count< VariableSetStorage> GetVariableSetStorage()
 		{
 			return m_VariableSetStorage;
 		}

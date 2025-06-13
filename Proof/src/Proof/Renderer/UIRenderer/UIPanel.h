@@ -48,6 +48,11 @@ namespace Proof
 			return m_VariableRegistryInstance;
 		}
 
+		Count<class VariableRegistryInstance> GetVariableRegistryInstance()const 
+		{
+			return m_VariableRegistryInstance;
+		}
+
 	private:
 		Count<UIPanel> m_UIPanel;
 		Count<UIMenu> m_InstanceMenu;

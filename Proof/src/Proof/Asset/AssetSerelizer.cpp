@@ -472,6 +472,65 @@ namespace Proof {
 		SetID(assetData, particleSystem);
 		return particleSystem;
 	}
+	template<class T, VariableTypes VT>
+	void SaveBindableVariable(YAML::Emitter& out, const std::string& name, BindableVariable<T,VT> var)
+	{
+		out << YAML::Key << name.c_str();
+		out << YAML::BeginMap; // name
+		out << "Value" << YAML::Value << var.GetValue();
+		out << "BindedVariableID" << YAML::Value << var.GetVariableID();
+		out << YAML::EndMap; // name
+	}
+
+	template<class T, VariableTypes VT>
+	void LoadBindableVariable(YAML::Node& node, const std::string& name,BindableVariable<T, VT>& var,Count<VariableSetStorage> storage)
+	{
+		auto variable = node[name.c_str()];
+		if (variable)
+		{
+			uint64_t id = variable["BindedVariableID"].as<uint64_t>(0);
+			if (variable["Value"])
+			{
+				var.SetValue(variable["Value"].as<T>());
+			}
+
+			if (storage->GetVariables().contains(id))
+			{
+				var.SetUseAsVariable(true,storage);
+				var.SetVariableID(id);
+			}
+		}
+	}
+
+	template<typename T, T Min, T Max, VariableTypes VT>
+	void SaveClampedBindableVariable(YAML::Emitter& out, const std::string& name, BindableVariable<ClampedValue<T, Min, Max>, VT>& var)
+	{
+		out << YAML::Key << name.c_str();
+		out << YAML::BeginMap; // name
+		out << "Value" << YAML::Value << var.GetValue();
+		out << "BindedVariableID" << YAML::Value << var.GetVariableID();
+		out << YAML::EndMap; // name
+	}
+
+	template<typename T, T Min, T Max, VariableTypes VT>
+	void LoadClampedBindableVariable(YAML::Node& node, const std::string& name, BindableVariable<ClampedValue<T, Min, Max>, VT>& var, Count<VariableSetStorage> storage)
+	{
+		auto variable = node[name.c_str()];
+		if (variable)
+		{
+			uint64_t id = variable["BindedVariableID"].as<uint64_t>(0);
+			if (variable["Value"])
+			{
+				var.SetValue(variable["Value"].as<T>());
+			}
+
+			if (storage->GetVariables().contains(id))
+			{
+				var.SetUseAsVariable(true, storage);
+				var.SetVariable(id);
+			}
+		}
+	}
 	void UIPanelAssetSerilizer::SaveUIElement(YAML::Emitter& out, UIElement element)const
 	{
 		out << YAML::BeginMap;// Element
@@ -513,7 +572,9 @@ namespace Proof {
 
 				out << YAML::Key << "UIProggresBarComponent";
 				out << YAML::BeginMap; // UIProggresBarComponent
-				out << YAML::Key << "Proggress" << YAML::Value << proggressComponent.Proggress.GetValue();
+				//out << YAML::Key << "Proggress" << YAML::Value << proggressComponent.Proggress.GetValue();
+
+				SaveClampedBindableVariable(out, "Proggress", proggressComponent.Proggress);
 				out << YAML::Key << "FillColor" << YAML::Value << proggressComponent.FillColor;
 				out << YAML::Key << "BackgroundColor" << YAML::Value << proggressComponent.BackgroundColor;
 				out << YAML::EndMap; // UIProggresBarComponent
@@ -530,6 +591,10 @@ namespace Proof {
 		out << YAML::BeginMap;
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(uiPanel->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << uiPanel->GetID();
+
+		SerializeCommon::SaveVariableRegistry(out, uiPanel->VariableTable);
+
+
 		out << YAML::Key << "UIElements" << YAML::Value << YAML::BeginSeq;
 		
 		{
@@ -588,6 +653,8 @@ namespace Proof {
 				{
 					auto& src = newUIElement.GetComponent<UIProggresBarComponent>();
 					src.Proggress = proggressComponent["Proggress"].as<float>(src.Proggress.GetValue());
+
+					LoadClampedBindableVariable(proggressComponent, "Proggress", src.Proggress, uiPanel->VariableTable->GetVariableSetStorage());
 					src.FillColor = proggressComponent["FillColor"].as<glm::vec4>(src.FillColor);
 					src.BackgroundColor = proggressComponent["BackgroundColor"].as<glm::vec4>(src.BackgroundColor);
 				}
@@ -601,6 +668,8 @@ namespace Proof {
 			return nullptr;
 	
 		Count<UIPanel> uiPanel = Count<UIPanel>::Create();
+
+		SerializeCommon::LoadVariableRegistry(data, uiPanel->VariableTable);
 
 		if (data["UIElements"])
 		{
