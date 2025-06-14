@@ -170,4 +170,16 @@ namespace Proof
             }
         }
     }
+    void UIMenu::DeleteElement(UIElementID id)
+    {
+        if (HasUIElement(id))
+        {
+            auto element = GetUIElement(id);
+
+			m_UIElementsNameMap.erase(element.GetComponent<UICoreComponent>().m_Name);
+			m_UIElementsMap.erase(id);
+            m_Registry.destroy(element.GetenttID());
+        }
+    }
+    
 }

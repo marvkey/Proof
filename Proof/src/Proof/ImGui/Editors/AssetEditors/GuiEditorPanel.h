@@ -40,5 +40,6 @@ namespace Proof
 		Count<class VariableRegistrySubPanel> m_VariableRegistrySubPanel;
 
 		Count<class World> m_CurrentMainWorld; // world of editor 3d
+		std::unordered_set<UUID> m_DeletedElements; // elements that are deleted but not removed from the hierarchy yet
 	};
 }

@@ -1,19 +1,19 @@
 Assets:
+  - Asset: 1948765517176594391
+    Type: Material
+    Path: Materials\m_Black.Material.ProofAsset
   - Asset: 11013441240331562467
     Type: InputAction
     Path: Input\PlayerMovement\IA_Rotation.InputAction.ProofAsset
   - Asset: 1804100413018170951
     Type: Texture
     Path: Models\Pistol\textures\Pistol_Normal.png
-  - Asset: 1948765517176594391
-    Type: Material
-    Path: Materials\m_Black.Material.ProofAsset
-  - Asset: 7659929436396046509
-    Type: Material
-    Path: Materials\m_Green.Material.ProofAsset
   - Asset: 1896371110154550254
     Type: World
     Path: Scenes\TestScene.ProofWorld
+  - Asset: 7659929436396046509
+    Type: Material
+    Path: Materials\m_Green.Material.ProofAsset
   - Asset: 4812082715384783110
     Type: InputAction
     Path: Input\PlayerMovement\IA_Movement.InputAction.ProofAsset
@@ -26,12 +26,12 @@ Assets:
   - Asset: 5002844255029031354
     Type: InputBindingContext
     Path: Input\PlayerMovement\IB_PlayerMovement.InputBindingContext.ProofAsset
-  - Asset: 5896697494919537015
-    Type: PhysicsMaterial
-    Path: Physics\Materials\pm_slipper.PhysicsMaterial.ProofAsset
   - Asset: 6248028451720167464
     Type: Texture
     Path: Models\Pistol\textures\Pistol_Metallic.png
+  - Asset: 5896697494919537015
+    Type: PhysicsMaterial
+    Path: Physics\Materials\pm_slipper.PhysicsMaterial.ProofAsset
   - Asset: 11692785166767351247
     Type: InputAction
     Path: Input\PlayerMovement\IA_Jump.InputAction.ProofAsset
@@ -68,6 +68,3 @@ Assets:
   - Asset: 15995043814273079981
     Type: UIPanel
     Path: UI\Gun UI.UIPanel.ProofAsset
-  - Asset: 14007977441432728402
-    Type: UIPanel
-    Path: UI\New UI.UIPanel.ProofAsset

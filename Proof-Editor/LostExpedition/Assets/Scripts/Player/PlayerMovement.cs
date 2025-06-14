@@ -76,6 +76,12 @@ namespace LostExpedition
                 }
             }
 
+            if(GetScript<HealthComponent>().GetHealth() <= 0)
+            {
+                World.TryFindEntityByTag("Empty Entity").GetComponent<TextComponent>().Visible = true;
+                GetComponent<MeshComponent>().Visible = false;
+            }
+
         }
 
         // OnPhysicsUpdate is called at a fixed timestep for physics-related logic

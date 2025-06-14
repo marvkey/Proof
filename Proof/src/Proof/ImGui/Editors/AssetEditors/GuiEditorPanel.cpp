@@ -162,6 +162,12 @@ namespace Proof
 			ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0,0,0,1 });
 
 			ImGui::BeginChild("Child Hierarchy", { ImGui::GetContentRegionAvail().x,ImGui::GetWindowHeight() / 2 });
+			if (ImGui::BeginPopupContextWindow(0))
+			{ // right click adn open a new entitiy
+				AddItemMenu();
+				ImGui::EndPopup();
+			}
+
 			/*
 			for (auto canvas : m_UIPanel->Canvases)
 			{
@@ -177,11 +183,14 @@ namespace Proof
 			{
 				DrawElementNode(entity);
 			}
-			if (ImGui::BeginPopupContextWindow(0))
-			{ // right click adn open a new entitiy
-				AddItemMenu();
-				ImGui::EndPopup();
+
+			for (auto deletedId : m_DeletedElements)
+			{
+				m_UIPanel->Menu->DeleteElement((UIElementID)deletedId);
 			}
+			m_DeletedElements.clear();
+
+			
 			if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false)
 			{
 				AssetSelectionManager::DeselectAll(AssetSelectionContext::GUIPanel, m_UIPanel->GetID());
@@ -252,9 +261,21 @@ namespace Proof
 			AssetSelectionManager::Select(AssetSelectionContext::GUIPanel, m_UIPanel->GetID(), element.GetUUID());
 		}
 
-		if (ImGui::BeginPopup("Element Additions"))
+		if (ImGui::BeginPopupContextItem("UIElement Settings")) {
+			ImGui::EndPopup();
+		}
+
+		if (ImGui::BeginPopup("UIElement Settings"))
 		{
+
+			if (ImGui::MenuItem("Delete"))
+			{
+				m_DeletedElements.insert(element.GetUUID());
+				AssetSelectionManager::Deselect(AssetSelectionContext::GUIPanel, m_UIPanel->GetID(), element.GetUUID());
+			}
+
 			AddItemMenu();
+
 			ImGui::EndPopup();
 		}
 

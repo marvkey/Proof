@@ -23,14 +23,14 @@ UIElements:
       Color: [1, 1, 1, 1]
       Kerning: 0
       LineSpacing: 1
-  - UIElement: 10347195124389774461
+  - UIElement: 16499881360146543059
     UICoreComponent:
-      ElementID: 10347195124389774461
+      ElementID: 16499881360146543059
       Name: ProgressBar
       UIElementType: ProgressBar
-      Position: [-154.75, 42.75]
+      Position: [-140.75, 44]
       Rotation: [0, 0]
-      Size: [266, 34]
+      Size: [228.5, 34.75]
       AnchorMinimum: [1, 0]
       AnchorMaximum: [1, 0]
     UIProggresBarComponent:
