@@ -41,6 +41,8 @@ namespace Proof
 
         void RenderHUD(UUID entityID, Count<WorldRenderer> renderer);
     private:
+        // the other renderer usees world space, we need one screen space, SO THINGS liek text dont show up if we dont use this
+        Count<class Renderer2D> m_HUDRenderer2D; 
         LocalGameModeState m_LocalGameModeSate;
         Count<class RenderPass> m_PlayerGridPass;
         Count<class RenderCommandBuffer> m_CommandBuffer;

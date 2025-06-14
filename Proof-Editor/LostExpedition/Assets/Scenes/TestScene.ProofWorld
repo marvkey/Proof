@@ -132,6 +132,19 @@ World:
               - NameID: LostExpedition.PlayerInput.JumpAction
                 Type: InputAction
                 Data: 11692785166767351247
+          - Script: LostExpedition.HealthComponent
+            ScriptClassName: LostExpedition.HealthComponent
+            ScriptName: LostExpedition.HealthComponent
+            Fields:
+              - NameID: LostExpedition.HealthComponent.Health
+                Type: Float
+                Data: 100
+              - NameID: LostExpedition.HealthComponent.MaxHealth
+                Type: Float
+                Data: 100
+              - NameID: LostExpedition.HealthComponent.DestoryIfHealthZero
+                Type: Bool
+                Data: false
       BoxColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
@@ -148,6 +161,14 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+      PlayerInputComponent:
+        InputBindings:
+          - InputBindingContextHandler: ""
+            InputBindingID: 5002844255029031354
+            Active: true
+          - InputBindingContextHandler: ""
+            InputBindingID: 10785136772344387073
+            Active: true
       PlayerStartComponent:
         InputPlayer: Player0
         PlayerPrefab: 0
@@ -196,7 +217,7 @@ World:
             AssetID: 7659929436396046509
             Index: 0
       MeshColliderComponent:
-        ColliderID: 13295878218950906441
+        ColliderID: 2389588143028758921
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 5896697494919537015
@@ -302,6 +323,9 @@ World:
               - NameID: LostExpedition.HealthComponent.MaxHealth
                 Type: Float
                 Data: 100
+              - NameID: LostExpedition.HealthComponent.DestoryIfHealthZero
+                Type: Bool
+                Data: true
       BoxColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
@@ -329,3 +353,22 @@ World:
       HierarchyComponent:
         ParentHandle: 16039414171671641192
         Children: []
+    - Entity: 14377017043888389634
+      TagComponent:
+        Tag: Empty Entity
+        tags: []
+      TransformComponent:
+        Location: [-4.5999999, 2.0999999, -7.19999981]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      TextComponent:
+        Color: [1, 1, 1, 1]
+        Kerning: 0
+        LineSpacing: 1
+        Text: "YOU ARE DEAD \nLOOOOOOOOOOOOOOL"
+        Visible: true
+        UseLocalRotation: false
+        RenderInViewSpace: false

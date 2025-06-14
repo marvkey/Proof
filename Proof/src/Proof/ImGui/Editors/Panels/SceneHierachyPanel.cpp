@@ -843,29 +843,9 @@ namespace Proof
 			else
 				UI::Image(Renderer::GetWhiteTexture(), { 30,30 });
 
-			if (ImGui::BeginPopupContextItem("RemoveTexture")) {
-				ImGui::EndPopup();
-			}
-			if (ImGui::BeginPopup("RemoveTexture")) {
-				if (ImGui::MenuItem("Remove Texture")) {
-					spriteComp.Texture.SetAssetID(0);
-				}
-				ImGui::EndPopup();
-			}
+			UI::AttributeColor("Tint Color", spriteComp.Colour);
 
-			if (ImGui::BeginDragDropTarget()) {
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload(EnumReflection::EnumString(AssetType::Texture).c_str())) {
-					uint64_t Data = *(const uint64_t*)payload->Data;
-					if (AssetManager::HasAsset(Data))
-					{
-						spriteComp.Texture = AssetManager::GetAsset<Texture2D>(Data)->GetID();
-					}
-				}
-				ImGui::EndDragDropTarget();
-			}
-			ImGui::SameLine();
-			UI::AttributeColor("##Colour", spriteComp.Colour);
-
+			UI::AttributeAssetKeyReference("Texture", spriteComp.Texture);
 			UI::EndPropertyGrid();
 
 			});

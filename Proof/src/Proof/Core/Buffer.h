@@ -139,6 +139,14 @@ namespace Proof{
 		{
 			Release();
 		}
+
+		static ScopeBuffer CopyStatic(const void* data, uint64_t size)
+		{
+			ScopeBuffer buffer;
+			buffer.Allocate(size);
+			memcpy(buffer.Data, data, size);
+			return buffer;
+		}
 	};
 
 	struct RefBuffer : public Buffer, public RefCounted

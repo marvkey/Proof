@@ -14,6 +14,7 @@ namespace Proof {
 	{
 		Menu = UIMenu::Copy(panel->Menu);
 		VariableTable = Count<VariableRegistry>::Create();
+
 	}
 	
 	UIPanelInstance::UIPanelInstance(Count<UIPanel> panel)
@@ -28,6 +29,8 @@ namespace Proof {
 		m_VariableRegistryInstance = Count<VariableRegistryInstance>::Create(panel->m_VariableRegistryInstance);
 
 		m_InstanceMenu->SetVariableStorageSet(m_VariableRegistryInstance->GetVariableSetStorage());
+
+		m_VariableRegistryInstance->SyncWithRegistry();
 	}
 
 	UIPanelInstance::UIPanelInstance()
@@ -44,6 +47,8 @@ namespace Proof {
 				m_VariableRegistryInstance = Count<VariableRegistryInstance>::Create(m_UIPanel->VariableTable);
 			else
 				m_VariableRegistryInstance->SyncWithRegistry();
+
+			m_InstanceMenu->SetVariableStorageSet(m_VariableRegistryInstance->GetVariableSetStorage());
 		}
 
 	}

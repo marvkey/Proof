@@ -14,6 +14,7 @@
 #include "Proof/Renderer/Vertex.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/UIRenderer/UIRenderer.h"
+#include "Proof/Renderer/Renderer2D.h"
 #include "Proof/Utils/ContainerUtils.h"
 #include "Proof/Scene/Prefab.h"
 #include <future>
@@ -21,6 +22,7 @@ namespace Proof
 {
 	void LocalGameMode::Start()
 	{
+		m_HUDRenderer2D = Count<Renderer2D>::Create("HUD game mode");
 		m_World->ForEachEnitityWith<PlayerStartComponent>([&](Entity& e)
 			{
 				if ((int)e.GetComponent<PlayerStartComponent>().InputPlayer < m_World->GetRuntimeConfig().PlayerInputCount )
@@ -92,8 +94,10 @@ namespace Proof
 		sceneCamera.SetData(cameraComp.FovDeg, cameraComp.NearPlane, cameraComp.FarPlane,
 			renderer->GetScreenData().FullResolution.x, renderer->GetScreenData().FullResolution.y,
 			glm::inverse(cameraComp.UseLocalRotation ? m_World->GetWorldSpaceTransformUsingLocalRotation(worldCameraEntity) : m_World->GetWorldSpaceTransform(worldCameraEntity)));
-
+		
 		m_World->OnRender(renderer, time, sceneCamera, m_World->GetWorldSpaceLocation(worldCameraEntity), cameraComp.NearPlane, cameraComp.FarPlane, cameraComp.FovDeg);
+		m_HUDRenderer2D->SetTargetFrameBuffer(renderer->GetExternalCompositePassFrameBuffer());
+
 		if (!m_Players.empty())
 		{
 			auto& player = m_Players[0];// assume only index is player 1
@@ -104,6 +108,7 @@ namespace Proof
 					RenderHUD(e.GetUUID(), renderer);
 			}
 		}
+		
 	}
 	void LocalGameMode::RenderRuntimeMultiPlayer(Count<class WorldRenderer> renderer, FrameTime time)
 	{
@@ -327,6 +332,8 @@ namespace Proof
 
 	void LocalGameMode::RenderWorldHUD(Count<class WorldRenderer> renderer)
 	{
+		Count<Renderer2D> renderer2D = renderer->GetRenderer2D();
+		renderer2D->SetTargetFrameBuffer(renderer->GetExternalCompositePassFrameBuffer());
 		m_World->ForEachEnitityWith<WorldHUDComponent>([&](Entity& e)
 			{
 				WorldHUDComponent& worldHUDComponent = e.GetComponent<WorldHUDComponent>();
@@ -342,6 +349,8 @@ namespace Proof
 					for (int j = layer.GetUIPanels().size() - 1; j >= 0; j--)
 					{
 						Count<UIPanelInstance> panelInstance = layer.GetUIPanels().at(j);
+
+						
 						UIRenderer::DrawUI(panelInstance->GetInstanceMenu(), renderer->GetRenderer2D(), renderer->GetScreenData().FullResolution.x, renderer->GetScreenData().FullResolution.y);
 
 					}
@@ -359,6 +368,8 @@ namespace Proof
 		auto hudTable = hudComponent.HudTable;
 
 		auto& layers = hudTable->GetLayers();
+	
+		m_HUDRenderer2D->SetTargetFrameBuffer(renderer->GetExternalCompositePassFrameBuffer());
 
 		for (int i = layers.size() - 1; i >= 0; i--)
 		{
@@ -367,7 +378,9 @@ namespace Proof
 			for (int j = layer.GetUIPanels().size() - 1; j >= 0; j--)
 			{
 				Count<UIPanelInstance> panelInstance = layer.GetUIPanels().at(j);
-				UIRenderer::DrawUI(panelInstance->GetInstanceMenu(), renderer->GetRenderer2D(), renderer->GetScreenData().FullResolution.x, renderer->GetScreenData().FullResolution.y);
+				
+
+				UIRenderer::DrawUI(panelInstance->GetInstanceMenu(), m_HUDRenderer2D, renderer->GetScreenData().FullResolution.x, renderer->GetScreenData().FullResolution.y);
 
 			}
 		}

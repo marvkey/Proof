@@ -22,7 +22,8 @@
     <OutputPath>..\Proof-Editor\Resources\Scripts\Binaries\ScriptCore\</OutputPath>
     <BaseIntermediateOutputPath>..\Proof-Editor\Resources\Scripts\Intermediates\ScriptCore\Debug\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -34,7 +35,8 @@
     <OutputPath>..\Proof-Editor\Resources\Scripts\Binaries\ScriptCore\</OutputPath>
     <BaseIntermediateOutputPath>..\Proof-Editor\Resources\Scripts\Intermediates\ScriptCore\Release\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -46,7 +48,8 @@
     <OutputPath>..\Proof-Editor\Resources\Scripts\Binaries\ScriptCore\</OutputPath>
     <BaseIntermediateOutputPath>..\Proof-Editor\Resources\Scripts\Intermediates\ScriptCore\Dist\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -85,7 +88,8 @@
     <Compile Include="Src\Proof\Scene\PersistentDataStorage.cs" />
     <Compile Include="Src\Proof\Scene\Prefab.cs" />
     <Compile Include="Src\Proof\Scene\World.cs" />
-    <Compile Include="Src\Proof\UI\UIComponent.cs" />
+    <Compile Include="Src\Proof\UI\UI.cs" />
+    <Compile Include="Src\Proof\Variable.cs" />
     <Compile Include="vendor\GlmSharp\Extensions.cs" />
     <Compile Include="vendor\GlmSharp\Half.cs" />
     <Compile Include="vendor\GlmSharp\HalfHelper.cs" />

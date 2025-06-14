@@ -69,6 +69,9 @@ namespace Proof
 	class VariableSetStorage : public RefCounted
 	{
 	public:
+		VariableSetStorage();
+		virtual ~VariableSetStorage();
+		
 		Count<Variable> GetVariable(UUID id)
 		{
 			auto it = m_VariableIds.find(id);
@@ -79,11 +82,16 @@ namespace Proof
 		{
 			return m_VariableIds.contains(id);
 		}
+		static const std::unordered_map<UUID, WeakCount<VariableSetStorage>>& GetAllStorageSets();
+		UUID GetStorageID() { return m_UUID; }
 
 		const std::unordered_map<UUID, Count<Variable>>& GetVariables()const { return m_VariableIds; }
 		const std::unordered_map<UUID, Count<Variable>>& GetVariables() { return m_VariableIds; }
 	private:
 		std::unordered_map<UUID, Count<Variable>> m_VariableIds;
+		UUID m_UUID = UUID(); // Unique identifier for the variable set storage, not to be saved
+
+
 		friend class VariableRegistry;
 		friend class VariableRegistryInstance;
 	};

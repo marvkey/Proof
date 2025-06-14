@@ -15,10 +15,10 @@ namespace Proof
 	}
 	void VariableRegistrySubPanel::OnImguiRender()
 	{
-		ImGui::Begin(fmt::format("Variables##{}",m_Registry.GetMemoryAddress()).c_str());
+		ImGui::Begin(fmt::format("Variables##{}",m_Registry->SpecialID.Get()).c_str());
 		if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false)
 		{
-			AssetSelectionManager::DeselectAll(AssetSelectionContext::VariableRegistry, m_Registry.GetMemoryAddress());
+			AssetSelectionManager::DeselectAll(AssetSelectionContext::VariableRegistry, m_Registry->SpecialID.Get());
 
 		}
 		if (ImGui::Button("AddVariable"))
@@ -120,9 +120,9 @@ namespace Proof
 	{
 		ImGui::BeginChild("Properties", ImGui::GetContentRegionAvail());
 
-		if (AssetSelectionManager::HasSelections(AssetSelectionContext::VariableRegistry, m_Registry.GetMemoryAddress()))
+		if (AssetSelectionManager::HasSelections(AssetSelectionContext::VariableRegistry, m_Registry->SpecialID.Get()))
 		{
-			auto selectedItem = AssetSelectionManager::GetSelections(AssetSelectionContext::VariableRegistry, m_Registry.GetMemoryAddress()).front();
+			auto selectedItem = AssetSelectionManager::GetSelections(AssetSelectionContext::VariableRegistry, m_Registry->SpecialID.Get()).front();
 			DrawVariableProperty(m_Registry,selectedItem);
 		}
 

@@ -28,11 +28,11 @@ UIElements:
       ElementID: 10347195124389774461
       Name: ProgressBar
       UIElementType: ProgressBar
-      Position: [30, 30]
+      Position: [-154.75, 42.75]
       Rotation: [0, 0]
-      Size: [281.5, 54.5]
-      AnchorMinimum: [0.5, 0.5]
-      AnchorMaximum: [0.5, 0.5]
+      Size: [266, 34]
+      AnchorMinimum: [1, 0]
+      AnchorMaximum: [1, 0]
     UIProggresBarComponent:
       Proggress:
         Value: 0.75

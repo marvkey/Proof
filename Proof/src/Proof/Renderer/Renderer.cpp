@@ -1094,7 +1094,7 @@ namespace Proof {
 
 	void Renderer::EndFrame()
 	{
-#if 0
+#if 1
 		for (auto renderer : Renderer2D::s_Instances)
 		{
 

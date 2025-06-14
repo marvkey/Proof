@@ -90,6 +90,19 @@ namespace Proof
 			m_Panels.emplace_back(instance);
 			return m_Panels.back();
 		}
+
+		void PopUI(Count<UIPanel> panel)
+		{
+			for (auto it = m_Panels.begin(); it != m_Panels.end(); ++it)
+			{
+				if ((*it)->GetUIPanel() == panel)
+				{
+					m_Panels.erase(it);
+					return; // Exit after removing the first matching panel
+				}
+			}
+		}
+
 		void PopUI()
 		{
 			if (!m_Panels.empty())
@@ -233,6 +246,20 @@ namespace Proof
 
 			return it != m_Layers.end() ? &(*it) : nullptr;
 		}
+
+		int FindlayerIndexByname(const std::string& name)
+		{
+			int i = 0;
+			for (UILayer& layer : m_Layers)
+			{
+				if (name == layer.Name)
+					return i;
+				i++;
+			}
+
+			return -1;
+		}
+
 
 		// Check if a layer exists by name
 		bool HasLayer(const std::string& name) const

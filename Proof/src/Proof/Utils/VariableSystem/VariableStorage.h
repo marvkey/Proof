@@ -55,6 +55,7 @@ namespace Proof
 			memcpy(m_VariableBuffer.Data, value.c_str(), value.length() * sizeof(char));
 		}
 
+
 		template<>
 		std::string GetValue() const
 		{

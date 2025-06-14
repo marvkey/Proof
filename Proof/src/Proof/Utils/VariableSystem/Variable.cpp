@@ -103,10 +103,8 @@ namespace Proof
 
 		for (auto& [uuid, var] : other->m_VariableSetStorage->m_VariableIds)
 		{
-			if (HasVariable(uuid))
-			{
-				m_VariableSetStorage->m_VariableIds[uuid] = Count<Variable>::Create(var);
-			}
+			if(HasVariable(uuid))
+				m_VariableSetStorage->m_VariableIds[uuid]->CopyValueFrom(var);
 		}
 	}
 	void VariableRegistryInstance::SyncWithRegistry()
@@ -134,6 +132,8 @@ namespace Proof
 					instanceVar->m_UUID = uuid; // Ensure UUID is set correctly
 				}
 			}
+
+			instanceVar->m_UUID = uuid; // Ensure UUID is set correctly
 		}
 
 		// Remove variables no longer in registry
@@ -159,5 +159,19 @@ namespace Proof
 		}
 
 		return namedVariables;
+	}
+
+	static inline std::unordered_map<UUID, WeakCount<VariableSetStorage>> s_VariableSetStorageMap;
+	VariableSetStorage::VariableSetStorage()
+	{
+		s_VariableSetStorageMap[m_UUID] = WeakCount<VariableSetStorage>(this);
+	}
+	VariableSetStorage::~VariableSetStorage()
+	{
+		s_VariableSetStorageMap.erase(m_UUID);
+	}
+	const std::unordered_map<UUID, WeakCount<VariableSetStorage>>& VariableSetStorage::GetAllStorageSets()
+	{
+		return s_VariableSetStorageMap;
 	}
 }

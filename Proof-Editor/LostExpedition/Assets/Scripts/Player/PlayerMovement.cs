@@ -23,12 +23,15 @@ namespace LostExpedition
 		Vector2 rotateRate = Vector2.Zero;
 
 		float verticalRotation;
+        PlayerHUDComponent m_HudComponent;
         // OnCreate is called once when the Entity that this script is attached to
         // is instantiated in the world at runtime
         void OnCreate()
 		{
             m_RigidBody = GetComponent<RigidBodyComponent>();
-			if (m_RigidBody == null)
+            m_HudComponent = GetComponent<PlayerHUDComponent>();
+
+            if (m_RigidBody == null)
 				Log.Error($"{Name} needs a RigidBodyComponent");
 
             if (Camera != null)
@@ -39,10 +42,12 @@ namespace LostExpedition
 			verticalRotation = Camera.Rotation.z;
 
             Mouse.SetCursorMode(MouseCursorMode.Locked);
-        }
 
-		// OnUpdate is called once every frame while this script is active in the world
-		void OnUpdate(float deltaTime)
+
+        }
+        float beginVal = 25;
+        // OnUpdate is called once every frame while this script is active in the world
+        void OnUpdate(float deltaTime)
 		{
 
             if (rotateRate != Vector2.Zero)
@@ -59,10 +64,18 @@ namespace LostExpedition
                 rotateRate = Vector2.Zero;
             }
 
-         
+            GetScript<HealthComponent>().TakeDamage(deltaTime * beginVal);
 
+            if (m_HudComponent != null)
+            {
+                Variable var = m_HudComponent.GetRegistryVariableByPanelIndex(3, 0, "HealthPercent");
+                
+                if(var != null)
+                {
+                    var.SetData<float>(GetScript<HealthComponent>().GetHealth() / GetScript<HealthComponent>().GetMaxHealth());
+                }
+            }
 
-            // Smooth movement
         }
 
         // OnPhysicsUpdate is called at a fixed timestep for physics-related logic

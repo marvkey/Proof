@@ -410,9 +410,10 @@ namespace Proof {
 		Count<Renderer2D> renderer2D = worldRenderer->GetRenderer2D();
 
 		RenderPhysicsDebug2D(worldRenderer, camera, cameraLocation,false);
+		renderer2D->SetTargetFrameBuffer(worldRenderer->GetExternalCompositePassFrameBuffer());
+
 		renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(), GlmVecToProof(cameraLocation));
 
-		renderer2D->SetTargetFrameBuffer(worldRenderer->GetExternalCompositePassFrameBuffer());
 		
 		Count<Texture2D> prefilter2D;
 		auto skylights = m_Registry.group<SkyLightComponent>(entt::get<TransformComponent>);
@@ -975,26 +976,7 @@ namespace Proof {
 	void World::OnUpdateRuntime(FrameTime DeltaTime) 
 	{
 		PF_PROFILE_FUNC();
-		/*
-		// Scripts
-		{
-			auto& scriptView = m_Registry.view<NativeScriptComponent>();
-			for (auto entity : scriptView) {
-				auto& script = scriptView.get<NativeScriptComponent>(entity);
-				if (script.Instance == nullptr)
-				{
-
-					script.Instance = script.InstantiateScript();
-					script.Instance->m_Owner = Entity{ entity, this };
-					script.Instance->m_World = this;
-					script.Instance->OnCreate();
-					script.Instance->OnSpawn();
-				}
-				if(script.Instance->b_CallPerframe == true)
-					script.Instance->OnUpdate(DeltaTime);
-			}
-		}
-		*/
+		
 		m_RuntimeConfig.PlayerInputCount = m_Registry.view<PlayerInputComponent>().size();
 		if (m_CurrentState == WorldState::Pause)
 			return;
@@ -1187,29 +1169,6 @@ namespace Proof {
 	void World::OnRenderRuntime(Count<class WorldRenderer> renderer, FrameTime time)
 	{
 		m_GameMode->RenderRuntime(renderer, time);
-	#if 0 
-		PF_CORE_ASSERT(renderer);
-
-		if (!HasWorldCamera())
-		{
-			PF_CORE_ASSERT(false, "No World Camera");
-			return;
-		}
-		auto worldCameraEntity = GetWorldCameraEntity();
-		PF_CORE_ASSERT(worldCameraEntity.HasComponent<CameraComponent>());
-		CameraComponent& cameraComp = worldCameraEntity.GetComponent<CameraComponent>();
-
-		SceneCamera sceneCamera;
-		//sceneCamera.SetPerspective(cameraComp.FovDeg, renderer->GetScreenData().FullResolution.x, renderer->GetScreenData().FullResolution.y,
-		//	cameraComp.NearPlane, cameraComp.FarPlane, GetWorldSpaceLocation(worldCameraEntity),
-		//	cameraComp.UseLocalRotation ? worldCameraEntity.GetComponent<TransformComponent>().GetRotationEuler(): GetWorldSpaceRotation(worldCameraEntity));
-
-		sceneCamera.SetData(cameraComp.FovDeg, cameraComp.NearPlane, cameraComp.FarPlane,
-			renderer->GetScreenData().FullResolution.x, renderer->GetScreenData().FullResolution.y, 
-			glm::inverse(cameraComp.UseLocalRotation  ? GetWorldSpaceTransformUsingLocalRotation(worldCameraEntity) :  GetWorldSpaceTransform(worldCameraEntity)));
-
-		OnRender(renderer, time, sceneCamera, GetWorldSpaceLocation(worldCameraEntity), cameraComp.NearPlane, cameraComp.FarPlane, cameraComp.FovDeg);
-	#endif
 	}
 
 	Entity World::CreateEntity(const std::string& EntName) {

@@ -498,42 +498,37 @@ namespace Proof
         #endregion
 
         #region PlayerHUDComponent
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool PlayerHUDComponent_IndexHasHUD(ulong entityID, uint tableIndex);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern UILayer PlayerHUDComponent_UITableGetLayerByName(ulong entityID, string name);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern UILayer PlayerHUDComponent_UITableGetLayer(ulong entityID, uint layerIndex);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PlayerHUDComponent_UITableLayerGetPanelInstance(ulong entityID, uint layerIndex, AssetID panel, out UIPanelInstance instance);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool PlayerHUDComponent_GetVisible(ulong entityID, uint tableIndex);
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void PlayerHUDComponent_SetVisible(ulong entityID, uint tableIndex, ref bool visible);
+        internal extern static void PlayerHUDComponent_UITableLayerGetPanelInstanceByIndex(ulong entityID, uint layerIndex, uint panelIndex,out UIPanelInstanceRaw instance);
 
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool PlayerHUDComponent_HasButton(ulong entityID, uint tableIndex, string buttonName);
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static UIBaseData PlayerHUDComponent_GetButtonData(ulong entityID, uint tableIndex, string buttonName);
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void PlayerHUDComponent_SetButtonData(ulong entityID, uint tableIndex, string buttonName, ref UIBaseData data);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PlayerHUDComponent_UITableLayerSetPanelInstanceVisible(ulong entityID, uint layerIndex, AssetID panel, bool visible);
 
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool PlayerHUDComponent_HasImageButton(ulong entityID, uint tableIndex, string buttonName);
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static UiImageButtonData PlayerHUDComponent_GetImageButtonData(ulong entityID, uint tableIndex, string buttonName);
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void PlayerHUDComponent_SetImageButtonData(ulong entityID, uint tableIndex,string buttonName, ref UiImageButtonData data);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool PlayerHUDComponent_UITableLayerGetPanelInstanceVisible(ulong entityID, uint layerIndex, AssetID panel);
 
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool PlayerHUDComponent_HasText(ulong entityID, uint tableIndex, string textname);
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void PlayerHUDComponent_GetTextData(ulong entityID, uint tableIndex, string textname, out UITextData textData, out string text);
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void PlayerHUDComponent_SetTextData(ulong entityID, uint tableIndex, string textname, ref UITextData textData, ref string text);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PlayerHUDComponent_UITableLayerPushPanel(ulong entityID, uint layerIndex, AssetID panel , bool visible);
 
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void PlayerHUDComponent_SetPanel(ulong entityID, AssetID id);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PlayerHUDComponent_UITableLayerRemovePanel(ulong entityID, uint layerIndex, AssetID panel );
 
-        [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void PlayerHUDComponent_SetText(ulong entityID, string text);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariable(ulong entityID, uint layerIndex, AssetID panel, string varName, out VariableRaw var);
+
         #endregion
 
+     
         #region ParticleSystemComponent
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool ParticleSystemComponent_HasParticleIndex(ulong entityID, uint tableIndex);
@@ -576,6 +571,14 @@ namespace Proof
         internal extern static bool PersistentDataStorage_HasData(string name);
         internal extern static void PersistentDataStorage_ClearData(string name);
 
+        #endregion
+
+        #region Variable
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void ProofScriptVariable_SetValue(VariableRaw variable, IntPtr data, ulong size);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern IntPtr ProofScriptVariable_GetValue(VariableRaw variable);
         #endregion
     }
 }

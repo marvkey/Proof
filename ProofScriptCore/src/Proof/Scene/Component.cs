@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -294,17 +295,79 @@ namespace Proof
 			}
 		}
 	}
-
+    [RegisterCoreClassStruct]
 	public class PlayerHUDComponent : Component
 	{
-		public void SetPanel(UIPanel panel)
+        public UILayer Getlayer(string name)
 		{
-			InternalCalls.PlayerHUDComponent_SetPanel(Entity.ID, panel.ID);
+            return InternalCalls.PlayerHUDComponent_UITableGetLayerByName(Entity.ID, name);
         }
-        public void SetText(string text)
+
+        public UILayer GetLayer(uint index)
+        {
+            return InternalCalls.PlayerHUDComponent_UITableGetLayer(Entity.ID, index);
+        }
+
+        public UIPanelInstance GetPanelInstance(uint layerIndex, UIPanel panel)
+        {
+            InternalCalls.PlayerHUDComponent_UITableLayerGetPanelInstance(Entity.ID, layerIndex, panel.ID, out UIPanelInstance instance);
+
+            return null;
+        }
+
+        public UIPanelInstance GetPanelInstanceByIndex(uint layerIndex, uint panelIndex)
 		{
-            InternalCalls.PlayerHUDComponent_SetText(Entity.ID, text);
-        } 
+            InternalCalls.PlayerHUDComponent_UITableLayerGetPanelInstanceByIndex(Entity.ID, layerIndex, panelIndex, out UIPanelInstanceRaw instance);
+			return null;
+        }
+
+        public void SetPanelVisible(uint layerIndex, UIPanel panel, bool visible)
+        {
+            InternalCalls.PlayerHUDComponent_UITableLayerSetPanelInstanceVisible(Entity.ID, layerIndex, panel.ID, visible);
+        }
+
+        public bool GetPanelVisible(uint layerIndex, UIPanel panel)
+        {
+            return InternalCalls.PlayerHUDComponent_UITableLayerGetPanelInstanceVisible(Entity.ID, layerIndex, panel.ID);
+        }
+
+        public void PushPanel(uint layerIndex, UIPanel panel, bool visible)
+        {
+            InternalCalls.PlayerHUDComponent_UITableLayerPushPanel(Entity.ID, layerIndex, panel.ID, visible);
+        }
+
+        public void RemovePanel(uint layerIndex, UIPanel panel)
+        {
+            InternalCalls.PlayerHUDComponent_UITableLayerRemovePanel(Entity.ID, layerIndex, panel.ID);
+        }
+
+        public Variable GetRegistryVariable(uint layerIndex, UIPanel panel, string varName)
+        {
+			InternalCalls.PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariable(Entity.ID, layerIndex, panel.ID, varName,out VariableRaw var);
+
+            return null;
+        }
+
+        public Variable GetRegistryVariableByPanelIndex(uint layerIndex, uint panelIndex, string varName)
+        {
+            InternalCalls.PlayerHUDComponent_UITableLayerGetPanelInstanceByIndex(Entity.ID, layerIndex, panelIndex, out UIPanelInstanceRaw panel);
+			AssetID id = new AssetID(panel.AssetPanelID);
+            if (!id.IsValid())
+            {
+				return null;
+            }
+
+            InternalCalls.PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariable(Entity.ID, layerIndex, id, varName, out VariableRaw var);
+			if(var.VariableUUID != 0)
+			{
+                return new Variable(var.VariableUUID, (VariableTypes)var.Type, var.StorageHandle);
+            }
+
+			return null;
+
+        }
+
+		
     }
 
     [RegisterCoreClassStruct]

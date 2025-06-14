@@ -3569,78 +3569,363 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		#endif
 	}
 	#pragma endregion
+#pragma region ProofScriptVariable
+
+	struct ProofScriptVariable
+	{
+		uint64_t VariableUUID;
+		int Type;//VariableTyes
+		uint64_t SetStorageHandle;
+	};
+
+	static void ProofScriptVariable_SetValue(ProofScriptVariable variable, uint8_t* data, uint32_t size)
+	{
+		auto storageWeakCountIt = VariableSetStorage::GetAllStorageSets().find(variable.SetStorageHandle);
+		if (storageWeakCountIt == VariableSetStorage::GetAllStorageSets().end())
+		{
+			PF_ERROR("SetValue – No storage found with handle {}", variable.SetStorageHandle);
+			return;
+		}
+
+		auto storageWeakCount = storageWeakCountIt->second;
+		if (!storageWeakCount.IsValid())
+		{
+			PF_ERROR("SetValue – Storage handle {} is invalid", variable.SetStorageHandle);
+			return;
+		}
+
+		Count<VariableSetStorage> storage = storageWeakCount.Lock();
+
+		if (!storage->HasVariable(variable.VariableUUID))
+		{
+			PF_ERROR("SetValue – Variable UUID {} not found in storage {}", variable.VariableUUID, variable.SetStorageHandle);
+			return;
+		}
+
+		auto var = storage->GetVariable(variable.VariableUUID);
+
+		if (var->GetType() != (VariableTypes)variable.Type)
+		{
+			PF_ERROR("GetValue – Type mismatch for variable {}: expected {}, got {}",
+				variable.VariableUUID, EnumReflection::EnumString(var->GetType()), EnumReflection::EnumString((VariableTypes)variable.Type));
+			return;
+		}
+
+		ScopeBuffer scopedBuffer = ScopeBuffer::CopyStatic(data,size);
+		var->GetVariableStorage()->SetValueBuffer(scopedBuffer);
+	}
+
+
+	static uint8_t* ProofScriptVariable_GetValue(ProofScriptVariable variable)
+	{
+		auto storageWeakCountIt = VariableSetStorage::GetAllStorageSets().find(variable.SetStorageHandle);
+		if (storageWeakCountIt == VariableSetStorage::GetAllStorageSets().end())
+		{
+			PF_ERROR("GetValue – No storage found with handle {}", variable.SetStorageHandle);
+			return nullptr;
+		}
+
+		auto storageWeakCount = storageWeakCountIt->second;
+		if (!storageWeakCount.IsValid())
+		{
+			PF_ERROR("GetValue – Storage handle {} is invalid", variable.SetStorageHandle);
+			return nullptr;
+		}
+
+		Count<VariableSetStorage> storage = storageWeakCount.Lock();
+
+		if (!storage->HasVariable(variable.VariableUUID))
+		{
+			PF_ERROR("GetValue – Variable UUID {} not found in storage {}", variable.VariableUUID, variable.SetStorageHandle);
+			return nullptr;
+		}
+
+		auto var = storage->GetVariable(variable.VariableUUID);
+
+		if (var->GetType() != (VariableTypes)variable.Type)
+		{
+			PF_ERROR("GetValue – Type mismatch for variable {}: expected {}, got {}",
+				variable.VariableUUID, EnumReflection::EnumString(var->GetType()), EnumReflection::EnumString((VariableTypes)variable.Type));
+			return nullptr;
+		}
+
+		auto storagePtr = var->GetVariableStorage().As<PrimitiveVariableStorage>();
+		if (!storagePtr)
+		{
+			PF_ERROR("GetValue – Variable {} is not a PrimitiveVariableStorage", variable.VariableUUID);
+			return nullptr;
+		}
+
+		return storagePtr->GetBuffer().Data;
+	}
+
+
+#pragma endregion
 
 	#pragma region PlayerHUDComponent
 	
-	static uint64_t PlayerHUDComponent_GetHUDAssetID(uint64_t entityID, uint32_t index) 
-	{
-	#if 0 
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_ERROR("PlayerHUDComponent.GetHUDAssetID - entity is invalid ");
-			return 0;
-		}
-		#endif
-
-		if (!entity.HasComponent<PlayerHUDComponent>())
-		{
-			PF_ERROR("PlayerHUDComponent.GetHUDAssetID entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetUUID());
-			return 0;
-		}
-
-		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
-		if (comp.HudTable->HasPanel(index)&& comp.HudTable->GetPanel(index) != nullptr)
-		{
-			return comp.HudTable->GetPanel(index)->GetID();
-		}
-		else
-		{
-			return 0;
-		}
-	#endif
-	}
 
 	struct ScriptFunUIPanelInstance
 	{
 		AssetKey<AssetType::UIPanel> Panel;
 		bool Visible = true;
 	};
+
 	struct ScriptFuncUILayer
 	{
 		bool Visible;
-		MonoString* Name;
-		MonoArray* Panels;
-
+		uint32_t Index;
 	};
-	static void PlayerHUDComponent_UITableGetLayer(uint64_t entityID, uint32_t layerIndex, ScriptFuncUILayer* uiLayer)
+
+	static ScriptFuncUILayer PlayerHUDComponent_UITableGetLayerByName(uint64_t entityID, MonoString* name)
+	{ 
+		SCRIPT_FUNC_FUNCTION_CHECK(PlayerHUDComponent, ScriptFuncUILayer());
+
+		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
+
+		if (!playerHudComponent.HudTable->HasLayer(ScriptUtils::MonoStringToUTF8(name)))
+		{
+			PF_ERROR("PlayerHUDComponent.UITableGetLayerByName – entity '{}' does not contain layer named '{}'", entity.GetName(), ScriptUtils::MonoStringToUTF8(name));
+			return ScriptFuncUILayer();
+		}
+		UILayer& layer = *playerHudComponent.HudTable->FindLayerByName(ScriptUtils::MonoStringToUTF8(name));
+
+		ScriptFuncUILayer scriptlayer;
+
+		scriptlayer.Visible = layer.Visible;
+		scriptlayer.Index = playerHudComponent.HudTable->FindlayerIndexByname(layer.Name);
+	}
+
+	static ScriptFuncUILayer PlayerHUDComponent_UITableGetLayer(uint64_t entityID, uint32_t layerIndex)
 	{
-		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
+		SCRIPT_FUNC_FUNCTION_CHECK(PlayerHUDComponent, ScriptFuncUILayer());
 
 		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
 
 		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
 		{
-			PF_ERROR("PlayerHUDComponent.UITableGetLayer entity tag: {} ID: {}  does not contain layer index: {}", entity.GetName(), layerIndex);
-			return;
+			PF_ERROR("PlayerHUDComponent.UITableGetLayer entity tag: {} does not contain layer index: {}", entity.GetName(), layerIndex);
+			return ScriptFuncUILayer();
 		}
 
 		UILayer& layer = playerHudComponent.HudTable->GetLayer(layerIndex);
 
-		uiLayer->Name = ScriptUtils::UTF8StringToMono(layer.Name);
-		uiLayer->Visible = layer.Visible;
+		ScriptFuncUILayer scriptlayer;
+		scriptlayer.Visible = layer.Visible;
+		scriptlayer.Index = playerHudComponent.HudTable->FindlayerIndexByname(layer.Name);
+	}
 
-		for (auto& panel : layer.GetUIPanels())
+
+	struct ScriptUIPanelInstance
+	{
+		uint64_t Panel;
+		bool Visible = false;
+	};
+	static void PlayerHUDComponent_UITableLayerGetPanelInstance(uint64_t entityID, uint32_t layerIndex, AssetID panelID, ScriptUIPanelInstance* instance)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
+		AssetKey<AssetType::UIPanel> panel = panelID;
+		SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_VOID(panel, PlayerHUDComponent);
+
+			
+		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
+
+		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
 		{
-			ScriptFunUIPanelInstance instance;
-			if (panel->GetUIPanel() != nullptr)
-				instance.Panel = panel->GetUIPanel()->GetID();
-
-			instance.Visible = panel->Visible;
+			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstance – entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
+			return;
 		}
 
+		UILayer& layer = playerHudComponent.HudTable->GetLayer(layerIndex);
+		auto uiPanelInstance = layer.GetUIPanelByPanel(panel.GetAsset<UIPanel>());
+
+		if (!uiPanelInstance)
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstance – entity '{}' layer {} does not contain panel {}", entity.GetName(), layerIndex, panel.GetAssetID());
+			return;
+		}
+
+		instance->Panel = panel.GetAssetID();
+		instance->Visible = uiPanelInstance->Visible;
 	}
+
+	static VOID PlayerHUDComponent_UITableLayerGetPanelInstanceByIndex(uint64_t entityID, uint32_t layerIndex, uint32_t panelIndex, ScriptUIPanelInstance* instance)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
+
+
+
+		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
+
+		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstance – entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
+			return;
+		}
+
+		UILayer& layer = playerHudComponent.HudTable->GetLayer(layerIndex);
+		auto uiPanelInstance = layer.GetUIPanelByIndex(panelIndex);
+
+		if (!uiPanelInstance)
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstance – entity '{}' layer {} does not contain panel {}", entity.GetName(), layerIndex);
+			return ;
+		}
+		
+		ScriptUIPanelInstance copy = ScriptUIPanelInstance();
+		copy.Panel = uiPanelInstance->GetUIPanel()->GetID();
+		copy.Visible = uiPanelInstance->Visible;
+
+		*instance = copy;
+	}
+
+
+	static void PlayerHUDComponent_UITableLayerSetPanelInstanceVisible(uint64_t entityID, uint32_t layerIndex, AssetID panelID, bool visible)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
+		AssetKey<AssetType::UIPanel> panel = panelID;
+		SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_VOID(panel, PlayerHUDComponent);
+
+		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
+
+		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerSetPanelInstanceVisible – entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
+			return;
+		}
+
+		UILayer& layer = playerHudComponent.HudTable->GetLayer(layerIndex);
+		auto uiPanelInstance = layer.GetUIPanelByPanel(panel.GetAsset<UIPanel>());
+
+		if (!uiPanelInstance)
+		{
+			PF_ERROR("PlayerHUDComponent..UITableLayerSetPanelInstanceVisible – entity '{}' layer {} does not contain panel {}", entity.GetName(), layerIndex, panel.GetAssetID());
+			return;
+		}
+
+		uiPanelInstance->Visible = visible;
+	}
+	static bool PlayerHUDComponent_UITableLayerGetPanelInstanceVisible(uint64_t entityID, uint32_t layerIndex, AssetID panelID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(PlayerHUDComponent, false);
+
+		AssetKey<AssetType::UIPanel> panel = panelID;
+		SCRIPT_FUNC_ENTITY_ASSETKEY_ASSET(panel, PlayerHUDComponent,false);
+
+		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
+
+		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstanceVisible – entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
+			return false;
+		}
+
+		UILayer& layer = playerHudComponent.HudTable->GetLayer(layerIndex);
+		auto uiPanelInstance = layer.GetUIPanelByPanel(panel.GetAsset<UIPanel>());
+
+		if (!uiPanelInstance)
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstanceVisible – panel {} not found in entity '{}' layer {}", panel.GetAssetID(), entity.GetName(), layerIndex);
+			return false;
+		}
+
+		return uiPanelInstance->Visible;
+	}
+
+
+	static void PlayerHUDComponent_UITableLayerPushPanel(uint64_t entityID, uint32_t layerIndex, AssetID panelID, bool visible)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
+
+		AssetKey<AssetType::UIPanel> panel = panelID;
+		SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_VOID(panel);
+
+		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
+
+		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerPushPanel – entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
+			return;
+		}
+
+		UILayer& layer = playerHudComponent.HudTable->GetLayer(layerIndex);
+		auto uiPanelInstance = layer.PushUI(panel.GetAsset<UIPanel>());
+
+		if (!uiPanelInstance)
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerPushPanel – failed to push panel {} on entity '{}' layer {}", panel.GetAssetID(), entity.GetName(), layerIndex);
+			return;
+		}
+
+		uiPanelInstance->Visible = visible;
+	}
+
+
+	static void PlayerHUDComponent_UITableLayerRemovePanel(uint64_t entityID, uint32_t layerIndex, AssetID panelID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
+		AssetKey<AssetType::UIPanel> panel = panelID;
+		SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_VOID(panel);
+
+		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
+
+		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerRemovePanel – entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
+			return;
+		}
+
+		UILayer& layer = playerHudComponent.HudTable->GetLayer(layerIndex);
+		layer.PopUI(panel.GetAsset<UIPanel>());
+	}
+
+
+	
+	static void PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariable(uint64_t entityID, uint32_t layerIndex, AssetID panelID, MonoString* varName, ProofScriptVariable* varr)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
+		AssetKey<AssetType::UIPanel> panel = panelID;
+		SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_VOID(panel, PlayerHUDComponent,ProofScriptVariable());
+
+		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
+
+		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerPanelInstanceGetRegistryVariable – entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
+			return;
+		}
+
+		UILayer& layer = playerHudComponent.HudTable->GetLayer(layerIndex);
+		auto uiPanelInstance = layer.GetUIPanelByPanel(panel.GetAsset<UIPanel>());
+
+		if (!uiPanelInstance)
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerPanelInstanceGetRegistryVariable – panel {} not found in entity '{}' layer {}", panel.GetAssetID(), entity.GetName(), layerIndex);
+			return;
+		}
+
+		if (!uiPanelInstance->GetVariableRegistryInstance())
+		{
+			PF_ERROR("UITableLayerPanelGetRegistryVariable – panel {} on entity '{}' layer {} has no variable registry", panel.GetAssetID(), entity.GetName(), layerIndex);
+			return;
+		}
+
+		std::string name = ScriptUtils::MonoStringToUTF8(varName);
+
+		if (!uiPanelInstance->GetVariableRegistryInstance()->HasVariable(name))
+		{
+			PF_ERROR("UITableLayerPanelGetRegistryVariable – variable '{}' not found in panel {} on entity '{}' layer {}", name, panel.GetAssetID(), entity.GetName(), layerIndex);
+			return;
+		}
+
+		auto var = uiPanelInstance->GetVariableRegistryInstance()->GetVariable(name);
+		{
+			*varr = ProofScriptVariable(var->GetUUID(), (int)var->GetType(), uiPanelInstance->GetVariableRegistryInstance()->GetVariableSetStorage()->GetStorageID());
+		}
+	}
+
+
+
 
 	struct UITextData 
 	{
@@ -3648,10 +3933,11 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		AssetKey<AssetType::Font> Font;
 	};
 
-	static void PlayerHUDComponent_UIPanelInstanceSetText(uint64_t entityID, uint32_t layerIndex, AssetKey<AssetType::UIPanel> panel, MonoString* textName, MonoString* newTextValue)
+	static void PlayerHUDComponent_UIPanelInstanceSetText(uint64_t entityID, uint32_t layerIndex, AssetID panelID, MonoString* textName, MonoString* newTextValue)
 	{
 
 		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
+		AssetKey<AssetType::UIPanel> panel = panelID;
 		SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_VOID(panel);
 
 		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
@@ -3690,467 +3976,18 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 	}
 
 
-	struct UIBaseData {
-		glm::vec2 Position;
-		glm::vec2 Rotation;
-		glm::vec2 Size;
-		bool Visible = true;
-		glm::vec4 Color;
-	};
 
-	struct UIImageButtonData {
-		UIBaseData Base;
-		uint64_t AssetID;
-	};
+#pragma endregion
 
-#if 0
-	static bool PlayerHUDComponent_IndexHasHUD(uint64_t entityID, uint32_t tableIndex) 
-	{
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_ERROR("PlayerHUDComponent.IndexHasHUD - entity is invalid ");
-			return {};
-		}
-		#endif
 
-		if (!entity.HasComponent<PlayerHUDComponent>())
-		{
-			PF_ERROR("PlayerHUDComponent.IndexHasHUD entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetUUID());
-			return {};
-		}
-		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
-		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
-		{
-			return true;
-		}
-		return false;
-	}
 
-	static bool PlayerHUDComponent_GetVisible(uint64_t entityID, uint32_t tableIndex) {
 
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_ERROR("PlayerHUDComponent.GetVisible - entity is invalid ");
-			return {};
-		}
-		#endif
 
-		if (!entity.HasComponent<PlayerHUDComponent>())
-		{
-			PF_ERROR("PlayerHUDComponent.GetVisible entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetUUID());
-			return {};
-		}    
-		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
-		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
-		{
-			return comp.HudTable->GetPanel(tableIndex)->Visible;
-		}
-		PF_ERROR("PlayerHUDComponent.GetVisible entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
-		return false;
-	}
-	static void PlayerHUDComponent_SetVisible(uint64_t entityID, uint32_t tableIndex, bool* visible) {
-
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_ERROR("PlayerHUDComponent.SetVisible - entity is invalid ");
-			return ;
-		}
-		#endif
-
-		if (!entity.HasComponent<PlayerHUDComponent>())
-		{
-			PF_ERROR("PlayerHUDComponent.SetVisible entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetUUID());
-			return ;
-		}
-		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
-		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
-		{
-			comp.HudTable->GetPanel(tableIndex)->Visible = *visible;
-			return;
-		}
-		PF_ERROR("PlayerHUDComponent.SetVisible entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
-	}
-
-	static bool PlayerHUDComponent_HasButton(uint64_t entityID, uint32_t tableIndex, MonoString* buttonName) 
-	{
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_ERROR("PlayerHUDComponent.HasButton - entity is invalid ");
-			return false;
-		}
-		#endif
-
-		if (!entity.HasComponent<PlayerHUDComponent>())
-		{
-			PF_ERROR("PlayerHUDComponent.HasButton entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetUUID());
-			return false;
-		}
-
-		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
-		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
-		{
-			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(buttonName);
-			if (panel->ButtonHas(buttonNamestr))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-	static void PlayerHUDComponent_SetButtonData(uint64_t entityID, uint32_t tableIndex, MonoString* buttonName, UIBaseData* data)
-	{
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_ERROR("PlayerHUDComponent.SetButtonData - entity is invalid ");
-			return;
-		}
-		#endif
-
-		if (!entity.HasComponent<PlayerHUDComponent>())
-		{
-			PF_ERROR("PlayerHUDComponent.SetButtonData entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetUUID());
-			return;
-		}
-
-		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
-		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
-		{
-			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(buttonName);
-			if (!panel->ButtonHas(buttonNamestr))
-			{
-				PF_ERROR("PlayerHUDComponent.SetButtonData index {} does not contain button {}", tableIndex, buttonNamestr);
-				return;
-			}
-			UIButton& button = panel->ButtonGet(buttonNamestr);
-
-			button.TintColour = data->Color;
-			button.Postion = data->Position;
-			button.Rotation = data->Rotation;
-			button.Visible = data->Visible;
-			button.Size = data->Size;
-			return;
-		}
-		PF_ERROR("PlayerHUDComponent.SetButtonData entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
-
-	}
-	static UIBaseData PlayerHUDComponent_GetButtonData(uint64_t entityID, uint32_t tableIndex, MonoString* buttonName)
-	{
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_ERROR("PlayerHUDComponent_GetButtonData - entity is invalid ");
-			return {};
-		}
-		#endif
-
-		if (!entity.HasComponent<PlayerHUDComponent>())
-		{
-			PF_ERROR("PlayerHUDComponent.GetButtonData entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetUUID());
-			return {};
-		}
-
-		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
-		UIBaseData data;
-		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
-		{
-			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(buttonName);
-			if (!panel->ButtonHas(buttonNamestr))
-			{
-				PF_ERROR("PlayerHUDComponent.GetButtonData index {} does not contain button {}", tableIndex, buttonNamestr);
-				return {};
-			}
-			UIButton& button = panel->ButtonGet(buttonNamestr);
-
-			data.Color = button.TintColour;
-			data.Position = button.Postion;
-			data.Rotation = button.Rotation;
-			data.Visible = button.Visible;
-			data.Size = button.Size;
-			return data;
-			
-		}
-		PF_ERROR("PlayerHUDComponent.GetButtonData entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
-		return {};
-	}
-
-	static bool PlayerHUDComponent_HasImageButton(uint64_t entityID, uint32_t tableIndex, MonoString* buttonName)
-	{
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_ERROR("PlayerHUDComponent.HasImageButton - entity is invalid ");
-			return false;
-		}
-		#endif
-
-		if (!entity.HasComponent<PlayerHUDComponent>())
-		{
-			PF_ERROR("PlayerHUDComponent.HasImageButton entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetUUID());
-			return false;
-		}
-
-		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
-		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
-		{
-			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(buttonName);
-			if (panel->ImageButtonHas(buttonNamestr))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-	static UIImageButtonData PlayerHUDComponent_GetImageButtonData(uint64_t entityID, uint32_t tableIndex, MonoString* buttonName)
-	{
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_ERROR("PlayerHUDComponent_GetImageButtonData - entity is invalid ");
-			return {};
-		}
-		#endif
-
-		if (!entity.HasComponent<PlayerHUDComponent>())
-		{
-			PF_ERROR("PlayerHUDComponent.GetImageButtonData entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetUUID());
-			return {};
-		}
-
-		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
-		UIImageButtonData data;
-		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
-		{
-			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(buttonName);
-			if (!panel->ImageButtonHas(buttonNamestr))
-			{
-				PF_ERROR("PlayerHUDComponent.GetImageButtonData index {} does not contain button {}", tableIndex, buttonNamestr);
-				return {};
-			}
-			UIButtonImage& button = panel->GetImageButton(buttonNamestr);
-
-			data.Base.Color = button.TintColor;
-			data.Base.Position = button.Postion;
-			data.Base.Rotation = button.Rotation;
-			data.Base.Size = button.Size;
-			data.Base.Visible = button.Visible;
-			data.AssetID = (button.Texture != nullptr ) ? button.Texture->GetID() : AssetID(0);
-			return data;
-
-		}
-		PF_ERROR("PlayerHUDComponent.GetImageButtonData entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
-		return {};
-	}
-	static void PlayerHUDComponent_SetImageButtonData(uint64_t entityID, uint32_t tableIndex, MonoString* buttonName, UIImageButtonData* data)
-	{
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_ERROR("PlayerHUDComponent.SetImageButtonData - entity is invalid ");
-			return;
-		}
-		#endif
-
-		if (!entity.HasComponent<PlayerHUDComponent>())
-		{
-			PF_ERROR("PlayerHUDComponent.SetImageButtonData entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetUUID());
-			return;
-		}
-
-		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
-		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
-		{
-			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(buttonName);
-			if (!panel->ImageButtonHas(buttonNamestr))
-			{
-				PF_ERROR("PlayerHUDComponent.SetImageButtonData index {} does not contain button {}", tableIndex, buttonNamestr);
-				return;
-			}
-			UIButtonImage& button = panel->GetImageButton(buttonNamestr);
-
-			button.TintColor = data->Base.Color;
-			button.Postion = data->Base.Position;
-			button.Visible = data->Base.Visible;
-			button.Rotation = data->Base.Rotation;
-			button.Size = data->Base.Size;
-			if (data->AssetID != 0)
-			{
-				if (button.Texture == nullptr)
-				{
-					if (AssetManager::HasAsset(data->AssetID))
-					{
-						button.Texture = AssetManager::GetAsset<Texture2D>(data->AssetID);
-						return;
-					}
-				}
-
-				if (button.Texture->GetID() == data->AssetID)
-					return;
-				button.Texture = AssetManager::GetAsset<Texture2D>(data->AssetID);
-			}
-
-			if (data->AssetID == 0 && button.Texture != nullptr)
-				button.Texture = nullptr;
-			return;
-		}
-		PF_ERROR("PlayerHUDComponent.SetImageButtonData entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
-	}
-
-	static bool PlayerHUDComponent_HasText(uint64_t entityID, uint32_t tableIndex, MonoString* textName) {
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_ERROR("PlayerHUDComponent.HasText - entity is invalid ");
-			return false;
-		}
-		#endif
-
-		if (!entity.HasComponent<PlayerHUDComponent>())
-		{
-			PF_ERROR("PlayerHUDComponent.HasText entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetUUID());
-			return false;
-		}
-
-		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
-		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
-		{
-			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(textName);
-			if (panel->TextHas(buttonNamestr))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-	static void PlayerHUDComponent_GetTextData(uint64_t entityID, uint32_t tableIndex, MonoString* textName, UITextData* data,MonoString** textData) {
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_ERROR("PlayerHUDComponent.GetTextData - entity is invalid ");
-			return;
-		}
-		#endif
-
-		if (!entity.HasComponent<PlayerHUDComponent>())
-		{
-			PF_ERROR("PlayerHUDComponent.GetTextData entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetUUID());
-			return;
-		}
-
-		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
-		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
-		{
-			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(textName);
-			if (!panel->TextHas(buttonNamestr))
-			{
-				PF_ERROR("PlayerHUDComponent.GetTextData index {} does not contain button {}", tableIndex, buttonNamestr);
-				return;
-			}
-			UIText& text = panel->TextGet(buttonNamestr);
-
-			data->Kerning = text.Param.Kerning;
-			data->LineSpacing = text.Param.LineSpacing;
-			data->Base.Color = text.Param.Color;
-			data->Base.Position = text.Postion;
-			data->Base.Rotation = text.Rotation;
-			data->Base.Size = text.Size;
-			data->Base.Visible = text.Visible;
-			*textData = ScriptUtils::UTF8StringToMono(text.Text);
-			return;
-		}
-		PF_ERROR("PlayerHUDComponent.GetTextData entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
-	}
-	static void PlayerHUDComponent_SetTextData(uint64_t entityID, uint32_t tableIndex, MonoString* textName, UITextData* data, MonoString** textData) {
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_ERROR("PlayerHUDComponent.SetTextData - entity is invalid ");
-			return;
-		}
-		#endif
-
-		if (!entity.HasComponent<PlayerHUDComponent>())
-		{
-			PF_ERROR("PlayerHUDComponent.SetTextData entity tag: {} ID: {}  does not conatin PlayerHud Component", entity.GetName(), entity.GetUUID());
-			return;
-		}
-
-		PlayerHUDComponent& comp = entity.GetComponent<PlayerHUDComponent>();
-		if (comp.HudTable->HasPanel(tableIndex) && comp.HudTable->GetPanel(tableIndex) != nullptr)
-		{
-			auto panel = comp.HudTable->GetPanel(tableIndex);
-			std::string buttonNamestr = ScriptUtils::MonoStringToUTF8(textName);
-			if (!panel->TextHas(buttonNamestr))
-			{
-				PF_ERROR("PlayerHUDComponent.SetTextData index {} does not contain button {}", tableIndex, buttonNamestr);
-				return;
-			}
-			UIText& text = panel->TextGet(buttonNamestr);
-
-			text.Param.Kerning = data->Kerning;
-			text.Param.LineSpacing = data->LineSpacing ;
-			text.Param.Color = data->Base.Color ;
-			text.Postion= data->Base.Position ;
-			text.Rotation = data->Base.Rotation ;
-			text.Size = data->Base.Size;
-			text.Visible =data->Base.Visible;
-			text.Text = ScriptUtils::MonoStringToUTF8(*textData);
-			return;
-		}
-		PF_ERROR("PlayerHUDComponent.SetTextData entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
-	}
-	#pragma endregion
-#endif
-
-	static void PlayerHUDComponent_SetPanel(uint64_t entityID, uint64_t assetID)
-	{
-		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
-		SCRIPT_FUNC_ENTITY_CHECK_ASSET_VOID(assetID, AssetType::UIPanel, PlayerHUDComponent);
-
-		//entity.GetComponent<PlayerHUDComponent>().HudTable->Panel = AssetManager::GetAsset<UIPanel>(assetID);
-	}
-
-	static void PlayerHUDComponent_SetText(uint64_t entityID, MonoString* textName,MonoString* textData)
-	{
-	#if 0
-		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
-		std::string text = ScriptUtils::MonoStringToUTF8(textData);
-		std::string textNameCStr = ScriptUtils::MonoStringToUTF8(textName);
-		auto panel =entity.GetComponent<PlayerHUDComponent>().HudTable->Panel;
-		if (panel->Menu->HasUIElement(textNameCStr))
-		{
-			panel->Menu->GetUIElement(textNameCStr).GetComponent<UITextComponent>().Text = text;
-		}
-	#endif
-	}
 
 #pragma region PersistentDataSorage
 
 	Count< PersistentDataManager> dataManager = Count< PersistentDataManager>::Create();
+
 	static void PersistentDataStorage_SaveData(MonoString* textData, uint8_t* data, size_t size)
 	{
 		Buffer buffer;
@@ -4158,6 +3995,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		buffer.Size = size;
 
 		dataManager->SaveData(ScriptUtils::MonoStringToUTF8(textData), buffer);
+		buffer.Release();
 	}
 	static uint8_t* PersistentDataStorage_LoadData(MonoString* textData)
 	{
@@ -4531,27 +4369,18 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		
 		//playerHud COmponent
 		{
-			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_SetPanel);
-			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_SetText);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerGetPanelInstance);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerGetPanelInstanceByIndex);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerPushPanel);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerRemovePanel);
 
-		#if 0
-			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_IndexHasHUD);
-			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_GetVisible);
-			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_SetVisible);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerGetPanelInstanceVisible);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerSetPanelInstanceVisible);
 
-			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_HasButton);
-			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_GetButtonData);
-			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_SetButtonData);
-			
-			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_HasImageButton);
-			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_GetImageButtonData);
-			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_SetImageButtonData);
-
-
-			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_HasText);
-			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_GetTextData);
-			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_SetTextData);
-		#endif
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableGetLayer);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableGetLayerByName);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariable);
+		
 		}
 		//particleSystem component
 		{
@@ -4573,6 +4402,12 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		{
 			PF_ADD_INTERNAL_CALL(PersistentDataStorage_LoadData);
 			PF_ADD_INTERNAL_CALL(PersistentDataStorage_SaveData);
+		}
+
+		//variable 
+		{
+			PF_ADD_INTERNAL_CALL(ProofScriptVariable_GetValue);
+			PF_ADD_INTERNAL_CALL(ProofScriptVariable_SetValue);
 		}
 
 		//Debug Renderer
