@@ -45,6 +45,7 @@
 //include those before stdlig.h
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/ParticleSystem.h"
+#include "Proof/Scene/TerrainRenderer/TerrainRenderer.h"
 
 //#include "misc/cpp/imgui_stdlib.h"
 #include "Proof/Scene/Mesh.h"
@@ -683,6 +684,7 @@ namespace Proof
 
 			AddComponentGui<MeshComponent>(entity, "Mesh");
 			AddComponentGui<DynamicMeshComponent>(entity, "DynamicMesh");
+			AddComponentGui<TerrainComponent>(entity, "Terrain");
 			AddComponentGui<SpriteComponent>(entity, "Sprite");
 			AddComponentGui<NativeScriptComponent>(entity, "Native Script");
 
@@ -833,6 +835,12 @@ namespace Proof
 				{
 					UI::AttributeDrawMaterialTable(meshComp.MaterialTable, mesh->GetMaterialTable());
 				}
+			});
+
+		DrawComponents<TerrainComponent>("Terrain", entity, [](TerrainComponent& meshComp)
+			{
+				UI::ViewDebugImage("Noise Texure", meshComp.Terrain->GetNoiseTexture()->GetImage());
+
 			});
 		DrawComponents<SpriteComponent>({ "Sprite" }, entity, [](SpriteComponent& spriteComp) {
 

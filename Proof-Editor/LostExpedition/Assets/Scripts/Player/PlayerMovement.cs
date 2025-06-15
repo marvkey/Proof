@@ -64,24 +64,6 @@ namespace LostExpedition
                 rotateRate = Vector2.Zero;
             }
 
-            GetScript<HealthComponent>().TakeDamage(deltaTime * beginVal);
-
-            if (m_HudComponent != null)
-            {
-                Variable var = m_HudComponent.GetRegistryVariableByPanelIndex(3, 0, "HealthPercent");
-                
-                if(var != null)
-                {
-                    var.SetData<float>(GetScript<HealthComponent>().GetHealth() / GetScript<HealthComponent>().GetMaxHealth());
-                }
-            }
-
-            if(GetScript<HealthComponent>().GetHealth() <= 0)
-            {
-                World.TryFindEntityByTag("Empty Entity").GetComponent<TextComponent>().Visible = true;
-                GetComponent<MeshComponent>().Visible = false;
-            }
-
         }
 
         // OnPhysicsUpdate is called at a fixed timestep for physics-related logic

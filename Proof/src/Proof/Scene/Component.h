@@ -730,6 +730,14 @@ namespace Proof
 		Count< class Water> Water;
 	};
 
+
+	struct TerrainComponent
+	{
+		TerrainComponent();
+		TerrainComponent(const TerrainComponent& other);
+		Count<class TerrainRenderer> Terrain;
+	};
+
 	enum class BuoyancyType
 	{
 		Voxels,

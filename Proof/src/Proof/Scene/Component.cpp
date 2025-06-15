@@ -24,6 +24,7 @@
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/ParticleSystem.h"
 #include "Proof/Physics/MeshCollider.h"
+#include "Proof/Scene/TerrainRenderer/TerrainRenderer.h"
 
 #include "Material.h"
 
@@ -238,4 +239,13 @@ namespace Proof
 	{
 	}
 
+	TerrainComponent::TerrainComponent()
+	{
+		Terrain = Count<TerrainRenderer>::Create();
+	}
+
+	TerrainComponent::TerrainComponent(const TerrainComponent& other)
+	{
+		Terrain = Count<TerrainRenderer>::Create();
+	}
 }

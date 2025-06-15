@@ -58,6 +58,7 @@ project "Proof"
 		"%{IncludeDir.msdfgen}",
 		"%{IncludeDir.msdf_atlas_gen}",
 		"%{IncludeDir.MiniAudio}",
+		"%{IncludeDir.FastNoise}",
 
     }
 	libdirs{

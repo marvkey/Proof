@@ -36,6 +36,7 @@ project "Proof-Editor"
 		"%{IncludeDir.tracey}",
 		"%{IncludeDir.magic_enum}",
 		"%{IncludeDir.mono}",
+		"%{IncludeDir.FastNoise}",
     }
 
     links

@@ -47,7 +47,10 @@
 #include "Proof/Scripting/ScriptWorld.h"
 #include <glm/gtx/euler_angles.hpp>
 #include "Proof/Utils/ContainerUtils.h"
-namespace Proof {
+#include "TerrainRenderer/TerrainRenderer.h"
+namespace Proof 
+{
+
 
 	struct RuntimeSavedData
 	{
@@ -65,7 +68,6 @@ namespace Proof {
 		Init();
 		m_DebugRenderer = Count<DebugRenderer>::Create();
 		//m_Registry.on_destroy<ChildComponent>().connect<&World::OnChildComponentDestroy>(this);
-
 	}
 	World::~World()
 	{
@@ -330,6 +332,7 @@ namespace Proof {
 		WorldRendererStatistics& rendererStats = worldRenderer->m_Stats;
 		// render meshes
 		{
+
 			{
 				//static Count<Material> transparentMaterial = Count<Material>::Create("Test Transparent", Renderer::GetShader("ProofPBRTransparent_Static"));
 				//
@@ -388,8 +391,23 @@ namespace Proof {
 							rendererStats.TotalMeshSentToGpu++;
 							worldRenderer->SubmitDynamicMesh(mesh, dynamicMeshComponent.MaterialTable, dynamicMeshComponent.GetSubMeshIndex(), transform, dynamicMeshComponent.CastShadow);
 						}
+					}
+				}
+			}
 
 
+			{
+				auto view = m_Registry.view<TerrainComponent>();
+				for (auto entity : view)
+				{
+					Entity e = { entity, this };
+					auto& terrainComponent = e.GetComponent<TerrainComponent>();
+					glm::mat4 transform = GetWorldSpaceTransform(e);
+
+					auto mesh = terrainComponent.Terrain->GetTerrainMesh();
+					if (mesh)
+					{
+						worldRenderer->SubmitMesh(mesh, mesh->GetMaterialTable(), transform, true);
 					}
 				}
 			}
