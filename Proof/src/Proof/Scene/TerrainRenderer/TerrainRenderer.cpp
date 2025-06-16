@@ -11,234 +11,210 @@
 #include <FastNoise/FastNoiseLite.h>
 namespace Proof
 {
-	
-	float GetHeight(float x, float z, FastNoiseLite& base, FastNoiseLite& warpXNoise, FastNoiseLite& warpZNoise)
+
+	std::vector<float> GenerateNoiseMap(int mapWidth, int mapHeight, int seed, const TerrainRenderer::NoiseSettings& settings)
 	{
-		// Generate warp offsets (same as warp_x and warp_z in the image)
-		float warpZ = warpZNoise.GetNoise(x / 7.4f, z / 5.4f);
-		float warpX = warpXNoise.GetNoise(x / 10.f, z / 10.f);
-
-		// Apply domain warping manually
-		float warpedX = x / 10.f + warpX * 160.f;
-		float warpedZ = z / 10.f + warpZ * 160.f;
-
-		// Final noise height
-		return base.GetNoise(warpedX, warpedZ);
-	}
-
-	std::vector<std::vector<float>> GenerateNoiseMap(
-		int mapWidth, int mapHeight, int seed, float scale, int octaves,
-		float persistence, float lacunarity, float offsetX, float offsetY)
-	{
-		std::vector<std::vector<float>> noiseMap(mapWidth, std::vector<float>(mapHeight));
+		std::vector<float> noiseMap(mapWidth * mapHeight);
 
 		FastNoiseLite noise;
 		noise.SetSeed(seed);
 		noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-		noise.SetFrequency(1.0f / scale);
-		noise.SetFractalOctaves(octaves);
-		noise.SetFractalLacunarity(lacunarity);
-		noise.SetFractalGain(persistence);
 		noise.SetFractalType(FastNoiseLite::FractalType_FBm);
+		noise.SetFrequency(1.0f / settings.Scale);
+		noise.SetFractalOctaves(settings.Octaves);
+		noise.SetFractalLacunarity(settings.Lacunarity);
+		noise.SetFractalGain((float)settings.Persistence); 
 
 		float minVal = std::numeric_limits<float>::max();
 		float maxVal = std::numeric_limits<float>::lowest();
 
 		for (int y = 0; y < mapHeight; ++y) {
 			for (int x = 0; x < mapWidth; ++x) {
-				float sampleX = x + offsetX;
-				float sampleY = y + offsetY;
+				float sampleX = x + settings.Offset.x;
+				float sampleY = y + settings.Offset.y;
 
 				float val = noise.GetNoise(sampleX, sampleY);
-				noiseMap[x][y] = val;
+				int index = y * mapWidth + x;
+				noiseMap[index] = val;
 
 				minVal = std::min(minVal, val);
 				maxVal = std::max(maxVal, val);
 			}
 		}
 
-		// Normalize to [0, 1]
-		for (int y = 0; y < mapHeight; ++y) {
-			for (int x = 0; x < mapWidth; ++x) {
-				noiseMap[x][y] = (noiseMap[x][y] - minVal) / (maxVal - minVal);
-			}
+		for (int i = 0; i < mapWidth * mapHeight; ++i) {
+			noiseMap[i] = (noiseMap[i] - minVal) / (maxVal - minVal);
 		}
 
 		return noiseMap;
 	}
 	TerrainRenderer::TerrainRenderer()
 	{
-
-		const int size = 1024;
-#if 1
-		// Create and configure FastNoise object
-		FastNoiseLite noise;
-		noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-
-		std::vector<float> heightmap(size * size);
-
-		for (int y = 0; y < size; y++) {
-			for (int x = 0; x < size; x++) {
-				float height = noise.GetNoise((float)x, (float)y);
-				height = (height + 1.0f) * 0.5f;               // Remap to [0, 1]
-				heightmap[y * size + x] = height;
-				//heightmap[y * size + x] = glm::pow(height,4) * 200;
-			}
-		}
-#else
-		/*
-		float scale = 20;
-
-		FastNoiseLite noise;
-		noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-		noise.SetSeed(1341);
-		noise.SetFrequency(0.01f);
-
-		// Fractal settings
-		noise.SetFractalType(FastNoiseLite::FractalType_FBm);
-		noise.SetFractalOctaves(3);
-		noise.SetFractalLacunarity(2.17f);
-		noise.SetFractalGain(0.62f);
-
-		// Domain warp settings
-		noise.SetDomainWarpType(FastNoiseLite::DomainWarpType_BasicGrid);
-		noise.SetDomainWarpAmp(2.5f);
-
-		std::vector<float> heightmap(size * size);
-
-		for (int y = 0; y < size; y++) {
-			for (int x = 0; x < size; x++) {
-				float height = noise.GetNoise((float)x, (float)y);
-				heightmap[y * size + x] = glm::pow(height, 4) * 200;
-			}
-		}
-		*/
-
-
-		FastNoiseLite base;
-		base.SetSeed(1341);
-		base.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-		base.SetFrequency(0.01f);
-		base.SetFractalType(FastNoiseLite::FractalType_FBm);
-		base.SetFractalOctaves(3);
-		base.SetFractalLacunarity(2.17f);
-		base.SetFractalGain(0.62f);
-
-		FastNoiseLite warpX;
-		warpX.SetSeed(1341 + 100); // different seed for X
-		warpX.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-
-		FastNoiseLite warpZ;
-		warpZ.SetSeed(1341 + 200); // different seed for Z
-		warpZ.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
-
-		std::vector<float> heightmap(size * size);
-		for (int y = 0; y < size; ++y) {
-			for (int x = 0; x < size; ++x) {
-				float fx = static_cast<float>(x);
-				float fy = static_cast<float>(y);
-				float h = GetHeight(fx, fy, base, warpX, warpZ);
-
-				h = (h + 1.0f) * 0.5f;               // Remap to [0, 1]
-
-				heightmap[y * size + x] = h; // You can scale this later in your mesh
-			}
-		}
-
-
-#endif
-
-		GenerateMesh(heightmap, size);
+		RegenerateTerrainMesh();
 	}
 
-	glm::vec3 CalculateNormal(uint32_t x, uint32_t y, const std::vector<float>& heightmap, uint32_t size,float scaleY)
+	class TerrainMeshBuilderData
 	{
-		auto getHeight = [&](uint32_t ix, uint32_t iy) {
-			ix = std::clamp(ix, 0u, size - 1);
-			iy = std::clamp(iy, 0u, size - 1);
-			return heightmap[iy * size + ix];
-			};
-
-		float heightL = getHeight(x - 1, y);
-		float heightR = getHeight(x + 1, y);
-		float heightD = getHeight(x, y - 1);
-		float heightU = getHeight(x, y + 1);
-
-		glm::vec3 dx = glm::vec3(2.0f, (heightR - heightL) * scaleY, 0.0f);
-		glm::vec3 dz = glm::vec3(0.0f, (heightU - heightD) * scaleY, 2.0f);
-
-		glm::vec3 normal = glm::normalize(glm::cross(dz, dx));
-		return normal;
-	}
-
-	void TerrainRenderer::GenerateMesh(const std::vector<float>& heightMap, uint32_t size)
-	{
-
-		float ScaleY = 30.0f;
-		std::vector<Vertex> vertices;
-		std::vector<Index> indices;
-
-		for (uint32_t y = 0; y < size; y++)
+		
+	public:
+		TerrainMeshBuilderData(uint32_t width,uint32_t height)
 		{
-			for (uint32_t x = 0; x < size; x++)
+			Vertices.resize(width * height);
+			Indices.resize( ((width - 1) * (height - 1) * 2)); // 2 triangles per quad
+		}
+
+		void AddTriangle(uint32_t a, uint32_t b, uint32_t c) {
+			Indices[m_TriangleIndex] = Index{ a, b, c };
+			m_TriangleIndex++;
+		}
+
+		Count<Mesh> GenerateMesh()
+		{
+			RecalculateNormals(Vertices, Indices);
+			return Count<Mesh>::Create("Terrain Mesh", Vertices, Indices);
+		}
+
+		void RecalculateNormals(std::vector<Vertex>& vertices, const std::vector<Index>& triangles) {
+			// Clear existing normals
+			for (auto& vertex : vertices) {
+				vertex.Normal = glm::vec3(0.0f);
+			}
+
+			// Accumulate face normals
+			for (const auto& tri : triangles) {
+				const glm::vec3& v0 = vertices[tri.V1].Position;
+				const glm::vec3& v1 = vertices[tri.V2].Position;
+				const glm::vec3& v2 = vertices[tri.V3].Position;
+
+				glm::vec3 edge1 = v1 - v0;
+				glm::vec3 edge2 = v2 - v0;
+				glm::vec3 faceNormal = glm::normalize(glm::cross(edge1, edge2));
+
+				vertices[tri.V1].Normal += faceNormal;
+				vertices[tri.V2].Normal += faceNormal;
+				vertices[tri.V3].Normal += faceNormal;
+			}
+
+			// Normalize all normals
+			for (auto& vertex : vertices) {
+				vertex.Normal = glm::normalize(vertex.Normal);
+			}
+		}
+		std::vector<Vertex> Vertices;
+		std::vector<Index> Indices;
+	private:
+	
+		uint32_t m_TriangleIndex = 0;
+	};
+	void TerrainRenderer::RegenerateTerrainMesh()
+	{
+		auto heightmap = GenerateNoiseMap(MapSize, MapSize,Seed,NoiseParams);
+		GenerateMesh(heightmap, MapSize, MapSize);
+	}
+
+	struct TerrainType
+	{
+		float Height;
+		glm::vec4 colour;
+	};
+
+	std::vector<TerrainType> regions = {
+	{ 0.1f, glm::vec4(0.0f, 0.0f, 0.7f, 1.0f) }, // Water Deep (dark blue)
+	{ 0.2f, glm::vec4(0.2f, 0.4f, 0.8f, 1.0f) }, // Water Shallow (light blue)
+	{ 0.45f, glm::vec4(0.8f, 0.75f, 0.4f, 1.0f) }, // Sand (yellowish)
+	{ 0.55f, glm::vec4(0.3f, 0.6f, 0.2f, 1.0f) }, // Grass
+	{ 0.6f, glm::vec4(0.1f, 0.4f, 0.1f, 1.0f) }, // Grass 2
+	{ 0.7f, glm::vec4(0.3f, 0.2f, 0.2f, 1.0f) }, // Rock
+	{ 0.9f, glm::vec4(0.2f, 0.15f, 0.15f, 1.0f) }, // Rock 2
+	{ 1.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) }  // Snow (white)
+	};
+
+
+	void TerrainRenderer::GenerateMesh(const std::vector<float>& heightMap, uint32_t width, uint32_t height)
+	{
+		TerrainMeshBuilderData meshBuilderData = TerrainMeshBuilderData(width, height);
+		float ScaleY = TerrainScale;
+
+		// just to make the pivot at the center
+		float topLeftX = (width -1) / -2.0f;
+		// just to make the pivot at the center
+		float topLeftZ = (height - 1) / 2.0f;
+		
+		
+		uint32_t vertexIndex = 0;
+		for (uint32_t y = 0; y < height; y++)
+		{
+			for (uint32_t x = 0; x < width; x++)
 			{
-				float h = heightMap[y * size + x];
-				vertices.push_back({
-					glm::vec3(x, 30 * h, y),
-					CalculateNormal(x,y,heightMap,size,30), // you can calculate normals later
-					glm::vec2(x / (float)size, y / (float)size)
-					});
+				Vertex v;
+				v.Position = glm::vec3(topLeftX + x, heightMap[y * width + x] * ScaleY, topLeftZ - y);
+
+				meshBuilderData.Vertices[vertexIndex] = v;
+				meshBuilderData.Vertices[vertexIndex].TexCoord = glm::vec2(x /(float)(width -1), y / (float)height);
+				if (x < width - 1 && y < height - 1)
+				{
+					meshBuilderData.AddTriangle(vertexIndex, vertexIndex + width + 1, vertexIndex + width);
+					meshBuilderData.AddTriangle(vertexIndex + width + 1, vertexIndex, vertexIndex + 1);
+				}
+				vertexIndex++;
 			}
 		}
 
-
-		for (int y = 0; y < size - 1; y++) {
-			for (int x = 0; x < size - 1; x++) {
-				uint32_t i = y * size + x;
-				uint32_t iRight = i + 1;
-				uint32_t iBelow = i + size;
-				uint32_t iBelowRight = i + size + 1;
-
-				// Triangle 1
-				indices.push_back(Index{ i, iBelow, iRight });
-
-				// Triangle 2
-				indices.push_back(Index{ iRight, iBelow, iBelowRight });
-			}
-		}
 
 		if (m_TerrainMesh == nullptr)
 		{
-			m_TerrainMesh = Count<Mesh>::Create("Terrain Mesh", vertices, indices);
+			m_TerrainMesh = meshBuilderData.GenerateMesh();
 			AssetManager::CreateRuntimeAsset(m_TerrainMesh, "Terrain Mesh");
-
 		}
 		else
 		{
-			m_TerrainMesh->Reset("Terrain Mesh", vertices, indices);
+			meshBuilderData.RecalculateNormals(meshBuilderData.Vertices, meshBuilderData.Indices);	
+			m_TerrainMesh->Reset("Terrain Mesh", meshBuilderData.Vertices, meshBuilderData.Indices);
 		}
 
-		std::vector<uint32_t> colourMap(size * size);
+		std::vector<uint32_t> noiseMapData(width * height);
+		std::vector<uint32_t> colourMap(width * height);
 
-		for (int y = 0; y < size; ++y) {
-			for (int x = 0; x < size; ++x) {
-				float value = heightMap[y * size + x]; // assumes row-major layout
+		for (int y = 0; y < height; ++y) {
+			for (int x = 0; x < width; ++x) {
+				float value = heightMap[y * width + x]; // assumes row-major layout
 				glm::vec3 color = Math::Lerp(Colors::Black, Colors::White, value); // grayscale
 				uint32_t packed = ConvertToBytes(color);
-				colourMap[x + y * size] = packed; // fixed index
+				noiseMapData[x + y * width] = packed; 
+
+				for (int i = 0; i < regions.size(); i++) {
+					if (value <= regions[i].Height) {
+						colourMap[y * width + x] = ConvertToBytes(regions[i].colour);
+						break;
+					}
+				}
 			}
 		}
 
-		Buffer buffer(colourMap.data(), colourMap.size() * sizeof(uint32_t), true);
+		Buffer buffer(noiseMapData.data(), noiseMapData.size() * sizeof(uint32_t), true);
 		TextureConfiguration config;
 		config.DebugName = "Noise Texture";
-		config.Width = size;
-		config.Height = size;
+		config.Width = width;
+		config.Height = height;
 		config.Format = ImageFormat::RGBA;
 		config.GenerateMips = false;
 		m_NoiseTexture = Texture2D::Create(config, buffer);
-		m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetAlbedo(glm::vec3(0.0, 1.0, 0));
 
 		buffer.Release();
+
+
+		Buffer colorBuffer(colourMap.data(), colourMap.size() * sizeof(uint32_t), true);
+		config.DebugName = "Color Texture";
+		config.Width = width;
+		config.Height = height;
+		config.Format = ImageFormat::RGBA;
+		config.GenerateMips = false;
+		m_ColorTexture = Texture2D::Create(config, colorBuffer,SamplerFactory::GetPoint());
+		m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetAlbedoMap(m_ColorTexture);
+		m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetAlbedo(glm::vec3(1));
+		m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetEmission(0);
+
+		colorBuffer.Release();
+
 	}
 }

@@ -839,7 +839,42 @@ namespace Proof
 
 		DrawComponents<TerrainComponent>("Terrain", entity, [](TerrainComponent& meshComp)
 			{
+				bool modified = false;
+				UI::PushModified(modified);
+				UI::AttributeDrag("Mesh Scale", meshComp.Terrain->TerrainScale, 0.1f);
+				UI::BeginPropertyGrid();
+				auto& settings = meshComp.Terrain->NoiseParams;
+
+				UI::AttributeDrag("Offset", settings.Offset,0.25);
+				UI::AttributeDrag("Scale", settings.Scale, 0.1f);
+				UI::AttributeSlider("Octaves", settings.Octaves);
+				UI::AttributeDrag("Persistence", settings.Persistence, 0.01f);
+				UI::AttributeDrag("Lacunarity", settings.Lacunarity, 0.01f);
+				UI::EndPropertyGrid();
+
+				UI::PopModified();
+				
+				if(modified)
+					meshComp.Terrain->RegenerateTerrainMesh();
+
+
+				//if (ImGui::Button("Rengenerate") || modified)
+				//{
+				//	meshComp.Terrain->RegenerateTerrainMesh();
+				//
+				//}
+				UI::ViewDebugImage("Color Texure", meshComp.Terrain->GetColorTexture());
 				UI::ViewDebugImage("Noise Texure", meshComp.Terrain->GetNoiseTexture()->GetImage());
+
+				if (ImGui::Button("change tex"))
+				{
+					if (meshComp.Terrain->GetTerrainMesh()->GetMaterialTable()->GetMaterial(0)->GetAlbedoMap() == meshComp.Terrain->GetColorTexture())
+						meshComp.Terrain->GetTerrainMesh()->GetMaterialTable()->GetMaterial(0)->SetAlbedoMap(Renderer::GetWhiteTexture());
+					else
+						meshComp.Terrain->GetTerrainMesh()->GetMaterialTable()->GetMaterial(0)->SetAlbedoMap(meshComp.Terrain->GetColorTexture());
+				}
+
+				
 
 			});
 		DrawComponents<SpriteComponent>({ "Sprite" }, entity, [](SpriteComponent& spriteComp) {
