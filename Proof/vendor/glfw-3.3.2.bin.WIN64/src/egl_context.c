@@ -391,7 +391,7 @@ GLFWbool _glfwInitEGL(void)
         !_glfw.egl.GetProcAddress)
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
-                        "EGL: Failed to load required entry points");
+                        "EGL: Failed to load required entry Points");
 
         _glfwTerminateEGL();
         return GLFW_FALSE;

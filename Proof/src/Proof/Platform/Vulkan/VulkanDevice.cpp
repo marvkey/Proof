@@ -44,7 +44,7 @@ namespace Proof
 			PF_ENGINE_INFO("	Device ID: {}", m_Properties.deviceID);
 			PF_ENGINE_INFO("	Type: {}", m_Properties.deviceType);
 			PF_ENGINE_INFO("	API Version: {}", m_Properties.apiVersion);
-			PF_ENGINE_INFO("	max bound descriptor sets: {}", m_Properties.limits.maxBoundDescriptorSets);
+			PF_ENGINE_INFO("	Max bound descriptor sets: {}", m_Properties.limits.maxBoundDescriptorSets);
 			PF_ENGINE_INFO("	minimum buffer alignment : {}", m_Properties.limits.minUniformBufferOffsetAlignment);
 		}
 		uint32_t queueFamilyCount;

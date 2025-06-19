@@ -1,6 +1,7 @@
 #pragma once
 #include "Proof/Core/Core.h"
 #include "Proof/Utils/MultiUse.h"
+#include "Proof/Utils/Curve.h"
 namespace Proof
 {
 
@@ -13,8 +14,9 @@ namespace Proof
 		Count<class Texture2D> GetNoiseTexture() { return m_NoiseTexture; };
 		Count<class Texture2D> GetColorTexture() { return m_ColorTexture; };
 
-		uint32_t MapSize = 512;
+		uint32_t MapSize = 100;
 		ClampedValue<float, 0.1f, 1000.0f> TerrainScale = 30.0f; // scale of the terrain
+		InterpolationCurve Curve;
 		int Seed = 0;
 
 		struct NoiseSettings

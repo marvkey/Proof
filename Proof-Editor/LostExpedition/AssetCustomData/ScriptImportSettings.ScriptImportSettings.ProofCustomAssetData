@@ -1,11 +1,5 @@
 ScriptImportSettings:
   Scripts:
-    - Script: LostExpedition.Gun
-      ScriptName: LostExpedition.Gun
-      Fields:
-        - NameID: LostExpedition.Gun.MuzzleFlash
-          Type: Prefab
-          Data: 0
     - Script: LostExpedition.HealthComponent
       ScriptName: LostExpedition.HealthComponent
       Fields:
@@ -37,3 +31,9 @@ ScriptImportSettings:
       ScriptName: LostExpedition.Weapon
       Fields:
         []
+    - Script: LostExpedition.Gun
+      ScriptName: LostExpedition.Gun
+      Fields:
+        - NameID: LostExpedition.Gun.MuzzleFlash
+          Type: Prefab
+          Data: 0

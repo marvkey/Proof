@@ -32,6 +32,7 @@
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 #include "Material.h"
+#include "TerrainRenderer/TerrainRenderer.h"
 namespace Proof
 {
 	#define WRITE_SCRIPT_FIELD(FieldType, Type)           \
@@ -231,6 +232,40 @@ namespace Proof
 				}
 				leavedynamic:
 				out << YAML::EndMap; // DynamicMesh component
+			}
+		}
+
+		{
+			if (entity.HasComponent<TerrainComponent>())
+			{
+				const auto& terrainComponent = entity.GetComponent<TerrainComponent>();
+				auto terrain = terrainComponent.Terrain;
+
+				if (terrain)
+				{
+					out << YAML::Key << "TerrainComponent";
+					out << YAML::BeginMap; // terrain component
+
+					out << YAML::Key << "Seed" << YAML::Value << terrain->Seed;
+					out << YAML::Key << "MapSize" << YAML::Value << terrain->MapSize;
+					out << YAML::Key << "TerrainScale" << YAML::Value << terrain->TerrainScale;
+
+					out << YAML::Key << "NoiseParams";
+					out << YAML::BeginMap; // noise
+					{
+
+						out << YAML::Key << "Scale" << YAML::Value << terrain->NoiseParams.Scale;
+						out << YAML::Key << "Octaves" << YAML::Value << terrain->NoiseParams.Octaves;
+						out << YAML::Key << "Persistence" << YAML::Value << terrain->NoiseParams.Persistence;
+						out << YAML::Key << "Lacunarity" << YAML::Value << terrain->NoiseParams.Lacunarity;
+						out << YAML::Key << "Offset" << YAML::Value << YAML::Flow << YAML::BeginSeq << terrain->NoiseParams.Offset.x << terrain->NoiseParams.Offset.y << YAML::EndSeq;
+					}
+					out << YAML::EndMap; // noise params
+
+					SerializeCommon::SerializeInterpolationCurve(out, "Curve", terrain->Curve);
+
+					out << YAML::EndMap; // ter
+				}
 			}
 		}
 		{
@@ -966,6 +1001,33 @@ namespace Proof
 
 				}
 			}
+
+			{
+				auto terrainComponent = entity["TerrainComponent"];
+
+				if (terrainComponent)
+				{
+					auto& trc = NewEntity.AddComponent<TerrainComponent>();
+					auto terrain = Count<TerrainRenderer>::Create(); // or Create/Make if you have a factory
+					trc.Terrain = terrain;
+
+
+					terrain->Seed = terrainComponent["Seed"].as<int>(0);
+					terrain->MapSize = terrainComponent["MapSize"].as<int>(terrain->MapSize);
+					terrain->TerrainScale = terrainComponent["TerrainScale"].as<float>(terrain->TerrainScale);
+
+					const auto& noiseNode = terrainComponent["NoiseParams"];
+					terrain->NoiseParams.Scale = noiseNode["Scale"].as<float>(terrain->NoiseParams.Scale);
+					terrain->NoiseParams.Octaves = noiseNode["Octaves"].as<int>(terrain->NoiseParams.Octaves.GetValue());
+					terrain->NoiseParams.Persistence = noiseNode["Persistence"].as<float>(terrain->NoiseParams.Persistence.GetValue());
+					terrain->NoiseParams.Lacunarity = noiseNode["Lacunarity"].as<float>(terrain->NoiseParams.Lacunarity);
+					terrain->NoiseParams.Offset = noiseNode["Offset"].as<glm::vec2>(terrain->NoiseParams.Offset);
+					terrain->RegenerateTerrainMesh();
+
+					SerializeCommon::LoadInterpolationCurve(terrainComponent, "Curve", terrain->Curve);
+				}
+
+			}
 			// MESH
 			{
 				auto meshComponent = entity["MeshComponent"];
@@ -1052,6 +1114,10 @@ namespace Proof
 						}
 					}
 				}
+			}
+
+			{
+
 			}
 
 			// SPRITE

@@ -3587,7 +3587,7 @@ void ImGui::DebugNodeTableSettings(ImGuiTableSettings* settings)
     if (!TreeNode((void*)(intptr_t)settings->ID, "Settings 0x%08X (%d columns)", settings->ID, settings->ColumnsCount))
         return;
     BulletText("SaveFlags: 0x%08X", settings->SaveFlags);
-    BulletText("ColumnsCount: %d (max %d)", settings->ColumnsCount, settings->ColumnsCountMax);
+    BulletText("ColumnsCount: %d (Max %d)", settings->ColumnsCount, settings->ColumnsCountMax);
     for (int n = 0; n < settings->ColumnsCount; n++)
     {
         ImGuiTableColumnSettings* column_settings = &settings->GetColumnSettings()[n];

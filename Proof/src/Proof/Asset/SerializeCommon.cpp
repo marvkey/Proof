@@ -10,6 +10,7 @@
 #include "Proof/Scripting/ScriptFile.h"
 
 #include "Proof/Utils/VariableSystem/Variable.h"
+#include "Proof/Utils/Curve.h"
 namespace Proof
 { 
 	static void SerializeInputCustomizer(YAML::Emitter& out, Count<class InputCustomizer> inputCustomizer)
@@ -1131,6 +1132,37 @@ namespace Proof
 				}
 				
 			}
+		}
+	}
+	void SerializeCommon::SerializeInterpolationCurve(YAML::Emitter& out, const std::string& name, const InterpolationCurve& curve)
+	{
+		out << YAML::Key << name;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "Min" << YAML::Value << curve.Min;
+		out << YAML::Key << "Max" << YAML::Value << curve.Max;
+
+		out << YAML::Key << "Points" << YAML::Value << YAML::BeginSeq;
+		for (const auto& point : curve.Points)
+			out << point;
+		out << YAML::EndSeq;
+
+		out << YAML::EndMap;
+	}
+	void SerializeCommon::LoadInterpolationCurve(const YAML::Node& root, const std::string& name, InterpolationCurve& curve)
+	{
+		const auto& node = root[name];
+		if (!node || !node.IsMap())
+			return;
+
+		curve.Min = node["Min"].as<glm::vec2>();
+		curve.Max = node["Max"].as<glm::vec2>();
+
+		if (node["Points"] && node["Points"].IsSequence())
+		{
+			curve.Points.clear();
+			for (const auto& pointNode : node["Points"])
+				curve.AddPoint(pointNode.as<glm::vec2>());
 		}
 	}
 }

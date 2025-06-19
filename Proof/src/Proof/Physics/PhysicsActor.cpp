@@ -313,7 +313,7 @@ namespace Proof
 	{
 		if (!IsDynamic())
 		{
-			PF_ENGINE_WARN("Trying to get max linear velocity of non-dynamic PhysicsActor.");
+			PF_ENGINE_WARN("Trying to get Max linear velocity of non-dynamic PhysicsActor.");
 			return 0.0f;
 		}
 
@@ -326,7 +326,7 @@ namespace Proof
 	{
 		if (!IsDynamic())
 		{
-			PF_ENGINE_WARN("Trying to set max linear velocity of non-dynamic PhysicsActor.");
+			PF_ENGINE_WARN("Trying to set Max linear velocity of non-dynamic PhysicsActor.");
 			return;
 		}
 
@@ -339,7 +339,7 @@ namespace Proof
 	{
 		if (!IsDynamic())
 		{
-			PF_ENGINE_WARN("Trying to get max angular velocity of non-dynamic PhysicsActor.");
+			PF_ENGINE_WARN("Trying to get Max angular velocity of non-dynamic PhysicsActor.");
 			return 0.0f;
 		}
 
@@ -352,7 +352,7 @@ namespace Proof
 	{
 		if (!IsDynamic())
 		{
-			PF_ENGINE_WARN("Trying to set max angular velocity of non-dynamic PhysicsActor.");
+			PF_ENGINE_WARN("Trying to set Max angular velocity of non-dynamic PhysicsActor.");
 			return;
 		}
 

@@ -26,5 +26,8 @@ namespace Proof
 		static void LoadVariableRegistry(YAML::Node& registryNode, Count<class VariableRegistry> registry);
 		static void SaveVariableRegistryInstance(YAML::Emitter& out, Count<class VariableRegistryInstance> registryInstance);
 		static void LoadVariableRegistryInstance(YAML::Node& registryNode, Count< class VariableRegistryInstance> registryInstance);
+
+		static void SerializeInterpolationCurve(YAML::Emitter& out, const std::string& name, const struct InterpolationCurve& curve);
+		static void LoadInterpolationCurve(const YAML::Node& node, const std::string& name,struct InterpolationCurve& curve);
 	};
 }

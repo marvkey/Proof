@@ -23,7 +23,7 @@ namespace Proof
 		noise.SetFrequency(1.0f / settings.Scale);
 		noise.SetFractalOctaves(settings.Octaves);
 		noise.SetFractalLacunarity(settings.Lacunarity);
-		noise.SetFractalGain((float)settings.Persistence); 
+		noise.SetFractalGain((float)settings.Persistence);
 
 		float minVal = std::numeric_limits<float>::max();
 		float maxVal = std::numeric_limits<float>::lowest();
@@ -55,12 +55,12 @@ namespace Proof
 
 	class TerrainMeshBuilderData
 	{
-		
+
 	public:
-		TerrainMeshBuilderData(uint32_t width,uint32_t height)
+		TerrainMeshBuilderData(uint32_t width, uint32_t height)
 		{
 			Vertices.resize(width * height);
-			Indices.resize( ((width - 1) * (height - 1) * 2)); // 2 triangles per quad
+			Indices.resize(((width - 1) * (height - 1) * 2)); // 2 triangles per quad
 		}
 
 		void AddTriangle(uint32_t a, uint32_t b, uint32_t c) {
@@ -103,12 +103,12 @@ namespace Proof
 		std::vector<Vertex> Vertices;
 		std::vector<Index> Indices;
 	private:
-	
+
 		uint32_t m_TriangleIndex = 0;
 	};
 	void TerrainRenderer::RegenerateTerrainMesh()
 	{
-		auto heightmap = GenerateNoiseMap(MapSize, MapSize,Seed,NoiseParams);
+		auto heightmap = GenerateNoiseMap(MapSize, MapSize, Seed, NoiseParams);
 		GenerateMesh(heightmap, MapSize, MapSize);
 	}
 
@@ -119,43 +119,49 @@ namespace Proof
 	};
 
 	std::vector<TerrainType> regions = {
-	{ 0.1f, glm::vec4(0.0f, 0.0f, 0.7f, 1.0f) }, // Water Deep (dark blue)
-	{ 0.2f, glm::vec4(0.2f, 0.4f, 0.8f, 1.0f) }, // Water Shallow (light blue)
-	{ 0.45f, glm::vec4(0.8f, 0.75f, 0.4f, 1.0f) }, // Sand (yellowish)
-	{ 0.55f, glm::vec4(0.3f, 0.6f, 0.2f, 1.0f) }, // Grass
-	{ 0.6f, glm::vec4(0.1f, 0.4f, 0.1f, 1.0f) }, // Grass 2
-	{ 0.7f, glm::vec4(0.3f, 0.2f, 0.2f, 1.0f) }, // Rock
-	{ 0.9f, glm::vec4(0.2f, 0.15f, 0.15f, 1.0f) }, // Rock 2
-	{ 1.0f, glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) }  // Snow (white)
+		{ 0.08f, glm::vec4(0.0f, 0.0f, 0.6f, 1.0f) }, // Deep Water
+		{ 0.15f, glm::vec4(0.2f, 0.4f, 0.8f, 1.0f) }, // Shallow Water
+		{ 0.20f, glm::vec4(0.85f, 0.8f, 0.5f, 1.0f) }, // Sand
+		{ 0.5f,  glm::vec4(0.3f, 0.6f, 0.2f, 1.0f) }, // Grass
+		{ 0.6f,  glm::vec4(0.2f, 0.5f, 0.2f, 1.0f) }, // Darker Grass
+		{ 0.75f, glm::vec4(0.3f, 0.2f, 0.2f, 1.0f) }, // Rock
+		{ 0.9f,  glm::vec4(0.2f, 0.15f, 0.15f, 1.0f) }, // Dark Rock
+		{ 1.0f,  glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) }  // Snow
 	};
 
 
 	void TerrainRenderer::GenerateMesh(const std::vector<float>& heightMap, uint32_t width, uint32_t height)
 	{
+		std::vector<uint32_t> colourMap(width * height);
+
 		TerrainMeshBuilderData meshBuilderData = TerrainMeshBuilderData(width, height);
 		float ScaleY = TerrainScale;
 
 		// just to make the pivot at the center
-		float topLeftX = (width -1) / -2.0f;
+		float topLeftX = (width - 1) / -2.0f;
 		// just to make the pivot at the center
 		float topLeftZ = (height - 1) / 2.0f;
-		
-		
+
+
 		uint32_t vertexIndex = 0;
 		for (uint32_t y = 0; y < height; y++)
 		{
 			for (uint32_t x = 0; x < width; x++)
 			{
 				Vertex v;
-				v.Position = glm::vec3(topLeftX + x, heightMap[y * width + x] * ScaleY, topLeftZ - y);
+				v.Position = glm::vec3(topLeftX + x, Curve.Evaluate(heightMap[y * width + x]) * ScaleY, topLeftZ - y);
 
 				meshBuilderData.Vertices[vertexIndex] = v;
-				meshBuilderData.Vertices[vertexIndex].TexCoord = glm::vec2(x /(float)(width -1), y / (float)height);
+				meshBuilderData.Vertices[vertexIndex].TexCoord = glm::vec2(
+					x / float(width - 1),
+					1.0f - (y / float(height - 1)) // Flip Y
+				);
 				if (x < width - 1 && y < height - 1)
 				{
 					meshBuilderData.AddTriangle(vertexIndex, vertexIndex + width + 1, vertexIndex + width);
 					meshBuilderData.AddTriangle(vertexIndex + width + 1, vertexIndex, vertexIndex + 1);
 				}
+
 				vertexIndex++;
 			}
 		}
@@ -168,19 +174,18 @@ namespace Proof
 		}
 		else
 		{
-			meshBuilderData.RecalculateNormals(meshBuilderData.Vertices, meshBuilderData.Indices);	
+			meshBuilderData.RecalculateNormals(meshBuilderData.Vertices, meshBuilderData.Indices);
 			m_TerrainMesh->Reset("Terrain Mesh", meshBuilderData.Vertices, meshBuilderData.Indices);
 		}
 
 		std::vector<uint32_t> noiseMapData(width * height);
-		std::vector<uint32_t> colourMap(width * height);
 
-		for (int y = 0; y < height; ++y) {
-			for (int x = 0; x < width; ++x) {
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
 				float value = heightMap[y * width + x]; // assumes row-major layout
 				glm::vec3 color = Math::Lerp(Colors::Black, Colors::White, value); // grayscale
 				uint32_t packed = ConvertToBytes(color);
-				noiseMapData[x + y * width] = packed; 
+				noiseMapData[x + y * width] = packed;
 
 				for (int i = 0; i < regions.size(); i++) {
 					if (value <= regions[i].Height) {
@@ -190,7 +195,7 @@ namespace Proof
 				}
 			}
 		}
-
+		
 		Buffer buffer(noiseMapData.data(), noiseMapData.size() * sizeof(uint32_t), true);
 		TextureConfiguration config;
 		config.DebugName = "Noise Texture";
@@ -208,8 +213,8 @@ namespace Proof
 		config.Width = width;
 		config.Height = height;
 		config.Format = ImageFormat::RGBA;
-		config.GenerateMips = false;
-		m_ColorTexture = Texture2D::Create(config, colorBuffer,SamplerFactory::GetPoint());
+		config.GenerateMips = true;
+		m_ColorTexture = Texture2D::Create(config, colorBuffer, SamplerFactory::GetPoint());
 		m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetAlbedoMap(m_ColorTexture);
 		m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetAlbedo(glm::vec3(1));
 		m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetEmission(0);

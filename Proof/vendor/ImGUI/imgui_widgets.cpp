@@ -2499,14 +2499,14 @@ bool ImGui::DragFloatRange2(const char* label, float* v_current_min, float* v_cu
     float min_min = (v_min >= v_max) ? -FLT_MAX : v_min;
     float min_max = (v_min >= v_max) ? *v_current_max : ImMin(v_max, *v_current_max);
     ImGuiSliderFlags min_flags = flags | ((min_min == min_max) ? ImGuiSliderFlags_ReadOnly : 0);
-    bool value_changed = DragScalar("##min", ImGuiDataType_Float, v_current_min, v_speed, &min_min, &min_max, format, min_flags);
+    bool value_changed = DragScalar("##Min", ImGuiDataType_Float, v_current_min, v_speed, &min_min, &min_max, format, min_flags);
     PopItemWidth();
     SameLine(0, g.Style.ItemInnerSpacing.x);
 
     float max_min = (v_min >= v_max) ? *v_current_min : ImMax(v_min, *v_current_min);
     float max_max = (v_min >= v_max) ? FLT_MAX : v_max;
     ImGuiSliderFlags max_flags = flags | ((max_min == max_max) ? ImGuiSliderFlags_ReadOnly : 0);
-    value_changed |= DragScalar("##max", ImGuiDataType_Float, v_current_max, v_speed, &max_min, &max_max, format_max ? format_max : format, max_flags);
+    value_changed |= DragScalar("##Max", ImGuiDataType_Float, v_current_max, v_speed, &max_min, &max_max, format_max ? format_max : format, max_flags);
     PopItemWidth();
     SameLine(0, g.Style.ItemInnerSpacing.x);
 
@@ -2553,14 +2553,14 @@ bool ImGui::DragIntRange2(const char* label, int* v_current_min, int* v_current_
     int min_min = (v_min >= v_max) ? INT_MIN : v_min;
     int min_max = (v_min >= v_max) ? *v_current_max : ImMin(v_max, *v_current_max);
     ImGuiSliderFlags min_flags = flags | ((min_min == min_max) ? ImGuiSliderFlags_ReadOnly : 0);
-    bool value_changed = DragInt("##min", v_current_min, v_speed, min_min, min_max, format, min_flags);
+    bool value_changed = DragInt("##Min", v_current_min, v_speed, min_min, min_max, format, min_flags);
     PopItemWidth();
     SameLine(0, g.Style.ItemInnerSpacing.x);
 
     int max_min = (v_min >= v_max) ? *v_current_min : ImMax(v_min, *v_current_min);
     int max_max = (v_min >= v_max) ? INT_MAX : v_max;
     ImGuiSliderFlags max_flags = flags | ((max_min == max_max) ? ImGuiSliderFlags_ReadOnly : 0);
-    value_changed |= DragInt("##max", v_current_max, v_speed, max_min, max_max, format_max ? format_max : format, max_flags);
+    value_changed |= DragInt("##Max", v_current_max, v_speed, max_min, max_max, format_max ? format_max : format, max_flags);
     PopItemWidth();
     SameLine(0, g.Style.ItemInnerSpacing.x);
 

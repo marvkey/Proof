@@ -20,7 +20,7 @@ layout(binding = 0) uniform sampler2D u_InputAOTexture;
 layout(location = 0) out vec4 o_Occlusion;
 layout(location = 0) in vec2 vs_TexCoord;
 
-layout(push_constant) uniform Info
+layout(push_constant) uniform Info  
 {
     int Type; //0 HBAO,1 SSAO
 } u_PushData;
