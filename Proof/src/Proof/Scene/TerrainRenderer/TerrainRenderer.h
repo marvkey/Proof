@@ -2,14 +2,34 @@
 #include "Proof/Core/Core.h"
 #include "Proof/Utils/MultiUse.h"
 #include "Proof/Utils/Curve.h"
+#include "Proof/Math/AABB.h"
+#include "../SceneUtils.h"
 namespace Proof
 {
+	struct TerrainChunk
+	{
+		Count<class Mesh> Mesh;
+		Transform Transform;
+		AABB Bounds;
+
+		glm::vec2 Coord;
+		bool GetIsVisible() const { return m_IsVisible; }
+		void SetVisible(bool visible) { m_IsVisible = visible; }
+		void UpdateTerrainChunk(glm::vec3 viewerPosition, float maxViewDst)
+		{
+			float viewerDstFromNearestEdge = glm::sqrt(Bounds.GetSqrDistanceToPoint(viewerPosition));
+			bool visible = viewerDstFromNearestEdge <= maxViewDst;
+			SetVisible(visible);
+		}
+	private:
+		bool m_IsVisible = false;
+	};
+
 
 	class TerrainRenderer : RefCounted
 	{
 	public:
 		TerrainRenderer();
-		Count<class Mesh> GetTerrainMesh() { return m_TerrainMesh; };
 
 		Count<class Texture2D> GetNoiseTexture() { return m_NoiseTexture; };
 		Count<class Texture2D> GetColorTexture() { return m_ColorTexture; };
@@ -30,16 +50,35 @@ namespace Proof
 		} NoiseParams;
 
 		void RegenerateTerrainMesh();
+
+		uint32_t GetChunkSize() { return MapChunkSize - 1; }
+
+		void AddChunk(glm::vec2 coord, int chunkSize);
+		bool HasChunk(glm::vec2 coord);
+		TerrainChunk* GetChunk(glm::vec2 coord)
+		{
+			for (auto& chunk : m_Chunks)
+			{
+				if (chunk.Coord == coord)
+					return &chunk;
+			}
+			return nullptr; // Not found
+		}
+
+		void Update(float deltaTime, const glm::mat4& transform);
+		void Render(Count<class WorldRenderer> renderer);
 	private:
 		void GenerateMesh(const std::vector<float>& heightMap, uint32_t width, uint32_t	height);
 	private:
 		//https://www.youtube.com/watch?v=417kJGPKwDg&list=PLFt_AvWsXl0eBW2EiBtl_sxmDtSgZBxB3&index=6
 		
 		const uint32_t MapChunkSize = 241;
-		Count<class Mesh> m_TerrainMesh;
 		Count<class Texture2D> m_NoiseTexture;
 		Count<class Texture2D> m_ColorTexture;
 
+		std::vector< TerrainChunk> m_Chunks;
+		Count<class EndlessTerrain> m_EndlessTerrain;
+		Transform m_Transform;
 		friend class World;
 	};
 }

@@ -1361,7 +1361,7 @@ namespace Proof
 				}
 				UI::ViewDebugImage("Color Texure", meshComp.Terrain->GetColorTexture());
 				UI::ViewDebugImage("Noise Texure", meshComp.Terrain->GetNoiseTexture()->GetImage());
-
+/*
 				if (ImGui::Button("change tex"))
 				{
 					if (meshComp.Terrain->GetTerrainMesh()->GetMaterialTable()->GetMaterial(0)->GetAlbedoMap() == meshComp.Terrain->GetColorTexture())
@@ -1369,7 +1369,7 @@ namespace Proof
 					else
 						meshComp.Terrain->GetTerrainMesh()->GetMaterialTable()->GetMaterial(0)->SetAlbedoMap(meshComp.Terrain->GetColorTexture());
 				}
-
+*/
 				
 
 			});

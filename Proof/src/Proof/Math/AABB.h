@@ -64,5 +64,42 @@ namespace Proof
 			Min = glm::min(Min, other.Min);
 			Max = glm::max(Max, other.Max);
 		}
+
+		float GetSqrDistanceToPoint(const glm::vec3& point) const
+		{
+			float sqrDist = 0.0f;
+
+			// X axis
+			if (point.x < Min.x) {
+				float d = Min.x - point.x;
+				sqrDist += d * d;
+			}
+			else if (point.x > Max.x) {
+				float d = point.x - Max.x;
+				sqrDist += d * d;
+			}
+
+			// Y axis
+			if (point.y < Min.y) {
+				float d = Min.y - point.y;
+				sqrDist += d * d;
+			}
+			else if (point.y > Max.y) {
+				float d = point.y - Max.y;
+				sqrDist += d * d;
+			}
+
+			// Z axis
+			if (point.z < Min.z) {
+				float d = Min.z - point.z;
+				sqrDist += d * d;
+			}
+			else if (point.z > Max.z) {
+				float d = point.z - Max.z;
+				sqrDist += d * d;
+			}
+
+			return sqrDist;
+		}
 	};
 }

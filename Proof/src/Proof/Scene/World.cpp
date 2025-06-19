@@ -118,6 +118,18 @@ namespace Proof
 					e.GetComponent<WaterComponent>().Water->Update(DeltaTime, transform);
 				});
 		}
+
+		{
+			auto view = m_Registry.view<TerrainComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				auto& terrainComponent = e.GetComponent<TerrainComponent>();
+				glm::mat4 transform = GetWorldSpaceTransform(e);
+
+				terrainComponent.Terrain->Update(DeltaTime, transform);
+			}
+		}
 		
 	}
 	
@@ -403,12 +415,8 @@ namespace Proof
 					Entity e = { entity, this };
 					auto& terrainComponent = e.GetComponent<TerrainComponent>();
 					glm::mat4 transform = GetWorldSpaceTransform(e);
-
-					auto mesh = terrainComponent.Terrain->GetTerrainMesh();
-					if (mesh)
-					{
-						worldRenderer->SubmitMesh(mesh, mesh->GetMaterialTable(), transform, true);
-					}
+					if(terrainComponent.Terrain)
+						terrainComponent.Terrain->Render(worldRenderer);
 				}
 			}
 		}
@@ -1131,6 +1139,18 @@ namespace Proof
 
 					e.GetComponent<WaterComponent>().Water->Update(DeltaTime, transform);
 				});
+		}
+
+		{
+			auto view = m_Registry.view<TerrainComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				auto& terrainComponent = e.GetComponent<TerrainComponent>();
+				glm::mat4 transform = GetWorldSpaceTransform(e);
+
+				terrainComponent.Terrain->Update(DeltaTime,transform);
+			}
 		}
 		m_PhysicsWorld->Simulate(DeltaTime);
 

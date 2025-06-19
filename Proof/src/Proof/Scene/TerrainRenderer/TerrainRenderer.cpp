@@ -6,7 +6,11 @@
 #include "Proof/Scene/Material.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Renderer/Texture.h"
+#include "EndlessTerrain.h"
 #include "Proof/Renderer/Colors.h"
+#include "EndlessTerrain.h"
+#include "Proof/Renderer/WorldRenderer.h"
+#include "Proof/Renderer/MeshWorkShop.h"
 
 #include <FastNoise/FastNoiseLite.h>
 namespace Proof
@@ -50,6 +54,7 @@ namespace Proof
 	}
 	TerrainRenderer::TerrainRenderer()
 	{
+		m_Chunks.clear();
 		RegenerateTerrainMesh();
 	}
 
@@ -130,6 +135,75 @@ namespace Proof
 	};
 
 
+	void TerrainRenderer::AddChunk(glm::vec2 coord, int chunkSize)
+	{
+		if (HasChunk(coord))
+			return;
+
+		TerrainChunk& chunk = m_Chunks.emplace_back();
+		chunk.Coord = coord;
+
+		// Set world position
+		glm::vec3 worldPosition = glm::vec3(coord.x * chunkSize, 0.0f, coord.y * chunkSize);
+
+		// Apply transform
+		chunk.Transform.Location = worldPosition;
+		chunk.Transform.Scale = glm::vec3((float)chunkSize / 10.0f);
+
+		// Optionally inherit rotation/scale from parent if your engine supports hierarchical transforms
+		// This is up to how your engine handles parenting (e.g., combine parent+child matrices on render)
+		// You could do something like:
+		// chunk.Transform = CombineTransform(parentTransform, chunk.Transform);
+
+		// Set bounds (XZ plane like Unity)
+		glm::vec3 center = glm::vec3(worldPosition.x, 0.0f, worldPosition.z);
+		glm::vec3 extents = glm::vec3((float)chunkSize / 2.0f);
+		chunk.Bounds = AABB(center - extents, center + extents);
+
+		// Assign mesh (assumes you have a method to generate a flat plane or terrain mesh)
+		chunk.Mesh = MeshWorkShop::GeneratePlane(chunkSize, chunkSize);
+		AssetManager::CreateRuntimeAsset(chunk.Mesh, fmt::format("Terrain chunk {}", m_Chunks.size() - 1));
+
+		// Initial visibility off
+		chunk.SetVisible(false);
+
+	}
+
+	bool TerrainRenderer::HasChunk(glm::vec2 coord)
+	{
+		for (const auto& chunk : m_Chunks)
+		{
+			if (chunk.Coord == coord)
+				return true;
+		}
+		return false;
+	}
+
+	void TerrainRenderer::Update(float deltaTime, const glm::mat4& transform)
+	{
+		if(!m_EndlessTerrain)
+			m_EndlessTerrain = Count<EndlessTerrain>::Create(this);
+
+		m_Transform.SetTransform(transform);
+
+		if (m_EndlessTerrain)
+		{
+			m_EndlessTerrain->OnUpdate(deltaTime);
+		}
+		
+	}
+
+	void TerrainRenderer::Render(Count<class WorldRenderer> renderer)
+	{
+		for (auto& terrainChunk : m_Chunks)
+		{
+			if (!terrainChunk.GetIsVisible())
+				continue;
+
+			renderer->SubmitMesh(terrainChunk.Mesh, terrainChunk.Mesh->GetMaterialTable(), terrainChunk.Transform.GetTransform() * m_Transform.GetTransform());
+		}
+	}
+
 	void TerrainRenderer::GenerateMesh(const std::vector<float>& heightMap, uint32_t width, uint32_t height)
 	{
 		std::vector<uint32_t> colourMap(width * height);
@@ -169,7 +243,7 @@ namespace Proof
 			}
 		}
 
-
+		/*
 		if (m_TerrainMesh == nullptr)
 		{
 			m_TerrainMesh = meshBuilderData.GenerateMesh();
@@ -180,6 +254,7 @@ namespace Proof
 			meshBuilderData.RecalculateNormals(meshBuilderData.Vertices, meshBuilderData.Indices);
 			m_TerrainMesh->Reset("Terrain Mesh", meshBuilderData.Vertices, meshBuilderData.Indices);
 		}
+		*/
 
 		std::vector<uint32_t> noiseMapData(width * height);
 
@@ -218,9 +293,10 @@ namespace Proof
 		config.Format = ImageFormat::RGBA;
 		config.GenerateMips = true;
 		m_ColorTexture = Texture2D::Create(config, colorBuffer, SamplerFactory::GetPoint());
-		m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetAlbedoMap(m_ColorTexture);
-		m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetAlbedo(glm::vec3(1));
-		m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetEmission(0);
+		
+		//m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetAlbedoMap(m_ColorTexture);
+		//m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetAlbedo(glm::vec3(1));
+		//m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetEmission(0);
 
 		colorBuffer.Release();
 
