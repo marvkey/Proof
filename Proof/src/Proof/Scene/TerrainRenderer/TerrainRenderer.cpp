@@ -9,8 +9,10 @@
 #include "EndlessTerrain.h"
 #include "Proof/Renderer/Colors.h"
 #include "EndlessTerrain.h"
+#include "NormalTerrain.h"
 #include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Renderer/MeshWorkShop.h"
+#include "../Entity.h"
 
 #include <FastNoise/FastNoiseLite.h>
 namespace Proof
@@ -55,66 +57,13 @@ namespace Proof
 	TerrainRenderer::TerrainRenderer()
 	{
 		m_Chunks.clear();
-		RegenerateTerrainMesh();
+		//RegenerateTerrainMesh();
 	}
 
-	class TerrainMeshBuilderData
-	{
-
-	public:
-		TerrainMeshBuilderData(uint32_t width, uint32_t height)
-		{
-			Vertices.resize(width * height);
-			Indices.resize(((width - 1) * (height - 1) * 2)); // 2 triangles per quad
-		}
-
-		void AddTriangle(uint32_t a, uint32_t b, uint32_t c) {
-			Indices[m_TriangleIndex] = Index{ a, b, c };
-			m_TriangleIndex++;
-		}
-
-		Count<Mesh> GenerateMesh()
-		{
-			RecalculateNormals(Vertices, Indices);
-			return Count<Mesh>::Create("Terrain Mesh", Vertices, Indices);
-		}
-
-		void RecalculateNormals(std::vector<Vertex>& vertices, const std::vector<Index>& triangles) {
-			// Clear existing normals
-			for (auto& vertex : vertices) {
-				vertex.Normal = glm::vec3(0.0f);
-			}
-
-			// Accumulate face normals
-			for (const auto& tri : triangles) {
-				const glm::vec3& v0 = vertices[tri.V1].Position;
-				const glm::vec3& v1 = vertices[tri.V2].Position;
-				const glm::vec3& v2 = vertices[tri.V3].Position;
-
-				glm::vec3 edge1 = v1 - v0;
-				glm::vec3 edge2 = v2 - v0;
-				glm::vec3 faceNormal = glm::normalize(glm::cross(edge1, edge2));
-
-				vertices[tri.V1].Normal += faceNormal;
-				vertices[tri.V2].Normal += faceNormal;
-				vertices[tri.V3].Normal += faceNormal;
-			}
-
-			// Normalize all normals
-			for (auto& vertex : vertices) {
-				vertex.Normal = glm::normalize(vertex.Normal);
-			}
-		}
-		std::vector<Vertex> Vertices;
-		std::vector<Index> Indices;
-	private:
-
-		uint32_t m_TriangleIndex = 0;
-	};
+	
 	void TerrainRenderer::RegenerateTerrainMesh()
 	{
-		auto heightmap = GenerateNoiseMap(MapChunkSize, MapChunkSize, Seed, NoiseParams);
-		GenerateMesh(heightmap, MapChunkSize, MapChunkSize);
+		
 	}
 
 	struct TerrainType
@@ -140,7 +89,7 @@ namespace Proof
 		if (HasChunk(coord))
 			return;
 
-		TerrainChunk& chunk = m_Chunks.emplace_back();
+		TerrainChunk& chunk = m_Chunks.emplace_back(this);
 		chunk.Coord = coord;
 
 		// Set world position
@@ -148,7 +97,8 @@ namespace Proof
 
 		// Apply transform
 		chunk.Transform.Location = worldPosition;
-		chunk.Transform.Scale = glm::vec3((float)chunkSize / 10.0f);
+		chunk.Transform.Scale = glm::vec3(1.0f);
+		//chunk.Transform.Scale = glm::vec3((float)chunkSize / 10.0f);
 
 		// Optionally inherit rotation/scale from parent if your engine supports hierarchical transforms
 		// This is up to how your engine handles parenting (e.g., combine parent+child matrices on render)
@@ -161,8 +111,8 @@ namespace Proof
 		chunk.Bounds = AABB(center - extents, center + extents);
 
 		// Assign mesh (assumes you have a method to generate a flat plane or terrain mesh)
-		chunk.Mesh = MeshWorkShop::GeneratePlane(chunkSize, chunkSize);
-		AssetManager::CreateRuntimeAsset(chunk.Mesh, fmt::format("Terrain chunk {}", m_Chunks.size() - 1));
+		//chunk.Mesh = MeshWorkShop::GeneratePlane(chunkSize, chunkSize);
+		//AssetManager::CreateRuntimeAsset(chunk.Mesh, fmt::format("Terrain chunk {}", m_Chunks.size() - 1));
 
 		// Initial visibility off
 		chunk.SetVisible(false);
@@ -179,18 +129,56 @@ namespace Proof
 		return false;
 	}
 
+	TerrainChunk* TerrainRenderer::GetChunk(glm::vec2 coord)
+	{
+		for (auto& chunk : m_Chunks)
+		{
+			if (chunk.Coord == coord)
+				return &chunk;
+		}
+		return nullptr; // Not found
+	}
+
 	void TerrainRenderer::Update(float deltaTime, const glm::mat4& transform)
 	{
-		if(!m_EndlessTerrain)
-			m_EndlessTerrain = Count<EndlessTerrain>::Create(this);
+		//if(!m_EndlessTerrain)
+			//m_EndlessTerrain = Count<EndlessTerrain>::Create(this);
+
+		if (!m_NormalTerrain)
+			m_NormalTerrain = Count<NormalTerrain>::Create(this);
 
 		m_Transform.SetTransform(transform);
+		m_NormalTerrain->OnUpdate(deltaTime);
 
-		if (m_EndlessTerrain)
+
+		//if (m_EndlessTerrain)
+		//{
+		//	m_EndlessTerrain->OnUpdate(deltaTime);
+		//}
+
+
+		glm::vec3 ViewPosition = glm::vec3(0);
+		glm::vec2 viewerPosition = glm::vec2(ViewPosition.x, ViewPosition.z);
+
+		for (auto& chunk : m_Chunks)
+			chunk.UpdateTerrainChunk(viewerPosition, MaxViewDistance);
+#if 0
+
 		{
-			m_EndlessTerrain->OnUpdate(deltaTime);
+			std::lock_guard<std::mutex> lock(queueMutex);
+			while (!mapDataQueue.empty()) {
+				auto& info = mapDataQueue.front();
+				info.Callback(info.Data);
+				mapDataQueue.pop();
+			}
+
+			while (!meshDataQueue.empty()) {
+				auto& info = meshDataQueue.front();
+				info.Callback(info.Data);
+				meshDataQueue.pop();
+			}
 		}
-		
+#endif
 	}
 
 	void TerrainRenderer::Render(Count<class WorldRenderer> renderer)
@@ -200,17 +188,16 @@ namespace Proof
 			if (!terrainChunk.GetIsVisible())
 				continue;
 
-			renderer->SubmitMesh(terrainChunk.Mesh, terrainChunk.Mesh->GetMaterialTable(), terrainChunk.Transform.GetTransform() * m_Transform.GetTransform());
+			if(terrainChunk.Mesh)
+				renderer->SubmitMesh(terrainChunk.Mesh, terrainChunk.Mesh->GetMaterialTable(), terrainChunk.Transform.GetTransform() * m_Transform.GetTransform());
 		}
 	}
 
-	void TerrainRenderer::GenerateMesh(const std::vector<float>& heightMap, uint32_t width, uint32_t height)
+	TerrainMeshBuilderData TerrainRenderer::GenerateMesh(const std::vector<float>& heightMap, uint32_t width, uint32_t height)
 	{
-		std::vector<uint32_t> colourMap(width * height);
-
 		TerrainMeshBuilderData meshBuilderData = TerrainMeshBuilderData(width, height);
 		float ScaleY = TerrainScale;
-
+		auto curveCopy = Curve;
 		// just to make the pivot at the center
 		float topLeftX = (width - 1) / -2.0f;
 		// just to make the pivot at the center
@@ -226,7 +213,7 @@ namespace Proof
 			for (uint32_t x = 0; x < width; x+= meshSimplificationIncrement)
 			{
 				Vertex v;
-				v.Position = glm::vec3(topLeftX + x, Curve.Evaluate(heightMap[y * width + x]) * ScaleY, topLeftZ - y);
+				v.Position = glm::vec3(topLeftX + x, curveCopy.Evaluate(heightMap[y * width + x]) * ScaleY, topLeftZ - y);
 
 				meshBuilderData.Vertices[vertexIndex] = v;
 				meshBuilderData.Vertices[vertexIndex].TexCoord = glm::vec2(
@@ -242,21 +229,23 @@ namespace Proof
 				vertexIndex++;
 			}
 		}
+		return meshBuilderData;
+	}
 
-		/*
-		if (m_TerrainMesh == nullptr)
-		{
-			m_TerrainMesh = meshBuilderData.GenerateMesh();
-			AssetManager::CreateRuntimeAsset(m_TerrainMesh, "Terrain Mesh");
-		}
-		else
-		{
-			meshBuilderData.RecalculateNormals(meshBuilderData.Vertices, meshBuilderData.Indices);
-			m_TerrainMesh->Reset("Terrain Mesh", meshBuilderData.Vertices, meshBuilderData.Indices);
-		}
-		*/
+	TerrainChunkNoiseData TerrainRenderer::GenerateNoiseData()
+	{
+		auto heightMap = GenerateNoiseMap(MapChunkSize, MapChunkSize, Seed, NoiseParams);
+
+		uint32_t width = MapChunkSize;
+		uint32_t height = MapChunkSize;
+
+		TerrainChunkNoiseData chunkNoiseData;
+		chunkNoiseData.HeightMap = heightMap;
+		chunkNoiseData.ColourMap.resize(width * height);
 
 		std::vector<uint32_t> noiseMapData(width * height);
+
+		auto& colourMap = chunkNoiseData.ColourMap;
 
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
@@ -273,7 +262,7 @@ namespace Proof
 				}
 			}
 		}
-		
+
 		Buffer buffer(noiseMapData.data(), noiseMapData.size() * sizeof(uint32_t), true);
 		TextureConfiguration config;
 		config.DebugName = "Noise Texture";
@@ -293,12 +282,68 @@ namespace Proof
 		config.Format = ImageFormat::RGBA;
 		config.GenerateMips = true;
 		m_ColorTexture = Texture2D::Create(config, colorBuffer, SamplerFactory::GetPoint());
-		
-		//m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetAlbedoMap(m_ColorTexture);
-		//m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetAlbedo(glm::vec3(1));
-		//m_TerrainMesh->GetMaterialTable()->GetMaterial(0)->SetEmission(0);
 
-		colorBuffer.Release();
+		return chunkNoiseData;
+	}
 
+	void TerrainRenderer::RequestMapData(std::function<void(TerrainChunkNoiseData)> callback) {
+		std::thread([=]() { MapDataThread(callback); }).detach();
+	}
+
+	void TerrainRenderer::MapDataThread(std::function<void(TerrainChunkNoiseData)> callback) {
+		TerrainChunkNoiseData mapData = GenerateNoiseData();
+		std::lock_guard<std::mutex> lock(queueMutex);
+		mapDataQueue.emplace(callback, mapData);
+	}
+
+	void TerrainRenderer::RequestMeshData(const TerrainChunkNoiseData& mapData, std::function<void(TerrainMeshBuilderData)> callback) {
+		std::thread([=]() { MeshDataThread(mapData, callback); }).detach();
+	}
+
+	void TerrainRenderer::MeshDataThread(const TerrainChunkNoiseData& mapData, std::function<void(TerrainMeshBuilderData)> callback) {
+		TerrainMeshBuilderData meshData = GenerateMesh(mapData.HeightMap,MapChunkSize, MapChunkSize); // This should match what Unity was doing
+		std::lock_guard<std::mutex> lock(queueMutex);
+		meshDataQueue.emplace(callback, meshData);
+	}
+
+	TerrainChunk::TerrainChunk(Count<TerrainRenderer> terrain)
+	{
+		m_TerrainRenderer = terrain.Get();
+
+		terrain->RequestMapData([this](TerrainChunkNoiseData mapData)
+			{
+				OnMapDataReceived(mapData);
+			});
+	}
+
+	void TerrainChunk::OnMapDataReceived(TerrainChunkNoiseData mapData)
+	{
+		if (!m_TerrainRenderer.IsValid())
+			return;
+
+		auto terrain = m_TerrainRenderer.Lock();
+
+		terrain->RequestMeshData(mapData, [this](TerrainMeshBuilderData meshData)
+			{
+				OnMeshDataReceived(meshData);
+			});
+	}
+
+	void TerrainChunk::OnMeshDataReceived(TerrainMeshBuilderData meshData)
+	{
+		if (Mesh == nullptr)
+		{
+			Mesh = meshData.GenerateMesh();
+			AssetManager::CreateRuntimeAsset(Mesh, "Terrain Mesh chunk");
+		}
+		else
+		{
+			meshData.RecalculateNormals(meshData.Vertices, meshData.Indices);
+			Mesh->Reset("Terrain Mesh", meshData.Vertices, meshData.Indices);
+		}
+
+		//Mesh->GetMaterialTable()->GetMaterial(0)->SetAlbedoMap(m_ColorTexture);
+		Mesh->GetMaterialTable()->GetMaterial(0)->SetAlbedo(glm::vec3(1));
+		Mesh->GetMaterialTable()->GetMaterial(0)->SetEmission(0.0f);
 	}
 }

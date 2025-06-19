@@ -365,5 +365,10 @@ namespace Proof
 		inline static T Log10(T x) {
 			return Math::Log(x,10);
 		}
+
+		inline static int RoundToInt(float value)
+		{
+			return static_cast<int>(value >= 0.0f ? value + 0.5f : value - 0.5f);
+		}
 	};
 }

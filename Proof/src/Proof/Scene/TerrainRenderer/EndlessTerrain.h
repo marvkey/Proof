@@ -9,7 +9,7 @@ namespace Proof
 		EndlessTerrain(Count<class TerrainRenderer> terrain);
 
 		void OnUpdate(float deltaTime);
-		const float MaxViewdist = 300;
+		const float MaxViewdist = 450;
 		Transform Viewer;
 	private:
 		void UpdateVisibleChunks();

@@ -101,5 +101,20 @@ namespace Proof
 
 			return sqrDist;
 		}
+
+		float GetSqrDistanceToPoint(const glm::vec2& point) const
+		{
+			float sqrDistance = 0.0f;
+
+			// Compare X axis
+			if (point.x < Min.x) sqrDistance += (Min.x - point.x) * (Min.x - point.x);
+			else if (point.x > Max.x) sqrDistance += (point.x - Max.x) * (point.x - Max.x);
+
+			// Compare Z axis (not Y!)
+			if (point.y < Min.z) sqrDistance += (Min.z - point.y) * (Min.z - point.y);
+			else if (point.y > Max.z) sqrDistance += (point.y - Max.z) * (point.y - Max.z);
+
+			return sqrDistance;
+		}
 	};
 }

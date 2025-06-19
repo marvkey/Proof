@@ -4,6 +4,8 @@
 namespace Proof
 {
 
+	
+
 	EndlessTerrain::EndlessTerrain(Count<class TerrainRenderer> terrain)
 		:m_Terrain(terrain)
 	{
@@ -11,8 +13,8 @@ namespace Proof
 	}
 	void EndlessTerrain::OnUpdate(float deltaTime)
 	{
-		m_ChunkSize = m_Terrain->GetChunkSize() - 1;
-		uint32_t m_ChunksVisibleInViewDst = glm::ceil(MaxViewdist / m_ChunkSize);
+		m_ChunkSize = m_Terrain->GetChunkSize()-1;
+		m_ChunksVisibleInViewDst = Math::RoundToInt(MaxViewdist /(float) m_ChunkSize);
 		UpdateVisibleChunks();
 	}
 	void EndlessTerrain::UpdateVisibleChunks()
@@ -23,7 +25,8 @@ namespace Proof
 		}
 		m_VisibleChunksLastFrame.clear();
 
-		glm::vec3 ViewPosition;
+		glm::vec3 ViewPosition = glm::vec3(0);
+		m_ViewerPostion = glm::vec2(ViewPosition.x, ViewPosition.z);
 		int currentChunkCoordX = glm::round(m_ViewerPostion.x / m_ChunkSize);
 		int currentChunkCoordY = glm::round(m_ViewerPostion.y / m_ChunkSize);
 
