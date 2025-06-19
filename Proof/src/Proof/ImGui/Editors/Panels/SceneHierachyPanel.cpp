@@ -1336,6 +1336,7 @@ namespace Proof
 				bool modified = false;
 				UI::PushModified(modified);
 				UI::AttributeDrag("Mesh Scale", meshComp.Terrain->TerrainScale, 0.1f);
+				UI::AttributeSlider("LevelOfDetail", meshComp.Terrain->LevelOfDetail);
 				UI::BeginPropertyGrid();
 				auto& settings = meshComp.Terrain->NoiseParams;
 

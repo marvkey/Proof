@@ -108,8 +108,8 @@ namespace Proof
 	};
 	void TerrainRenderer::RegenerateTerrainMesh()
 	{
-		auto heightmap = GenerateNoiseMap(MapSize, MapSize, Seed, NoiseParams);
-		GenerateMesh(heightmap, MapSize, MapSize);
+		auto heightmap = GenerateNoiseMap(MapChunkSize, MapChunkSize, Seed, NoiseParams);
+		GenerateMesh(heightmap, MapChunkSize, MapChunkSize);
 	}
 
 	struct TerrainType
@@ -142,11 +142,14 @@ namespace Proof
 		// just to make the pivot at the center
 		float topLeftZ = (height - 1) / 2.0f;
 
+		int meshSimplificationIncrement =(LevelOfDetail ==0) ? 1 :  LevelOfDetail * 2;
+		int verticesPerLine = (width - 1) / meshSimplificationIncrement + 1; //https://www.youtube.com/watch?v=417kJGPKwDg&list=PLFt_AvWsXl0eBW2EiBtl_sxmDtSgZBxB3&index=6
 
+		
 		uint32_t vertexIndex = 0;
-		for (uint32_t y = 0; y < height; y++)
+		for (uint32_t y = 0; y < height; y+= meshSimplificationIncrement)
 		{
-			for (uint32_t x = 0; x < width; x++)
+			for (uint32_t x = 0; x < width; x+= meshSimplificationIncrement)
 			{
 				Vertex v;
 				v.Position = glm::vec3(topLeftX + x, Curve.Evaluate(heightMap[y * width + x]) * ScaleY, topLeftZ - y);
@@ -158,8 +161,8 @@ namespace Proof
 				);
 				if (x < width - 1 && y < height - 1)
 				{
-					meshBuilderData.AddTriangle(vertexIndex, vertexIndex + width + 1, vertexIndex + width);
-					meshBuilderData.AddTriangle(vertexIndex + width + 1, vertexIndex, vertexIndex + 1);
+					meshBuilderData.AddTriangle(vertexIndex, vertexIndex + verticesPerLine + 1, vertexIndex + verticesPerLine);
+					meshBuilderData.AddTriangle(vertexIndex + verticesPerLine + 1, vertexIndex, vertexIndex + 1);
 				}
 
 				vertexIndex++;

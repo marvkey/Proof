@@ -247,7 +247,7 @@ namespace Proof
 					out << YAML::BeginMap; // terrain component
 
 					out << YAML::Key << "Seed" << YAML::Value << terrain->Seed;
-					out << YAML::Key << "MapSize" << YAML::Value << terrain->MapSize;
+					//out << YAML::Key << "MapSize" << YAML::Value << terrain->MapSize;
 					out << YAML::Key << "TerrainScale" << YAML::Value << terrain->TerrainScale;
 
 					out << YAML::Key << "NoiseParams";
@@ -1013,7 +1013,7 @@ namespace Proof
 
 
 					terrain->Seed = terrainComponent["Seed"].as<int>(0);
-					terrain->MapSize = terrainComponent["MapSize"].as<int>(terrain->MapSize);
+					//terrain->MapSize = terrainComponent["MapSize"].as<int>(terrain->MapSize);
 					terrain->TerrainScale = terrainComponent["TerrainScale"].as<float>(terrain->TerrainScale);
 
 					const auto& noiseNode = terrainComponent["NoiseParams"];
