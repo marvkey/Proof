@@ -100,7 +100,7 @@ namespace Proof
 		InterpolationCurve Curve;
 		int Seed = 0;
 		ClampedValue<int, 0, 6> LevelOfDetail = 0;
-
+		bool UseFallOff = false;
 		struct NoiseSettings
 		{
 			glm::vec2 Offset = glm::vec2(0.0f);
@@ -146,6 +146,7 @@ namespace Proof
 		std::vector< TerrainChunk> m_Chunks;
 		Count<class EndlessTerrain> m_EndlessTerrain;
 		Count<class NormalTerrain> m_NormalTerrain;
+		std::vector<float> m_FallOffData;
 		Transform m_Transform;
 
 		std::queue<MapThreadInfo<TerrainChunkNoiseData>> mapDataQueue;

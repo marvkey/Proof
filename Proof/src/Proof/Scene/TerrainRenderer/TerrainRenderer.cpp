@@ -76,6 +76,39 @@ namespace Proof
 
 		return noiseMap;
 	}
+
+
+	// Falloff evaluation curve (adjust a and b to shape it)
+	//https://www.youtube.com/watch?v=COmtTyLCd6I&list=PLFt_AvWsXl0eBW2EiBtl_sxmDtSgZBxB3&index=11
+
+	// makes the fall off gradient not as stron
+	float EvaluateFalloff(float value)
+	{
+		float a = 3.0f;
+		float b = 2.2f;
+		return std::pow(value, a) / (std::pow(value, a) + std::pow(b - b * value, a));
+	}
+
+	std::vector<float> GenerateFalloffMap(int width, int height)
+	{
+		std::vector<float> map(width * height);
+
+		for (int y = 0; y < height; ++y)
+		{
+			for (int x = 0; x < width; ++x)
+			{
+				float nx = x / static_cast<float>(width) * 2.0f - 1.0f;
+				float ny = y / static_cast<float>(height) * 2.0f - 1.0f;
+
+				float value = glm::max(std::abs(nx), std::abs(ny));
+				map[y * width + x] = EvaluateFalloff(value);
+			}
+		}
+
+		return map;
+	}
+
+
 	TerrainRenderer::TerrainRenderer()
 	{
 		m_Chunks.clear();
@@ -268,13 +301,16 @@ namespace Proof
 
 	TerrainChunkNoiseData TerrainRenderer::GenerateNoiseData(glm::vec2 extraOffset)
 	{
-		auto heightMap = GenerateNoiseMap(MapChunkSize, MapChunkSize, Seed, NoiseParams, extraOffset);
-
+		if (UseFallOff)
+		{
+			if (m_FallOffData.empty())
+				m_FallOffData = GenerateFalloffMap(MapChunkSize, MapChunkSize);
+		}
 		uint32_t width = MapChunkSize;
 		uint32_t height = MapChunkSize;
 
 		TerrainChunkNoiseData chunkNoiseData;
-		chunkNoiseData.HeightMap = heightMap;
+		chunkNoiseData.HeightMap = GenerateNoiseMap(MapChunkSize, MapChunkSize, Seed, NoiseParams, extraOffset);
 		chunkNoiseData.ColourMap.resize(width * height);
 
 		std::vector<uint32_t> noiseMapData(width * height);
@@ -283,13 +319,19 @@ namespace Proof
 
 		for (int y = 0; y < height; y++) {
 			for (int x = 0; x < width; x++) {
-				float value = heightMap[y * width + x]; // assumes row-major layout
-				glm::vec3 color = Math::Lerp(Colors::Black, Colors::White, value); // grayscale
+
+				if (UseFallOff)
+				{
+					chunkNoiseData.HeightMap[y * width + x] = glm::clamp(chunkNoiseData.HeightMap[y * width + x] - m_FallOffData[y * width + x], 0.f, 1.0f);
+				}
+
+				float currentHeight = chunkNoiseData.HeightMap[y * width + x]; // assumes row-major layout
+				glm::vec3 color = Math::Lerp(Colors::Black, Colors::White, currentHeight); // grayscale
 				uint32_t packed = ConvertToBytes(color);
 				noiseMapData[x + y * width] = packed;
 
 				for (int i = 0; i < regions.size(); i++) {
-					if (value >= regions[i].Height) {
+					if (currentHeight >= regions[i].Height) {
 						colourMap[y * width + x] = ConvertToBytes(regions[i].colour);
 					}
 					else
