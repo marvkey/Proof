@@ -9,6 +9,8 @@ namespace Proof
 
 		void OnUpdate(float deltaTime);
 		uint32_t Size = 512;
+
+		void Regenirate() { GenerateChunks(Size, Size); };
 	private:
 		void GenerateChunks(uint32_t widht, uint32_t height);
 	private:

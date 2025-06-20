@@ -3,6 +3,7 @@
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Material.h"
+#include "Proof/Renderer/Texture.h"
 namespace Proof
 {
 
@@ -32,9 +33,13 @@ namespace Proof
             for (uint32_t x = 0; x < numChunksX; ++x)
             {
                 glm::vec2 coord = glm::vec2(x, y);
-                m_Terrain->AddChunk(coord, chunkSize);
+                m_Terrain->AddChunk(coord, chunkSize-1);
 
-                auto noiseData = m_Terrain->GenerateNoiseData();
+
+                //  apply world offset to noise, so edges match up between chunks
+                glm::vec2 worldOffset = coord * static_cast<float>(chunkSize-1);
+
+                auto noiseData = m_Terrain->GenerateNoiseData(worldOffset);
                 auto terrainData = m_Terrain->GenerateMesh(noiseData.HeightMap, chunkSize, chunkSize);
 
                TerrainChunk* chunk = m_Terrain->GetChunk(coord);
@@ -42,10 +47,22 @@ namespace Proof
                chunk->Mesh = terrainData.GenerateMesh();
                AssetManager::CreateRuntimeAsset(chunk->Mesh, "Terrain Mesh chunk");
 
+               Buffer colorBuffer(noiseData.ColourMap.data(), noiseData.ColourMap.size() * sizeof(uint32_t), true);
 
-               //chunk->Mesh->GetMaterialTable()->GetMaterial(0)->SetAlbedoMap(m_ColorTexture);
+               TextureConfiguration config;
+               config.DebugName = "Color Texture";
+               config.Width = chunkSize;
+               config.Height = chunkSize;
+               config.Format = ImageFormat::RGBA;
+               config.GenerateMips = true;
+               auto colorTexture = Texture2D::Create(config, colorBuffer, SamplerFactory::GetPoint());
+
+               chunk->Mesh->GetMaterialTable()->GetMaterial(0)->SetAlbedoMap(colorTexture);
                chunk->Mesh->GetMaterialTable()->GetMaterial(0)->SetAlbedo(glm::vec3(1));
                chunk->Mesh->GetMaterialTable()->GetMaterial(0)->SetEmission(0.0f);
+
+               colorBuffer.Release();
+
                chunksCount++;
             }
         }

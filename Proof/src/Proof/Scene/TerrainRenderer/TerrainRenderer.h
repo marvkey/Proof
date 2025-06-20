@@ -95,7 +95,6 @@ namespace Proof
 		Count<class Texture2D> GetNoiseTexture() { return m_NoiseTexture; };
 		Count<class Texture2D> GetColorTexture() { return m_ColorTexture; };
 
-		float MaxViewDistance = 500;
 		//uint32_t MapSize = 100;
 		ClampedValue<float, 0.1f, 1000.0f> TerrainScale = 30.0f; // scale of the terrain
 		InterpolationCurve Curve;
@@ -134,7 +133,7 @@ namespace Proof
 
 
 		TerrainMeshBuilderData GenerateMesh(const std::vector<float>& heightMap, uint32_t width, uint32_t height);
-		TerrainChunkNoiseData GenerateNoiseData();
+		TerrainChunkNoiseData GenerateNoiseData(glm::vec2 extraOffset = glm::vec2(0));
 
 		friend class NormalTerrain;
 	private:
@@ -179,6 +178,7 @@ namespace Proof
 		void OnMeshDataReceived(TerrainMeshBuilderData meshData);
 
 	private:
+		uint32_t m_Lod = 0;
 		bool m_IsVisible = false;
 		WeakCount<TerrainRenderer> m_TerrainRenderer;
 	};

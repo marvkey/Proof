@@ -1359,8 +1359,8 @@ namespace Proof
 					meshComp.Terrain->RegenerateTerrainMesh();
 				
 				}
-				UI::ViewDebugImage("Color Texure", meshComp.Terrain->GetColorTexture());
-				UI::ViewDebugImage("Noise Texure", meshComp.Terrain->GetNoiseTexture()->GetImage());
+				//UI::ViewDebugImage("Color Texure", meshComp.Terrain->GetColorTexture());
+				//UI::ViewDebugImage("Noise Texure", meshComp.Terrain->GetNoiseTexture()->GetImage());
 /*
 				if (ImGui::Button("change tex"))
 				{

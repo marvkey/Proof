@@ -18,8 +18,14 @@
 namespace Proof
 {
 
-	std::vector<float> GenerateNoiseMap(int mapWidth, int mapHeight, int seed, const TerrainRenderer::NoiseSettings& settings)
-	{
+	enum class NormalizeMode { Local, Global };
+
+	std::vector<float> GenerateNoiseMap(
+		int mapWidth, int mapHeight, int seed,
+		const TerrainRenderer::NoiseSettings& settings,
+		glm::vec2 extraOffset,
+		NormalizeMode normalizeMode = NormalizeMode::Global
+	) {
 		std::vector<float> noiseMap(mapWidth * mapHeight);
 
 		FastNoiseLite noise;
@@ -33,11 +39,20 @@ namespace Proof
 
 		float minVal = std::numeric_limits<float>::max();
 		float maxVal = std::numeric_limits<float>::lowest();
+		float maxPossibleHeight = 0;
+		float amplitude = 1;
+		float frequency = 1;
+
+		for (int i = 0; i < settings.Octaves; i++) {
+
+			maxPossibleHeight += amplitude;
+			amplitude *= settings.Persistence;
+		}
 
 		for (int y = 0; y < mapHeight; ++y) {
 			for (int x = 0; x < mapWidth; ++x) {
-				float sampleX = x + settings.Offset.x;
-				float sampleY = y + settings.Offset.y;
+				float sampleX = float(x) + settings.Offset.x + extraOffset.x;
+				float sampleY = float(y) - settings.Offset.y - extraOffset.y;
 
 				float val = noise.GetNoise(sampleX, sampleY);
 				int index = y * mapWidth + x;
@@ -47,9 +62,16 @@ namespace Proof
 				maxVal = std::max(maxVal, val);
 			}
 		}
-
 		for (int i = 0; i < mapWidth * mapHeight; ++i) {
-			noiseMap[i] = (noiseMap[i] - minVal) / (maxVal - minVal);
+			if (normalizeMode == NormalizeMode::Local) {
+				// Normalize within this map
+				noiseMap[i] = (noiseMap[i] - minVal) / (maxVal - minVal);
+			}
+			else {
+				// Normalize based on maximum possible height
+				float normalized = (noiseMap[i] + 1) / (maxPossibleHeight);
+				noiseMap[i] = std::clamp(normalized, 0.0f, std::numeric_limits<float>::max());
+			}
 		}
 
 		return noiseMap;
@@ -57,13 +79,14 @@ namespace Proof
 	TerrainRenderer::TerrainRenderer()
 	{
 		m_Chunks.clear();
-		//RegenerateTerrainMesh();
+		
 	}
 
 	
 	void TerrainRenderer::RegenerateTerrainMesh()
 	{
-		
+		if (m_NormalTerrain)
+			m_NormalTerrain->Regenirate();
 	}
 
 	struct TerrainType
@@ -73,9 +96,9 @@ namespace Proof
 	};
 
 	std::vector<TerrainType> regions = {
-		{ 0.08f, glm::vec4(0.0f, 0.0f, 0.6f, 1.0f) }, // Deep Water
-		{ 0.15f, glm::vec4(0.2f, 0.4f, 0.8f, 1.0f) }, // Shallow Water
-		{ 0.20f, glm::vec4(0.85f, 0.8f, 0.5f, 1.0f) }, // Sand
+		{ 0.0f, glm::vec4(0.0f, 0.0f, 0.6f, 1.0f) }, // Deep Water
+		{ 0.20f, glm::vec4(0.2f, 0.4f, 0.8f, 1.0f) }, // Shallow Water
+		{ 0.30f, glm::vec4(0.85f, 0.8f, 0.5f, 1.0f) }, // Sand
 		{ 0.5f,  glm::vec4(0.3f, 0.6f, 0.2f, 1.0f) }, // Grass
 		{ 0.6f,  glm::vec4(0.2f, 0.5f, 0.2f, 1.0f) }, // Darker Grass
 		{ 0.75f, glm::vec4(0.3f, 0.2f, 0.2f, 1.0f) }, // Rock
@@ -160,8 +183,19 @@ namespace Proof
 		glm::vec3 ViewPosition = glm::vec3(0);
 		glm::vec2 viewerPosition = glm::vec2(ViewPosition.x, ViewPosition.z);
 
+		uint32_t visibleCunks = 0;
 		for (auto& chunk : m_Chunks)
-			chunk.UpdateTerrainChunk(viewerPosition, MaxViewDistance);
+		{
+			if (chunk.GetIsVisible())
+				visibleCunks++;
+
+		}
+
+		float maxViewDistance = MapChunkSize * visibleCunks;
+
+
+		for (auto& chunk : m_Chunks)
+			chunk.UpdateTerrainChunk(viewerPosition, maxViewDistance);
 #if 0
 
 		{
@@ -197,7 +231,7 @@ namespace Proof
 	{
 		TerrainMeshBuilderData meshBuilderData = TerrainMeshBuilderData(width, height);
 		float ScaleY = TerrainScale;
-		auto curveCopy = Curve;
+		InterpolationCurve curveCopy = Curve;
 		// just to make the pivot at the center
 		float topLeftX = (width - 1) / -2.0f;
 		// just to make the pivot at the center
@@ -232,9 +266,9 @@ namespace Proof
 		return meshBuilderData;
 	}
 
-	TerrainChunkNoiseData TerrainRenderer::GenerateNoiseData()
+	TerrainChunkNoiseData TerrainRenderer::GenerateNoiseData(glm::vec2 extraOffset)
 	{
-		auto heightMap = GenerateNoiseMap(MapChunkSize, MapChunkSize, Seed, NoiseParams);
+		auto heightMap = GenerateNoiseMap(MapChunkSize, MapChunkSize, Seed, NoiseParams, extraOffset);
 
 		uint32_t width = MapChunkSize;
 		uint32_t height = MapChunkSize;
@@ -255,14 +289,16 @@ namespace Proof
 				noiseMapData[x + y * width] = packed;
 
 				for (int i = 0; i < regions.size(); i++) {
-					if (value <= regions[i].Height) {
+					if (value >= regions[i].Height) {
 						colourMap[y * width + x] = ConvertToBytes(regions[i].colour);
-						break;
 					}
+					else
+						break;
+
 				}
 			}
 		}
-
+#if 0
 		Buffer buffer(noiseMapData.data(), noiseMapData.size() * sizeof(uint32_t), true);
 		TextureConfiguration config;
 		config.DebugName = "Noise Texture";
@@ -282,7 +318,7 @@ namespace Proof
 		config.Format = ImageFormat::RGBA;
 		config.GenerateMips = true;
 		m_ColorTexture = Texture2D::Create(config, colorBuffer, SamplerFactory::GetPoint());
-
+#endif
 		return chunkNoiseData;
 	}
 
