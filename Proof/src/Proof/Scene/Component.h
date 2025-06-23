@@ -471,7 +471,7 @@ namespace Proof
 		CapsuleColliderComponent() = default;
 		glm::vec3 Center = { 0,0,0 };
 		float Radius = 0.5f;
-		float Height = 2.0f; // The height will be hafled as it is passed into physx
+		float Height = 1.0f; // The height will be hafled as it is passed into physx
 		CapsuleDirection Direction = CapsuleDirection::Y;
 		bool IsTrigger = false;
 

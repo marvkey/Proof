@@ -341,8 +341,9 @@ namespace Proof {
 
 		SetMaterial(material);
 		auto capsuleData = GetCapsuleData(component.Direction, worldTransform);
-
-		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(component.Radius * glm::max(worldTransform.Scale.x, worldTransform.Scale.z), 0.5f * component.Height * worldTransform.Scale.y);
+		float fullHeight = component.Height; // user-defined (includes caps)
+		float cylinderHeight = glm::max(fullHeight - (2.0f * component.Radius), 0.0f);
+		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(component.Radius * capsuleData.radiusScale, 0.5f * cylinderHeight * capsuleData.scaleDirection);
 		m_Shape = physx::PxRigidActorExt::createExclusiveShape(actor.GetPhysXActor(), geometry, m_Material->GetPhysxMaterial());
 		m_Shape->setSimulationFilterData(actor.GetFilterData());
 		m_Shape->setFlag(physx::PxShapeFlag::eSIMULATION_SHAPE, !component.IsTrigger);
@@ -430,12 +431,14 @@ namespace Proof {
 		m_Shape->getCapsuleGeometry(oldGeometry);
 
 		auto capsuleData = GetCapsuleData(GetDirection(), worldTransform);
-
-		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(oldGeometry.radius, (height / 2.0f) * capsuleData.scaleDirection);
-		m_Shape->setGeometry(geometry);
-		m_Shape->setGeometry(geometry);
-
 		CapsuleColliderComponent& component = m_Entity.GetComponent<CapsuleColliderComponent>();
+
+		float fullHeight = height; 
+		float cylinderHeight = glm::max(fullHeight - (2.0f * component.Radius), 0.0f);
+		physx::PxCapsuleGeometry geometry = physx::PxCapsuleGeometry(oldGeometry.radius, 0.5f * cylinderHeight * capsuleData.scaleDirection);
+		m_Shape->setGeometry(geometry);
+		m_Shape->setGeometry(geometry);
+
 		component.Height = height;
 	}
 
@@ -923,8 +926,7 @@ namespace Proof {
 				break;
 		}
 
-
-
+		scaleDirection = 2.0f * scaleDirection - radiusScale;
 		return { offsetRotation,radiusScale,scaleDirection };
 	}
 

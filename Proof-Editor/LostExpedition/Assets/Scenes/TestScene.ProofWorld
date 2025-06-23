@@ -251,7 +251,7 @@ World:
             AssetID: 7659929436396046509
             Index: 0
       MeshColliderComponent:
-        ColliderID: 17637649169569671169
+        ColliderID: 1283828229940714837
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 5896697494919537015

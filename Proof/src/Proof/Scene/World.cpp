@@ -706,7 +706,7 @@ namespace Proof
 
 				auto capsuleData = GetCapsuleData(collider.Direction, worldTransformComp);
 				float radius = capsuleData.radiusScale * collider.Radius;
-				float height = capsuleData.scaleDirection * collider.Height;
+				float height = capsuleData.scaleDirection * collider.Height * 0.5f;
 				renderer2D->DrawCapsule(location + center, glm::eulerAngles(rotation), height, radius, renderer->DebugOptions.PhysicsDebugOptions.PhysicsColliderColor);
 
 			}

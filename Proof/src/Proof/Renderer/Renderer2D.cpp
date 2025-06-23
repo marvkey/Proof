@@ -497,25 +497,32 @@ namespace Proof {
 
 		glm::quat orientation = glm::quat(rotationRadian);
 
-		radius = std::clamp(radius, 0.0f, height * 0.5f);
 		glm::vec3 localUp = orientation * glm::vec3(0.0f, 1.0f, 0.0f);
-		glm::quat arcOrientation = orientation * glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::vec3 localForward = orientation * glm::vec3(0.0f, 0.0f, 1.0f);
 
-		glm::vec3 basePositionOffset = localUp * height * 0.5f;
-		glm::vec3 baseArcPosition = position + localUp * radius - basePositionOffset;
+		// Full capsule height = height + 2 * radius
+		float totalHeight = height + 2.0f * radius;
 
-		// Draw bottom hemispheres
-		DrawArc(glm::radians(180.0f), glm::radians(360.0f), baseArcPosition, glm::eulerAngles(orientation), radius, color);
-		DrawArc(glm::radians(180.0f), glm::radians(360.0f), baseArcPosition, glm::eulerAngles(arcOrientation), radius, color);
+		// Base position = center of the capsule - half height in local up
+		//glm::vec3 base = position - (localUp * (height * 0.5f));
+		glm::vec3 base = position - (localUp * ((height + 2.0f * radius) * 0.5f));
 
-		// Draw cylinder
-		float cylinderHeight = height - radius * 2.0f;
-		DrawCylinder(baseArcPosition, glm::eulerAngles(orientation), cylinderHeight, radius, color, true);
+		// Bottom hemisphere center
+		glm::vec3 bottomCenter = base + localUp * radius;
 
-		// Draw top hemispheres
-		glm::vec3 topArcPosition = baseArcPosition + localUp * cylinderHeight;
-		DrawArc(0.0f, glm::radians(180.0f), topArcPosition, glm::eulerAngles(orientation), radius, color);
-		DrawArc(0.0f, glm::radians(180.0f), topArcPosition, glm::eulerAngles(arcOrientation), radius, color);
+		// Top hemisphere center
+		glm::vec3 topCenter = base + localUp * (radius + height);
+
+		// Draw bottom hemisphere (2 arcs: front and side)
+		DrawArc(glm::radians(180.0f), glm::radians(360.0f), bottomCenter, glm::eulerAngles(orientation), radius, color);
+		DrawArc(glm::radians(180.0f), glm::radians(360.0f), bottomCenter, glm::eulerAngles(orientation * glm::angleAxis(glm::half_pi<float>(), glm::vec3(0, 1, 0))), radius, color);
+
+		// Draw cylinder between hemispheres
+		DrawCylinder(bottomCenter, glm::eulerAngles(orientation), height, radius, color, true);
+
+		// Draw top hemisphere (2 arcs: front and side)
+		DrawArc(0.0f, glm::radians(180.0f), topCenter, glm::eulerAngles(orientation), radius, color);
+		DrawArc(0.0f, glm::radians(180.0f), topCenter, glm::eulerAngles(orientation * glm::angleAxis(glm::half_pi<float>(), glm::vec3(0, 1, 0))), radius, color);
 	}
 
 
