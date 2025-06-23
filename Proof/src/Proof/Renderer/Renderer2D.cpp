@@ -296,7 +296,7 @@ namespace Proof {
 		Buffer buffer(&m_Camera, sizeof(CameraData));
 		m_UBCamera->SetData(Renderer::GetCurrentFrameInFlight(), buffer);
 		m_Stats = {};
-		if(!m_NeedsToSubmitCommandBuffer)
+		//if(!m_NeedsToSubmitCommandBuffer)
 			Renderer::BeginCommandBuffer(m_CommandBuffer);
 
 		Reset();
@@ -1190,8 +1190,8 @@ namespace Proof {
 	void Renderer2D::EndContext() {
 		Render();
 		Reset();
-		//Renderer::EndCommandBuffer(m_CommandBuffer);
-		//Renderer::SubmitCommandBuffer(m_CommandBuffer);
+		Renderer::EndCommandBuffer(m_CommandBuffer);
+		Renderer::SubmitCommandBuffer(m_CommandBuffer);
 		m_NeedsToSubmitCommandBuffer = true;
 		m_ContextSettings = {};
 	}
@@ -1357,6 +1357,41 @@ namespace Proof {
 
 		}
 		m_Stats.TotalRenderTime += renderTime.ElapsedMillis();
+		#if 0
+		if(m_Storage2DData->TextIndexCount > 0){
+			PF_PROFILE_FUNC("Renderer2D::String Draw");
+			auto descriptor0 = m_TextPipeline->Descriptors[DescriptorSets::Zero];
+
+			descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, m_Storage2DData->CameraBuffer);
+			descriptor0->WriteImage(1, m_Storage2DData->FontTexture);
+
+			//Renderer::RecordRenderPass(m_RenderPass, m_TextPipeline->GraphicsPipeline);
+			m_Storage2DData->TextVertexBuffer->SetData(m_Storage2DData->TextArray.data(), m_Storage2DData->TextArraySize * sizeof(TextVertex));
+			descriptor0->Bind(m_Storage2DData->CommandBuffer, m_TextPipeline->PipeLineLayout);
+
+			m_Storage2DData->IndexBuffer->Bind(m_Storage2DData->CommandBuffer);
+			m_Storage2DData->TextVertexBuffer->Bind(m_Storage2DData->CommandBuffer);
+
+			Renderer::DrawElementIndexed(m_Storage2DData->CommandBuffer, m_Storage2DData->TextIndexCount, m_Storage2DData->TextArraySize);
+		}
+		if (m_Storage2DData->IndexCount == 0)return; // nothing to draw
+		{
+			PF_PROFILE_FUNC("Renderer2D::Quad Draw");
+
+			auto descriptor0 = m_SpritePipeline->Descriptors[DescriptorSets::Zero];
+
+			descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, m_Storage2DData->CameraBuffer);
+			descriptor0->WriteImage(1, m_Storage2DData->Textures);
+
+			//Renderer::RecordRenderPass(m_RenderPass, m_SpritePipeline->GraphicsPipeline);
+			m_Storage2DData->VertexBuffer->SetData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
+			descriptor0->Bind(m_Storage2DData->CommandBuffer, m_SpritePipeline->PipeLineLayout);
+			m_Storage2DData->VertexBuffer->Bind(m_Storage2DData->CommandBuffer);
+			m_Storage2DData->IndexBuffer->Bind(m_Storage2DData->CommandBuffer);
+			Renderer::DrawElementIndexed(m_Storage2DData->CommandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize, 0);
+		}
+		#endif
+
 	}
 	
 	

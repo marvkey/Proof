@@ -96,7 +96,7 @@ namespace Proof{
 		std::vector<UUID>& Children() { return GetComponent<HierarchyComponent>().Children; }
 		const std::vector<UUID>& Children() const { return GetComponent<HierarchyComponent>().Children; }
 
-		TransformComponent& Transform() { return m_World->m_Registry.get<TransformComponent>(m_EntityHandle); }
+		TransformComponent& GetTransformComponent() { return m_World->m_Registry.get<TransformComponent>(m_EntityHandle); }
 		const glm::mat4 Transform() const { return m_World->m_Registry.get<TransformComponent>(m_EntityHandle).GetTransform(); }
 	
 		bool HasChildren()

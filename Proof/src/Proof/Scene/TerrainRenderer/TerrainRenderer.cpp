@@ -11,9 +11,10 @@
 #include "EndlessTerrain.h"
 #include "NormalTerrain.h"
 #include "Proof/Renderer/WorldRenderer.h"
+#include "Proof/Input/Input.h"
 #include "Proof/Renderer/MeshWorkShop.h"
 #include "../Entity.h"
-
+#include "Proof/Physics/MeshCollider.h"
 #include <FastNoise/FastNoiseLite.h>
 namespace Proof
 {
@@ -112,10 +113,21 @@ namespace Proof
 	TerrainRenderer::TerrainRenderer()
 	{
 		m_Chunks.clear();
-		
 	}
 
-	
+	TerrainRenderer::TerrainRenderer(Count<TerrainRenderer> otherTerrain)
+	{
+		m_Chunks.clear();
+
+		NoiseParams = otherTerrain->NoiseParams;
+
+		TerrainScale = otherTerrain->TerrainScale;
+		Curve = otherTerrain->Curve;
+		Seed = otherTerrain->Seed;
+		LevelOfDetail = otherTerrain->LevelOfDetail;
+		UseFallOff = otherTerrain->UseFallOff;
+	}
+
 	void TerrainRenderer::RegenerateTerrainMesh()
 	{
 		if (m_NormalTerrain)
@@ -130,8 +142,8 @@ namespace Proof
 
 	std::vector<TerrainType> regions = {
 		{ 0.0f, glm::vec4(0.0f, 0.0f, 0.6f, 1.0f) }, // Deep Water
-		{ 0.20f, glm::vec4(0.2f, 0.4f, 0.8f, 1.0f) }, // Shallow Water
-		{ 0.30f, glm::vec4(0.85f, 0.8f, 0.5f, 1.0f) }, // Sand
+		{ 0.4f, glm::vec4(0.2f, 0.4f, 0.8f, 1.0f) }, // Shallow Water
+		{ 0.45f, glm::vec4(0.85f, 0.8f, 0.5f, 1.0f) }, // Sand
 		{ 0.5f,  glm::vec4(0.3f, 0.6f, 0.2f, 1.0f) }, // Grass
 		{ 0.6f,  glm::vec4(0.2f, 0.5f, 0.2f, 1.0f) }, // Darker Grass
 		{ 0.75f, glm::vec4(0.3f, 0.2f, 0.2f, 1.0f) }, // Rock
@@ -205,7 +217,8 @@ namespace Proof
 
 		m_Transform.SetTransform(transform);
 		m_NormalTerrain->OnUpdate(deltaTime);
-
+		if (m_PhysicsEntity.IsValid())
+			m_PhysicsEntity.GetTransformComponent().SetTransform(transform);
 
 		//if (m_EndlessTerrain)
 		//{
@@ -229,6 +242,8 @@ namespace Proof
 
 		for (auto& chunk : m_Chunks)
 			chunk.UpdateTerrainChunk(viewerPosition, maxViewDistance);
+
+
 #if 0
 
 		{
@@ -255,7 +270,7 @@ namespace Proof
 			if (!terrainChunk.GetIsVisible())
 				continue;
 
-			if(terrainChunk.Mesh)
+			if (terrainChunk.Mesh)
 				renderer->SubmitMesh(terrainChunk.Mesh, terrainChunk.Mesh->GetMaterialTable(), terrainChunk.Transform.GetTransform() * m_Transform.GetTransform());
 		}
 	}
@@ -270,14 +285,14 @@ namespace Proof
 		// just to make the pivot at the center
 		float topLeftZ = (height - 1) / 2.0f;
 
-		int meshSimplificationIncrement =(LevelOfDetail ==0) ? 1 :  LevelOfDetail * 2;
+		int meshSimplificationIncrement = (LevelOfDetail == 0) ? 1 : LevelOfDetail * 2;
 		int verticesPerLine = (width - 1) / meshSimplificationIncrement + 1; //https://www.youtube.com/watch?v=417kJGPKwDg&list=PLFt_AvWsXl0eBW2EiBtl_sxmDtSgZBxB3&index=6
 
-		
+
 		uint32_t vertexIndex = 0;
-		for (uint32_t y = 0; y < height; y+= meshSimplificationIncrement)
+		for (uint32_t y = 0; y < height; y += meshSimplificationIncrement)
 		{
-			for (uint32_t x = 0; x < width; x+= meshSimplificationIncrement)
+			for (uint32_t x = 0; x < width; x += meshSimplificationIncrement)
 			{
 				Vertex v;
 				v.Position = glm::vec3(topLeftX + x, curveCopy.Evaluate(heightMap[y * width + x]) * ScaleY, topLeftZ - y);
@@ -368,6 +383,26 @@ namespace Proof
 		std::thread([=]() { MapDataThread(callback); }).detach();
 	}
 
+	void TerrainRenderer::SetWorld(Count<World> world)
+	{
+		PF_CORE_ASSERT(world->GetState() != WorldState::Edit, "Has to be in edit state");
+
+		if (m_PhysicsEntity.IsValid() && m_PhysicsEntity.GetCurrentWorld() != world.Get())
+			m_PhysicsEntity.GetCurrentWorld()->DeleteEntity(m_PhysicsEntity);
+
+		if (m_PhysicsEntity.IsValid() && m_PhysicsEntity.GetCurrentWorld() == world.Get())
+			return;
+
+		m_PhysicsEntity = world->CreateEntity("Terrian Mesh physics collidres");
+
+		m_World = world.Get();
+
+		m_PhysicsEntity.GetTransformComponent().SetTransform(m_Transform.GetTransform());
+
+		for (auto& chunk : m_Chunks)
+			chunk.GeneratePhysicsCollisons();
+	}
+
 	void TerrainRenderer::MapDataThread(std::function<void(TerrainChunkNoiseData)> callback) {
 		TerrainChunkNoiseData mapData = GenerateNoiseData();
 		std::lock_guard<std::mutex> lock(queueMutex);
@@ -379,7 +414,7 @@ namespace Proof
 	}
 
 	void TerrainRenderer::MeshDataThread(const TerrainChunkNoiseData& mapData, std::function<void(TerrainMeshBuilderData)> callback) {
-		TerrainMeshBuilderData meshData = GenerateMesh(mapData.HeightMap,MapChunkSize, MapChunkSize); // This should match what Unity was doing
+		TerrainMeshBuilderData meshData = GenerateMesh(mapData.HeightMap, MapChunkSize, MapChunkSize); // This should match what Unity was doing
 		std::lock_guard<std::mutex> lock(queueMutex);
 		meshDataQueue.emplace(callback, meshData);
 	}
@@ -387,11 +422,14 @@ namespace Proof
 	TerrainChunk::TerrainChunk(Count<TerrainRenderer> terrain)
 	{
 		m_TerrainRenderer = terrain.Get();
+		if (!terrain->GetPhysicsEntity().IsValid())
+			return;
 
-		terrain->RequestMapData([this](TerrainChunkNoiseData mapData)
-			{
-				OnMapDataReceived(mapData);
-			});
+
+		//terrain->RequestMapData([this](TerrainChunkNoiseData mapData)
+		//	{
+		//		OnMapDataReceived(mapData);
+		//	});
 	}
 
 	void TerrainChunk::OnMapDataReceived(TerrainChunkNoiseData mapData)
@@ -399,12 +437,12 @@ namespace Proof
 		if (!m_TerrainRenderer.IsValid())
 			return;
 
-		auto terrain = m_TerrainRenderer.Lock();
-
-		terrain->RequestMeshData(mapData, [this](TerrainMeshBuilderData meshData)
-			{
-				OnMeshDataReceived(meshData);
-			});
+		//auto terrain = m_TerrainRenderer.Lock();
+		//
+		//terrain->RequestMeshData(mapData, [this](TerrainMeshBuilderData meshData)
+		//	{
+		//		OnMeshDataReceived(meshData);
+		//	});
 	}
 
 	void TerrainChunk::OnMeshDataReceived(TerrainMeshBuilderData meshData)
@@ -423,5 +461,31 @@ namespace Proof
 		//Mesh->GetMaterialTable()->GetMaterial(0)->SetAlbedoMap(m_ColorTexture);
 		Mesh->GetMaterialTable()->GetMaterial(0)->SetAlbedo(glm::vec3(1));
 		Mesh->GetMaterialTable()->GetMaterial(0)->SetEmission(0.0f);
+	}
+	void TerrainChunk::GeneratePhysicsCollisons()
+	{
+		if (!m_TerrainRenderer.IsValid())
+			return;
+
+		Count<TerrainRenderer> terrain = m_TerrainRenderer.Lock();
+		Count<World> world = terrain->GetWorld();
+
+		if (world == nullptr)
+			return;
+
+		if (!m_PhysicsEntity.IsValid())
+		{
+			m_PhysicsEntity = world->CreateChildEntity(terrain->GetPhysicsEntity(), fmt::format("Mesh Chunk coord {}", Math::ToString(Coord)));
+		}
+
+		m_MeshCollider = Count<MeshCollider>::Create(Mesh->GetID());
+
+		m_MeshCollider->CollisionComplexity = ECollisionComplexity::UseComplexAsSimple;
+		AssetManager::CreateRuntimeAsset(m_MeshCollider, fmt::format("Mesh Chunk coord Collider {}", Math::ToString(Coord)));
+
+		m_PhysicsEntity.AddorReplaceComponent<MeshColliderComponent>(m_MeshCollider->GetID());
+		m_PhysicsEntity.AddorReplaceComponent<RigidBodyComponent>();
+
+		m_PhysicsEntity.GetComponent<TransformComponent>().SetTransform(Transform.GetTransform());
 	}
 }

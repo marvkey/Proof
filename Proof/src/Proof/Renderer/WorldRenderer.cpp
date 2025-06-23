@@ -581,7 +581,139 @@ namespace Proof
 					m_TransparentPassComposite = RenderPass::Create(renderPassConfig);
 				}
 			}
+			/*
+			{
 
+				GraphicsPipelineConfiguration waterPipelineConfig = m_GeometryPass->GetPipeline()->GetConfig();
+				waterPipelineConfig.DebugName = "Water";
+				waterPipelineConfig.Shader = Renderer::GetShader("WaterSystem");
+				//waterPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA,ImageFormat::RG16F,ImageFormat::RGBA32F,ImageFormat::DEPTH32F };
+				//waterPipelineConfig.Attachments.Attachments[1].Blend = false;
+				//waterPipelineConfig.WriteDepth = false;
+				//waterPipelineConfig.LineWidth = 1.0f;
+				//waterPipelineConfig.DepthCompareOperator = DepthCompareOperator::Equal;
+				//waterPipelineConfig.VertexArray = staticVertexArray;
+
+				auto waterPipeline = GraphicsPipeline::Create(waterPipelineConfig);
+
+
+				FrameBufferConfig extCompFramebufferSpec;
+				extCompFramebufferSpec.DebugName = fmt::format("Water");
+				extCompFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA,ImageFormat::RG16F,ImageFormat::RGBA32F,ImageFormat::DEPTH32F };
+				extCompFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+				extCompFramebufferSpec.ClearColorOnLoad = false;
+				extCompFramebufferSpec.ClearDepthOnLoad = false;
+				// Use the color buffer from the final compositing pass, but the depth buffer from
+				// the actual 3D geometry pass, in case we want to composite elements behind meshes
+				// in the scene
+				extCompFramebufferSpec.Attachments.Attachments[0].ExistingImage = m_GeometryPass->GetOutput(0);
+				extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_GeometryPass->GetOutput(1);
+				extCompFramebufferSpec.Attachments.Attachments[2].ExistingImage = m_GeometryPass->GetOutput(2);
+				extCompFramebufferSpec.Attachments.Attachments[3].ExistingImage = m_GeometryPass->GetOutput(3);
+				extCompFramebufferSpec.Attachments.Attachments[4].ExistingImage = m_GeometryPass->GetOutput(4);
+				extCompFramebufferSpec.Attachments.Attachments[5].ExistingImage = m_GeometryPass->GetOutput(5);
+				//extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetOutput(0);
+
+				//auto frameBuffer = FrameBuffer::Create(extCompFramebufferSpec);
+				auto frameBuffer = m_GeometryPass->GetTargetFrameBuffer();
+
+				RenderPassConfig renderPassConfig;
+				renderPassConfig.DebugName = "Water Pass";
+				renderPassConfig.Pipeline = waterPipeline;
+
+				renderPassConfig.TargetFrameBuffer = frameBuffer;
+				m_WaterPass = RenderPass::Create(renderPassConfig);
+
+				m_WaterPass->AddGlobalInput(m_GlobalInputs);
+
+			}
+			*/
+			/*
+			{
+
+				GraphicsPipelineConfiguration waterPipelineConfig = m_GeometryPass->GetPipeline()->GetConfig();
+				waterPipelineConfig.DebugName = "Water";
+				waterPipelineConfig.Shader = Renderer::GetShader("WaterSystem");
+				waterPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA,ImageFormat::RG16F,ImageFormat::RGBA32F };
+				waterPipelineConfig.Attachments.Attachments[1].Blend = false;
+				waterPipelineConfig.WriteDepth = false;
+				waterPipelineConfig.LineWidth = 1.0f;
+				waterPipelineConfig.DepthCompareOperator = DepthCompareOperator::Equal;
+				waterPipelineConfig.VertexArray = staticVertexArray;
+
+				auto waterPipeline = GraphicsPipeline::Create(waterPipelineConfig);
+
+
+				FrameBufferConfig extCompFramebufferSpec;
+				extCompFramebufferSpec.DebugName = fmt::format("Water");
+				extCompFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::RGBA16F,ImageFormat::RGBA,ImageFormat::RG16F,ImageFormat::RGBA32F };
+				extCompFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+				extCompFramebufferSpec.ClearColorOnLoad = false;
+				extCompFramebufferSpec.ClearDepthOnLoad = false;
+				// Use the color buffer from the final compositing pass, but the depth buffer from
+				// the actual 3D geometry pass, in case we want to composite elements behind meshes
+				// in the scene
+				extCompFramebufferSpec.Attachments.Attachments[0].ExistingImage = m_GeometryPass->GetOutput(0);
+				extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_GeometryPass->GetOutput(1);
+				extCompFramebufferSpec.Attachments.Attachments[2].ExistingImage = m_GeometryPass->GetOutput(2);
+				extCompFramebufferSpec.Attachments.Attachments[3].ExistingImage = m_GeometryPass->GetOutput(3);
+				extCompFramebufferSpec.Attachments.Attachments[4].ExistingImage = m_GeometryPass->GetOutput(4);
+				//extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetOutput(0);
+
+				auto frameBuffer = FrameBuffer::Create(extCompFramebufferSpec);
+				//auto frameBuffer = m_GeometryPass->GetTargetFrameBuffer();
+
+				RenderPassConfig renderPassConfig;
+				renderPassConfig.DebugName = "Water Pass";
+				renderPassConfig.Pipeline = waterPipeline;
+
+				renderPassConfig.TargetFrameBuffer = frameBuffer;
+				m_WaterPass = RenderPass::Create(renderPassConfig);
+
+				m_WaterPass->AddGlobalInput(m_GlobalInputs);
+
+			}
+			*/
+			/*
+			{
+
+				GraphicsPipelineConfiguration waterPipelineConfig;
+				waterPipelineConfig.DebugName = "Water";
+				waterPipelineConfig.Shader = Renderer::GetShader("WaterSystem");
+				waterPipelineConfig.Attachments = { ImageFormat::RGBA32F};
+				waterPipelineConfig.WriteDepth = false;
+				waterPipelineConfig.LineWidth = 1.0f;
+				waterPipelineConfig.DepthCompareOperator = DepthCompareOperator::Equal;
+				waterPipelineConfig.VertexArray = staticVertexArray;
+
+				auto waterPipeline = GraphicsPipeline::Create(waterPipelineConfig);
+
+
+				FrameBufferConfig extCompFramebufferSpec;
+				extCompFramebufferSpec.DebugName = fmt::format("Water");
+				extCompFramebufferSpec.Attachments = { ImageFormat::RGBA32F};
+				extCompFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
+				extCompFramebufferSpec.ClearColorOnLoad = false;
+				extCompFramebufferSpec.ClearDepthOnLoad = false;
+				// Use the color buffer from the final compositing pass, but the depth buffer from
+				// the actual 3D geometry pass, in case we want to composite elements behind meshes
+				// in the scene
+				extCompFramebufferSpec.Attachments.Attachments[0].ExistingImage = m_GeometryPass->GetOutput(0);
+				//extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetOutput(0);
+
+				auto frameBuffer = FrameBuffer::Create(extCompFramebufferSpec);
+				
+				RenderPassConfig renderPassConfig;
+				renderPassConfig.DebugName = "Water Pass";
+				renderPassConfig.Pipeline = waterPipeline;
+
+				renderPassConfig.TargetFrameBuffer = frameBuffer;
+				m_WaterPass = RenderPass::Create(renderPassConfig);
+
+				m_WaterPass->AddGlobalInput(m_GlobalInputs);
+
+			}
+			*/
 			m_GeometryPass->SetInput("DirectionalLightStorageBuffer", m_SBDirectionalLightsBuffer);
 			m_GeometryPass->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
 			m_GeometryPass->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
@@ -1467,7 +1599,32 @@ namespace Proof
 				AssetManager::CreateRuntimeAsset(AssetManager::CreateID(), m_GeometryWireFramePassMaterialAsset, "worldRenderer wireFrameMaterial");
 				m_GeometryWireFramePassMaterial = m_GeometryWireFramePassMaterialAsset->GetRenderMaterial();
 			}
+			/*
+			{
 
+				GraphicsPipelineConfiguration waterPipelineConfig;
+				waterPipelineConfig.DebugName = "Water";
+				waterPipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
+				waterPipelineConfig.CullMode = CullMode::Back;
+				waterPipelineConfig.WriteDepth = false;
+				waterPipelineConfig.LineWidth = 1.0f;
+				waterPipelineConfig.VertexArray = staticVertexArray;
+				waterPipelineConfig.Shader = Renderer::GetShader("WaterSystem");
+				waterPipelineConfig.VertexArray = staticVertexArray;
+
+				auto waterPipeline = GraphicsPipeline::Create(waterPipelineConfig);
+
+				RenderPassConfig renderPassConfig;
+				renderPassConfig.DebugName = "Water Pass";
+				renderPassConfig.Pipeline = waterPipeline;
+				//renderPassConfig.TargetFrameBuffer = m_GeometryPass->GetTargetFrameBuffer();
+				renderPassConfig.TargetFrameBuffer = m_ExternalCompositeFrameBuffer;
+				m_WaterPass = RenderPass::Create(renderPassConfig);
+
+				m_WaterPass->AddGlobalInput(m_GlobalInputs);
+
+			}
+			*/
 			m_GeometryWireFramePassMaterial = RenderMaterial::Create(RenderMaterialConfiguration{ "WireFrame", Renderer::GetShader("Wireframe") });
 
 			m_GeometryWireFramePass->AddGlobalInput(m_GlobalInputs);
@@ -2603,6 +2760,25 @@ namespace Proof
 		
 	#endif
 
+	#if 0
+		{
+
+			{
+				Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_WaterPass);
+
+				for (auto& [meshKey, dc] : m_WaterMeshDrawList)
+				{
+					const auto& transformData = m_CurTransformMap->at(meshKey);
+					uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+
+					RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, dc.OverrideMaterial, m_WaterPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+
+				}
+
+				Renderer::EndRenderPass(m_WaterPass);
+			}
+		}
+	#endif
 		m_Timers.GeometryPass = geometryPassTimer.ElapsedMillis();
 	}
 

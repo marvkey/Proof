@@ -944,7 +944,7 @@ namespace Proof
 
 		Entity nodeEntity = CreateChildEntity(parent, node.Name);
 
-		nodeEntity.Transform().SetTransform(node.LocalTransform);
+		nodeEntity.GetTransformComponent().SetTransform(node.LocalTransform);
 
 		if (node.Submeshes.size() == 1)
 		{
@@ -1594,36 +1594,11 @@ namespace Proof
 		//AudioEngine::BeginContext(instance);
 		m_ScriptWorld->BeginRuntime();
 
-
-	#if 0
-		m_Registry.on_construct<ScriptComponent>().connect<&World::OnScriptAdded>(this);
-		m_Registry.on_destroy<ScriptComponent>().connect<&World::OnScriptDelete>(this);
+		ForEachEnitityWith<TerrainComponent>([&](Entity e)
 		{
-			const auto& scriptView = m_Registry.view<NativeScriptComponent>();
-			for (auto entity : scriptView)
-			{
-				auto& script = scriptView.get<NativeScriptComponent>(entity);
-				if (script.Instance == nullptr)
-				{
+				e.GetComponent<TerrainComponent>().Terrain->SetWorld(this);
 
-					script.Instance = script.InstantiateScript();
-					script.Instance->m_Owner = Entity{ entity, this };
-					script.Instance->m_World = this;
-					script.Instance->OnCreate();
-					script.Instance->OnPlaced();
-				}			
-			}
-			{
-				//auto view = m_Registry.view<ScriptComponent>();
-				//for (auto e : view)
-				//{
-				//	Entity entity = { e, this };
-				//	//ScriptMeathod::OnCreate(entity);
-				//	//ScriptEngine::OnPlace(entity);
-				//}
-			}
-		}
-	#endif
+		});
 		///
 		///
 		//PhysicsWorldConfig config;
@@ -1779,7 +1754,7 @@ namespace Proof
 		if (parent)
 			transform = GetWorldSpaceTransform(parent);
 		
-		return transform * entity.Transform().GetTransform();
+		return transform * entity.Transform();
 	#endif
 	}
 
@@ -1820,7 +1795,7 @@ namespace Proof
 		if (!parent)
 			return;
 
-		TransformComponent& transform = entity.Transform();
+		TransformComponent& transform = entity.GetTransformComponent();
 		glm::mat4 parentTransform = GetWorldSpaceTransform(parent);
 		glm::mat4 localTransform = glm::inverse(parentTransform) * transform.GetTransform(); // keep this it works, the other way was taking
 		transform.SetTransform(localTransform);

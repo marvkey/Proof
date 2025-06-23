@@ -475,7 +475,7 @@ namespace Proof
 		PF_ENGINE_INFO("	Device ID: {}", m_GPUProperties.deviceID);
 		PF_ENGINE_INFO("	Type: {}", m_GPUProperties.deviceType);
 		PF_ENGINE_INFO("	API Version: {}", m_GPUProperties.apiVersion);
-		PF_ENGINE_INFO("	Max bound descriptor sets: {}", m_GPUProperties.limits.maxBoundDescriptorSets);
+		PF_ENGINE_INFO("	max bound descriptor sets: {}", m_GPUProperties.limits.maxBoundDescriptorSets);
 		PF_ENGINE_INFO("	minimum buffer alignment : {}", m_GPUProperties.limits.minUniformBufferOffsetAlignment);
 	}
 

@@ -10,7 +10,7 @@
 #include "Vector.h"
 namespace Proof
 {
-	struct Math 
+	struct Math
 	{
 		Math(const Math&) = delete;
 
@@ -29,27 +29,27 @@ namespace Proof
 			return { 1.0f, 0.0f, 0.0f };
 		}
 
-		inline static std::string ToString(const glm::quat& q) 
+		inline static std::string ToString(const glm::quat& q)
 		{
 			std::ostringstream ss;
 			ss << "Quat(W: " << q.w << ", X: " << q.x << ", Y: " << q.y << ", Z: " << q.z << ")";
 			return ss.str();
 		}
 
-		inline static std::string ToString(const glm::vec3& v) 
+		inline static std::string ToString(const glm::vec3& v)
 		{
 			std::ostringstream ss;
 			ss << "Vec3(X: " << v.x << ", Y: " << v.y << ", Z: " << v.z << ")";
 			return ss.str();
 		}
 
-		inline static std::string ToString(const glm::vec2& v) 
+		inline static std::string ToString(const glm::vec2& v)
 		{
 			std::ostringstream ss;
 			ss << "Vec2(X: " << v.x << ", Y: " << v.y << ")";
 			return ss.str();
 		}
-		inline static glm::quat GetQuaternionIdentity() 
+		inline static glm::quat GetQuaternionIdentity()
 		{
 			return glm::quat(1, 0, 0, 0);
 		}
@@ -113,10 +113,10 @@ namespace Proof
 		* @param variable2: variable assign to 1
 		*/
 		template<class T>
-		inline static void Swap(T& Variable1,T& Variable2){
-			T temp= Variable1;
+		inline static void Swap(T& Variable1, T& Variable2) {
+			T temp = Variable1;
 			Variable1 = Variable2;
-			Variable2 =temp;
+			Variable2 = temp;
 		}
 		/**
 		* @param Num1
@@ -124,7 +124,7 @@ namespace Proof
 		* @return the biggest value betwen Num1 and Num2
 		*/
 		template<typename T>
-		inline static T Min(T Num1,T Num2) {
+		inline static T Min(T Num1, T Num2) {
 			return Num1 < Num2 ? Num1 : Num2;
 		}
 		/**
@@ -133,7 +133,7 @@ namespace Proof
 		* @return the Smallest value betwen Num1 and Num2
 		*/
 		template<typename T>
-		inline static T Max(T Num1,T Num2) {
+		inline static T Max(T Num1, T Num2) {
 			return Num1 > Num2 ? Num1 : Num2;
 		}
 		/**
@@ -363,7 +363,7 @@ namespace Proof
 
 		template<typename T>
 		inline static T Log10(T x) {
-			return Math::Log(x,10);
+			return Math::Log(x, 10);
 		}
 
 		inline static int RoundToInt(float value)

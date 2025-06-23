@@ -103,7 +103,7 @@ namespace Proof::Utils::String
 		char buffer[32];
 
 		if (durationMilisecond > minutes)
-			sprintf_s(buffer, "%.2fMin", (float)durationMilisecond / (float)minutes);
+			sprintf_s(buffer, "%.2fmin", (float)durationMilisecond / (float)minutes);
 		else if (durationMilisecond > seconds)
 			sprintf_s(buffer, "%.2fs", (float)durationMilisecond / (float)seconds);
 		else

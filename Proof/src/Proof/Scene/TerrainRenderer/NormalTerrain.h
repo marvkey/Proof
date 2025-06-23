@@ -8,7 +8,7 @@ namespace Proof
 		NormalTerrain(Count<class TerrainRenderer> terrain);
 
 		void OnUpdate(float deltaTime);
-		uint32_t Size = 512;
+		uint32_t Size = 241;
 
 		void Regenirate() { GenerateChunks(Size, Size); };
 	private:

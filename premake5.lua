@@ -14,7 +14,7 @@ workspace "Proof"
 
 OutputDirectory ="%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 IncludeDir={}
-IncludeDir["GLFW"]="%{wks.location}/Proof/vendor/glfw-3.3.2.bin.WIN64/include"
+IncludeDir["GLFW"]="%{wks.location}/Proof/vendor/glfw-3.3.2.bin.WIN64/include" 
 IncludeDir["ImGui"]="%{wks.location}/Proof/vendor/ImGUI"
 IncludeDir["glm"]="%{wks.location}/Proof/vendor/glm"
 IncludeDir["Vulkan"]="%{wks.location}/Proof/vendor/VulkanSDK/Include"

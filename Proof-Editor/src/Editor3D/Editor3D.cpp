@@ -1747,7 +1747,7 @@ namespace Proof
 									
 									auto spawnEntity = m_ActiveWorld->CreateChildEntity(SpawnPositionsEntity,fmt::format("GridPos {}", spawnPosCounter));
 
-									spawnEntity.GetComponent<TransformComponent>().Location = e.Transform().Location;
+									spawnEntity.GetComponent<TransformComponent>().Location = e.GetTransformComponent().Location;
 									spawnEntity.AddComponent<BoxColliderComponent>().IsTrigger = true;
 									spawnEntity.GetComponent<BoxColliderComponent>().Size = { 4.5,1,4.5 };
 									spawnEntity.AddComponent<RigidBodyComponent>().PhysicsLayerID = PhysicsLayerManager::GetLayer("GridPos").LayerID;
@@ -1762,7 +1762,7 @@ namespace Proof
 
 									auto spawnEntity = m_ActiveWorld->CreateChildEntity(SpawnPositionsEntity, fmt::format("GridPos {}", spawnPosCounter));
 
-									spawnEntity.GetComponent<TransformComponent>().Location = e.Transform().Location;
+									spawnEntity.GetComponent<TransformComponent>().Location = e.GetTransformComponent().Location;
 									spawnEntity.GetComponent<TransformComponent>().Location.y = 2.204f; 
 									spawnEntity.AddComponent<BoxColliderComponent>().IsTrigger = true;
 									spawnEntity.GetComponent<BoxColliderComponent>().Size = { 4.5,1,4.5 };

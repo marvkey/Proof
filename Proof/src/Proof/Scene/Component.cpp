@@ -246,6 +246,6 @@ namespace Proof
 
 	TerrainComponent::TerrainComponent(const TerrainComponent& other)
 	{
-		Terrain = Count<TerrainRenderer>::Create();
+		Terrain = Count<TerrainRenderer>::Create(other.Terrain);
 	}
 }

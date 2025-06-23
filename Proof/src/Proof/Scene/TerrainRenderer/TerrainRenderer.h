@@ -91,11 +91,9 @@ namespace Proof
 	{
 	public:
 		TerrainRenderer();
+		TerrainRenderer(Count<TerrainRenderer> otherTerrain);
 
-		Count<class Texture2D> GetNoiseTexture() { return m_NoiseTexture; };
-		Count<class Texture2D> GetColorTexture() { return m_ColorTexture; };
-
-		//uint32_t MapSize = 100;
+	public:
 		ClampedValue<float, 0.1f, 1000.0f> TerrainScale = 30.0f; // scale of the terrain
 		InterpolationCurve Curve;
 		int Seed = 0;
@@ -109,7 +107,14 @@ namespace Proof
 			ClampedValue<int,1,20> Octaves = 1;
 			ClampedValue<float,0.0f,1.0f> Persistence = 0.5f;
 			float Lacunarity = 2.0f;
+
+			auto operator<=>(const NoiseSettings&) const = default;  // generates all comparison operators
 		} NoiseParams;
+
+	public:
+
+		Count<class Texture2D> GetNoiseTexture() { return m_NoiseTexture; };
+		Count<class Texture2D> GetColorTexture() { return m_ColorTexture; };
 
 		void RegenerateTerrainMesh();
 
@@ -125,6 +130,21 @@ namespace Proof
 		// Asynchronous requests
 		void RequestMapData(std::function<void(TerrainChunkNoiseData)> callback);
 		void RequestMeshData(const TerrainChunkNoiseData& mapData, std::function<void(TerrainMeshBuilderData)> callback);
+
+		Entity GetPhysicsEntity()// only active in runtime
+		{
+			return m_PhysicsEntity;
+		}
+
+		Count<World> GetWorld()
+		{
+			if (m_World.IsValid())
+				return m_World.Lock();
+
+			return nullptr;
+		}
+
+		void SetWorld(Count<World> world);
 
 	private:
 		// Worker threads
@@ -153,6 +173,9 @@ namespace Proof
 		std::queue<MapThreadInfo<TerrainMeshBuilderData>> meshDataQueue;
 		std::mutex queueMutex;
 
+		Entity m_PhysicsEntity;; // only used in runtime for phsycics collisons
+
+		WeakCount<World> m_World;;
 		friend class World;
 	};
 
@@ -177,10 +200,17 @@ namespace Proof
 
 		void OnMapDataReceived(TerrainChunkNoiseData mapData);
 		void OnMeshDataReceived(TerrainMeshBuilderData meshData);
+		void GeneratePhysicsCollisons();
 
 	private:
+	private:
+
+		Entity m_PhysicsEntity;
 		uint32_t m_Lod = 0;
 		bool m_IsVisible = false;
 		WeakCount<TerrainRenderer> m_TerrainRenderer;
+
+		Count<class MeshCollider> m_MeshCollider; // only in rutnime
+		friend class TerrainRenderer;
 	};
 }

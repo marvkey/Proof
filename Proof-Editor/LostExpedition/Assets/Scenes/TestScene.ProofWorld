@@ -14,12 +14,12 @@ World:
         Children: []
       TerrainComponent:
         Seed: 0
-        TerrainScale: 13
+        TerrainScale: 5
         NoiseParams:
           Scale: 25
           Octaves: 2
-          Persistence: 0.600000024
-          Lacunarity: 1
+          Persistence: 0.310000002
+          Lacunarity: 2
           Offset: [0, 0]
         Curve:
           Min: [0, 0]
@@ -27,12 +27,14 @@ World:
           Points:
             - [0, 0]
             - [0.198377579, 0]
-            - [0.305309743, 0.0579710156]
-            - [0.436578184, 0.101307198]
-            - [0.52359879, 0.405228764]
-            - [0.664454281, 0.503267944]
-            - [0.721976399, 0.658496737]
-            - [1, 1]
+            - [0.363775939, 0]
+            - [0.42291078, 0]
+            - [0.500819743, 0]
+            - [0.613581061, 0.174496651]
+            - [0.731088042, 0.478966534]
+            - [0.846621096, 0.662751675]
+            - [0.902809441, 0.82718122]
+            - [0.996203482, 0.989932895]
     - Entity: 13519868178400244974
       TagComponent:
         Tag: Sky Light
@@ -54,17 +56,23 @@ World:
         HosekWilkieTurbidity: 4
         HosekWilkieGroundReflectance: 0.100000001
         PreethamTurbidity: 4
-    - Entity: 13002574944404870795
+    - Entity: 15432167700584823006
       TagComponent:
-        Tag: WeaponHolder
+        Tag: Camera
         tags: []
       TransformComponent:
-        Location: [1.09892821, 0, 0]
-        Rotation: [0, -0, 0]
+        Location: [0, 1.89999998, 5.4000001]
+        Rotation: [-0.0820304677, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 10869204382231457587
         Children: []
+      CameraComponent:
+        NearPlane: 0.300000012
+        FarPlane: 1000
+        FOV: 45
+        UseLocalRotation: false
+        ActiveForRendering: true
     - Entity: 3385011559091816577
       TagComponent:
         Tag: Directional Light
@@ -83,29 +91,23 @@ World:
         ShadowStrength: 0.5
         CastSoftShadow: true
         ShadowSoftness: 0.5
-    - Entity: 15432167700584823006
+    - Entity: 13002574944404870795
       TagComponent:
-        Tag: Camera
+        Tag: WeaponHolder
         tags: []
       TransformComponent:
-        Location: [0, 1.89999998, 5.4000001]
-        Rotation: [-0.0820304677, 0, 0]
+        Location: [1.09892821, 0, 0]
+        Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 10869204382231457587
         Children: []
-      CameraComponent:
-        NearPlane: 0.300000012
-        FarPlane: 1000
-        FOV: 45
-        UseLocalRotation: false
-        ActiveForRendering: true
     - Entity: 10869204382231457587
       TagComponent:
         Tag: Player
         tags: []
       TransformComponent:
-        Location: [0, 2, 0]
+        Location: [25.446516, 6.30000019, -7.35994864]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -141,6 +143,13 @@ World:
               - NameID: LostExpedition.PlayerMovement.JumpForce
                 Type: Float
                 Data: 10
+          - Script: LostExpedition.WeaponManager
+            ScriptClassName: LostExpedition.WeaponManager
+            ScriptName: LostExpedition.WeaponManager
+            Fields:
+              - NameID: LostExpedition.WeaponManager.WeaponHandleSlot
+                Type: Entity
+                Data: 13002574944404870795
           - Script: LostExpedition.PlayerInput
             ScriptClassName: LostExpedition.PlayerInput
             ScriptName: LostExpedition.PlayerInput
@@ -157,13 +166,6 @@ World:
               - NameID: LostExpedition.PlayerInput.JumpAction
                 Type: InputAction
                 Data: 11692785166767351247
-          - Script: LostExpedition.WeaponManager
-            ScriptClassName: LostExpedition.WeaponManager
-            ScriptName: LostExpedition.WeaponManager
-            Fields:
-              - NameID: LostExpedition.WeaponManager.WeaponHandleSlot
-                Type: Entity
-                Data: 13002574944404870795
           - Script: LostExpedition.HealthComponent
             ScriptClassName: LostExpedition.HealthComponent
             ScriptName: LostExpedition.HealthComponent
@@ -249,7 +251,7 @@ World:
             AssetID: 7659929436396046509
             Index: 0
       MeshColliderComponent:
-        ColliderID: 7138464612574013694
+        ColliderID: 17637649169569671169
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 5896697494919537015

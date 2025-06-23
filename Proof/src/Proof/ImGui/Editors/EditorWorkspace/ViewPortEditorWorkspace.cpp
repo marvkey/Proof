@@ -1015,7 +1015,7 @@ namespace Proof
 				viewMatrix = m_Camera.GetViewMatrix();
 			}
 			Entity entity = selectedEntity;
-			TransformComponent& entityTransform = entity.Transform();
+			TransformComponent& entityTransform = entity.GetTransformComponent();
 			glm::mat4 transform = m_WorldContext->GetWorldSpaceTransform(entity);
 
 			if (ImGuizmo::Manipulate(

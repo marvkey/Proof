@@ -170,7 +170,7 @@ GLFWbool _glfwInitOSMesa(void)
         !_glfw.osmesa.GetProcAddress)
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
-                        "OSMesa: Failed to load required entry Points");
+                        "OSMesa: Failed to load required entry points");
 
         _glfwTerminateOSMesa();
         return GLFW_FALSE;
