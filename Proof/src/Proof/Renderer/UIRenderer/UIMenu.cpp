@@ -1,6 +1,8 @@
 #include "Proofprch.h"
 #include "UIMenu.h"
 #include "Proof/Utils/StringUtils.h"
+#include <glm/gtx/matrix_decompose.hpp>
+
 namespace Proof
 {
  
@@ -99,7 +101,6 @@ namespace Proof
         uiElement.GetComponent<UICoreComponent>().m_Name = actualName;
         m_UIElementsNameMap[actualName] = id;
 
-
         switch (type)
         {
             case Proof::UIElementType::None:
@@ -116,15 +117,75 @@ namespace Proof
 			case Proof::UIElementType::ProgressBar:
 				m_Registry.emplace<UIProggresBarComponent>(uiElement);
 				break;
+            case Proof::UIElementType::VerticalBox:
+                m_Registry.emplace<UIVerticalBoxComponent>(uiElement);
+                break;
+            case Proof::UIElementType::HorizontalBox:
+                m_Registry.emplace<UIHorizontalBoxComponent>(uiElement);
+                break;
             default:
                 break;
         }
         return uiElement;
     }
+    glm::mat4 UIMenu::GetWorldTransformRaw(UIElement element)
+    {
+        glm::mat4 transform = glm::mat4(1.0f);
+
+        if (element.HasParent())
+            transform = GetWorldTransformRaw(element.GetParent());
+
+        const auto& local = element.GetComponent<UICoreComponent>().Transform;
+        glm::mat4 localTransform =
+            glm::translate(glm::mat4(1.0f), glm::vec3(local.Position, 0.0f)) *
+            glm::rotate(glm::mat4(1.0f), local.Rotation.x, glm::vec3(1, 0, 0)) *
+            glm::rotate(glm::mat4(1.0f), local.Rotation.y, glm::vec3(0, 0, 1)) *
+            glm::scale(glm::mat4(1.0f), glm::vec3(local.Size, 1.0f));
+
+        return transform * localTransform;
+    }
+    UITransform UIMenu::GetWorldTransform(UIElement element)
+    {
+
+        glm::mat4 worldMatrix = GetWorldTransformRaw(element);
+
+        glm::vec3 scale, translation, skew;
+        glm::quat rotationQuat;
+        glm::vec4 perspective;
+
+        if (!glm::decompose(worldMatrix, scale, rotationQuat, translation, skew, perspective))
+            return UITransform(); // fallback if decomposition fails
+
+        glm::vec3 euler = glm::eulerAngles(rotationQuat); // get XYZ rotation angles in radians
+
+        // Walk up the hierarchy to get root-most Alignment and Anchor
+        UIElement current = element;
+        UIElement root = current;
+        while (current.HasParent())
+        {
+            current = current.GetParent();
+            root = current;
+        }
+        const auto& rootTransform = root.GetComponent<UICoreComponent>().Transform;
+
+        UITransform result;
+        result.Position = glm::vec2(translation.x, translation.y);
+        result.Size = glm::vec2(scale.x, scale.y);
+        result.Rotation = glm::vec2(euler.x, euler.y); // preserve full XY rotation for completeness
+        result.Alignment = rootTransform.Alignment;
+        result.Anchor = rootTransform.Anchor;
+        return result;
+    }
     UIElement UIMenu::GetUIElement(UIElementID id)
     {
         PF_CORE_ASSERT(HasUIElement(id));
         return m_UIElementsMap.at(id);
+    }
+    UIElement UIMenu::TryGetUIElement(UIElementID id)
+    {
+        if (HasUIElement(id))
+            return m_UIElementsMap.at(id);
+        return UIElement();
     }
     UIElement UIMenu::GetUIElement(UIElementID id) const
     {
@@ -172,14 +233,54 @@ namespace Proof
     }
     void UIMenu::DeleteElement(UIElementID id)
     {
-        if (HasUIElement(id))
-        {
-            auto element = GetUIElement(id);
+        if (!HasUIElement(id))
+            return;
 
-			m_UIElementsNameMap.erase(element.GetComponent<UICoreComponent>().m_Name);
-			m_UIElementsMap.erase(id);
-            m_Registry.destroy(element.GetenttID());
+        auto element = GetUIElement(id);
+        if (element.HasParent())
+            element.GetParent().RemoveChild(element);
+
+        for (auto childID : element.Children())
+        {
+            DeleteElement(childID);
         }
+		m_UIElementsNameMap.erase(element.GetComponent<UICoreComponent>().m_Name);
+		m_UIElementsMap.erase(id);
+        m_Registry.destroy(element.GetenttID());
+    }
+
+    void UIMenu::ParentElement(UIElement child, UIElement parent)
+    {
+        if (!child || !parent || child == parent)
+            return;
+
+        auto& childComp = child.GetComponent<UICoreComponent>();
+        auto& parentComp = parent.GetComponent<UICoreComponent>();
+
+        if (childComp.m_ParentID == parentComp.m_ElementID)
+            return;
+
+        if (childComp.HasParent())
+        {
+            UIElement previousParent = GetUIElement(childComp.m_ParentID);
+            UnparentElement(child);
+        }
+
+        childComp.m_ParentID = parentComp.m_ElementID;
+        parentComp.m_Children.emplace_back(childComp.m_ElementID);
+    }
+
+    void UIMenu::UnparentElement(UIElement element)
+    {
+        if (!element) return;
+        auto& comp = element.GetComponent<UICoreComponent>();
+        UIElement parent = GetUIElement(comp.m_ParentID);
+        if (!parent) return;
+
+
+        auto& parentComp = parent.GetComponent<UICoreComponent>();
+        parentComp.m_Children.erase(std::remove(parentComp.m_Children.begin(), parentComp.m_Children.end(), element.GetUUID()), parentComp.m_Children.end());
+        comp.m_ParentID = 0;
     }
     
 }

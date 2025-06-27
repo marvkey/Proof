@@ -946,7 +946,7 @@ namespace Proof {
 			break;
 			case Proof::EnvironmentState::EnvironmentTexture:
 			{
-#if 0
+#if 1
 				if (!AssetManager::HasAsset(environment->m_EnvironmentTexture.Image))
 				{
 					environment->m_EnvironmentTexture.Image = 0;

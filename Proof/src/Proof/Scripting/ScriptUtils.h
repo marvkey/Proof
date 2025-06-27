@@ -18,7 +18,7 @@ namespace Proof::ScriptUtils
 	MonoObject* GetFieldValueObject(MonoObject* classInstance, const std::string& fieldName, bool isProperty);
 	void SetFieldValue(MonoObject* classInstance, const ScriptField* fieldInfo, const void* data);
 	void HandleException(MonoObject* exception);
-
+	void SplitFullClassName(const std::string& fullClassName, std::string& outNamespace, std::string& outName);
 
 	Buffer MonoObjectToValue(MonoObject* obj, ScriptFieldType fieldType);
 	void* UnBoxInternal(MonoObject* obj);

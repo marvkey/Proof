@@ -548,6 +548,19 @@ namespace Proof {
 			out << YAML::Key << "Size" << YAML::Value << coreComponent.Transform.Size;
 			out << YAML::Key << "AnchorMinimum" << YAML::Value << coreComponent.Transform.Anchor.Minimum;
 			out << YAML::Key << "AnchorMaximum" << YAML::Value << coreComponent.Transform.Anchor.Maximum;
+
+			{
+				out << YAML::Key << "ParentHandle" << YAML::Value << coreComponent.m_ParentID;
+
+				out << YAML::Key << "Children";
+				out << YAML::Flow;
+				out << YAML::BeginSeq;
+				for (UUID simpleEnitty : coreComponent.m_Children)
+				{
+					out << simpleEnitty.Get();
+				}
+				out << YAML::EndSeq;
+			}
 			out << YAML::EndMap; // CoreComponent
 		}
 
@@ -579,6 +592,32 @@ namespace Proof {
 				out << YAML::Key << "BackgroundColor" << YAML::Value << proggressComponent.BackgroundColor;
 				out << YAML::EndMap; // UIProggresBarComponent
 			}
+		}
+
+		if (element.HasComponent<UIVerticalBoxComponent>())
+		{
+			auto& verticalBox = element.GetComponent<UIVerticalBoxComponent>();
+
+			out << YAML::Key << "UIVerticalBoxComponent";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Spacing" << YAML::Value << verticalBox.Spacing;
+			out << YAML::Key << "DrawBorders" << YAML::Value << verticalBox.DrawBorders;
+			out << YAML::Key << "BorderColor" << YAML::Value << verticalBox.BorderColor;
+			out << YAML::Key << "BorderThickness" << YAML::Value << verticalBox.BorderThickness;
+			out << YAML::EndMap;
+		}
+
+		if (element.HasComponent<UIHorizontalBoxComponent>())
+		{
+			auto& horizontalBox = element.GetComponent<UIHorizontalBoxComponent>();
+
+			out << YAML::Key << "UIHorizontalBoxComponent";
+			out << YAML::BeginMap;
+			out << YAML::Key << "Spacing" << YAML::Value << horizontalBox.Spacing;
+			out << YAML::Key << "DrawBorders" << YAML::Value << horizontalBox.DrawBorders;
+			out << YAML::Key << "BorderColor" << YAML::Value << horizontalBox.BorderColor;
+			out << YAML::Key << "BorderThickness" << YAML::Value << horizontalBox.BorderThickness;
+			out << YAML::EndMap;
 		}
 		out << YAML::EndMap; // Element
 
@@ -632,6 +671,18 @@ namespace Proof {
 					transform.Size = coreComponent["Size"].as<glm::vec2>(transform.Size);
 					transform.Anchor.Minimum = coreComponent["AnchorMinimum"].as<glm::vec2>(transform.Anchor.Minimum);
 					transform.Anchor.Maximum = coreComponent["AnchorMaximum"].as<glm::vec2>(transform.Anchor.Maximum);
+
+
+					newUIElement.GetComponent<UICoreComponent>().m_ParentID = coreComponent["ParentHandle"].as<uint64_t>(0);
+
+					if (coreComponent["Children"])
+					{
+						for (auto entityID : coreComponent["Children"])
+						{
+							uint64_t childID = entityID.as<uint64_t>();
+							newUIElement.GetComponent<UICoreComponent>().m_Children.emplace_back(childID);
+						}
+					}
 				}
 			}
 
@@ -657,6 +708,30 @@ namespace Proof {
 					LoadClampedBindableVariable(proggressComponent, "Proggress", src.Proggress, uiPanel->VariableTable->GetVariableSetStorage());
 					src.FillColor = proggressComponent["FillColor"].as<glm::vec4>(src.FillColor);
 					src.BackgroundColor = proggressComponent["BackgroundColor"].as<glm::vec4>(src.BackgroundColor);
+				}
+			}
+
+			{
+				auto verticalBox = uiElement["UIVerticalBoxComponent"];
+				if (verticalBox)
+				{
+					auto& src = newUIElement.GetComponent<UIVerticalBoxComponent>();
+					src.Spacing = verticalBox["Spacing"].as<float>(src.Spacing);
+					src.DrawBorders = verticalBox["DrawBorders"].as<bool>(src.DrawBorders);
+					src.BorderColor = verticalBox["BorderColor"].as<glm::vec4>(src.BorderColor);
+					src.BorderThickness = verticalBox["BorderThickness"].as<float>(src.BorderThickness);
+				}
+			}
+
+			{
+				auto horizontalBox = uiElement["UIHorizontalBoxComponent"];
+				if (horizontalBox)
+				{
+					auto& src = newUIElement.GetComponent<UIHorizontalBoxComponent>();
+					src.Spacing = horizontalBox["Spacing"].as<float>(src.Spacing);
+					src.DrawBorders = horizontalBox["DrawBorders"].as<bool>(src.DrawBorders);
+					src.BorderColor = horizontalBox["BorderColor"].as<glm::vec4>(src.BorderColor);
+					src.BorderThickness = horizontalBox["BorderThickness"].as<float>(src.BorderThickness);
 				}
 			}
 		}

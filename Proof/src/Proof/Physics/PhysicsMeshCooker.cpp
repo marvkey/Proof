@@ -100,13 +100,28 @@ namespace  Proof
 		Count<MeshSource> meshSource = meshBase->GetMeshSource();
 		const auto& submeshIndices = meshBase->GetSubMeshes();
 
+		// runtiem asset shoudl not be serelized, they are goign to be regenirated, 
+		// its a waste of tiem to srelize soemthign that would be 
+		bool isSereliziable;
+		if (AssetManager::GetAssetInfo(meshBase).RuntimeAsset == true && AssetManager::GetAssetInfo(colliderAsset).RuntimeAsset == true)
+			isSereliziable = false;
+		else
+			isSereliziable = true;
+
+
+
 		// Cook or load the simple collider
 		{
 			if (invalidateOld || !std::filesystem::exists(simpleColliderFilePath))
 			{
 				simpleMeshResult = CookConvexMesh(colliderAsset, meshSource, submeshIndices, colliderData.SimpleColliderData);
 
-				if (simpleMeshResult == CookingResult::Success && !SerializeMeshCollider(simpleColliderFilePath, colliderData.SimpleColliderData))
+				// if the mesh cant be saved assume serelizing is true
+				bool serelizeOuput = isSereliziable == true ? SerializeMeshCollider(simpleColliderFilePath, colliderData.SimpleColliderData) : true;
+
+
+				//if (simpleMeshResult == CookingResult::Success && !SerializeMeshCollider(simpleColliderFilePath, colliderData.SimpleColliderData))
+				if (simpleMeshResult == CookingResult::Success && !serelizeOuput)
 				{
 					PF_ENGINE_WARN("Physics Failed to cook simple collider mesh, aborting...");
 					simpleMeshResult = CookingResult::Failure;
@@ -132,7 +147,11 @@ namespace  Proof
 				{
 					complexMeshResult = CookTriangleMesh(colliderAsset, meshSource, submeshIndices, colliderData.ComplexColliderData);
 
-					if (complexMeshResult == CookingResult::Success && !SerializeMeshCollider(complexColliderFilePath, colliderData.ComplexColliderData))
+					// if the mesh cant be saved assume serelizing is true
+					bool serelizeOuput = isSereliziable == true ? SerializeMeshCollider(simpleColliderFilePath, colliderData.SimpleColliderData) : true;
+
+					//if (complexMeshResult == CookingResult::Success && !SerializeMeshCollider(complexColliderFilePath, colliderData.ComplexColliderData))
+					if (simpleMeshResult == CookingResult::Success && !serelizeOuput)
 					{
 						PF_ENGINE_WARN("Physics Failed to cook complex collider mesh, using simple for everything");
 						complexMeshResult = CookingResult::Failure;

@@ -18,6 +18,8 @@ UIElements:
       Size: [50, 50]
       AnchorMinimum: [0.5, 0.5]
       AnchorMaximum: [0.5, 0.5]
+      ParentHandle: 0
+      Children: []
     UITextComponent:
       Text: +
       Color: [1, 1, 1, 1]
@@ -28,11 +30,13 @@ UIElements:
       ElementID: 16499881360146543059
       Name: ProgressBar
       UIElementType: ProgressBar
-      Position: [-140.75, 44]
+      Position: [-150, 50]
       Rotation: [0, 0]
       Size: [228.5, 34.75]
-      AnchorMinimum: [1, 0]
-      AnchorMaximum: [1, 0]
+      AnchorMinimum: [1, 1]
+      AnchorMaximum: [1, 1]
+      ParentHandle: 0
+      Children: []
     UIProggresBarComponent:
       Proggress:
         Value: 0.75

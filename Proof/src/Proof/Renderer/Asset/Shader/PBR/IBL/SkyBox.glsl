@@ -69,4 +69,7 @@ void main()
    // envColor = pow(envColor, vec3(1.0 / 2.2));
     //outFragColor = vec4(envColor,  1.0);
     outFragColor = vec4(CalculateSkyLight(u_EnvironmentMap, WorldPos),1.0);
+
+   outFragColor.xyz = outFragColor.xyz / (outFragColor.xyz + vec3(1.0));
+   outFragColor.xyz = pow(outFragColor.xyz, vec3(1.0 / 2.2));
 }

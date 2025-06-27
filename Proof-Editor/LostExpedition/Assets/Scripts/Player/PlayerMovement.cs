@@ -45,7 +45,6 @@ namespace LostExpedition
 
 
         }
-        float beginVal = 25;
         // OnUpdate is called once every frame while this script is active in the world
         void OnUpdate(float deltaTime)
 		{

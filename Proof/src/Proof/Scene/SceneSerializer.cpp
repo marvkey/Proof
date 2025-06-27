@@ -138,6 +138,7 @@ namespace Proof
 				out << YAML::Key << "MeshComponent";
 				out << YAML::BeginMap; // Mesh component
 				out << YAML::Key << "MeshAssetPointerID" << YAML::Value << meshComponent.m_MeshID;
+				out << YAML::Key << "Visible" << YAML::Value << meshComponent.Visible;
 				if (AssetManager::HasAsset(meshComponent.GetMesh()))
 				{
 					if (*meshComponent.GetMesh()->GetMaterialTable() == *meshComponent.MaterialTable)
@@ -1035,6 +1036,8 @@ namespace Proof
 				{
 					auto& src = NewEntity.AddComponent<MeshComponent>();
 					src.m_MeshID = meshComponent["MeshAssetPointerID"].as<uint64_t>();
+
+					src.Visible = meshComponent["Visible"].as<bool>(true);
 					//src.SetMesh( meshComponent["MeshAssetPointerID"].as<uint64_t>());
 					if (meshComponent["MaterialTable"])
 					{

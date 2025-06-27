@@ -17,7 +17,7 @@ World:
         TerrainScale: 5
         NoiseParams:
           Scale: 25
-          Octaves: 2
+          Octaves: 5
           Persistence: 0.310000002
           Lacunarity: 2
           Offset: [0, 0]
@@ -49,8 +49,8 @@ World:
       SkyLightComponent:
         TintColor: [1, 1, 1]
         SkyBoxLod: 0
-        MapRotation: 0
-        Intensity: 0.5
+        MapRotation: 5
+        Intensity: 1
         EnvironmentState: PreethamSky
         TextureDataImage: 0
         HosekWilkieTurbidity: 4
@@ -86,7 +86,7 @@ World:
         Children: []
       DirectionalLightComponent:
         Color: [1, 1, 1]
-        Intensity: 0.100000001
+        Intensity: 0.439999998
         CastShadow: true
         ShadowStrength: 0.5
         CastSoftShadow: true
@@ -107,14 +107,15 @@ World:
         Tag: Player
         tags: []
       TransformComponent:
-        Location: [25.446516, 6.30000019, -7.35994864]
+        Location: [23.4281254, 5.60162926, -7.35994864]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: [15432167700584823006, 13002574944404870795]
       MeshComponent:
-        MeshAssetPointerID: 50
+        MeshAssetPointerID: 52
+        Visible: true
         MaterialTable:
           - Material: ""
             AssetID: 1948765517176594391
@@ -142,7 +143,7 @@ World:
                 Data: false
               - NameID: LostExpedition.PlayerMovement.JumpForce
                 Type: Float
-                Data: 10
+                Data: 5
           - Script: LostExpedition.WeaponManager
             ScriptClassName: LostExpedition.WeaponManager
             ScriptName: LostExpedition.WeaponManager
@@ -179,11 +180,13 @@ World:
               - NameID: LostExpedition.HealthComponent.DestoryIfHealthZero
                 Type: Bool
                 Data: false
-      BoxColliderComponent:
+      CapsuleColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 5896697494919537015
+        Radius: 0.5
+        Height: 2
+        Direction: Y
+        PhysicsMaterialPointerID: 14127438052321061638
       RigidBodyComponent:
         Mass: 1
         LinearDrag: 0.00999999978
@@ -192,7 +195,7 @@ World:
         Gravity: true
         Type: Dynamic
         FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
+        FreezeRotation: [true, false, true]
         Kinematic: false
         CollisionDetection: Discrete
       PlayerInputComponent:
@@ -232,40 +235,7 @@ World:
                     - Name: HealthPercent
                       Type: Float
                       UUID: 11164312810867335053
-                      Data: 0.300000012
-    - Entity: 4525501726541901185
-      TagComponent:
-        Tag: Plane
-        tags: []
-      TransformComponent:
-        Location: [0, -1.89962769, 0]
-        Rotation: [0, 0, 0]
-        Scale: [10, 1, 10]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 56
-        MaterialTable:
-          - Material: ""
-            AssetID: 7659929436396046509
-            Index: 0
-      MeshColliderComponent:
-        ColliderID: 1283828229940714837
-        IsTrigger: false
-        UseSharedShape: false
-        PhysicsMaterialPointerID: 5896697494919537015
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
+                      Data: 1
     - Entity: 16039414171671641192
       TagComponent:
         Tag: Pistol
@@ -279,6 +249,7 @@ World:
         Children: [2074435996451250117]
       MeshComponent:
         MeshAssetPointerID: 7382233147466968749
+        Visible: true
       ScriptComponent:
         Scripts:
           - Script: LostExpedition.Gun
@@ -341,6 +312,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
+        Visible: false
         MaterialTable:
           - Material: ""
             AssetID: 12113877820451625735

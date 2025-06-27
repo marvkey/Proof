@@ -95,6 +95,9 @@ namespace Proof
 		ScriptClassMetaData* GetEntityClass(Entity entity, const std::string& classFullName) const;
 		Count<FieldStorageBase> GetEntityClassField(Entity entity, const std::string& classFullName, const std::string& fieldName);
 		ScriptGCHandle GetScriptInstance(Entity entity, const std::string& classFullName);
+		ScriptGCHandle GetScriptInstanceOfType(Entity entity, const std::string& classFullName); // retursn if its a sub class of that
+		const std::unordered_map<std::string, RuntimeScriptClassMetaData>& GetRuntimeAllScriptInstances(Entity entity);
+		const std::unordered_map<std::string, ScriptClassMetaData>& GetEditorAllScriptInstances(Entity entity);
 
 		void DuplicateScriptInstance(Entity srcEntity, Entity dstEntity);
 		// for things like prefabs or creating from another entity
@@ -111,6 +114,8 @@ namespace Proof
 		void OnPhysicsUpdate(float fixedPhysicsDeltaTime);
 		void OnPostUpdate(FrameTime frame);
 		void EndRuntime();
+
+		bool IsRuntime() { return m_IsRuntime; }
 	private:
 
 
@@ -126,6 +131,10 @@ namespace Proof
 		void DestroyEntityScript(Entity entity, bool clear);
 		void EditorDestroyEntityScript(Entity entity, bool clear);
 		void RuntimeDestroyEntityScript(Entity entity, bool clear);
+
+
+		const ScriptEntityClassStorage& GetEditorEntityClassesStorage()const { return m_EntityClassesStorage; };
+		const ScriptInstanceMap& GetRuntimeEntityClassStorage()const { return m_RuntimeEntityClassStorage; };
 
 	private:
 		static Count<ScriptWorld>CopyScriptWorld(Count<ScriptWorld> scirptWorld, Count<World> newWorld, bool useSameMemmory = false);

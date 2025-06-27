@@ -1,0 +1,119 @@
+AssetType: UIPanel
+ID: 14525028919524517166
+VariableRegistry:
+  VariableRegistryID: 2642474073418731615
+  Variables:
+    []
+UIElements:
+  - UIElement: 8848501089546760458
+    UICoreComponent:
+      ElementID: 8848501089546760458
+      Name: Inventory
+      UIElementType: HorizontalBox
+      Position: [1, 1]
+      Rotation: [0, 0]
+      Size: [30, 30]
+      AnchorMinimum: [0, 1]
+      AnchorMaximum: [0, 1]
+      ParentHandle: 0
+      Children: [1466150974567134310, 7113161298137729961, 16000487577577749809, 14934037671157618454, 9114808715945076233]
+    UIHorizontalBoxComponent:
+      Spacing: 0.300000012
+      DrawBorders: false
+      BorderColor: [1, 1, 1, 1]
+      BorderThickness: 1
+  - UIElement: 1466150974567134310
+    UICoreComponent:
+      ElementID: 1466150974567134310
+      Name: Image
+      UIElementType: Image
+      Position: [1, 1]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      ParentHandle: 8848501089546760458
+      Children: []
+  - UIElement: 7113161298137729961
+    UICoreComponent:
+      ElementID: 7113161298137729961
+      Name: Image_00
+      UIElementType: Image
+      Position: [2.29999995, 1]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      ParentHandle: 8848501089546760458
+      Children: []
+  - UIElement: 14041552927147401439
+    UICoreComponent:
+      ElementID: 14041552927147401439
+      Name: HealthbarBox
+      UIElementType: HorizontalBox
+      Position: [-1, 1]
+      Rotation: [0, 0]
+      Size: [127, 30]
+      AnchorMinimum: [1, 1]
+      AnchorMaximum: [1, 1]
+      ParentHandle: 0
+      Children: [17444448354468700937]
+    UIHorizontalBoxComponent:
+      Spacing: 0
+      DrawBorders: false
+      BorderColor: [1, 1, 1, 1]
+      BorderThickness: 1
+  - UIElement: 14934037671157618454
+    UICoreComponent:
+      ElementID: 14934037671157618454
+      Name: Image_02
+      UIElementType: Image
+      Position: [4.89999962, 1]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      ParentHandle: 8848501089546760458
+      Children: []
+  - UIElement: 16000487577577749809
+    UICoreComponent:
+      ElementID: 16000487577577749809
+      Name: Image_01
+      UIElementType: Image
+      Position: [3.5999999, 1]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      ParentHandle: 8848501089546760458
+      Children: []
+  - UIElement: 9114808715945076233
+    UICoreComponent:
+      ElementID: 9114808715945076233
+      Name: Image_03
+      UIElementType: Image
+      Position: [6.19999981, 1]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      ParentHandle: 8848501089546760458
+      Children: []
+  - UIElement: 17444448354468700937
+    UICoreComponent:
+      ElementID: 17444448354468700937
+      Name: HealthBar
+      UIElementType: ProgressBar
+      Position: [-1, 1]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [1, 1]
+      AnchorMaximum: [1, 1]
+      ParentHandle: 14041552927147401439
+      Children: []
+    UIProggresBarComponent:
+      Proggress:
+        Value: 0.605000019
+        BindedVariableID: 0
+      FillColor: [1, 0, 0, 1]
+      BackgroundColor: [1, 1, 1, 1]

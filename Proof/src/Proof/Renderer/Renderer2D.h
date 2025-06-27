@@ -107,6 +107,7 @@ namespace Proof {
 		void DrawQuad(glm::vec3 location, glm::vec3 size, const glm::vec4& Color, Count<class Texture2D> texture);
 		void DrawRotatedQuad(const glm::vec3& Location, const glm::vec3& RotationRadians, const glm::vec3& Size, const glm::vec4& Color, const Count<Texture2D>& texture2D);
 		void DrawQuad(const glm::mat4& transform, const glm::vec4& Color, const Count<Texture2D>& texture2D);
+		void DrawQuad(const glm::mat4& transform, const glm::vec4& Color);
 		void DrawQuad(SpriteComponent& Sprite, const TransformComponent& transform);
 
 		void DrawLine(const glm::vec3& p0, const glm::vec3& p1, const glm::vec4& color = glm::vec4(1.0f));

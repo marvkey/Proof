@@ -1499,4 +1499,8 @@ namespace Proof {
 		for(uint32_t i=0; i < Renderer2DStorage::c_MaxTextureSlot;i++)
 			Textures[i] = WhiteTexture;
 	}
+	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& Color)
+	{
+		DrawQuad(transform, Color, Renderer::GetWhiteTexture());
+	}
 }

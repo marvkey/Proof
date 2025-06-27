@@ -519,5 +519,21 @@ namespace Proof::ScriptUtils
 
 	}
 
+	void SplitFullClassName(const std::string& fullClassName, std::string& outNamespace, std::string& outName)
+	{
+		size_t lastDot = fullClassName.rfind('.');
+		if (lastDot == std::string::npos)
+		{
+			// No namespace, everything is the class name
+			outNamespace = "";
+			outName = fullClassName;
+		}
+		else
+		{
+			outNamespace = fullClassName.substr(0, lastDot);
+			outName = fullClassName.substr(lastDot + 1);
+		}
+	}
+
 }
 

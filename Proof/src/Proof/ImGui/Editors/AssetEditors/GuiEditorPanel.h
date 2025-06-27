@@ -22,7 +22,7 @@ namespace Proof
 		virtual void Save();
 		void Compile();
 	private:
-		void AddItemMenu();
+		void AddItemMenu(UUID onwer = 0);
 		void RenderHierarchyPanel();
 		void DrawElementNode(class UIElement element);
 		void DrawElementProperty(class UIElement element);

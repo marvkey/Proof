@@ -441,6 +441,19 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 	}
 
+	static MonoObject* GetScriptInstanceOfType(UUID entityID, MonoString* classFullName)
+	{
+		SCRIPT_FUNC_ENTITY_CHECK(nullptr);
+		Count<World> world = ScriptEngine::GetWorldContext();
+		auto scriptWorld = world->GetScriptWorld();
+
+		ScriptGCHandle gcHandle = scriptWorld->GetScriptInstanceOfType(entity, ScriptUtils::MonoStringToUTF8(classFullName));
+
+		if (gcHandle == nullptr)
+			return nullptr;
+
+		return ScriptGCManager::GetReferencedObject(gcHandle);
+	}
 
 	static MonoObject* GetScriptInstance(UUID entityID, MonoString* classFullName)
 	{
@@ -4156,6 +4169,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(Entity_RemoveComponent);
 			PF_ADD_INTERNAL_CALL(Entity_AddComponent);
 			PF_ADD_INTERNAL_CALL(GetScriptInstance);
+			PF_ADD_INTERNAL_CALL(GetScriptInstanceOfType);
 			PF_ADD_INTERNAL_CALL(Entity_GetParent);
 			PF_ADD_INTERNAL_CALL(Entity_GetChildren);
 			PF_ADD_INTERNAL_CALL(Entity_AddChild);

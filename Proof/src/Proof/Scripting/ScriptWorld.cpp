@@ -7,7 +7,10 @@
 #include "ScriptFile.h"
 #include "ScriptField.h"
 #include "ScriptImportSettings.h"
+#include "ScriptRegistry.h"
 #include "ScriptUtils.h"
+#include "mono/metadata/object.h"
+#include "mono/metadata/reflection.h"
 namespace Proof
 {
     static std::map<UUID, WeakCount<ScriptWorld>> s_ScriptWorldReferences;
@@ -108,6 +111,53 @@ namespace Proof
             }
         }
         return nullptr;
+    }
+
+    ScriptGCHandle ScriptWorld::GetScriptInstanceOfType(Entity entity, const std::string& classFullName)
+    {
+        ManagedClass* targetMonoClass = ScriptRegistry::GetManagedClassByName(classFullName);
+
+        if (!targetMonoClass)
+            return nullptr;
+
+        const auto& scriptMap = GetRuntimeAllScriptInstances(entity); // returns map<string, ScriptGCHandle>
+
+        for (const auto& [className, metaData] : scriptMap)
+        {
+            MonoObject* obj = ScriptGCManager::GetReferencedObject(metaData.ScriptHandle);
+            if (!obj) continue;
+
+            MonoClass* objClass = mono_object_get_class(obj);
+            if (mono_class_is_subclass_of(objClass, targetMonoClass->Class, false) || objClass == targetMonoClass->Class)
+            {
+                return metaData.ScriptHandle;
+            }
+        }
+
+        return nullptr;
+    }
+
+    const std::unordered_map<std::string, RuntimeScriptClassMetaData>& ScriptWorld::GetRuntimeAllScriptInstances(Entity entity)
+    {
+        if (m_IsRuntime)
+        {
+            if (m_RuntimeEntityClassStorage.contains(entity.GetUUID()))
+            {
+                return m_RuntimeEntityClassStorage[entity.GetUUID()].Classes;
+            }
+        }
+
+        return {};
+    }
+
+    const std::unordered_map<std::string, ScriptClassMetaData>& ScriptWorld::GetEditorAllScriptInstances(Entity entity)
+    {
+        if (m_EntityClassesStorage.contains(entity.GetUUID()))
+        {
+            return m_EntityClassesStorage[entity.GetUUID()].Classes;
+        }
+
+        return {};
     }
 
     void ScriptWorld::InstantiateScriptEntity(Entity entity)

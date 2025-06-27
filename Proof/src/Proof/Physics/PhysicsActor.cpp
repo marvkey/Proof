@@ -313,7 +313,7 @@ namespace Proof
 	{
 		if (!IsDynamic())
 		{
-			PF_ENGINE_WARN("Trying to get max linear velocity of non-dynamic PhysicsActor.");
+			PF_ENGINE_WARN("Trying to get Max linear velocity of non-dynamic PhysicsActor.");
 			return 0.0f;
 		}
 
@@ -326,7 +326,7 @@ namespace Proof
 	{
 		if (!IsDynamic())
 		{
-			PF_ENGINE_WARN("Trying to set max linear velocity of non-dynamic PhysicsActor.");
+			PF_ENGINE_WARN("Trying to set Max linear velocity of non-dynamic PhysicsActor.");
 			return;
 		}
 
@@ -339,7 +339,7 @@ namespace Proof
 	{
 		if (!IsDynamic())
 		{
-			PF_ENGINE_WARN("Trying to get max angular velocity of non-dynamic PhysicsActor.");
+			PF_ENGINE_WARN("Trying to get Max angular velocity of non-dynamic PhysicsActor.");
 			return 0.0f;
 		}
 
@@ -352,7 +352,7 @@ namespace Proof
 	{
 		if (!IsDynamic())
 		{
-			PF_ENGINE_WARN("Trying to set max angular velocity of non-dynamic PhysicsActor.");
+			PF_ENGINE_WARN("Trying to set Max angular velocity of non-dynamic PhysicsActor.");
 			return;
 		}
 
@@ -567,7 +567,6 @@ namespace Proof
 
 		physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)m_RigidActor;
 		Count<SphereColliderShape> shape = m_Colliders.back().As<SphereColliderShape>();
-
 		SetSphereInertiaWithScale(
 			body,
 			GetMass(),
@@ -613,7 +612,6 @@ namespace Proof
 
 		physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)m_RigidActor;
 		Count<CapsuleColliderShape> shape = m_Colliders.back().As<CapsuleColliderShape>();
-
 		SetCapsuleInertiaWithScale(
 			body,
 			GetMass(),
@@ -847,8 +845,8 @@ namespace Proof
 			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, rigidBodyComponent.FreezeLocation.Z);
 
 			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBodyComponent.FreezeRotation.X);
-			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBodyComponent.FreezeRotation.Y);
-			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBodyComponent.FreezeRotation.Z);
+			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, rigidBodyComponent.FreezeRotation.Y);
+			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, rigidBodyComponent.FreezeRotation.Z);
 
 			m_RigidActor = body;
 

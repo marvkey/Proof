@@ -4,6 +4,16 @@ ScriptImportSettings:
       ScriptName: LostExpedition.HealthComponent
       Fields:
         []
+    - Script: LostExpedition.InventoryItem
+      ScriptName: LostExpedition.InventoryItem
+      Fields:
+        - NameID: LostExpedition.InventoryItem.InventoryImage
+          Type: Texture2D
+          Data: 0
+    - Script: LostExpedition.Inventory
+      ScriptName: LostExpedition.Inventory
+      Fields:
+        []
     - Script: LostExpedition.PlayerInput
       ScriptName: LostExpedition.PlayerInput
       Fields:

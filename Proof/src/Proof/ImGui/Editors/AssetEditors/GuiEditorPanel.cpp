@@ -128,7 +128,7 @@ namespace Proof
 			m_VariableRegistrySubPanel->OnImguiRender();
 	}
 
-	void GuiEditorPanel::AddItemMenu()
+	void GuiEditorPanel::AddItemMenu(UUID owner)
 	{
 		UIElement element = {};
 		if (ImGui::MenuItem("Button"))
@@ -147,10 +147,27 @@ namespace Proof
 		{
 			element = m_UIPanel->Menu->CreateElement(UIElementType::ProgressBar);
 		}
-		if (element)
+
+		if (ImGui::MenuItem("Vertical Box"))
 		{
-			element.GetComponent<UICoreComponent>().Transform.Size = glm::vec2{ 30 };
-			element.GetComponent<UICoreComponent>().Transform.Position = glm::vec2{ 30 };
+			element = m_UIPanel->Menu->CreateElement(UIElementType::VerticalBox);
+		}
+
+		if (ImGui::MenuItem("Horizontal Box"))
+		{
+			element = m_UIPanel->Menu->CreateElement(UIElementType::HorizontalBox);
+		}
+
+		if (element && !m_UIPanel->Menu->HasUIElement(owner))
+		{
+			element.GetComponent<UICoreComponent>().Transform.Size = glm::vec2{ 15,15 };
+			element.GetComponent<UICoreComponent>().Transform.Position = glm::vec2{ 0 };
+			element.GetComponent<UICoreComponent>().Transform.Anchor = UIAnchor(UIPositionAnchor::MiddleMiddle);
+		}
+
+		if (m_UIPanel->Menu->HasUIElement(owner))
+		{
+			m_UIPanel->Menu->GetUIElement(owner).AddChild(element);
 		}
 	}
 
@@ -181,7 +198,8 @@ namespace Proof
 
 			for (auto [entityId, entity] : m_UIPanel->Menu->GetUIElementsMap())
 			{
-				DrawElementNode(entity);
+				if(!entity.HasParent())
+					DrawElementNode(entity);
 			}
 
 			for (auto deletedId : m_DeletedElements)
@@ -248,10 +266,10 @@ namespace Proof
 		ImGuiTreeNodeFlags flags;
 		flags = ((AssetSelectionManager::IsSelected(AssetSelectionContext::GUIPanel, m_UIPanel->GetID(), element.GetUUID()) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow);
 
-		//if (element->Children.empty()) 
-		//{
+		if (!element.HasChildren()) 
+		{
 			flags |= ImGuiTreeNodeFlags_Leaf;//makes the tree not use an arrow
-		//}
+		}
 
 		flags |= ImGuiTreeNodeFlags_SpanFullWidth;
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)element.GetUUID(), flags, element.GetName().c_str());
@@ -260,29 +278,36 @@ namespace Proof
 			AssetSelectionManager::DeselectAll(AssetSelectionContext::GUIPanel, m_UIPanel->GetID());
 			AssetSelectionManager::Select(AssetSelectionContext::GUIPanel, m_UIPanel->GetID(), element.GetUUID());
 		}
-
+		
 		if (ImGui::BeginPopupContextItem("UIElement Settings")) {
 			ImGui::EndPopup();
 		}
 
 		if (ImGui::BeginPopup("UIElement Settings"))
 		{
+			if (ImGui::BeginMenu("Child Entity")) {
+				AddItemMenu(element.GetUUID());
+				// not setting to opne because 
+				// if it is already opened what if we
+				// do not actually create and entity we are closing
+				// for no reason
 
+				ImGui::EndMenu();
+			}
 			if (ImGui::MenuItem("Delete"))
 			{
 				m_DeletedElements.insert(element.GetUUID());
 				AssetSelectionManager::Deselect(AssetSelectionContext::GUIPanel, m_UIPanel->GetID(), element.GetUUID());
 			}
 
-			AddItemMenu();
 
 			ImGui::EndPopup();
 		}
 
 		if (opened) 
 		{
-			//for (auto& children : element->Children)
-			//	DrawElementNode(children);
+			for (auto& child : element.Children())
+				DrawElementNode(m_UIPanel->Menu->GetUIElement(child));
 			ImGui::TreePop();
 		}
 
@@ -299,6 +324,56 @@ namespace Proof
 
 		function(elementAsType);
 	}
+
+	bool DrawPaddingControl(const char* label, UIPadding& padding)
+	{
+		bool changed = false;
+		static bool linkAll = true;
+
+		if (ImGui::TreeNodeEx(label, ImGuiTreeNodeFlags_DefaultOpen))
+		{
+			ImGui::PushID(label);
+
+			ImGui::Checkbox("Link All", &linkAll);
+
+			float originalLeft = padding.Left;
+			float originalTop = padding.Top;
+			float originalRight = padding.Right;
+			float originalBottom = padding.Bottom;
+			UI::BeginPropertyGrid();
+			changed |= UI::AttributeDrag("Left", padding.Left,0.1f);
+			changed |= UI::AttributeDrag("Top", padding.Top,0.1f);
+			changed |= UI::AttributeDrag("Right", padding.Right,0.1f);
+			changed |= UI::AttributeDrag("Bottom", padding.Bottom,0.1f);
+			UI::EndPropertyGrid();
+
+
+			if (linkAll)
+			{
+				float newValue = -1.0f;
+
+				if (padding.Left != originalLeft)       newValue = padding.Left;
+				else if (padding.Top != originalTop)     newValue = padding.Top;
+				else if (padding.Right != originalRight) newValue = padding.Right;
+				else if (padding.Bottom != originalBottom)newValue = padding.Bottom;
+
+				if (newValue >= 0.0f)
+				{
+					padding.Left.Set(newValue);
+					padding.Top.Set(newValue);
+					padding.Right.Set(newValue);
+					padding.Bottom.Set(newValue);
+				}
+			}
+
+			ImGui::PopID();
+			ImGui::TreePop();
+		}
+
+		return changed;
+	}
+
+
 	void GuiEditorPanel::DrawElementProperty(UIElement element)
 	{
 
@@ -320,8 +395,8 @@ namespace Proof
 			if(UI::AttributeTreeNode("Anchor", false, 2, 2))
 			{
 					UI::BeginPropertyGrid();
-					UIPositionAnchor positionAnchor;
-				 	if (UI::EnumCombo("Anchor type", positionAnchor))
+					UIPositionAnchor positionAnchor = GetAnchorFromMinMax(coreComponent.Transform.Anchor.Minimum, coreComponent.Transform.Anchor.Maximum);
+				 	if (UI::EnumCombo("Anchor type", positionAnchor,{ UIPositionAnchor::None}))
 					{
 						coreComponent.Transform.Anchor = UIAnchor(positionAnchor);
 					}
@@ -386,6 +461,26 @@ namespace Proof
 				UI::BeginPropertyGrid();
 				UI::AttributeColor("Fill Color", proggressBar.FillColor);
 				UI::AttributeColor("Background Color", proggressBar.BackgroundColor);
+				UI::EndPropertyGrid();
+			});
+
+		DrawElementType<UIVerticalBoxComponent>(element, [&](UIVerticalBoxComponent& layout)
+			{
+				UI::BeginPropertyGrid();
+				UI::AttributeDrag("Spacing", layout.Spacing);
+				UI::AttributeColor("Border Color", layout.BorderColor);
+				UI::AttributeBool("Draw Borders", layout.DrawBorders);
+				UI::AttributeDrag("Border Thickness", layout.BorderThickness, 0.1f);
+				UI::EndPropertyGrid();
+			});
+
+		DrawElementType<UIHorizontalBoxComponent>(element, [&](UIHorizontalBoxComponent& layout)
+			{
+				UI::BeginPropertyGrid();
+				UI::AttributeDrag("Spacing", layout.Spacing);
+				UI::AttributeColor("Border Color", layout.BorderColor);
+				UI::AttributeBool("Draw Borders", layout.DrawBorders);
+				UI::AttributeDrag("Border Thickness", layout.BorderThickness, 0.1f);
 				UI::EndPropertyGrid();
 			});
 

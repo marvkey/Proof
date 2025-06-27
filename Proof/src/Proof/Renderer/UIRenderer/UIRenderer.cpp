@@ -45,8 +45,9 @@ namespace Proof {
     UIRenderFinalData  CalculateRenderData(const UITransform& renderData, glm::vec2 screenSize, glm::vec2 elementSize)
     {
         // Step 1: Calculate the anchor rectangle in screen space
-        glm::vec2 anchorTopLeft = screenSize * renderData.Anchor.Minimum;
-        glm::vec2 anchorBottomRight = screenSize * renderData.Anchor.Maximum;
+         // Flip Y because Vulkan screen space has origin at top-left
+        glm::vec2 anchorTopLeft = screenSize * glm::vec2(renderData.Anchor.Minimum.x, 1.0f - renderData.Anchor.Minimum.y);
+        glm::vec2 anchorBottomRight = screenSize * glm::vec2(renderData.Anchor.Maximum.x, 1.0f - renderData.Anchor.Maximum.y);
         glm::vec2 anchorSize = anchorBottomRight - anchorTopLeft;
 
         // Step 2: Apply alignment within the anchor rectangle
@@ -62,12 +63,13 @@ namespace Proof {
     void UIRenderer::DrawElement(Count<class UIMenu> menu, Count<class Renderer2D> renderer, uint32_t screenWidth, uint32_t screenHeight, class UIElement element)
     {
 
-        glm::vec2 elementSize = element.GetComponent<UICoreComponent>().Transform.Size;     // Element size in pixels
+        auto worldTransformComp = menu->GetWorldTransform(element);
+        glm::vec2 elementSize = worldTransformComp.Size;     // Element size in pixels
 
         // Calculate the transform based on the anchor
-        UIRenderFinalData renderData = CalculateRenderData(element.GetComponent<UICoreComponent>().Transform, glm::vec2{screenWidth,screenHeight}, elementSize);
+        UIRenderFinalData renderData = CalculateRenderData(worldTransformComp, glm::vec2{screenWidth,screenHeight}, elementSize);
 
-        glm::mat4 rotation = glm::toMat4(glm::quat(glm::vec3(element.GetComponent<UICoreComponent>().Transform.Rotation, 1.0)));
+        glm::mat4 rotation = glm::toMat4(glm::quat(glm::vec3(worldTransformComp.Rotation, 1.0)));
 
         glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
@@ -100,7 +102,59 @@ namespace Proof {
                 renderer->DrawString(text.Text, text.Font, text.TextConfig, finalTransform);
                 break;
             }
+            case UIElementType::VerticalBox:
+            {
+                auto& layout = element.GetComponent<UIVerticalBoxComponent>();
+                glm::vec2 childStartPos = element.GetComponent<UICoreComponent>().Transform.Position;
+                float yOffset = 0.0f;
+                for (const auto& childID : element.Children())
+                {
+                    UIElement child = menu->GetUIElement(childID);
+                    if (!child) continue;
 
+                    auto& childTransform = child.GetComponent<UICoreComponent>().Transform;
+                    childTransform.Position = childStartPos + glm::vec2(0.0f, yOffset);
+                    yOffset += childTransform.Size.y + layout.Spacing;
+
+                    DrawElement(menu, renderer, screenWidth, screenHeight, child);
+                }
+            }
+
+            case UIElementType::HorizontalBox:
+            {
+                // Compute foreground (filled) width
+                glm::mat4 filledTransform = finalTransform;
+                glm::vec3 scale, translation, skew; // skew not really impportant
+                glm::vec4 perspective;
+                glm::quat rotation;
+                bool couldDecompose = true;
+                // Decompose original transform to modify width
+                if (!glm::decompose(finalTransform, scale, rotation, translation, skew, perspective))
+                {
+                    couldDecompose = false;
+                }
+                auto& layout = element.GetComponent<UIHorizontalBoxComponent>();
+                //glm::vec2 childStartPos = glm::vec2(translation);
+                glm::vec2 childStartPos = element.GetComponent<UICoreComponent>().Transform.Position;
+                float xOffset = 0.0f;
+                for (const auto& childID : element.Children())
+                {
+                    UIElement child = menu->GetUIElement(childID);
+                    if (!child) continue;
+
+                    auto& childTransform = child.GetComponent<UICoreComponent>().Transform;
+                    childTransform.Position = childStartPos + glm::vec2(xOffset, 0.0f);
+                    xOffset += childTransform.Size.y + layout.Spacing;
+
+                    DrawElement(menu, renderer, screenWidth, screenHeight, child);
+                }
+
+              //  if (layout.DrawBorders)
+              //  {
+              //      renderer->DrawQuad(finalTransform, layout.BorderColor);
+              //  }
+                break;
+            }
             case UIElementType::ProgressBar:
             {
                 auto& progressBar = element.GetComponent<UIProggresBarComponent>();
