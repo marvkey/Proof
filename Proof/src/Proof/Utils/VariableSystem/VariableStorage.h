@@ -45,24 +45,27 @@ namespace Proof
 		template<>
 		void SetValue<std::string>(const std::string& value)
 		{
-			if (m_VariableBuffer.Size <= value.length() * sizeof(char))
-			{
-				m_VariableBuffer.Release();
-				m_VariableBuffer.Allocate((value.length() * 2) * sizeof(char));
-			}
+			m_VariableBuffer.Release();
 
-			m_VariableBuffer.ZeroInitialize();
-			memcpy(m_VariableBuffer.Data, value.c_str(), value.length() * sizeof(char));
+			// Resize to fit characters + null terminator
+			m_VariableBuffer.Allocate(value.length() + 1);
+
+			// Copy characters (not the null terminator)
+			memcpy(m_VariableBuffer.Data, value.data(), value.length());
+
+			// Set null terminator manually
+			m_VariableBuffer.Data[value.length()] = '\0';
 		}
 
 
 		template<>
-		std::string GetValue() const
+		std::string GetValue<std::string>() const
 		{
-			if (!m_VariableBuffer)
+			if (!m_VariableBuffer || m_VariableBuffer.Size == 0)
 				return std::string();
 
-			return std::string((char*)m_VariableBuffer.Data, m_VariableBuffer.Size / sizeof(char));
+			// Construct from null-terminated C-string
+			return std::string((char*)m_VariableBuffer.Data);
 		}
 
 		const ScopeBuffer& GetBuffer()const

@@ -115,6 +115,9 @@ namespace Proof
         internal extern static object GetScriptInstance(ulong entityID, string scrptName);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static object GetScriptInstanceOfType(ulong entityID, string scrptName);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static object Entity_GetParent(ulong entityID, out ulong ownerID);
         #endregion
          

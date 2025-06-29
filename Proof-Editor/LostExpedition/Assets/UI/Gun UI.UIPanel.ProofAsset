@@ -4,14 +4,22 @@ VariableRegistry:
   VariableRegistryID: 10837619597107920878
   Variables:
     - Name: HealthPercent
-      Type: Float
+      Type: Int
       UUID: 11164312810867335053
-      Data: 0.75
+      Data: 0
+    - Name: Ammo
+      Type: String
+      UUID: 17031474030571836809
+      Data: 10
+    - Name: MagazineSize
+      Type: String
+      UUID: 6489873457267634925
+      Data: 20
 UIElements:
   - UIElement: 10524752796049348329
     UICoreComponent:
       ElementID: 10524752796049348329
-      Name: Text
+      Name: CrossHair
       UIElementType: Text
       Position: [0, 0]
       Rotation: [0, 0]
@@ -21,25 +29,83 @@ UIElements:
       ParentHandle: 0
       Children: []
     UITextComponent:
-      Text: +
+      Text:
+        Value: +
+        BindedVariableID: 0
       Color: [1, 1, 1, 1]
       Kerning: 0
       LineSpacing: 1
-  - UIElement: 16499881360146543059
+  - UIElement: 18377820849841452246
     UICoreComponent:
-      ElementID: 16499881360146543059
-      Name: ProgressBar
-      UIElementType: ProgressBar
-      Position: [-150, 50]
+      ElementID: 18377820849841452246
+      Name: HorizontalBox
+      UIElementType: HorizontalBox
+      Position: [-5.25, 1.5]
       Rotation: [0, 0]
-      Size: [228.5, 34.75]
+      Size: [45, 45]
       AnchorMinimum: [1, 1]
       AnchorMaximum: [1, 1]
       ParentHandle: 0
+      Children: [4030893058986049639, 14531886592531359985, 17455850312312088790]
+    UIHorizontalBoxComponent:
+      Spacing: 0.100000001
+      DrawBorders: false
+      BorderColor: [1, 1, 1, 1]
+      BorderThickness: 1
+  - UIElement: 17455850312312088790
+    UICoreComponent:
+      ElementID: 17455850312312088790
+      Name: Magazine
+      UIElementType: Text
+      Position: [-3.04999995, 1.5]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      ParentHandle: 18377820849841452246
       Children: []
-    UIProggresBarComponent:
-      Proggress:
-        Value: 0.75
-        BindedVariableID: 11164312810867335053
-      FillColor: [1, 0, 0, 1]
-      BackgroundColor: [1, 1, 1, 1]
+    UITextComponent:
+      Text:
+        Value: 20
+        BindedVariableID: 6489873457267634925
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1
+  - UIElement: 4030893058986049639
+    UICoreComponent:
+      ElementID: 4030893058986049639
+      Name: Ammo
+      UIElementType: Text
+      Position: [-5.25, 1.5]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      ParentHandle: 18377820849841452246
+      Children: []
+    UITextComponent:
+      Text:
+        Value: 10
+        BindedVariableID: 17031474030571836809
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1
+  - UIElement: 14531886592531359985
+    UICoreComponent:
+      ElementID: 14531886592531359985
+      Name: Just the dash
+      UIElementType: Text
+      Position: [-4.1500001, 1.5]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      ParentHandle: 18377820849841452246
+      Children: []
+    UITextComponent:
+      Text:
+        Value: /
+        BindedVariableID: 0
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1

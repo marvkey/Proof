@@ -488,7 +488,9 @@ namespace Proof {
 		auto variable = node[name.c_str()];
 		if (variable)
 		{
-			uint64_t id = variable["BindedVariableID"].as<uint64_t>(0);
+			uint64_t id = 0;
+			if(variable["BindedVariableID"])
+				id = variable["BindedVariableID"].as<uint64_t>(0);
 			if (variable["Value"])
 			{
 				var.SetValue(variable["Value"].as<T>());
@@ -497,7 +499,7 @@ namespace Proof {
 			if (storage->GetVariables().contains(id))
 			{
 				var.SetUseAsVariable(true,storage);
-				var.SetVariableID(id);
+				var.SetVariable(id);
 			}
 		}
 	}
@@ -561,6 +563,39 @@ namespace Proof {
 		}
 	}
 
+
+	void SaveBindableVariableString(YAML::Emitter& out, const std::string& name, BindableVariableString& var)
+	{
+		out << YAML::Key << name.c_str();
+		out << YAML::BeginMap; // name
+		out << "Value" << YAML::Value << var.GetValue();
+		out << "BindedVariableID" << YAML::Value << var.GetVariableID();
+		out << YAML::EndMap; // name
+	}
+
+	void LoadClampedBindableVariableString(YAML::Node& node, const std::string& name, BindableVariableString& var, Count<VariableSetStorage> storage)
+	{
+		
+		auto variable = node[name.c_str()];
+		if (variable && !variable.IsMap())
+		{
+			var.SetValue(variable.as<std::string>());
+		}
+		else if (variable)
+		{
+			uint64_t id = variable["BindedVariableID"].as<uint64_t>(0);
+			if (variable["Value"])
+			{
+				var.SetValue(variable["Value"].as<std::string>());
+			}
+
+			if (storage->GetVariables().contains(id))
+			{
+				var.SetUseAsVariable(true, storage);
+				var.SetVariable(id);
+			}
+		}
+	}
 
 	void UIPanelAssetSerilizer::SaveUIElement(YAML::Emitter& out, UIElement element)const
 	{
@@ -628,7 +663,7 @@ namespace Proof {
 
 				out << YAML::Key << "UITextComponent";
 				out << YAML::BeginMap; // UITextComponent
-				out << YAML::Key << "Text" << YAML::Value << textComponent.Text;
+				SaveBindableVariableString(out, "Text", textComponent.Text);
 				out << YAML::Key << "Color" << YAML::Value << textComponent.TextConfig.Color;
 				out << YAML::Key << "Kerning" << YAML::Value << textComponent.TextConfig.Kerning;
 				out << YAML::Key << "LineSpacing" << YAML::Value << textComponent.TextConfig.LineSpacing;
@@ -772,7 +807,7 @@ namespace Proof {
 					src.TextConfig.Color = textComponent["Color"].as<glm::vec4>();
 					src.TextConfig.Kerning = textComponent["Kerning"].as<float>();
 					src.TextConfig.LineSpacing = textComponent["LineSpacing"].as<float>();
-					src.Text = textComponent["Text"].as<std::string>();
+					LoadClampedBindableVariableString(textComponent, "Text", src.Text, uiPanel->VariableTable->GetVariableSetStorage());
 				}
 			}
 

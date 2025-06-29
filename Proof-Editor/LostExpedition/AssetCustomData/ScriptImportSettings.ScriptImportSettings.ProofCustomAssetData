@@ -29,10 +29,9 @@ ScriptImportSettings:
         - NameID: LostExpedition.PlayerInput.JumpAction
           Type: InputAction
           Data: 0
-    - Script: LostExpedition.WeaponManager
-      ScriptName: LostExpedition.WeaponManager
-      Fields:
-        []
+        - NameID: LostExpedition.PlayerInput.ChangeInventorySlotAction
+          Type: InputAction
+          Data: 0
     - Script: LostExpedition.PlayerMovement
       ScriptName: LostExpedition.PlayerMovement
       Fields:
@@ -40,10 +39,15 @@ ScriptImportSettings:
     - Script: LostExpedition.Weapon
       ScriptName: LostExpedition.Weapon
       Fields:
-        []
+        - NameID: LostExpedition.Weapon.InventoryImage
+          Type: Texture2D
+          Data: 0
     - Script: LostExpedition.Gun
       ScriptName: LostExpedition.Gun
       Fields:
         - NameID: LostExpedition.Gun.MuzzleFlash
           Type: Prefab
+          Data: 0
+        - NameID: LostExpedition.Gun.InventoryImage
+          Type: Texture2D
           Data: 0

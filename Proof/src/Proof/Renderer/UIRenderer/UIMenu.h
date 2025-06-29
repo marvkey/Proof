@@ -162,7 +162,7 @@ namespace Proof
 	};
 	struct UITextComponent
 	{
-		std::string Text = "Text";
+		BindableVariableString Text = { "Text" };
 		TextParams TextConfig;
 		Count<Font> Font = Font::GetDefault();
 	};

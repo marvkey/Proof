@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using static Proof.PlayerInputComponent;
 
 namespace Proof
 {
@@ -164,6 +165,19 @@ namespace Proof
         {
             return GetScript<T>() != null;
         }
+
+        public T GetScriptInstance<T>() where T : Entity, new()
+        {
+            object instance = InternalCalls.GetScriptInstanceOfType(ID, typeof(T).FullName);
+            if (instance == null)
+                return null;
+            return instance as T;
+        }
+
+        public bool HasScriptInstance<T>() where T : Entity, new()
+        {
+            return GetScriptInstance<T>() != null;
+        }
         public string Name
 		{
 			get
@@ -195,5 +209,12 @@ namespace Proof
         private void OnTriggerEnterInternal(ulong id) => TriggerEnterEvent?.Invoke(new Entity(id));
         private void OnTriggerStayInternal(ulong id) => TriggerStayEvent?.Invoke(new Entity(id));
         private void OnTriggerLeaveInternal(ulong id) => TriggerLeaveEvent?.Invoke(new Entity(id));
+
+        public static void BindInputAction(PlayerInputComponent input, InputAction action, InteractionEvent evt, VoidActionWithInput callback)
+        {
+            if(action != null)
+                input.BindAction(action, evt, callback);
+        }
+
     }
 }

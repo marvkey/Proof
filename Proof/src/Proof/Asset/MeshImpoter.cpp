@@ -758,7 +758,7 @@ namespace Proof
 
         auto meshSource  = Count<MeshSource>::Create(FileSystem::GetFileName(m_Path), vertices, indices, subMeshes, nodes, materialTable, meshSourceBoundingBox);
 
-		meshSource->m_Skeleton = AnimationImporter::ImportSkeleton(scene);
+		//meshSource->m_Skeleton = AnimationImporter::ImportSkeleton(scene);
 		PF_ENGINE_INFO("Animation Skeleton {0} found in mesh file '{1}'", meshSource->HasSkeleton() ? "" : "Not", m_Path.string());
 		if (meshSource->HasSkeleton())
 		{

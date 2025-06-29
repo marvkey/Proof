@@ -3,7 +3,7 @@ using Proof;
 
 namespace LostExpedition
 {
-    public class Weapon : Entity
+    public class Weapon : InventoryItem
     {
         public void Activate(Transform playerTransform, TransformComponent cameraTransform)
         {

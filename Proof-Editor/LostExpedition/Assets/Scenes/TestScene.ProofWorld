@@ -160,13 +160,9 @@ World:
               - NameID: LostExpedition.PlayerInput.JumpAction
                 Type: InputAction
                 Data: 11692785166767351247
-          - Script: LostExpedition.WeaponManager
-            ScriptClassName: LostExpedition.WeaponManager
-            ScriptName: LostExpedition.WeaponManager
-            Fields:
-              - NameID: LostExpedition.WeaponManager.WeaponHandleSlot
-                Type: Entity
-                Data: 13002574944404870795
+              - NameID: LostExpedition.PlayerInput.ChangeInventorySlotAction
+                Type: InputAction
+                Data: 1027319137170532747
           - Script: LostExpedition.HealthComponent
             ScriptClassName: LostExpedition.HealthComponent
             ScriptName: LostExpedition.HealthComponent
@@ -180,6 +176,16 @@ World:
               - NameID: LostExpedition.HealthComponent.DestoryIfHealthZero
                 Type: Bool
                 Data: false
+          - Script: LostExpedition.Inventory
+            ScriptClassName: LostExpedition.Inventory
+            ScriptName: LostExpedition.Inventory
+            Fields:
+              - NameID: LostExpedition.Inventory.NumItemSlots
+                Type: Int32
+                Data: 3
+              - NameID: LostExpedition.Inventory.InventoryHandleSlot
+                Type: Entity
+                Data: 13002574944404870795
       CapsuleColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
@@ -236,20 +242,52 @@ World:
                       Type: Float
                       UUID: 11164312810867335053
                       Data: 1
+                    - Name: Ammo
+                      Type: Int
+                      UUID: 17031474030571836809
+                      Data: 0
+                    - Name: MagazineSize
+                      Type: Int
+                      UUID: 6489873457267634925
+                      Data: 0
+              - PanelID: 14525028919524517166
+                Visible: true
+                VariableRegistry:
+                  VariableRegistryID: 2642474073418731615
+                  Variables:
+                    - Name: Invenotory0
+                      Type: AssetKey
+                      UUID: 16242045011453165744
+                      Data: 0
+                      AssetType: None
+                    - Name: Invenotry1
+                      Type: AssetKey
+                      UUID: 1802181474746937623
+                      Data: 0
+                      AssetType: None
+                    - Name: Inventory2
+                      Type: AssetKey
+                      UUID: 14272131317188086835
+                      Data: 0
+                      AssetType: None
     - Entity: 16039414171671641192
       TagComponent:
         Tag: Pistol
         tags: []
       TransformComponent:
-        Location: [0, -1.41635358, 2.69922113]
+        Location: [0, 1.01084876, 2.69922113]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
-        Children: [2074435996451250117]
+        Children: [14117072415498231087]
       MeshComponent:
         MeshAssetPointerID: 7382233147466968749
         Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 17755560868630915795
+            Index: 0
       ScriptComponent:
         Scripts:
           - Script: LostExpedition.Gun
@@ -261,7 +299,7 @@ World:
                 Data: 18446508233467783024
               - NameID: LostExpedition.Gun.MuzzleFlashPos
                 Type: Entity
-                Data: 2074435996451250117
+                Data: 14117072415498231087
               - NameID: LostExpedition.Gun.RecoilAngle
                 Type: Float
                 Data: 5
@@ -283,6 +321,9 @@ World:
               - NameID: LostExpedition.Gun.MagazineSize
                 Type: Int32
                 Data: 30
+              - NameID: LostExpedition.Gun.InventoryImage
+                Type: Texture2D
+                Data: 0
       BoxColliderComponent:
         IsTrigger: true
         Center: [0, 0, 0]
@@ -304,7 +345,7 @@ World:
         Tag: Enemy
         tags: []
       TransformComponent:
-        Location: [0, 3.21700001, -13.043582]
+        Location: [0, 8.84317875, -13.043582]
         Rotation: [0, 0, 0]
         Scale: [10, 10, 10]
       HierarchyComponent:
@@ -312,7 +353,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
-        Visible: false
+        Visible: true
         MaterialTable:
           - Material: ""
             AssetID: 12113877820451625735
@@ -353,9 +394,167 @@ World:
         Tag: Muzzle flash pos
         tags: []
       TransformComponent:
-        Location: [0, 0.383000016, -0.703744411]
+        Location: [0, 0.150999993, -0.848184347]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 808178663378393566
+        Children: []
+    - Entity: 12260921287360388382
+      TagComponent:
+        Tag: AssaultRifle
+        tags: []
+      TransformComponent:
+        Location: [0, 1.36798382, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
+        ParentHandle: 0
+        Children: [14563262016486527326]
+      MeshComponent:
+        MeshAssetPointerID: 6466768236783398328
+        Visible: true
+      ScriptComponent:
+        Scripts:
+          - Script: LostExpedition.Gun
+            ScriptClassName: LostExpedition.Gun
+            ScriptName: LostExpedition.Gun
+            Fields:
+              - NameID: LostExpedition.Gun.MuzzleFlash
+                Type: Prefab
+                Data: 18446508233467783024
+              - NameID: LostExpedition.Gun.MuzzleFlashPos
+                Type: Entity
+                Data: 14563262016486527326
+              - NameID: LostExpedition.Gun.RecoilAngle
+                Type: Float
+                Data: 5
+              - NameID: LostExpedition.Gun.Damage
+                Type: Float
+                Data: 10
+              - NameID: LostExpedition.Gun.maxDistance
+                Type: Float
+                Data: 100
+              - NameID: LostExpedition.Gun.SpreadAngle
+                Type: Float
+                Data: 5
+              - NameID: LostExpedition.Gun.FireRate
+                Type: Float
+                Data: 0.200000003
+              - NameID: LostExpedition.Gun.ReloadTime
+                Type: Float
+                Data: 1.5
+              - NameID: LostExpedition.Gun.MagazineSize
+                Type: Int32
+                Data: 30
+              - NameID: LostExpedition.Gun.InventoryImage
+                Type: Texture2D
+                Data: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: false
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: true
+        CollisionDetection: Discrete
+    - Entity: 14117072415498231087
+      TagComponent:
+        Tag: Muzzle flash pos
+        tags: []
+      TransformComponent:
+        Location: [0, 0.344680905, -0.743670106]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
         ParentHandle: 16039414171671641192
+        Children: []
+    - Entity: 808178663378393566
+      TagComponent:
+        Tag: Shotgun
+        tags: []
+      TransformComponent:
+        Location: [0, 0.150999993, 2.50749516]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [2074435996451250117]
+      MeshComponent:
+        MeshAssetPointerID: 7734857644237676712
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 4130666624169366902
+            Index: 0
+      ScriptComponent:
+        Scripts:
+          - Script: LostExpedition.Gun
+            ScriptClassName: LostExpedition.Gun
+            ScriptName: LostExpedition.Gun
+            Fields:
+              - NameID: LostExpedition.Gun.MuzzleFlash
+                Type: Prefab
+                Data: 18446508233467783024
+              - NameID: LostExpedition.Gun.MuzzleFlashPos
+                Type: Entity
+                Data: 2074435996451250117
+              - NameID: LostExpedition.Gun.RecoilAngle
+                Type: Float
+                Data: 5
+              - NameID: LostExpedition.Gun.Damage
+                Type: Float
+                Data: 10
+              - NameID: LostExpedition.Gun.maxDistance
+                Type: Float
+                Data: 100
+              - NameID: LostExpedition.Gun.SpreadAngle
+                Type: Float
+                Data: 5
+              - NameID: LostExpedition.Gun.FireRate
+                Type: Float
+                Data: 0.200000003
+              - NameID: LostExpedition.Gun.ReloadTime
+                Type: Float
+                Data: 1.5
+              - NameID: LostExpedition.Gun.MagazineSize
+                Type: Int32
+                Data: 30
+              - NameID: LostExpedition.Gun.InventoryImage
+                Type: Texture2D
+                Data: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: false
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: true
+        CollisionDetection: Discrete
+    - Entity: 14563262016486527326
+      TagComponent:
+        Tag: Muzzle flash pos
+        tags: []
+      TransformComponent:
+        Location: [0, 0.150616288, -1.11008584]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 12260921287360388382
         Children: []

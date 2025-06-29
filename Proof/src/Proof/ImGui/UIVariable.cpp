@@ -84,11 +84,12 @@ namespace Proof::UI
 			char buffer[256];
 			memset(buffer, 0, 256);
 			memcpy(buffer, valuestr.c_str(), valuestr.length());
-			//if (UI::AttributeInputText(label, valuestr, 0))
-			//{
-			//	value.SetValue<std::string>(valuestr);
-			//}
-			modified = true;
+			if (UI::AttributeInputTextMultiline(label, valuestr, 0))
+			{
+				value->SetValue<std::string>(valuestr);
+				modified = true;
+			}
+			break;
 		}
 
 		case Proof::VariableTypes::AssetKey:
@@ -526,6 +527,46 @@ namespace Proof::UI
 			}
 			auto uuid = val.GetVariableID();
 			if (UI::VariablesSearchUpAsset(searchValidvalidVariablesID.c_str(), registry, val.GetValue().GetExpectedType(), uuid))
+			{
+				val.SetUseAsVariable(true, registry->GetVariableSetStorage());
+				val.SetVariable(uuid);
+				modified = true;
+			}
+		}
+
+		return modified;
+	}
+
+	bool BindableVariabeString(const std::string& label, BindableVariableString& val, Count<VariableRegistry> registry)
+	{
+		bool modified = false;
+		if (val.IsSet())
+		{
+			UI::AttributeTextBar(label, fmt::format("Bound to: {}", registry->GetVariableAsName(val.GetVariableID())));
+			if (UI::AttributeButton("Unbind"))
+			{
+				modified = true;
+				val.UnBind();
+			}
+		}
+		else
+		{
+			std::string searchValidvalidVariablesID = UI::GenerateLabelID("Valid Variables");
+			{
+				auto key = val.GetValue();
+				if (UI::AttributeInputTextMultiline(label, key,0))
+				{
+					modified = true;
+					val.SetValue(key);
+				}
+
+			}
+			if (UI::AttributeButton(GenerateLabelID("Bind")))
+			{
+				ImGui::OpenPopup(searchValidvalidVariablesID.c_str());
+			}
+			auto uuid = val.GetVariableID();
+			if (UI::VariablesSearchUp(searchValidvalidVariablesID.c_str(), registry, val.GetVariableType(), uuid))
 			{
 				val.SetUseAsVariable(true, registry->GetVariableSetStorage());
 				val.SetVariable(uuid);

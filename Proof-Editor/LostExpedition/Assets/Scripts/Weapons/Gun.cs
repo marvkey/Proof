@@ -24,6 +24,7 @@ namespace LostExpedition
         private float m_RecoilTimer = 0.0f;
         private float m_RecoilCurrent = 0.0f;
 
+        bool m_PlayingInventoryAnimation = false;
         // OnCreate is called once when the Entity that this script is attached to
         // is instantiated in the world at runtime
         void OnCreate()
@@ -36,6 +37,7 @@ namespace LostExpedition
 		{
             m_TimeSinceLastShot += deltaTime;
             HandleRecoil(deltaTime);
+            HandleInventorySwap(deltaTime);
         }
 
         
@@ -140,6 +142,52 @@ namespace LostExpedition
                 m_RecoilCurrent = 0.0f;
             }
         }
+        float m_InventorySwapTimer = 0.0f;
+        float m_InventorySwapDuration = 0.25f;
+        bool m_SwappingIn = false;
+        bool m_IsSwapping = false;
 
+        void HandleInventorySwap(float deltaTime)
+        {
+            if (!m_IsSwapping)
+                return;
+
+            m_InventorySwapTimer += deltaTime;
+            float t = Mathf.Clamp(m_InventorySwapTimer / m_InventorySwapDuration, 0, 1);
+            float smoothed = Mathf.SmoothStep(0, 1, t);
+
+            float fromAngle = 0.0f;
+            float toAngle = 90.0f;
+
+            if (m_SwappingIn)
+            {
+                fromAngle = 90.0f;
+                toAngle = 0.0f;
+            }
+
+            float angle = Mathf.Lerp(fromAngle, toAngle, smoothed);
+            ApplyRecoilRotation(angle);
+
+            if (t >= 1.0f)
+            {
+                m_IsSwapping = false;
+            }
+        }
+        public override void SetActiveInventory()
+        {
+            m_SwappingIn = true;
+            m_IsSwapping = true;
+            m_InventorySwapTimer = 0.0f;
+            GetComponent<MeshComponent>().Visible = true;
+        }
+
+        public override void SetDeactiveInventory()
+        {
+           m_SwappingIn = false;
+           m_IsSwapping = true;
+           m_InventorySwapTimer = 0.0f;
+
+            GetComponent<MeshComponent>().Visible = false;
+        }
     }
 }

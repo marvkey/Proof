@@ -11,6 +11,7 @@ namespace LostExpedition
         public InputAction RotateAction;
         public InputAction JumpAction;
         public InputAction ActivateWeaponAction;
+        public InputAction ChangeInventorySlotAction;
 
         PlayerInputComponent m_PlayerInputComponent;
         PlayerMovement m_PlayerMovement;
@@ -44,6 +45,9 @@ namespace LostExpedition
             {
                 m_PlayerInputComponent.BindAction(ActivateWeaponAction, InteractionEvent.Triggered, ActivateWeapon);
             }
+
+
+            BindInputAction(m_PlayerInputComponent, ChangeInventorySlotAction, InteractionEvent.Triggered, ChangeInventorySlot);
 
             m_PlayerMovement = GetScript<PlayerMovement>();
 
@@ -88,10 +92,9 @@ namespace LostExpedition
 
         void ActivateWeapon(InputActionOutput actionOutput)
         {
-            if (!HasScript<WeaponManager>())
+            if (!HasScript<Inventory>())
                 return;
-
-            var currentWeapon = GetScript<WeaponManager>().CurrentWeapon;
+            var currentWeapon = GetScript<Inventory>().GetCurrentItem();
             if (currentWeapon == null)
                 return;
 
@@ -101,5 +104,21 @@ namespace LostExpedition
                 gun.Fire(this.Transform, m_PlayerMovement.Camera.Transform);
             }
         }
+
+        void ChangeInventorySlot(InputActionOutput actionOutput)
+        {
+            if (!HasScript<Inventory>())
+                return;
+
+            var invenotry = GetScript<Inventory>();
+            float outPut = actionOutput.Get<float>();
+
+            if (outPut > 0)
+                invenotry.IncreaseCurrentSlot();
+            else if (outPut < 0.0f)
+                invenotry.DecreaseCurrentSlot();
+
+        }
+
     }
 }

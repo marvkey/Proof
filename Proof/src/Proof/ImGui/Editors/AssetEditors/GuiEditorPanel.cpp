@@ -78,6 +78,8 @@ namespace Proof
 			{
 				m_NeedsSaving = false;
 				AssetManager::SaveAsset(m_UIPanel->GetID());
+				Compile();
+				
 			}
 		}
 	}
@@ -122,10 +124,13 @@ namespace Proof
 	}
 	void GuiEditorPanel::OnImGuiRender()
 	{
+		UI::PushModified(m_NeedsSaving);
 		RenderHierarchyPanel();
 
 		if (m_VariableRegistrySubPanel)
 			m_VariableRegistrySubPanel->OnImguiRender();
+
+		UI::PopModified();
 	}
 
 	void GuiEditorPanel::AddItemMenu(UUID owner)
@@ -437,8 +442,7 @@ namespace Proof
 
 		DrawElementType<UITextComponent>(element, [&](UITextComponent& text)
 			{
-				UI::AttributeInputTextMultiline("", text.Text, 0);
-			
+				UI::BindableVariabeString("Text", text.Text, m_UIPanel->VariableTable);
 				UI::BeginPropertyGrid();
 				UI::AttributeColor("Color", text.TextConfig.Color );
 

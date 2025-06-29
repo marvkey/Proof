@@ -5,3 +5,7 @@ InputBindings:
     KeyBindings:
       - InputKeyBindingType: Key
         InputKeyName: LeftMouseButton
+  - InputActionID: 1027319137170532747
+    KeyBindings:
+      - InputKeyBindingType: Key
+        InputKeyName: MouseWheelAxis

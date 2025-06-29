@@ -93,7 +93,6 @@
     <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
     <Compile Include="Assets\Scripts\Weapons\Gun.cs" />
     <Compile Include="Assets\Scripts\Weapons\Weapon.cs" />
-    <Compile Include="Assets\Scripts\Weapons\WeaponManager.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ProofScriptCore\ProofScriptCore.csproj">

@@ -119,4 +119,6 @@ namespace Proof::UI
 	}
 
 	bool BindableVariableAssetKey(const std::string& label, BindableStaticAssetKey& val, Count<VariableRegistry> registry);
+	bool BindableVariabeString(const std::string& label, BindableVariableString& val, Count<VariableRegistry> registry);
+
 }
