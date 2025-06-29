@@ -5,6 +5,7 @@
 #include "Proof/ImGui/UIVariable.h"
 #include "Proof/ImGui/SelectionManager.h"
 #include "Proof/ImGui/UiUtilities.h"
+#include "Proof/Asset/AssetTypes.h"
 
 namespace Proof
 {
@@ -50,7 +51,7 @@ namespace Proof
 		UI::ScopedID scopeId(fmt::format("{}",variableID.Get()).c_str());
 
 		ImGuiTreeNodeFlags flags;
-		flags = ((AssetSelectionManager::IsSelected(AssetSelectionContext::VariableRegistry, registry.GetMemoryAddress(), variableID.Get()) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow);
+		flags = ((AssetSelectionManager::IsSelected(AssetSelectionContext::VariableRegistry, registry->SpecialID, variableID.Get()) ? ImGuiTreeNodeFlags_Selected : 0) | ImGuiTreeNodeFlags_OpenOnArrow);
 
 		flags |= ImGuiTreeNodeFlags_Leaf;//makes the tree not use an arrow
 
@@ -60,8 +61,8 @@ namespace Proof
 		bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)variableID.Get(), flags, registry->GetVariableAsName(variableID).c_str());
 		if (ImGui::IsItemClicked())
 		{
-			AssetSelectionManager::DeselectAll(AssetSelectionContext::VariableRegistry, registry.GetMemoryAddress());
-			AssetSelectionManager::Select(AssetSelectionContext::VariableRegistry, registry.GetMemoryAddress(), variableID);
+			AssetSelectionManager::DeselectAll(AssetSelectionContext::VariableRegistry, registry->SpecialID);
+			AssetSelectionManager::Select(AssetSelectionContext::VariableRegistry, registry->SpecialID, variableID);
 		}
 
 
@@ -97,11 +98,29 @@ namespace Proof
 			ImGui::Checkbox("IsArray", &isArray);
 		}
 		UI::EndPropertyGrid();
+		if (var->GetType() == VariableTypes::AssetKey)
+		{
+			auto type = var->GetValue<DynamicAssetKey>().GetExpectedType();
 
+			{
+				if (UI::EnumCombo("AssetType", type, { AssetType::None }))
+					var->SetValue<DynamicAssetKey>(DynamicAssetKey(0, type));
+			}
+			if (type != AssetType::None)
+			{
+				UI::BeginPropertyGrid();
+				UI::VariableAttribute("Default Value", var);
+				UI::EndPropertyGrid();
+			}
+		}
+		else
+		{
+			UI::BeginPropertyGrid();
+			UI::VariableAttribute("Default Value", var);
+			UI::EndPropertyGrid();
+		}
 
-		UI::BeginPropertyGrid();
-		UI::VariableAttribute("Default Value", var);
-		UI::EndPropertyGrid();
+		
 	}
 
 	void VariableRegistrySubPanel::HierarchyPanel()

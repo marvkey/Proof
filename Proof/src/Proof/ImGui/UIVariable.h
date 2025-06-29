@@ -12,7 +12,8 @@ namespace Proof::UI
 	bool VariableAttribute(const std::string& label, Count<Variable> value);
 	bool EditVariableInstance(Count<VariableRegistryInstance> instance);
 
-	bool VariablesSearchUp(const char* ID,Count<VariableRegistry> registry, VariableTypes variableTypes, UUID& selected, bool allowClear = true, const char* hint ="Search Variables", ImVec2 size = ImVec2{ 250.0f, 350.0f });
+	bool VariablesSearchUp(const char* ID, Count<VariableRegistry> registry, VariableTypes variableTypes, UUID& selected, bool allowClear = true, const char* hint = "Search Variables", ImVec2 size = ImVec2{ 250.0f, 350.0f });
+	bool VariablesSearchUpAsset(const char* ID,Count<VariableRegistry> registry, AssetType type,UUID& selected, bool allowClear = true, const char* hint ="Search Variables", ImVec2 size = ImVec2{ 250.0f, 350.0f });
 
 
 	bool BindableVariableAttributeBool(const std::string& label, BindableVariableBool& val,Count< VariableSetStorage> storage);
@@ -116,4 +117,6 @@ namespace Proof::UI
 
 		return modified;
 	}
+
+	bool BindableVariableAssetKey(const std::string& label, BindableStaticAssetKey& val, Count<VariableRegistry> registry);
 }

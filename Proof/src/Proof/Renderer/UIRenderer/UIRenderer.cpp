@@ -59,7 +59,21 @@ namespace Proof {
      
         return UIRenderFinalData{ finalPosition, elementSize };
     }
+    namespace Utils
+    {
+        static Count<Texture2D> GetTexture(BindableStaticAssetKey key)
+        {
+            auto assetKey = key.GetValue();
+            if (assetKey.GetExpectedType() != AssetType::Texture)
+                return Renderer::GetWhiteTexture();
 
+            if (!assetKey.IsValid())
+                return Renderer::GetWhiteTexture();
+
+            return AssetManager::GetAsset<Texture2D>(assetKey.GetAssetID());
+        }
+    }
+   
     void UIRenderer::DrawElement(Count<class UIMenu> menu, Count<class Renderer2D> renderer, uint32_t screenWidth, uint32_t screenHeight, class UIElement element)
     {
 
@@ -87,13 +101,15 @@ namespace Proof {
             case UIElementType::Button:
             {
                 auto& button = element.GetComponent< UIButtonComponent>();
-                renderer->DrawQuad(finalTransform, button.TintColor,button.Texture == nullptr ? Renderer::GetWhiteTexture() : button.Texture);
+
+
+                renderer->DrawQuad(finalTransform, button.TintColor,Utils::GetTexture(button.Texture));
                 break;
             }
             case UIElementType::Image:
             {
                 auto& image = element.GetComponent< UIImageComponent>();
-                renderer->DrawQuad(finalTransform, image.TintColor,image.Texture == nullptr ? Renderer::GetWhiteTexture() : image.Texture);
+                renderer->DrawQuad(finalTransform, image.TintColor, Utils::GetTexture(image.Texture));
                 break;
             }
             case UIElementType::Text:
@@ -148,11 +164,6 @@ namespace Proof {
 
                     DrawElement(menu, renderer, screenWidth, screenHeight, child);
                 }
-
-              //  if (layout.DrawBorders)
-              //  {
-              //      renderer->DrawQuad(finalTransform, layout.BorderColor);
-              //  }
                 break;
             }
             case UIElementType::ProgressBar:

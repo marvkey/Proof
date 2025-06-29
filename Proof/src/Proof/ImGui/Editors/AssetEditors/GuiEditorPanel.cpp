@@ -429,18 +429,10 @@ namespace Proof
 				UI::AttributeColor("Color", button.TintColor);
 			});
 
-		DrawElementType<UIImageComponent>(element, [](UIImageComponent& image)
+		DrawElementType<UIImageComponent>(element, [&](UIImageComponent& image)
 			{
 				UI::AttributeColor("TintColor", image.TintColor);
-
-				AssetID id = 0;
-				if (image.Texture != nullptr)
-					id = image.Texture->GetID();
-
-				if(UI::AttributeTextureAssetReference("Texture", id))
-				{
-					image.Texture = AssetManager::GetAsset<Texture2D>(id);
-				}
+				UI::BindableVariableAssetKey("Texture", image.Texture, m_UIPanel->VariableTable);
 			});
 
 		DrawElementType<UITextComponent>(element, [&](UITextComponent& text)

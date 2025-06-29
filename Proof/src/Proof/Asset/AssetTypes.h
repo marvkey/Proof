@@ -201,8 +201,6 @@ namespace Proof
 			return Utils::GetAssetFromID(m_AssetID).As<T>();
 		}
 
-		
-
 		Count<class Asset> GetAsBaseAsset() const 
 		{
 			if (!IsValid())
@@ -215,7 +213,10 @@ namespace Proof
 			return IsValid() ? m_AssetID : AssetID(0);
 		}
 
-		bool SetAssetID(AssetID id) {
+		bool SetAssetID(AssetID id) 
+		{
+			if (id == 0)
+				m_AssetID = AssetID(0);
 			if (Utils::HasAssetAndAssetType(id, Type)) {
 				m_AssetID = id;
 				return true;
@@ -294,4 +295,188 @@ namespace Proof
 		mutable AssetID m_AssetID = { 0 };
 		std::unordered_set<AssetType> m_SupportedTypes;
 	};
+	struct DynamicAssetKey;
+
+	struct StaticAssetKey
+	{
+	public:
+		StaticAssetKey() = delete; // Force explicit construction
+
+		explicit StaticAssetKey(AssetType type, AssetID id = 0)
+			: m_AssetID(0), m_ExpectedType(type)
+		{
+			SetAssetID(id);
+		};
+		// Conversion from DynamicAssetKey
+		explicit StaticAssetKey(const DynamicAssetKey& dynamicKey);
+		bool SetAssetID(AssetID id)
+		{
+			if (id == 0)
+				m_AssetID = AssetID(0);
+
+			if (Utils::HasAssetAndAssetType(id, m_ExpectedType))
+			{
+				m_AssetID = id;
+				return true;
+			}
+			return false;
+		}
+
+		StaticAssetKey& operator=(const StaticAssetKey& other)
+		{
+			if (this == &other)
+				return *this;
+
+			if (m_ExpectedType == other.m_ExpectedType)
+				m_AssetID = other.m_AssetID;
+			// else: ignore assignment
+
+			return *this;
+		}
+		bool operator==(const StaticAssetKey& other) const
+		{
+			return m_ExpectedType == other.m_ExpectedType &&
+				m_AssetID == other.m_AssetID;
+		}
+
+		bool operator!=(const StaticAssetKey& other) const
+		{
+			return !(*this == other);
+		}
+		AssetID GetAssetID() const { return IsValid() ? m_AssetID : AssetID(0); }
+
+		AssetType GetExpectedType() const { return m_ExpectedType; }
+
+		bool IsValid() const { return Utils::HasAssetAndAssetType(m_AssetID, m_ExpectedType); }
+
+		operator AssetID() const { return GetAssetID(); }
+		operator bool() const { return IsValid(); }
+
+		template <class T>
+		Count<T> GetAsset() const
+		{
+			if (!IsValid())
+				return nullptr;
+			return Utils::GetAssetFromID(m_AssetID).As<T>();
+		}
+
+		Count<class Asset> GetAsBaseAsset() const
+		{
+			if (!IsValid())
+				return nullptr;
+			return Utils::GetAssetFromID(m_AssetID);
+		}
+
+		uint64_t Get() const { return m_AssetID; }
+
+	private:
+		AssetID m_AssetID = 0;
+		const AssetType m_ExpectedType = AssetType::None; // const ensures immutability
+	};
+
+
+	struct DynamicAssetKey
+	{
+	public:
+		DynamicAssetKey() = default;
+
+		DynamicAssetKey(AssetID id, AssetType type)
+			: m_AssetID(id), m_ExpectedType(type)
+		{
+			Validate();
+		}
+		DynamicAssetKey(const StaticAssetKey& staticKey)
+			: m_AssetID(staticKey.GetAssetID()), m_ExpectedType(staticKey.GetExpectedType())
+		{
+			Validate();
+		}
+		void SetExpectedType(AssetType type)
+		{
+			m_ExpectedType = type;
+			Validate(); // Revalidate when type changes
+		}
+
+		bool SetAssetID(AssetID id)
+		{
+			if (id == 0)
+				m_AssetID = AssetID(0);
+			if (Utils::HasAssetAndAssetType(id, m_ExpectedType))
+			{
+				m_AssetID = id;
+				return true;
+			}
+			return false;
+		}
+
+		AssetID GetAssetID() const { return IsValid() ? m_AssetID : AssetID(0); }
+
+		bool IsValid() const
+		{
+			return Utils::HasAssetAndAssetType(m_AssetID, m_ExpectedType);
+		}
+
+		AssetType GetExpectedType() const { return m_ExpectedType; }
+
+		operator AssetID() const { return GetAssetID(); }
+		operator bool() const { return IsValid(); }
+
+		template <class T>
+		Count<T> GetAsset() const
+		{
+			if (!IsValid())
+				return nullptr;
+
+			return Utils::GetAssetFromID(m_AssetID).As<T>();
+		}
+
+		Count<class Asset> GetAsBaseAsset() const
+		{
+			if (!IsValid())
+				return nullptr;
+
+			return Utils::GetAssetFromID(m_AssetID);
+		}
+
+		uint64_t Get() const { return m_AssetID; }
+
+
+		StaticAssetKey ToStaticAssetKey() const
+		{
+			return StaticAssetKey(m_ExpectedType, m_AssetID);
+		}
+
+		DynamicAssetKey& operator=(const DynamicAssetKey& other)
+		{
+			if (this == &other)
+				return *this;
+
+			m_ExpectedType = other.m_ExpectedType;
+			m_AssetID = other.m_AssetID;
+
+			Validate(); // Ensure the asset ID matches the new type
+			return *this;
+		}
+		bool operator==(const DynamicAssetKey& other) const
+		{
+			return m_ExpectedType == other.m_ExpectedType &&
+				m_AssetID == other.m_AssetID;
+		}
+
+		bool operator!=(const DynamicAssetKey& other) const
+		{
+			return !(*this == other);
+		}
+		operator StaticAssetKey () { return ToStaticAssetKey(); };
+		operator const StaticAssetKey() const { return ToStaticAssetKey(); };
+	private:
+		void Validate()
+		{
+			if (!Utils::HasAssetAndAssetType(m_AssetID, m_ExpectedType))
+				m_AssetID = 0;
+		}
+
+		AssetID m_AssetID = 0;
+		AssetType m_ExpectedType = AssetType::None;
+	};
+
 }

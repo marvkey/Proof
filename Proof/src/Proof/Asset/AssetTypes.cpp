@@ -35,10 +35,16 @@ namespace Proof::Utils
 	}
 	
 
+	
+
 }
 
 namespace Proof
 {
 
-
+	StaticAssetKey::StaticAssetKey(const DynamicAssetKey& dynamicKey)
+		: m_AssetID(0), m_ExpectedType(dynamicKey.GetExpectedType())
+	{
+		SetAssetID(dynamicKey.GetAssetID());
+	}
 }

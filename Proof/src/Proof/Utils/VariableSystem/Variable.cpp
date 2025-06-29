@@ -4,9 +4,6 @@
 #include <glm/glm.hpp>
 namespace Proof
 {
-	
-
-
 	void VariableRegistry::RemoveVariable(std::string_view name)
 	{
 		PF_CORE_ASSERT(HasVariable(name), "Does not contain the variable");

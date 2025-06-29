@@ -982,6 +982,13 @@ namespace Proof
 			out << fieldStorage->GetValue<std::string>();
 			break;
 		}
+		case VariableTypes::AssetKey:
+		{
+			auto key = fieldStorage->GetValue<DynamicAssetKey>();
+			out << key.Get();
+			out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(key.GetExpectedType());
+			break;
+		}
 		default:
 			PF_CORE_ASSERT(false, "Unsupported variable type for serialization");
 			break;
@@ -1047,6 +1054,17 @@ namespace Proof
 			case VariableTypes::String:
 			{
 				fieldStorage->SetValue(dataNode.as<std::string>());
+				break;
+			}
+
+			case VariableTypes::AssetKey:
+			{
+				uint64_t id = dataNode.as<uint64_t>();
+				AssetType assetType = EnumReflection::StringEnum<AssetType>(scriptField["AssetType"].as<std::string>());
+
+				DynamicAssetKey key(id, assetType);
+
+				fieldStorage->SetValue(key);
 				break;
 			}
 			default:

@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 #include "Variable.h"
 #include "Proof/Utils/MultiUse.h"
 #include <glm/glm.hpp>
@@ -11,6 +12,8 @@ namespace Proof
 	using BindableVariableVec3 = BindableVariable<glm::vec3, VariableTypes::Vec3>;
 	using BindableVariableVec4 = BindableVariable<glm::vec4, VariableTypes::Vec4>;
 	using BindableVariableString = BindableVariable<std::string, VariableTypes::String>;
+	using BindableVariableAssetKey = BindableVariable<DynamicAssetKey, VariableTypes::AssetKey>;
+
 
 	template<typename T, T Min, T Max, VariableTypes VT>
 	using BindableClampedVariable = BindableVariable<ClampedValue<T, Min, Max>, VT>;
@@ -19,4 +22,7 @@ namespace Proof
 	using BindableClampedInt = BindableVariable<ClampedValue<int, Min, Max>, VariableTypes::Int>;
 	template<float Min, float Max>
 	using BindableClampedFloat = BindableVariable<ClampedValue<float, Min, Max>, VariableTypes::Float>;
+
+	using BindableStaticAssetKey = BindableVariable<StaticAssetKey, VariableTypes::AssetKey>;
+	
 }

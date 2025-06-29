@@ -3,6 +3,7 @@
 #include "UI.h"
 #include "UiUtilities.h"
 #include "UIWidgets.h"
+#include "UIHandlers.h"
 
 namespace Proof::UI
 {
@@ -88,6 +89,16 @@ namespace Proof::UI
 			//	value.SetValue<std::string>(valuestr);
 			//}
 			modified = true;
+		}
+
+		case Proof::VariableTypes::AssetKey:
+		{
+			DynamicAssetKey key = value->GetValue<DynamicAssetKey>();
+			if (UI::AttributeAssetKeyReference(label, key))
+			{
+				modified = true;
+				value->SetValue(key);
+			}
 		}
 		break;
 		default:
@@ -196,6 +207,123 @@ namespace Proof::UI
 					{
 						if (variable->GetType() != variableTypes)
 							continue;
+
+						const std::string assetName = registry->GetVariableAsName(variable->GetUUID());
+						if (!searchString.empty() && !UI::IsMatchingSearch(assetName, searchString))
+							continue;
+						bool is_selected = (current == variable->GetUUID());
+						if (ImGui::Selectable(assetName.c_str(), is_selected))
+						{
+							current = variableID;
+							selected = variableID;
+							modified = true;
+						}
+
+						if (forwardFocus)
+						{
+							forwardFocus = false;
+						}
+						else if (is_selected)
+						{
+							ImGui::SetItemDefaultFocus();
+						}
+					}
+
+					ImGui::EndListBox();
+				}
+			}
+			if (modified)
+				ImGui::CloseCurrentPopup();
+
+			UI::EndPopup();
+		}
+		HandleModified(modified);
+
+		return modified;
+	}
+	bool VariablesSearchUpAsset(const char* ID, Count<VariableRegistry> registry, AssetType type, UUID& selected, bool allowClear, const char* hint, ImVec2 size)
+	{
+		UI::ScopedStyleColor popupBG(ImGuiCol_PopupBg, UI::ColourWithMultipliedValue(Colours::Theme::Background, 1.6f).Value);
+
+		bool modified = false;
+
+		AssetID current = selected;
+
+		ImGui::SetNextWindowSize({ size.x, 0.0f });
+
+		static bool grabFocus = true;
+
+		if (UI::BeginPopup(ID, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize))
+		{
+			static std::string searchString;
+
+			if (ImGui::GetCurrentWindow()->Appearing)
+			{
+				grabFocus = true;
+				searchString.clear();
+			}
+
+			// Search widget
+			UI::ShiftCursor(3.0f, 2.0f);
+			ImGui::SetNextItemWidth(ImGui::GetWindowWidth() - ImGui::GetCursorPosX() * 2.0f);
+			Widgets::SearchWidget(searchString, hint, &grabFocus);
+
+			const bool searching = !searchString.empty();
+
+			// Clear property button
+			if (allowClear)
+			{
+				UI::ScopedColourStack buttonColours(
+					ImGuiCol_Button, UI::ColourWithMultipliedValue(Colours::Theme::Background, 1.0f),
+					ImGuiCol_ButtonHovered, UI::ColourWithMultipliedValue(Colours::Theme::Background, 1.2f),
+					ImGuiCol_ButtonActive, UI::ColourWithMultipliedValue(Colours::Theme::Background, 0.9f));
+
+				UI::ScopedStyleVar border(ImGuiStyleVar_FrameBorderSize, 0.0f);
+
+				ImGui::SetCursorPosX(0);
+
+				ImGui::PushItemFlag(ImGuiItemFlags_NoNav, searching);
+
+				if (ImGui::Button("CLEAR", { ImGui::GetWindowWidth(), 0.0f }))
+				{
+					allowClear = true;
+					modified = true;
+				}
+
+				ImGui::PopItemFlag();
+			}
+
+			// List of assets
+			{
+				UI::ScopedStyleColor listBoxBg(ImGuiCol_FrameBg, IM_COL32_DISABLE);
+				UI::ScopedStyleColor listBoxBorder(ImGuiCol_Border, IM_COL32_DISABLE);
+
+				ImGuiID listID = ImGui::GetID("##SearchListBox");
+				if (ImGui::BeginListBox("##SearchListBox", ImVec2(-FLT_MIN, 0.0f)))
+				{
+					bool forwardFocus = false;
+
+					ImGuiContext& g = *GImGui;
+					if (g.NavJustMovedToId != 0)
+					{
+						if (g.NavJustMovedToId == listID)
+						{
+							forwardFocus = true;
+							// ActivateItem moves keyboard navigation focuse inside of the window
+							ImGui::ActivateItem(listID);
+							ImGui::SetKeyboardFocusHere(1);
+						}
+					}
+
+					const auto& assetsRegistry = registry->GetVariables();
+
+					for (auto& [variableID, variable] : assetsRegistry)
+					{
+						if (variable->GetType() != VariableTypes::AssetKey)
+							continue;
+
+						DynamicAssetKey key =  variable->GetValue< DynamicAssetKey>();
+						if (key.GetExpectedType() != type)continue;
 
 						const std::string assetName = registry->GetVariableAsName(variable->GetUUID());
 						if (!searchString.empty() && !UI::IsMatchingSearch(assetName, searchString))
@@ -367,5 +495,44 @@ namespace Proof::UI
 	bool BindableVariableAttrubuteSlider(const std::string& label, BindableVariableFloat& val, Count<VariableRegistry> registry, float min, float max)
 	{
 		return BindableVariableAttrubuteSlider(label, val, registry, min, max);
+	}
+	bool BindableVariableAssetKey(const std::string& label, BindableStaticAssetKey& val, Count<VariableRegistry> registry)
+	{
+		bool modified = false;
+		if (val.IsSet())
+		{
+			UI::AttributeTextBar(label, fmt::format("Bound to: {}", registry->GetVariableAsName(val.GetVariableID())));
+			if (UI::AttributeButton("Unbind"))
+			{
+				modified = true;
+				val.UnBind();
+			}
+		}
+		else
+		{
+			std::string searchValidvalidVariablesID = UI::GenerateLabelID("Valid Variables");
+			{
+				auto key = val.GetValue();
+				if (UI::AttributeAssetKeyReference(label, key))
+				{
+					modified = true;
+					val.SetValue(key);
+				}
+
+			}
+			if (UI::AttributeButton(GenerateLabelID("Bind")))
+			{
+				ImGui::OpenPopup(searchValidvalidVariablesID.c_str());
+			}
+			auto uuid = val.GetVariableID();
+			if (UI::VariablesSearchUpAsset(searchValidvalidVariablesID.c_str(), registry, val.GetValue().GetExpectedType(), uuid))
+			{
+				val.SetUseAsVariable(true, registry->GetVariableSetStorage());
+				val.SetVariable(uuid);
+				modified = true;
+			}
+		}
+
+		return modified;
 	}
 }

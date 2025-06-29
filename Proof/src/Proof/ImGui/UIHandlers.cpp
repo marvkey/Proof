@@ -266,6 +266,24 @@ namespace Proof::UI
 		HandleModified(modified);
 		return modified;
 	}
+	bool AttributeAssetKeyReference(const std::string& label, DynamicAssetKey& assetKey, const PropertyAssetReferenceSettings& settings)
+	{
+		AssetID id = assetKey.GetAssetID();
+		if (AttributeAssetReference(label, assetKey.GetExpectedType(), id, settings)) {
+			assetKey.SetAssetID(id);
+			return true;
+		}
+		return false;
+	}
+	bool AttributeAssetKeyReference(const std::string& label, StaticAssetKey& assetKey, const PropertyAssetReferenceSettings& settings)
+	{
+		AssetID id = assetKey.GetAssetID();
+		if (AttributeAssetReference(label, assetKey.GetExpectedType(), id, settings)) {
+			assetKey.SetAssetID(id);
+			return true;
+		}
+		return false;
+	}
 	bool AttributeTextureAssetReference(const std::string& label, AssetID& outHandle, const PropertyAssetReferenceSettings& settings)
 	{
 		bool modified = false;

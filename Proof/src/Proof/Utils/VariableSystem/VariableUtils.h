@@ -10,6 +10,7 @@ namespace Proof
 		Vec2,
 		Vec3,
 		Vec4,
-		String
+		String,
+		AssetKey,
 	};
 }

@@ -1,5 +1,6 @@
 #include "Proofprch.h"
 #include "VariableStorage.h"
+#include "Proof/Asset/AssetTypes.h"
 #include <glm/glm.hpp>
 namespace Proof
 {
@@ -32,6 +33,10 @@ namespace Proof
 				m_VariableBuffer.Allocate(sizeof(256 * sizeof(char)));
 				m_VariableBuffer.Fill('\0');
 				break;
+
+			case Proof::VariableTypes::AssetKey:
+				m_VariableBuffer.Allocate(sizeof(DynamicAssetKey));
+				m_VariableBuffer.Fill(0);
 			default:
 				break;
 		}

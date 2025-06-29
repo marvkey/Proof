@@ -38,7 +38,8 @@ namespace Proof::UI
 		}
 		return false;
 	}
-	
+	bool AttributeAssetKeyReference(const std::string& label, DynamicAssetKey& assetKey, const PropertyAssetReferenceSettings& settings = {});
+	bool AttributeAssetKeyReference(const std::string& label, StaticAssetKey& assetKey, const PropertyAssetReferenceSettings& settings = {});
 
 	bool AttributeTextureAssetReference(const std::string& label, AssetID& id, const PropertyAssetReferenceSettings& settings = {});
 	bool AttributeDrawMaterialTable(Count<MaterialTable> materialTable, Count<MaterialTable> sourceMaterialTable);

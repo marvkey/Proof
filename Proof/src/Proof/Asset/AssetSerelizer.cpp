@@ -531,6 +531,37 @@ namespace Proof {
 			}
 		}
 	}
+	void SaveStaticAssetBindableVarible(YAML::Emitter& out, const std::string& name, BindableStaticAssetKey& var)
+	{
+		out << YAML::Key << name.c_str();
+		out << YAML::BeginMap; // name
+		out << "AssetID" << YAML::Value << var.GetValue().GetAssetID();
+		out << "AssetType" << YAML::Value <<EnumReflection::EnumString( var.GetValue().GetExpectedType());
+		out << "BindedVariableID" << YAML::Value << var.GetVariableID();
+		out << YAML::EndMap; // name
+	}
+	void LoadStaticAssetBindableVarible(YAML::Node& node, const std::string& name, BindableStaticAssetKey& var, Count<VariableSetStorage> storage)
+	{
+		auto variable = node[name.c_str()];
+		if (variable)
+		{
+			uint64_t id = variable["BindedVariableID"].as<uint64_t>(0);
+
+			AssetType type = EnumReflection::StringEnum< AssetType>( variable["AssetType"].as<std::string>(""));
+			uint64_t assetID = variable["AssetID"].as<uint64_t>(0);
+
+			StaticAssetKey key(type, assetID);
+			var.SetValue(key);
+
+			if (storage->GetVariables().contains(id))
+			{
+				var.SetUseAsVariable(true, storage);
+				var.SetVariable(id);
+			}
+		}
+	}
+
+
 	void UIPanelAssetSerilizer::SaveUIElement(YAML::Emitter& out, UIElement element)const
 	{
 		out << YAML::BeginMap;// Element
@@ -562,6 +593,32 @@ namespace Proof {
 				out << YAML::EndSeq;
 			}
 			out << YAML::EndMap; // CoreComponent
+		}
+
+		{
+			if (element.HasComponent<UIImageComponent>())
+			{
+				auto& imageComponent = element.GetComponent<UIImageComponent>();
+
+				out << YAML::Key << "UIImageComponent";
+				out << YAML::BeginMap; // UIImageComponent
+				out << YAML::Key << "TintColor" << YAML::Value << imageComponent.TintColor;
+				SaveStaticAssetBindableVarible(out, "Texture", imageComponent.Texture);
+				out << YAML::EndMap; // UIImageComponent
+			}
+		}
+
+		{
+			if (element.HasComponent<UIButtonComponent>())
+			{
+				auto& buttonComponent = element.GetComponent<UIButtonComponent>();
+
+				out << YAML::Key << "UIButtonComponent";
+				out << YAML::BeginMap; // UIButtonComponent
+				out << YAML::Key << "TintColor" << YAML::Value << buttonComponent.TintColor;
+				SaveStaticAssetBindableVarible(out,"Texture", buttonComponent.Texture);
+				out << YAML::EndMap; // UIButtonComponent
+			}
 		}
 
 		{
@@ -683,6 +740,27 @@ namespace Proof {
 							newUIElement.GetComponent<UICoreComponent>().m_Children.emplace_back(childID);
 						}
 					}
+				}
+			}
+			{
+				auto imageComponent = uiElement["UIImageComponent"];
+				if (imageComponent)
+				{
+					auto& src = newUIElement.GetComponent<UIImageComponent>();
+					src.TintColor = imageComponent["TintColor"].as<glm::vec4>(glm::vec4(1.0f));
+					LoadStaticAssetBindableVarible(imageComponent, "Texture", src.Texture, uiPanel->VariableTable->GetVariableSetStorage());
+
+				}
+			}
+
+			{
+				auto buttonComponent = uiElement["UIButtomComponent"];
+				if (buttonComponent)
+				{
+					auto& src = newUIElement.GetComponent<UIImageComponent>();
+					src.TintColor = buttonComponent["TintColor"].as<glm::vec4>(glm::vec4(1.0f));
+					LoadStaticAssetBindableVarible(buttonComponent, "Texture", src.Texture, uiPanel->VariableTable->GetVariableSetStorage());
+
 				}
 			}
 

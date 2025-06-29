@@ -153,12 +153,12 @@ namespace Proof
 	struct UIImageComponent
 	{
 		glm::vec4 TintColor{ 1.0f };
-		Count<Texture2D> Texture = nullptr;
+		BindableStaticAssetKey Texture = StaticAssetKey(AssetType::Texture);
 	};
 	struct UIButtonComponent
 	{
 		glm::vec4 TintColor{ 1.0f };
-		Count<Texture2D> Texture = nullptr;
+		BindableStaticAssetKey Texture = StaticAssetKey(AssetType::Texture);
 	};
 	struct UITextComponent
 	{
