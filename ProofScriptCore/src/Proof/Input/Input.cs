@@ -47,12 +47,16 @@ namespace Proof
 
         internal InputAction() { m_ID = AssetID.Invalid; }
         internal InputAction(AssetID handle) { m_ID = handle; }
+        public override AssetType Type => AssetType.InputAction;
+
     }
     [RegisterCoreClassStruct]
     public class InputBindingContext : Asset
     {
         internal InputBindingContext() { m_ID = AssetID.Invalid; }
         internal InputBindingContext(AssetID handle) { m_ID = handle; }
+        public override AssetType Type => AssetType.InputBindingContext;
+
     }
     [Flags]
     public enum InteractionEvent

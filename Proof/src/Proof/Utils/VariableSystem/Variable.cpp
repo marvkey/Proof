@@ -67,11 +67,14 @@ namespace Proof
 		}
 	}
 	Variable::Variable(Count<Variable> var)
+		: m_Type(var->m_Type), m_IsArray(var->m_IsArray)
 	{
 		if (!var->m_IsArray)
 		{
-			m_VariableField = Count<PrimitiveVariableStorage>::CreateFrom(var->m_VariableField.As<PrimitiveVariableStorage>());
+			m_VariableField = Count<PrimitiveVariableStorage>::Create(m_Type);
+			m_VariableField->SetValueBuffer(var->m_VariableField.As<PrimitiveVariableStorage>()->GetBuffer());
 		}
+
 	}
 
 	void Variable::SetType(VariableTypes type)
@@ -115,7 +118,7 @@ namespace Proof
 			if (!instanceVar)
 			{
 				// New variable, match type and array flag
-				instanceVar = Count<Variable>::Create(registryVar->GetType(), registryVar->IsArray());
+				instanceVar = Count<Variable>::Create(registryVar);
 				instanceVar->m_UUID = uuid; // Ensure UUID is set correctly
 			}
 			else

@@ -224,7 +224,29 @@ namespace Proof
                 {
                     auto& progressBar = uiElement.GetComponent<UIProggresBarComponent>();
 					progressBar.Proggress.ChangeStorageSet(storageSet);
+                    break;
                 }
+
+                case UIElementType::Image:
+                {
+                    auto& image = uiElement.GetComponent<UIImageComponent>();
+                    image.Texture.ChangeStorageSet(storageSet);
+                    break;
+                }
+                case UIElementType::Button:
+                {
+                    auto& button = uiElement.GetComponent<UIButtonComponent>();
+                    button.Texture.ChangeStorageSet(storageSet);
+                    break;
+                }
+
+                case UIElementType::Text:
+                {
+                    auto& text = uiElement.GetComponent<UITextComponent>();
+                    text.Text.ChangeStorageSet(storageSet);
+                    break;
+                }
+
                 break;
             default:
                 break;

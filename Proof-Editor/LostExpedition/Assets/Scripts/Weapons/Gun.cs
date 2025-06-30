@@ -14,9 +14,11 @@ namespace LostExpedition
 		public int MagazineSize = 30;
         public float SpreadAngle = 5f; 
 
+
         public float RecoilAngle = 5.0f; // How much to tilt upwards (degrees)
         private int Ammo = 30;
 
+        public int GetAmmo() { return Ammo; }
         public Prefab MuzzleFlash;
         public Entity MuzzleFlashPos;
         float m_TimeSinceLastShot;
@@ -29,6 +31,7 @@ namespace LostExpedition
         // is instantiated in the world at runtime
         void OnCreate()
 		{
+            Ammo = MagazineSize;
             m_TimeSinceLastShot = (FireRate) *2; // want it to be 100% ready to fire on first shot
         }
 

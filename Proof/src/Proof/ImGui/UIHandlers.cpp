@@ -685,7 +685,11 @@ namespace Proof::UI
 
 						if (UI::AttributeAssetReference(panelLabel, AssetType::UIPanel, ID))
 						{
-							panelInstance->SetPanelInstance(AssetManager::GetAsset<UIPanel>(ID));
+							if (AssetManager::HasAsset(ID)) // wath if its 0
+								panelInstance->SetPanelInstance(AssetManager::GetAsset<UIPanel>(ID));
+							else
+								layer.PopIndex(panelIndex);
+
 						}
 
 						float prevItemHeight = ImGui::GetItemRectSize().y;

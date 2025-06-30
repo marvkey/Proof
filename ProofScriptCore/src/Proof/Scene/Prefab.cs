@@ -12,5 +12,6 @@ namespace Proof
     {
         internal Prefab() { m_ID = AssetID.Invalid; }
         internal Prefab(AssetID handle) { m_ID = handle; }
+        public override AssetType Type => AssetType.Prefab;
     }
 }

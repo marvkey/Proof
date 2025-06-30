@@ -27,6 +27,8 @@ namespace Proof
         internal StaticMesh(AssetID handle) { m_ID = handle; }
 
         public Material BaseMaterial => GetMaterial(0);
+        public override AssetType Type => AssetType.Mesh;
+
     }
 
     public class DynamicMesh : MeshBase
@@ -35,5 +37,7 @@ namespace Proof
         internal DynamicMesh(AssetID handle) { m_ID = handle; }
 
         public Material BaseMaterial => GetMaterial(0);
+        public override AssetType Type => AssetType.DynamicMesh;
+
     }
 }

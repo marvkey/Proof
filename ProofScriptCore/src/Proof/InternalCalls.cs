@@ -522,16 +522,24 @@ namespace Proof
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void PlayerHUDComponent_UITableLayerPushPanel(ulong entityID, uint layerIndex, AssetID panel , bool visible);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PlayerHUDComponent_UITableLayerPushPanelByName(ulong entityID, string layerName, AssetID panelID, bool visible);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void PlayerHUDComponent_UITableLayerRemovePanel(ulong entityID, uint layerIndex, AssetID panel );
 
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PlayerHUDComponent_UITableLayerRemovePanelByName(ulong entityID, string layerName, AssetID panel);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariable(ulong entityID, uint layerIndex, AssetID panel, string varName, out VariableRaw var);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariableByName(ulong entityID, string layerName, AssetID panel, string varName, out VariableRaw var);
 
         #endregion
 
-     
+
         #region ParticleSystemComponent
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool ParticleSystemComponent_HasParticleIndex(ulong entityID, uint tableIndex);

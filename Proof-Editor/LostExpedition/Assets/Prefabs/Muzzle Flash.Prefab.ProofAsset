@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 18446508233467783024
-EntityOwner: 6182052252878671973
+EntityOwner: 2871272252111628997
 Entities:
-  - Entity: 6182052252878671973
+  - Entity: 2871272252111628997
     TagComponent:
       Tag: MucleFlash
       tags: []

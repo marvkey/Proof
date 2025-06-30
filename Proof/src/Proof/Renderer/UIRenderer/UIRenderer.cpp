@@ -18,13 +18,7 @@ namespace Proof {
     {
 
         glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)screenWidth, 0.0f, (float)screenHeight, -1.0f, 1.0f);
-
-
-
         renderer->BeginContext(orthoMatrix, glm::mat4(1.0f), Vector(0.0f), { true });
-
-
-
         for (auto& [uiElementId,uiElement] : menu->m_UIElementsMap)
         {
             //if (element->Parent != nullptr)
@@ -114,7 +108,7 @@ namespace Proof {
             }
             case UIElementType::Text:
             {
-                auto text = element.GetComponent<UITextComponent>();
+                UITextComponent& text = element.GetComponent<UITextComponent>();
                 renderer->DrawString(text.Text.GetValue(), text.Font, text.TextConfig, finalTransform);
                 break;
             }

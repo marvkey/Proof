@@ -3687,7 +3687,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 	struct ScriptFuncUILayer
 	{
 		bool Visible;
-		uint32_t Index;
+		int Index;
 	};
 
 	static ScriptFuncUILayer PlayerHUDComponent_UITableGetLayerByName(uint64_t entityID, MonoString* name)
@@ -3699,7 +3699,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		if (!playerHudComponent.HudTable->HasLayer(ScriptUtils::MonoStringToUTF8(name)))
 		{
 			PF_ERROR("PlayerHUDComponent.UITableGetLayerByName – entity '{}' does not contain layer named '{}'", entity.GetName(), ScriptUtils::MonoStringToUTF8(name));
-			return ScriptFuncUILayer();
+			return ScriptFuncUILayer(false, -1);
 		}
 		UILayer& layer = *playerHudComponent.HudTable->FindLayerByName(ScriptUtils::MonoStringToUTF8(name));
 
@@ -3718,7 +3718,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
 		{
 			PF_ERROR("PlayerHUDComponent.UITableGetLayer entity tag: {} does not contain layer index: {}", entity.GetName(), layerIndex);
-			return ScriptFuncUILayer();
+			return ScriptFuncUILayer(false,-1);
 		}
 
 		UILayer& layer = playerHudComponent.HudTable->GetLayer(layerIndex);
@@ -3765,8 +3765,6 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 	static VOID PlayerHUDComponent_UITableLayerGetPanelInstanceByIndex(uint64_t entityID, uint32_t layerIndex, uint32_t panelIndex, ScriptUIPanelInstance* instance)
 	{
 		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
-
-
 
 		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
 
@@ -3818,11 +3816,11 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		uiPanelInstance->Visible = visible;
 	}
-	static bool PlayerHUDComponent_UITableLayerGetPanelInstanceVisible(uint64_t entityID, uint32_t layerIndex, AssetID panelID)
+	static bool PlayerHUDComponent_UITableLayerGetPanelInstanceVisible(uint64_t entityID, uint32_t layerIndex, uint64_t panelID)
 	{
 		SCRIPT_FUNC_FUNCTION_CHECK(PlayerHUDComponent, false);
 
-		AssetKey<AssetType::UIPanel> panel = panelID;
+		AssetKey<AssetType::UIPanel> panel = AssetID(panelID);
 		SCRIPT_FUNC_ENTITY_ASSETKEY_ASSET(panel, PlayerHUDComponent,false);
 
 		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
@@ -3845,12 +3843,39 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		return uiPanelInstance->Visible;
 	}
 
+	static void PlayerHUDComponent_UITableLayerPushPanelByName(uint64_t entityID, MonoString* layerName, uint64_t panelID, bool visible)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
+		AssetKey<AssetType::UIPanel> panel = AssetID(panelID);
+		SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_VOID(panel);
 
-	static void PlayerHUDComponent_UITableLayerPushPanel(uint64_t entityID, uint32_t layerIndex, AssetID panelID, bool visible)
+
+		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
+
+		std::string stringLayerName =  ScriptUtils::MonoStringToUTF8(layerName);
+		if (!playerHudComponent.HudTable->HasLayer(stringLayerName))
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerPushPanel – entity '{}' does not contain layer with name {}", entity.GetName(), stringLayerName);
+			return;
+		}
+
+		UILayer* layer = playerHudComponent.HudTable->FindLayerByName(stringLayerName);
+		auto uiPanelInstance = layer->PushUI(panel.GetAsset<UIPanel>());
+
+		if (!uiPanelInstance)
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerPushPanel – failed to push panel {} on entity '{}' layerName {}", panel.GetAssetID(), entity.GetName(), stringLayerName);
+			return;
+		}
+
+		uiPanelInstance->Visible = visible;
+
+	};
+	static void PlayerHUDComponent_UITableLayerPushPanel(uint64_t entityID, uint32_t layerIndex, uint64_t panelID, bool visible)
 	{
 		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
 
-		AssetKey<AssetType::UIPanel> panel = panelID;
+		AssetKey<AssetType::UIPanel> panel = AssetID(panelID);
 		SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_VOID(panel);
 
 		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
@@ -3892,6 +3917,25 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		layer.PopUI(panel.GetAsset<UIPanel>());
 	}
 
+	static void PlayerHUDComponent_UITableLayerRemovePanelByName(uint64_t entityID, MonoString* layerName, AssetID panelID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
+		AssetKey<AssetType::UIPanel> panel = AssetID(panelID);
+		SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_VOID(panel);
+
+
+		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
+
+		std::string stringLayerName = ScriptUtils::MonoStringToUTF8(layerName);
+		if (!playerHudComponent.HudTable->HasLayer(stringLayerName))
+		{
+			PF_ERROR("PlayerHUDComponent_UITableLayerRemovePanelByName – entity '{}' does not contain layer with name {}", entity.GetName(), stringLayerName);
+			return;
+		}
+
+		UILayer* layer = playerHudComponent.HudTable->FindLayerByName(stringLayerName);
+		layer->PopUI(panel.GetAsset<UIPanel>());
+	}
 
 	
 	static void PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariable(uint64_t entityID, uint32_t layerIndex, AssetID panelID, MonoString* varName, ProofScriptVariable* varr)
@@ -3937,7 +3981,49 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 	}
 
+	static void PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariableByName(uint64_t entityID, MonoString* layerName, AssetID panelID, MonoString* varName, ProofScriptVariable* varr)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PlayerHUDComponent);
+		AssetKey<AssetType::UIPanel> panel = panelID;
+		SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_VOID(panel, PlayerHUDComponent, ProofScriptVariable());
+		std::string stringLayerName = ScriptUtils::MonoStringToUTF8(layerName);
 
+		PlayerHUDComponent& playerHudComponent = entity.GetComponent<PlayerHUDComponent>();
+
+		if (!playerHudComponent.HudTable->HasLayer(stringLayerName))
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerPanelInstanceGetRegistryVariableByName – entity '{}' does not contain layer {}", entity.GetName(), stringLayerName);
+			return;
+		}
+
+		UILayer& layer = *playerHudComponent.HudTable->FindLayerByName(stringLayerName);
+		auto uiPanelInstance = layer.GetUIPanelByPanel(panel.GetAsset<UIPanel>());
+
+		if (!uiPanelInstance)
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerPanelInstanceGetRegistryVariableByName – panel {} not found in entity '{}' layer {}", panel.GetAssetID(), entity.GetName(), stringLayerName);
+			return;
+		}
+
+		if (!uiPanelInstance->GetVariableRegistryInstance())
+		{
+			PF_ERROR("PlayerHUDComponent.UITableLayerPanelInstanceGetRegistryVariableByName – panel {} on entity '{}' layer {} has no variable registry", panel.GetAssetID(), entity.GetName(), stringLayerName);
+			return;
+		}
+
+		std::string name = ScriptUtils::MonoStringToUTF8(varName);
+
+		if (!uiPanelInstance->GetVariableRegistryInstance()->HasVariable(name))
+		{
+			PF_ERROR("PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariableByName – variable '{}' not found in panel {} on entity '{}' layer {}", name, panel.GetAssetID(), entity.GetName(), stringLayerName);
+			return;
+		}
+
+		auto var = uiPanelInstance->GetVariableRegistryInstance()->GetVariable(name);
+		{
+			*varr = ProofScriptVariable(var->GetUUID(), (int)var->GetType(), uiPanelInstance->GetVariableRegistryInstance()->GetVariableSetStorage()->GetStorageID());
+		}
+	}
 
 
 	struct UITextData 
@@ -4386,7 +4472,9 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerGetPanelInstance);
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerGetPanelInstanceByIndex);
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerPushPanel);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerPushPanelByName);
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerRemovePanel);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerRemovePanelByName);
 
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerGetPanelInstanceVisible);
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerSetPanelInstanceVisible);
@@ -4394,6 +4482,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableGetLayer);
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableGetLayerByName);
 			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariable);
+			PF_ADD_INTERNAL_CALL(PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariableByName);
 		
 		}
 		//particleSystem component

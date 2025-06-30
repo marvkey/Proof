@@ -1,4 +1,10 @@
 Assets:
+  - Asset: 1948765517176594391
+    Type: Material
+    Path: Materials\m_Black.Material.ProofAsset
+  - Asset: 4130666624169366902
+    Type: Material
+    Path: Meshes\Shotgun\m_ShotGunMaterial.Material.ProofAsset
   - Asset: 1804100413018170951
     Type: Texture
     Path: Models\Pistol\textures\Pistol_Normal.png
@@ -8,18 +14,12 @@ Assets:
   - Asset: 11013441240331562467
     Type: InputAction
     Path: Input\PlayerMovement\IA_Rotation.InputAction.ProofAsset
-  - Asset: 4130666624169366902
-    Type: Material
-    Path: Meshes\Shotgun\m_ShotGunMaterial.Material.ProofAsset
-  - Asset: 1948765517176594391
-    Type: Material
-    Path: Materials\m_Black.Material.ProofAsset
-  - Asset: 7659929436396046509
-    Type: Material
-    Path: Materials\m_Green.Material.ProofAsset
   - Asset: 1896371110154550254
     Type: World
     Path: Scenes\TestScene.ProofWorld
+  - Asset: 7659929436396046509
+    Type: Material
+    Path: Materials\m_Green.Material.ProofAsset
   - Asset: 4812082715384783110
     Type: InputAction
     Path: Input\PlayerMovement\IA_Movement.InputAction.ProofAsset
@@ -35,12 +35,12 @@ Assets:
   - Asset: 5002844255029031354
     Type: InputBindingContext
     Path: Input\PlayerMovement\IB_PlayerMovement.InputBindingContext.ProofAsset
-  - Asset: 5896697494919537015
-    Type: PhysicsMaterial
-    Path: Physics\Materials\pm_slipper.PhysicsMaterial.ProofAsset
   - Asset: 6248028451720167464
     Type: Texture
     Path: Models\Pistol\textures\Pistol_Metallic.png
+  - Asset: 5896697494919537015
+    Type: PhysicsMaterial
+    Path: Physics\Materials\pm_slipper.PhysicsMaterial.ProofAsset
   - Asset: 11692785166767351247
     Type: InputAction
     Path: Input\PlayerMovement\IA_Jump.InputAction.ProofAsset
@@ -125,9 +125,9 @@ Assets:
   - Asset: 17755560868630915795
     Type: Material
     Path: Meshes\Pistol\m_Pistol.Material.ProofAsset
-  - Asset: 6161259691892343632
+  - Asset: 8331526773119552519
     Type: Texture
     Path: Projects\Facility22\tex\shotgunColor_1.png
-  - Asset: 9396025387536126759
+  - Asset: 10713455827554293266
     Type: Texture
     Path: Projects\Facility22\tex\shotgunNormal_1.png

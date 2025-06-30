@@ -1,19 +1,35 @@
 ScriptImportSettings:
   Scripts:
+    - Script: LostExpedition.EnemyController
+      ScriptName: LostExpedition.EnemyController
+      Fields:
+        []
+    - Script: LostExpedition.Inventory
+      ScriptName: LostExpedition.Inventory
+      Fields:
+        []
     - Script: LostExpedition.HealthComponent
       ScriptName: LostExpedition.HealthComponent
       Fields:
         []
+    - Script: LostExpedition.PlayerHUDManager
+      ScriptName: LostExpedition.PlayerHUDManager
+      Fields:
+        - NameID: LostExpedition.PlayerHUDManager.GunPanel
+          Type: UIPanel
+          Data: 0
+        - NameID: LostExpedition.PlayerHUDManager.EmptyInventory
+          Type: Texture2D
+          Data: 0
+        - NameID: LostExpedition.PlayerHUDManager.PlayerDefaultHUD
+          Type: UIPanel
+          Data: 0
     - Script: LostExpedition.InventoryItem
       ScriptName: LostExpedition.InventoryItem
       Fields:
         - NameID: LostExpedition.InventoryItem.InventoryImage
           Type: Texture2D
           Data: 0
-    - Script: LostExpedition.Inventory
-      ScriptName: LostExpedition.Inventory
-      Fields:
-        []
     - Script: LostExpedition.PlayerInput
       ScriptName: LostExpedition.PlayerInput
       Fields:
@@ -36,12 +52,6 @@ ScriptImportSettings:
       ScriptName: LostExpedition.PlayerMovement
       Fields:
         []
-    - Script: LostExpedition.Weapon
-      ScriptName: LostExpedition.Weapon
-      Fields:
-        - NameID: LostExpedition.Weapon.InventoryImage
-          Type: Texture2D
-          Data: 0
     - Script: LostExpedition.Gun
       ScriptName: LostExpedition.Gun
       Fields:
@@ -49,5 +59,11 @@ ScriptImportSettings:
           Type: Prefab
           Data: 0
         - NameID: LostExpedition.Gun.InventoryImage
+          Type: Texture2D
+          Data: 0
+    - Script: LostExpedition.Weapon
+      ScriptName: LostExpedition.Weapon
+      Fields:
+        - NameID: LostExpedition.Weapon.InventoryImage
           Type: Texture2D
           Data: 0

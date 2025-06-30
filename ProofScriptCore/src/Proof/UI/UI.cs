@@ -25,7 +25,7 @@ namespace Proof
     public struct UILayer
     {
         public bool Visible;
-        public uint Index;
+        public int Index;
 
     }
 }

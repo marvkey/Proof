@@ -85,6 +85,62 @@ World:
         ShadowStrength: 0.5
         CastSoftShadow: true
         ShadowSoftness: 0.5
+    - Entity: 14402709176397042912
+      TagComponent:
+        Tag: Enemy
+        tags: []
+      TransformComponent:
+        Location: [39.7155342, 3.39103079, -15.3603973]
+        Rotation: [0, 0, 0]
+        Scale: [4.56269979, 4.56269979, 4.56269979]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [2621550850620323061]
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 12113877820451625735
+            Index: 0
+      ScriptComponent:
+        Scripts:
+          - Script: LostExpedition.HealthComponent
+            ScriptClassName: LostExpedition.HealthComponent
+            ScriptName: LostExpedition.HealthComponent
+            Fields:
+              - NameID: LostExpedition.HealthComponent.Health
+                Type: Float
+                Data: 100
+              - NameID: LostExpedition.HealthComponent.MaxHealth
+                Type: Float
+                Data: 100
+              - NameID: LostExpedition.HealthComponent.DestoryIfHealthZero
+                Type: Bool
+                Data: true
+          - Script: LostExpedition.EnemyController
+            ScriptClassName: LostExpedition.EnemyController
+            ScriptName: LostExpedition.EnemyController
+            Fields:
+              - NameID: LostExpedition.EnemyController.TextEntityForHealth
+                Type: Entity
+                Data: 2621550850620323061
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 15432167700584823006
       TagComponent:
         Tag: Camera
@@ -163,6 +219,19 @@ World:
               - NameID: LostExpedition.PlayerInput.ChangeInventorySlotAction
                 Type: InputAction
                 Data: 1027319137170532747
+          - Script: LostExpedition.PlayerHUDManager
+            ScriptClassName: LostExpedition.PlayerHUDManager
+            ScriptName: LostExpedition.PlayerHUDManager
+            Fields:
+              - NameID: LostExpedition.PlayerHUDManager.GunPanel
+                Type: UIPanel
+                Data: 15995043814273079981
+              - NameID: LostExpedition.PlayerHUDManager.EmptyInventory
+                Type: Texture2D
+                Data: 13127080171188781274
+              - NameID: LostExpedition.PlayerHUDManager.PlayerDefaultHUD
+                Type: UIPanel
+                Data: 14525028919524517166
           - Script: LostExpedition.HealthComponent
             ScriptClassName: LostExpedition.HealthComponent
             ScriptName: LostExpedition.HealthComponent
@@ -233,49 +302,13 @@ World:
           - Layer: HUD
             Visible: true
             Panels:
-              - PanelID: 15995043814273079981
-                Visible: true
-                VariableRegistry:
-                  VariableRegistryID: 10837619597107920878
-                  Variables:
-                    - Name: HealthPercent
-                      Type: Float
-                      UUID: 11164312810867335053
-                      Data: 1
-                    - Name: Ammo
-                      Type: Int
-                      UUID: 17031474030571836809
-                      Data: 0
-                    - Name: MagazineSize
-                      Type: Int
-                      UUID: 6489873457267634925
-                      Data: 0
-              - PanelID: 14525028919524517166
-                Visible: true
-                VariableRegistry:
-                  VariableRegistryID: 2642474073418731615
-                  Variables:
-                    - Name: Invenotory0
-                      Type: AssetKey
-                      UUID: 16242045011453165744
-                      Data: 0
-                      AssetType: None
-                    - Name: Invenotry1
-                      Type: AssetKey
-                      UUID: 1802181474746937623
-                      Data: 0
-                      AssetType: None
-                    - Name: Inventory2
-                      Type: AssetKey
-                      UUID: 14272131317188086835
-                      Data: 0
-                      AssetType: None
+              []
     - Entity: 16039414171671641192
       TagComponent:
         Tag: Pistol
         tags: []
       TransformComponent:
-        Location: [0, 1.01084876, 2.69922113]
+        Location: [-0.873287439, 0.304001242, 5.74086857]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -308,7 +341,7 @@ World:
                 Data: 10
               - NameID: LostExpedition.Gun.maxDistance
                 Type: Float
-                Data: 500
+                Data: 50
               - NameID: LostExpedition.Gun.SpreadAngle
                 Type: Float
                 Data: 1
@@ -320,10 +353,10 @@ World:
                 Data: 1.5
               - NameID: LostExpedition.Gun.MagazineSize
                 Type: Int32
-                Data: 30
+                Data: 12
               - NameID: LostExpedition.Gun.InventoryImage
                 Type: Texture2D
-                Data: 0
+                Data: 56963814104375806
       BoxColliderComponent:
         IsTrigger: true
         Center: [0, 0, 0]
@@ -339,55 +372,6 @@ World:
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
         Kinematic: true
-        CollisionDetection: Discrete
-    - Entity: 17640493804854245811
-      TagComponent:
-        Tag: Enemy
-        tags: []
-      TransformComponent:
-        Location: [0, 8.84317875, -13.043582]
-        Rotation: [0, 0, 0]
-        Scale: [10, 10, 10]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 12113877820451625735
-            Index: 0
-      ScriptComponent:
-        Scripts:
-          - Script: LostExpedition.HealthComponent
-            ScriptClassName: LostExpedition.HealthComponent
-            ScriptName: LostExpedition.HealthComponent
-            Fields:
-              - NameID: LostExpedition.HealthComponent.Health
-                Type: Float
-                Data: 100
-              - NameID: LostExpedition.HealthComponent.MaxHealth
-                Type: Float
-                Data: 100
-              - NameID: LostExpedition.HealthComponent.DestoryIfHealthZero
-                Type: Bool
-                Data: true
-      BoxColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
         CollisionDetection: Discrete
     - Entity: 2074435996451250117
       TagComponent:
@@ -405,7 +389,7 @@ World:
         Tag: AssaultRifle
         tags: []
       TransformComponent:
-        Location: [0, 1.36798382, 0]
+        Location: [0, 0.690752625, 2.01169276]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -428,19 +412,19 @@ World:
                 Data: 14563262016486527326
               - NameID: LostExpedition.Gun.RecoilAngle
                 Type: Float
-                Data: 5
+                Data: 3
               - NameID: LostExpedition.Gun.Damage
                 Type: Float
-                Data: 10
+                Data: 16
               - NameID: LostExpedition.Gun.maxDistance
                 Type: Float
-                Data: 100
+                Data: 85
               - NameID: LostExpedition.Gun.SpreadAngle
                 Type: Float
                 Data: 5
               - NameID: LostExpedition.Gun.FireRate
                 Type: Float
-                Data: 0.200000003
+                Data: 0.150000006
               - NameID: LostExpedition.Gun.ReloadTime
                 Type: Float
                 Data: 1.5
@@ -449,7 +433,7 @@ World:
                 Data: 30
               - NameID: LostExpedition.Gun.InventoryImage
                 Type: Texture2D
-                Data: 0
+                Data: 14125218988744029477
       BoxColliderComponent:
         IsTrigger: true
         Center: [0, 0, 0]
@@ -477,12 +461,31 @@ World:
       HierarchyComponent:
         ParentHandle: 16039414171671641192
         Children: []
+    - Entity: 2621550850620323061
+      TagComponent:
+        Tag: Health Text23
+        tags: []
+      TransformComponent:
+        Location: [-0.800000012, 1.20000005, 0]
+        Rotation: [0, -0, 0]
+        Scale: [0.5, 0.5, 0.5]
+      HierarchyComponent:
+        ParentHandle: 14402709176397042912
+        Children: []
+      TextComponent:
+        Color: [1, 1, 1, 1]
+        Kerning: 0
+        LineSpacing: 1
+        Text: "Health: 10"
+        Visible: true
+        UseLocalRotation: false
+        RenderInViewSpace: false
     - Entity: 808178663378393566
       TagComponent:
         Tag: Shotgun
         tags: []
       TransformComponent:
-        Location: [0, 0.150999993, 2.50749516]
+        Location: [2.43184471, 0.714671731, 2.50749516]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -509,28 +512,28 @@ World:
                 Data: 2074435996451250117
               - NameID: LostExpedition.Gun.RecoilAngle
                 Type: Float
-                Data: 5
+                Data: 90
               - NameID: LostExpedition.Gun.Damage
                 Type: Float
-                Data: 10
+                Data: 18
               - NameID: LostExpedition.Gun.maxDistance
                 Type: Float
-                Data: 100
+                Data: 25
               - NameID: LostExpedition.Gun.SpreadAngle
                 Type: Float
-                Data: 5
+                Data: 20
               - NameID: LostExpedition.Gun.FireRate
                 Type: Float
-                Data: 0.200000003
+                Data: 1.10000002
               - NameID: LostExpedition.Gun.ReloadTime
                 Type: Float
-                Data: 1.5
+                Data: 2
               - NameID: LostExpedition.Gun.MagazineSize
                 Type: Int32
-                Data: 30
+                Data: 8
               - NameID: LostExpedition.Gun.InventoryImage
                 Type: Texture2D
-                Data: 0
+                Data: 14067022982534030916
       BoxColliderComponent:
         IsTrigger: true
         Center: [0, 0, 0]

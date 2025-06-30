@@ -12,5 +12,7 @@ namespace Proof
     {
         internal Material() { m_ID = AssetID.Invalid; }
         internal Material(AssetID handle) { m_ID = handle; }
+        public override AssetType Type => AssetType.Material;
+
     }
 }

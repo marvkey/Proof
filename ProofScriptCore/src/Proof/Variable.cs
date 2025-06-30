@@ -17,7 +17,8 @@ namespace Proof
 		Vec2,
 		Vec3,
 		Vec4,
-		String
+		String,
+        AssetKey
     };
 
     [StructLayout(LayoutKind.Sequential)]
@@ -50,6 +51,34 @@ namespace Proof
 
         public void SetData<T> (T data)
         {
+
+            if (typeof(T) == typeof(string))
+            {
+                SetStringData(data as string);
+                return;
+            }
+
+            if (typeof(Asset).IsAssignableFrom(typeof(T)))
+            {
+                Asset asset = data as Asset;
+
+                if(!asset.ID.IsValid())
+                {
+                    return;
+                }
+                else
+                {
+                    AssetKey key = new AssetKey
+                    {
+                        ID = asset?.ID ?? AssetID.Invalid,
+                        Type = asset.Type
+                    };
+                    SetData(key);
+                }
+
+                return;
+            }
+
             int size = Marshal.SizeOf<T>();
             IntPtr dataPtr = Marshal.AllocHGlobal(size);
             try
@@ -67,6 +96,21 @@ namespace Proof
 
         public T GetData<T>()
         {
+            if (typeof(T) == typeof(string))
+            {
+                string strValue = GetStringData(); // call your actual string method
+                return (T)(object)strValue;
+            }
+            if (typeof(Asset).IsAssignableFrom(typeof(T)))
+            {
+                AssetKey key = GetData<AssetKey>();
+
+                if (!key.ID.IsValid() || key.Type == AssetType.None)
+                    throw new InvalidOperationException($"Invalid AssetKey for type {typeof(T).Name}: ID is invalid or type is None.");
+
+                return (T)Activator.CreateInstance(typeof(T), key.ID);
+            }
+
             int size = Marshal.SizeOf<T>();
             VariableRaw variableRaw = new VariableRaw(VariableUUID, Type, StorageHandle);
 
@@ -83,6 +127,49 @@ namespace Proof
             {
                 throw new InvalidOperationException($"Error while retrieving variable data: {ex.Message}", ex);
             }
+        }
+        private void SetStringData(string value)
+        {
+            // Convert to null-terminated UTF-8 byte array
+            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(value + '\0');
+
+            IntPtr dataPtr = Marshal.AllocHGlobal(bytes.Length);
+            try
+            {
+                Marshal.Copy(bytes, 0, dataPtr, bytes.Length);
+
+                VariableRaw variableRaw = new VariableRaw(VariableUUID, Type, StorageHandle);
+                InternalCalls.ProofScriptVariable_SetValue(variableRaw, dataPtr, (ulong)bytes.Length);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(dataPtr);
+            }
+        }
+
+
+        private string GetStringData()
+        {
+            VariableRaw variableRaw = new VariableRaw(VariableUUID, Type, StorageHandle);
+            IntPtr dataPtr = InternalCalls.ProofScriptVariable_GetValue(variableRaw);
+
+            if (dataPtr == IntPtr.Zero)
+                return string.Empty;
+
+            // Manually read null-terminated UTF-8 string
+            List<byte> bytes = new List<byte>();
+            int offset = 0;
+            byte current;
+
+            do
+            {
+                current = Marshal.ReadByte(dataPtr, offset);
+                if (current != 0)
+                    bytes.Add(current);
+                offset++;
+            } while (current != 0);
+
+            return System.Text.Encoding.UTF8.GetString(bytes.ToArray());
         }
     }
 }

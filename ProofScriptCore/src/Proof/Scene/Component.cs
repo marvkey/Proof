@@ -331,6 +331,11 @@ namespace Proof
             return InternalCalls.PlayerHUDComponent_UITableLayerGetPanelInstanceVisible(Entity.ID, layerIndex, panel.ID);
         }
 
+        public void PushPanel(string layerName, UIPanel panel, bool visible)
+		{
+            InternalCalls.PlayerHUDComponent_UITableLayerPushPanelByName(Entity.ID, layerName, panel.ID, visible);
+        }
+
         public void PushPanel(uint layerIndex, UIPanel panel, bool visible)
         {
             InternalCalls.PlayerHUDComponent_UITableLayerPushPanel(Entity.ID, layerIndex, panel.ID, visible);
@@ -341,13 +346,33 @@ namespace Proof
             InternalCalls.PlayerHUDComponent_UITableLayerRemovePanel(Entity.ID, layerIndex, panel.ID);
         }
 
+        public void RemovePanel(string layerName, UIPanel panel)
+		{
+            InternalCalls.PlayerHUDComponent_UITableLayerRemovePanelByName(Entity.ID, layerName, panel.ID);
+        }
+
         public Variable GetRegistryVariable(uint layerIndex, UIPanel panel, string varName)
         {
 			InternalCalls.PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariable(Entity.ID, layerIndex, panel.ID, varName,out VariableRaw var);
 
+			if(!panel.ID.IsValid())return null;
+            if (var.VariableUUID != 0)
+            {
+                return new Variable(var.VariableUUID, (VariableTypes)var.Type, var.StorageHandle);
+            }
             return null;
         }
 
+        public Variable GetRegistryVariable(string layerName, UIPanel panel, string varName)
+		{
+            InternalCalls.PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariableByName(Entity.ID, layerName, panel.ID, varName, out VariableRaw var);
+            if (var.VariableUUID != 0)
+            {
+                return new Variable(var.VariableUUID, (VariableTypes)var.Type, var.StorageHandle);
+            }
+
+            return null;
+        }
         public Variable GetRegistryVariableByPanelIndex(uint layerIndex, uint panelIndex, string varName)
         {
             InternalCalls.PlayerHUDComponent_UITableLayerGetPanelInstanceByIndex(Entity.ID, layerIndex, panelIndex, out UIPanelInstanceRaw panel);
@@ -364,7 +389,6 @@ namespace Proof
             }
 
 			return null;
-
         }
 
 		

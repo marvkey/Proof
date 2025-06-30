@@ -42,8 +42,11 @@ namespace LostExpedition
 
         private InventoryItem[] InventoryItems;
         public Entity InventoryHandleSlot;
+        public event Action<InventoryItem,InventoryItem> OnCurrentItemChanged; // current item, previous item
 
-        
+
+        public event Action<InventoryItem, InventoryItem, int ,bool > OnInventoryItemsChange; // if new item added or removed, item at slot now, item at slot before, invenotry index,(true item added, false item dropped)
+
         void OnCreate()
         {
             InventoryItems = new InventoryItem[NumItemSlots];
@@ -72,7 +75,7 @@ namespace LostExpedition
             }
 
             AddChild(item);
-
+            OnInventoryItemsChange?.Invoke(item, null, slot, true);
             item.RemoveComponent<RigidBodyComponent>();
             // changwe everythign but the scale
             Transform finalLocalTransform = new Proof.Transform();
@@ -86,7 +89,10 @@ namespace LostExpedition
             item.PickUp(this);
 
             if (slot == m_CurrentSlot)
+            {
                 item.SetActiveInventory();
+                OnCurrentItemChanged?.Invoke(item,null);
+            }
 
             Log.Info($"{Name} Picked up Item: {item.Name} Invenotry SLot {slot}");
 
@@ -146,6 +152,9 @@ namespace LostExpedition
 
             InventoryItem newItem = GetCurrentItem();
             newItem.SetActiveInventory();
+
+            OnCurrentItemChanged?.Invoke(newItem, previousItem);
+
         }
 
         public void DecreaseCurrentSlot()
@@ -185,6 +194,9 @@ namespace LostExpedition
 
             InventoryItem newItem = GetCurrentItem();
             newItem.SetActiveInventory(); ;
+
+            OnCurrentItemChanged?.Invoke(newItem, previousItem);
+
         }
 
         int FindFirstAvailableSlot()
