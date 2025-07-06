@@ -101,7 +101,7 @@ namespace Proof
                 continue;
             }
 
-            if ((line == "#Vertex Shader" || line == "#Fragment Shader" || line == "#Compute Shader" || line == "#Geometry Shader")&& enableread)
+            if ((line == "#Vertex Shader" || line == "#Fragment Shader" || line == "#Compute Shader" || line == "#Geometry Shader" ||line == "#TessellationControl Shader" || line == "#TessellationEvaluation Shader") && enableread)
                 break;
             if (enableread) {
                 source += line;

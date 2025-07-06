@@ -50,6 +50,24 @@ namespace Proof
 		PF_CORE_ASSERT(false, "Unknown RendererAPI!");
 		return nullptr;
 	}
+	Count<UniformBuffer> UniformBufferSet::GetBuffer()
+	{
+		return GetBuffer(Renderer::GetCurrentFrameInFlight());
+	}
+	
+	Count<UniformBuffer> UniformBufferSet::RT_GetBuffer()
+	{
+		return GetBuffer(Renderer::RT_GetCurrentFrameInFlight());
+	}
+
+	Count<StorageBuffer> StorageBufferSet::GetBuffer()
+	{
+		return GetBuffer(Renderer::GetCurrentFrameInFlight());
+	}
+	Count<StorageBuffer> StorageBufferSet::RT_GetBuffer()
+	{
+		return GetBuffer(Renderer::RT_GetCurrentFrameInFlight());
+	}
 	Count<StorageBuffer> StorageBuffer::Create(uint64_t size)
 	{
 		switch (Renderer::GetAPI())

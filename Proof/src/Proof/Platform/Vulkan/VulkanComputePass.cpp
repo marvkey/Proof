@@ -146,7 +146,6 @@ namespace Proof
 		m_RenderPassEnabled = true;
 
 		vkCmdBindPipeline(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, m_Config.Pipeline.As<VulkanComputePipeline>()->GetComputePipeline());
-		vkCmdBindPipeline(m_CommandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(), VK_PIPELINE_BIND_POINT_COMPUTE, m_Config.Pipeline.As<VulkanComputePipeline>()->GetComputePipeline());
 	}
 	
 	void VulkanComputePass::RT_BeginComputePass(Count<class RenderCommandBuffer> command)

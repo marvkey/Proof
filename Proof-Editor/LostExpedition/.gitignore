@@ -11,3 +11,27 @@ bin-int/
 **.lib
 **.pdb
 
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.dtbcache.json
+
+# Build artifacts
+bin/
+obj/
+Intermediates/
+Cache/
+
+# Git-specific
+*.lock
+*.db
+*.db-shm
+*.db-wal
+*.vsidx
+
+# OneDrive / temp files
+~$*
+*.tmp

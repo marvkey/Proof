@@ -21,7 +21,8 @@ namespace Proof
 		TriangleFan,
 		Line,
 		LineStrip,
-		Point
+		Point,
+		PatchList
 	};
 	enum class DepthCompareOperator 
 	{
@@ -274,7 +275,7 @@ namespace Proof
 		PolygonFillMode FillMode = PolygonFillMode::Fill;
 		GraphicsPipelineAttachment Attachments;
 		bool Multiview = false;
-
+		uint32_t TessellationPatchControlPoints = 4;
 
 
 	};

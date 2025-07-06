@@ -16,22 +16,22 @@ VariableRegistry:
       UUID: 6489873457267634925
       Data: 20
 UIElements:
-  - UIElement: 10524752796049348329
+  - UIElement: 17455850312312088790
     UICoreComponent:
-      ElementID: 10524752796049348329
-      Name: CrossHair
+      ElementID: 17455850312312088790
+      Name: Magazine
       UIElementType: Text
-      Position: [0, 0]
+      Position: [-3.04999995, 1.5]
       Rotation: [0, 0]
-      Size: [50, 50]
-      AnchorMinimum: [0.5, 0.5]
-      AnchorMaximum: [0.5, 0.5]
-      ParentHandle: 0
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      ParentHandle: 18377820849841452246
       Children: []
     UITextComponent:
       Text:
-        Value: +
-        BindedVariableID: 0
+        Value: 20
+        BindedVariableID: 6489873457267634925
       Color: [1, 1, 1, 1]
       Kerning: 0
       LineSpacing: 1
@@ -52,22 +52,22 @@ UIElements:
       DrawBorders: false
       BorderColor: [1, 1, 1, 1]
       BorderThickness: 1
-  - UIElement: 17455850312312088790
+  - UIElement: 10524752796049348329
     UICoreComponent:
-      ElementID: 17455850312312088790
-      Name: Magazine
+      ElementID: 10524752796049348329
+      Name: CrossHair
       UIElementType: Text
-      Position: [-3.04999995, 1.5]
+      Position: [0, 0]
       Rotation: [0, 0]
-      Size: [1, 1]
-      AnchorMinimum: [0, 0]
-      AnchorMaximum: [0, 0]
-      ParentHandle: 18377820849841452246
+      Size: [50, 50]
+      AnchorMinimum: [0.5, 0.5]
+      AnchorMaximum: [0.5, 0.5]
+      ParentHandle: 0
       Children: []
     UITextComponent:
       Text:
-        Value: 20
-        BindedVariableID: 6489873457267634925
+        Value: +
+        BindedVariableID: 0
       Color: [1, 1, 1, 1]
       Kerning: 0
       LineSpacing: 1

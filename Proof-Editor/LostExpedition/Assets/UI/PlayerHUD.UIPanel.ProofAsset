@@ -36,24 +36,6 @@ UIElements:
       DrawBorders: false
       BorderColor: [1, 1, 1, 1]
       BorderThickness: 1
-  - UIElement: 7113161298137729961
-    UICoreComponent:
-      ElementID: 7113161298137729961
-      Name: Image_1
-      UIElementType: Image
-      Position: [2.29999995, 1]
-      Rotation: [0, 0]
-      Size: [1, 1]
-      AnchorMinimum: [0, 0]
-      AnchorMaximum: [0, 0]
-      ParentHandle: 8848501089546760458
-      Children: []
-    UIImageComponent:
-      TintColor: [1, 1, 1, 1]
-      Texture:
-        AssetID: 13127080171188781274
-        AssetType: Texture
-        BindedVariableID: 1802181474746937623
   - UIElement: 1466150974567134310
     UICoreComponent:
       ElementID: 1466150974567134310
@@ -72,6 +54,41 @@ UIElements:
         AssetID: 13127080171188781274
         AssetType: Texture
         BindedVariableID: 16242045011453165744
+  - UIElement: 7113161298137729961
+    UICoreComponent:
+      ElementID: 7113161298137729961
+      Name: Image_1
+      UIElementType: Image
+      Position: [2.29999995, 1]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      ParentHandle: 8848501089546760458
+      Children: []
+    UIImageComponent:
+      TintColor: [1, 1, 1, 1]
+      Texture:
+        AssetID: 13127080171188781274
+        AssetType: Texture
+        BindedVariableID: 1802181474746937623
+  - UIElement: 14041552927147401439
+    UICoreComponent:
+      ElementID: 14041552927147401439
+      Name: HealthbarBox
+      UIElementType: HorizontalBox
+      Position: [-0.699999988, -1]
+      Rotation: [0, 0]
+      Size: [185.75, 30]
+      AnchorMinimum: [1, 0]
+      AnchorMaximum: [1, 0]
+      ParentHandle: 0
+      Children: [17444448354468700937]
+    UIHorizontalBoxComponent:
+      Spacing: 0
+      DrawBorders: false
+      BorderColor: [1, 1, 1, 1]
+      BorderThickness: 1
   - UIElement: 16000487577577749809
     UICoreComponent:
       ElementID: 16000487577577749809
@@ -90,23 +107,6 @@ UIElements:
         AssetID: 13127080171188781274
         AssetType: Texture
         BindedVariableID: 14272131317188086835
-  - UIElement: 14041552927147401439
-    UICoreComponent:
-      ElementID: 14041552927147401439
-      Name: HealthbarBox
-      UIElementType: HorizontalBox
-      Position: [-0.699999988, -1]
-      Rotation: [0, 0]
-      Size: [185.75, 30]
-      AnchorMinimum: [1, 0]
-      AnchorMaximum: [1, 0]
-      ParentHandle: 0
-      Children: [17444448354468700937]
-    UIHorizontalBoxComponent:
-      Spacing: 0
-      DrawBorders: false
-      BorderColor: [1, 1, 1, 1]
-      BorderThickness: 1
   - UIElement: 17444448354468700937
     UICoreComponent:
       ElementID: 17444448354468700937

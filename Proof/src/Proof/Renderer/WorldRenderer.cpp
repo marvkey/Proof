@@ -35,6 +35,7 @@
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Core/Core.h"
 #include "RendererSampler.h"
+#include "Proof/Scene/GrassRenderer/GrassRenderer.h"
 
 #include "VertexArray.h"
 #include <glm/glm.hpp>
@@ -177,6 +178,9 @@ namespace Proof
 	static constexpr int HBAO_RANDOM_SIZE = AO_RANDOMTEX_SIZE;
 	static constexpr int HBAO_RANDOM_ELEMENTS = HBAO_RANDOM_SIZE * HBAO_RANDOM_SIZE;
 	static constexpr int NUM_MRT = 8;
+
+	Count<GrassRenderer> grassRenderer;
+
 	WorldRenderer::~WorldRenderer() {
 		for (auto& transformBuffer : m_SubmeshTransformBuffers)
 			pdelete[] transformBuffer.Data;
@@ -189,6 +193,7 @@ namespace Proof
 		AmbientOcclusionSettings(PostProcessSettings.AmbientOcclusionSettings), BloomSettings(PostProcessSettings.BloomSettings), DOFSettings(PostProcessSettings.DOFSettings),
 		SSRSettings(PostProcessSettings.SSRSettings)
 	{
+		
 		Init();
 	}
 	Count<VertexArray> staticVertexArray;
@@ -1474,6 +1479,9 @@ namespace Proof
 			m_GeometryWireFrameOnTopPass->AddGlobalInput(m_GlobalInputs);
 
 		}
+
+		if (!grassRenderer)
+			grassRenderer = Count<GrassRenderer>::Create(this);
 		Renderer::Submit([instance = Count<WorldRenderer>(this)]() mutable { instance->m_ResourcesCreatedGPU = true; });
 		PF_ENGINE_TRACE("World Renderer Inititilized");
 	}
@@ -1731,6 +1739,7 @@ namespace Proof
 		{
 			m_UBFrameData.FrameCount = FrameTime::GetFrameCount();
 			m_UBFrameData.AppTimeSeconds = FrameTime::GetTime();
+			m_UBFrameData.DeltaTime = FrameTime::GetWorldDeltaTime();
 			m_UBFrameBuffer->SetData(frameIndex, Buffer(&m_UBFrameData, sizeof(m_UBFrameData)));
 		}
 		// camera buffer
@@ -2602,6 +2611,9 @@ namespace Proof
 		}
 		
 	#endif
+
+		grassRenderer->Render(this);
+		grassRenderer->Update(FrameTime::GetWorldDeltaTime(),glm::mat4(1.0f));
 
 		m_Timers.GeometryPass = geometryPassTimer.ElapsedMillis();
 	}

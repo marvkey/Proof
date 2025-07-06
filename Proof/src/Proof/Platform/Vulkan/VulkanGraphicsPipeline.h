@@ -41,6 +41,9 @@ namespace Proof
 				case Proof::DrawType::Point:
 					return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
 					break;
+				case Proof::DrawType::PatchList:
+					return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
+					break;
 				default:
 					break;
 			}

@@ -54,7 +54,8 @@ namespace Proof
 		static Count<UniformBufferSet>Create(uint64_t size);
 		static Count<UniformBufferSet>Create(Buffer data);
 		virtual Count<UniformBuffer> GetBuffer(uint32_t index) = 0;
-
+		virtual Count<UniformBuffer> GetBuffer();
+		virtual Count<UniformBuffer> RT_GetBuffer();
 		//virtual void Resize(uint32_t index, uint64_t size) = 0;
 		//virtual void Resize(uint32_t index, Buffer data) = 0;
 		virtual void SetData(uint32_t index, Buffer data, uint64_t offset = 0) = 0;
@@ -67,7 +68,8 @@ namespace Proof
 		static Count<StorageBufferSet>Create(uint64_t size);
 		static Count<StorageBufferSet>Create(Buffer data);
 		virtual Count<StorageBuffer> GetBuffer(uint32_t index) = 0;
-
+		virtual Count<StorageBuffer> GetBuffer();
+		virtual Count<StorageBuffer> RT_GetBuffer();
 		virtual void Resize(uint32_t index, uint64_t size) = 0;
 		virtual void Resize(uint32_t index, Buffer data) = 0;
 		virtual void SetData(uint32_t index, Buffer data, uint64_t offset = 0) = 0;

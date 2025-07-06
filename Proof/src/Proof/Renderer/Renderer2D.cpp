@@ -296,7 +296,7 @@ namespace Proof {
 		Buffer buffer(&m_Camera, sizeof(CameraData));
 		m_UBCamera->SetData(Renderer::GetCurrentFrameInFlight(), buffer);
 		m_Stats = {};
-		//if(!m_NeedsToSubmitCommandBuffer)
+		if(!m_NeedsToSubmitCommandBuffer)
 			Renderer::BeginCommandBuffer(m_CommandBuffer);
 
 		Reset();
@@ -497,32 +497,25 @@ namespace Proof {
 
 		glm::quat orientation = glm::quat(rotationRadian);
 
+		radius = std::clamp(radius, 0.0f, height * 0.5f);
 		glm::vec3 localUp = orientation * glm::vec3(0.0f, 1.0f, 0.0f);
-		glm::vec3 localForward = orientation * glm::vec3(0.0f, 0.0f, 1.0f);
+		glm::quat arcOrientation = orientation * glm::angleAxis(glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
-		// Full capsule height = height + 2 * radius
-		float totalHeight = height + 2.0f * radius;
+		glm::vec3 basePositionOffset = localUp * height * 0.5f;
+		glm::vec3 baseArcPosition = position + localUp * radius - basePositionOffset;
 
-		// Base position = center of the capsule - half height in local up
-		//glm::vec3 base = position - (localUp * (height * 0.5f));
-		glm::vec3 base = position - (localUp * ((height + 2.0f * radius) * 0.5f));
+		// Draw bottom hemispheres
+		DrawArc(glm::radians(180.0f), glm::radians(360.0f), baseArcPosition, glm::eulerAngles(orientation), radius, color);
+		DrawArc(glm::radians(180.0f), glm::radians(360.0f), baseArcPosition, glm::eulerAngles(arcOrientation), radius, color);
 
-		// Bottom hemisphere center
-		glm::vec3 bottomCenter = base + localUp * radius;
+		// Draw cylinder
+		float cylinderHeight = height - radius * 2.0f;
+		DrawCylinder(baseArcPosition, glm::eulerAngles(orientation), cylinderHeight, radius, color, true);
 
-		// Top hemisphere center
-		glm::vec3 topCenter = base + localUp * (radius + height);
-
-		// Draw bottom hemisphere (2 arcs: front and side)
-		DrawArc(glm::radians(180.0f), glm::radians(360.0f), bottomCenter, glm::eulerAngles(orientation), radius, color);
-		DrawArc(glm::radians(180.0f), glm::radians(360.0f), bottomCenter, glm::eulerAngles(orientation * glm::angleAxis(glm::half_pi<float>(), glm::vec3(0, 1, 0))), radius, color);
-
-		// Draw cylinder between hemispheres
-		DrawCylinder(bottomCenter, glm::eulerAngles(orientation), height, radius, color, true);
-
-		// Draw top hemisphere (2 arcs: front and side)
-		DrawArc(0.0f, glm::radians(180.0f), topCenter, glm::eulerAngles(orientation), radius, color);
-		DrawArc(0.0f, glm::radians(180.0f), topCenter, glm::eulerAngles(orientation * glm::angleAxis(glm::half_pi<float>(), glm::vec3(0, 1, 0))), radius, color);
+		// Draw top hemispheres
+		glm::vec3 topArcPosition = baseArcPosition + localUp * cylinderHeight;
+		DrawArc(0.0f, glm::radians(180.0f), topArcPosition, glm::eulerAngles(orientation), radius, color);
+		DrawArc(0.0f, glm::radians(180.0f), topArcPosition, glm::eulerAngles(arcOrientation), radius, color);
 	}
 
 
@@ -1197,8 +1190,8 @@ namespace Proof {
 	void Renderer2D::EndContext() {
 		Render();
 		Reset();
-		Renderer::EndCommandBuffer(m_CommandBuffer);
-		Renderer::SubmitCommandBuffer(m_CommandBuffer);
+		//Renderer::EndCommandBuffer(m_CommandBuffer);
+		//Renderer::SubmitCommandBuffer(m_CommandBuffer);
 		m_NeedsToSubmitCommandBuffer = true;
 		m_ContextSettings = {};
 	}
@@ -1364,41 +1357,6 @@ namespace Proof {
 
 		}
 		m_Stats.TotalRenderTime += renderTime.ElapsedMillis();
-		#if 0
-		if(m_Storage2DData->TextIndexCount > 0){
-			PF_PROFILE_FUNC("Renderer2D::String Draw");
-			auto descriptor0 = m_TextPipeline->Descriptors[DescriptorSets::Zero];
-
-			descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, m_Storage2DData->CameraBuffer);
-			descriptor0->WriteImage(1, m_Storage2DData->FontTexture);
-
-			//Renderer::RecordRenderPass(m_RenderPass, m_TextPipeline->GraphicsPipeline);
-			m_Storage2DData->TextVertexBuffer->SetData(m_Storage2DData->TextArray.data(), m_Storage2DData->TextArraySize * sizeof(TextVertex));
-			descriptor0->Bind(m_Storage2DData->CommandBuffer, m_TextPipeline->PipeLineLayout);
-
-			m_Storage2DData->IndexBuffer->Bind(m_Storage2DData->CommandBuffer);
-			m_Storage2DData->TextVertexBuffer->Bind(m_Storage2DData->CommandBuffer);
-
-			Renderer::DrawElementIndexed(m_Storage2DData->CommandBuffer, m_Storage2DData->TextIndexCount, m_Storage2DData->TextArraySize);
-		}
-		if (m_Storage2DData->IndexCount == 0)return; // nothing to draw
-		{
-			PF_PROFILE_FUNC("Renderer2D::Quad Draw");
-
-			auto descriptor0 = m_SpritePipeline->Descriptors[DescriptorSets::Zero];
-
-			descriptor0->WriteBuffer((int)DescriptorSet0::CameraData, m_Storage2DData->CameraBuffer);
-			descriptor0->WriteImage(1, m_Storage2DData->Textures);
-
-			//Renderer::RecordRenderPass(m_RenderPass, m_SpritePipeline->GraphicsPipeline);
-			m_Storage2DData->VertexBuffer->SetData(m_Storage2DData->QuadArray.data(), m_Storage2DData->QuadArraySize * sizeof(Vertex2D));
-			descriptor0->Bind(m_Storage2DData->CommandBuffer, m_SpritePipeline->PipeLineLayout);
-			m_Storage2DData->VertexBuffer->Bind(m_Storage2DData->CommandBuffer);
-			m_Storage2DData->IndexBuffer->Bind(m_Storage2DData->CommandBuffer);
-			Renderer::DrawElementIndexed(m_Storage2DData->CommandBuffer, m_Storage2DData->IndexCount, m_Storage2DData->QuadArraySize, 0);
-		}
-		#endif
-
 	}
 	
 	
@@ -1498,9 +1456,5 @@ namespace Proof {
 
 		for(uint32_t i=0; i < Renderer2DStorage::c_MaxTextureSlot;i++)
 			Textures[i] = WhiteTexture;
-	}
-	void Renderer2D::DrawQuad(const glm::mat4& transform, const glm::vec4& Color)
-	{
-		DrawQuad(transform, Color, Renderer::GetWhiteTexture());
 	}
 }

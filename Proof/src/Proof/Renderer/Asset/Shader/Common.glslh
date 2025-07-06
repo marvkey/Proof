@@ -8,6 +8,7 @@ layout(set = 3, binding = 0) uniform FrameData
 {
 	uint FrameCount;
 	float AppTimeSeconds;
+    float DeltaTime;
 }u_FrameData;
 
 float Log10(float x) 

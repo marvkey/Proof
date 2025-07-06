@@ -5,12 +5,12 @@ Assets:
   - Asset: 4130666624169366902
     Type: Material
     Path: Meshes\Shotgun\m_ShotGunMaterial.Material.ProofAsset
-  - Asset: 1804100413018170951
-    Type: Texture
-    Path: Models\Pistol\textures\Pistol_Normal.png
   - Asset: 56963814104375806
     Type: Texture
     Path: Textures\InventoryItems\PistolImage.png
+  - Asset: 1804100413018170951
+    Type: Texture
+    Path: Models\Pistol\textures\Pistol_Normal.png
   - Asset: 11013441240331562467
     Type: InputAction
     Path: Input\PlayerMovement\IA_Rotation.InputAction.ProofAsset
@@ -125,9 +125,12 @@ Assets:
   - Asset: 17755560868630915795
     Type: Material
     Path: Meshes\Pistol\m_Pistol.Material.ProofAsset
-  - Asset: 8331526773119552519
+  - Asset: 14961749255730234070
     Type: Texture
     Path: Projects\Facility22\tex\shotgunColor_1.png
-  - Asset: 10713455827554293266
+  - Asset: 2649101062440098009
     Type: Texture
     Path: Projects\Facility22\tex\shotgunNormal_1.png
+  - Asset: 12732299734325070797
+    Type: World
+    Path: Scenes\TestScenes\TestGrass.ProofWorld

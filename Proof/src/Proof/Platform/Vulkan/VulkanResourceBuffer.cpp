@@ -172,7 +172,8 @@ namespace Proof{
 		storageBufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		storageBufferInfo.pNext = nullptr;
 		storageBufferInfo.size = m_Size;
-		storageBufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		//(TODO) Remove the Vertex buffer bit only here for the grass rendere
+		storageBufferInfo.usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT; 
 
 
 		allocator.AllocateBuffer(storageBufferInfo, Utils::ProofVulkanMemmoryUsageToVMAMemoryUsage(m_MemoryUsage), m_StorageBuffer);

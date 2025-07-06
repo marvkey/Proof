@@ -197,6 +197,8 @@ namespace Proof
 		{
 			return m_UBCameraData;
 		}
+		Count<class GlobalBufferSet> GetGlobalInputs() { return m_GlobalInputs; }
+		Count<RenderPass> GetGeometryPass() { return m_GeometryPass; }
 
 	public:
 		// preProcess

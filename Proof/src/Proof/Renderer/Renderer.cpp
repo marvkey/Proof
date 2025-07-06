@@ -219,6 +219,10 @@ namespace Proof {
 		ShaderLibrary->LoadShader("FFTVerticalStepInverse", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTVerticalStepInverse.glsl");
 		ShaderLibrary->LoadShader("FFTRealisticWater", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTRealisticWater.glsl");
 
+		//Grass
+		ShaderLibrary->LoadShader("GrassRenderer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Grass/GrassRenderer.glsl");
+		ShaderLibrary->LoadShader("GrassGenerator", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Grass/GrassGenerator.glsl");
+
 		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
 		SamplerFactory::Init();
@@ -946,7 +950,7 @@ namespace Proof {
 			break;
 			case Proof::EnvironmentState::EnvironmentTexture:
 			{
-#if 1
+#if 0
 				if (!AssetManager::HasAsset(environment->m_EnvironmentTexture.Image))
 				{
 					environment->m_EnvironmentTexture.Image = 0;
@@ -1094,7 +1098,7 @@ namespace Proof {
 
 	void Renderer::EndFrame()
 	{
-#if 0
+#if 1
 		for (auto renderer : Renderer2D::s_Instances)
 		{
 

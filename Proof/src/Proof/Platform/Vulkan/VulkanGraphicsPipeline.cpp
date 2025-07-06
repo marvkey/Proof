@@ -420,6 +420,18 @@ namespace Proof
 		// some functionality to configure the viewport or line width without restarting the whole pipeline
 		pipelineInfo.pDynamicState = &pipelineConfig.DynamicSate;
 
+		if (vulkanShader->GetShaderStages().contains(ShaderStage::TessellationControl) ||
+			vulkanShader->GetShaderStages().contains(ShaderStage::TessellationEvaluation))
+		{
+			VkPipelineTessellationStateCreateInfo tessellationInfo = {};
+			tessellationInfo.sType =
+				VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
+			tessellationInfo.pNext = NULL;
+			tessellationInfo.flags = 0;
+			tessellationInfo.patchControlPoints = m_Config.TessellationPatchControlPoints;
+
+			pipelineInfo.pTessellationState = &tessellationInfo;
+		}
 		//pipelineInfo.sha
 		pipelineInfo.layout = pipelineConfig.PipelineLayout;
 		pipelineInfo.renderPass = pipelineConfig.RenderPass;

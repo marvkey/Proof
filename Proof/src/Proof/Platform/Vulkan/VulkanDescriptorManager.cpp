@@ -619,9 +619,8 @@ namespace Proof
                     break;
                 case Proof::RendererResourceType::Sampler:
                     {
-
-                    Count<RenderSampler> storageBufferSet = inputData.second.As<RenderSampler>();
-                    m_Inputs[decl->Set][decl->Binding] = RenderPassInput(storageBufferSet);
+                        Count<RenderSampler> storageBufferSet = inputData.second.As<RenderSampler>();
+                        m_Inputs[decl->Set][decl->Binding] = RenderPassInput(storageBufferSet);
                     }
                 break;
                 case Proof::RendererResourceType::Image2D:

@@ -48,6 +48,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include "Proof/Utils/ContainerUtils.h"
 #include "TerrainRenderer/TerrainRenderer.h"
+#include "GrassRenderer/GrassRenderer.h"
 namespace Proof 
 {
 
@@ -62,6 +63,8 @@ namespace Proof
 	World::World(const std::string& name, UUID ID):
 		Name(name)
 	{
+
+
 		AllActiveWorlds.emplace_back(WeakCount<World>(this));
 
 		m_ScriptWorld = Count<ScriptWorld>::Create(this);
@@ -130,6 +133,7 @@ namespace Proof
 				terrainComponent.Terrain->Update(DeltaTime, transform);
 			}
 		}
+
 		
 	}
 	
@@ -432,6 +436,8 @@ namespace Proof
 		RenderPhysicsDebug(worldRenderer, false);
 
 		worldRenderer->EndScene();
+
+
 		// render 2d
 		Count<Renderer2D> renderer2D = worldRenderer->GetRenderer2D();
 
@@ -545,6 +551,8 @@ namespace Proof
 			renderer2D->EndContext();
 
 		}
+
+
 
 	}
 	void World::RenderPhysicsDebug(Count<WorldRenderer> renderer, bool runtime)

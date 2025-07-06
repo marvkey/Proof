@@ -185,5 +185,6 @@ namespace Proof
 	{
 		uint32_t FrameCount;
 		float AppTimeSeconds;
+		float DeltaTime;
 	};
 }
