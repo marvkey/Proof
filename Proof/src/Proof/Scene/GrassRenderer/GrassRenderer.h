@@ -44,7 +44,7 @@ namespace Proof
 
     struct GrassBladePlane
     {
-        GrassBladePlane(float planeSize = 100.0f, uint32_t numBlades = NUM_BLADES);
+        GrassBladePlane(float planeSize = 15.0f, uint32_t numBlades = NUM_BLADES);
         Count< class StorageBufferSet>  BladesBuffer;
         Count< class StorageBufferSet>  CulledBladesBuffer;
         Count< class StorageBufferSet>  NumBladesBuffer;

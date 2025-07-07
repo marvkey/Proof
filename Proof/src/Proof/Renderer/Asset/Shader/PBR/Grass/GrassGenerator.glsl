@@ -62,11 +62,10 @@ void main()
     // Reset the number of blades to 0
     if (gl_GlobalInvocationID.x == 0) 
     {
-   // numBlades.vertexCount = 0;
+        numBlades.vertexCount = 0;
     }
-
-    barrier();  // Wait till all threads reach this point
-
+memoryBarrierBuffer();
+barrier();
 
     Blade blade = inBlades.in_blades[gl_GlobalInvocationID.x];
     vec3 v0 = blade.V0.xyz; // base (root) position on ground
@@ -119,6 +118,7 @@ void main()
     // ---------------------- APPLY TOTAL FORCE ----------------------
     // total force
     vec3 total_force = recovery + gravity + wind_force;
+    //total_force = vec3(0);
 
     // Apply velocity: advance tip (v2) position using deltaTime
     v2 = v2 + u_FrameData.DeltaTime * total_force;
@@ -168,8 +168,49 @@ void main()
     inBlades.in_blades[gl_GlobalInvocationID.x] = blade;
 
 
+    //------------------------------------------------------------------------------
+
+     // 1. Orientation test
+  vec3 view_dir =
+      normalize(vec3(inverse(u_Camera.View) * vec4(0.0, 0.0, 0.0, 1.0)));
+  vec3 blade_dir           = vec3(cos(orientation), 0.0, sin(orientation));
+  bool culledByOrientation = (abs(dot(view_dir, blade_dir)) < 0.6);
+
+  // 2. View Frustum test
+  vec3 midpoint = 0.25 * v0 + 0.5 * v1 + 0.25 * v2;  // midpoint of curve
+  const float tolerance = 0.0;
+  mat4 view_proj        = u_Camera.Projection * u_Camera.View;
+
+  vec4 v0_ndc = view_proj * vec4(v0, 1.0);
+  float h0    = v0_ndc.w + tolerance;
+  bool v0_in  = inBounds(v0_ndc.x, h0) && inBounds(v0_ndc.y, h0) &&
+               inBounds(v0_ndc.z, h0);
+
+  vec4 v1_ndc = view_proj * vec4(midpoint, 1.0);
+  float h1    = v1_ndc.w + tolerance;
+  bool v1_in  = inBounds(v1_ndc.x, h1) && inBounds(v1_ndc.y, h1) &&
+               inBounds(v1_ndc.z, h1);
+
+  vec4 v2_ndc = view_proj * vec4(v2, 1.0);
+  float h2    = v2_ndc.w + tolerance;
+  bool v2_in  = inBounds(v2_ndc.x, h2) && inBounds(v2_ndc.y, h2) &&
+               inBounds(v2_ndc.z, h2);
+
+  bool culledByViewFrustum = !(v0_in || v1_in || v2_in);
+
+  // 3. Distance Test
+  vec3 c =
+      vec3(inverse(u_Camera.View) * vec4(0.0, 0.0, 0.0, 1.0));  // camera position
+  float d_proj          = length(v0 - c - up * dot(v0 - c, up));
+  const float d_max     = 15.0;
+  const int num_buckets = 20;
+  bool culledByDistance = ((gl_GlobalInvocationID.x % num_buckets) >
+                           floor(num_buckets * (1 - d_proj / d_max)));
+
     // ---------------------- WRITE BACK TO BUFFER ----------------------
-    //Todo actual culling
-   // culledBlades.culled_blades[atomicAdd(numBlades.vertexCount, 1)] = blade;
+   // final output
+  //if (!culledByDistance && !culledByOrientation && !culledByViewFrustum) {
+    culledBlades.culled_blades[atomicAdd(numBlades.vertexCount, 1)] = blade;
+  //}
 
 }

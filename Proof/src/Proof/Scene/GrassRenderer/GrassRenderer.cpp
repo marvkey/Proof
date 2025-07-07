@@ -30,22 +30,16 @@ namespace Proof
 	{
         m_WorldRenderer = renderer.Get();
 
-        m_Planes.resize(1);
-        m_RenderCommandBuffer = RenderCommandBuffer::Create("Grass renderCommand Buffer");
+        GrassBladePlane plane;
+        m_Planes.emplace_back(plane);
 
         if (vertexArray == nullptr)
         {
-            vertexArray = VertexArray::Create({ sizeof(Vertex)});
-
-            vertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Position));
-            vertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
-            vertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoord));
-            vertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
-            vertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
-
-            //vertexArray->AddData(1, DataType::Vec4, offsetof(UBGrassBlade, UBGrassBlade::V1));
-            //vertexArray->AddData(2, DataType::Vec4, offsetof(UBGrassBlade, UBGrassBlade::V2));
-            //vertexArray->AddData(3, DataType::Vec4, offsetof(UBGrassBlade, UBGrassBlade::Up));
+            vertexArray = VertexArray::Create({ sizeof(UBGrassBlade)});
+            vertexArray->AddData(0, DataType::Vec4, offsetof(UBGrassBlade, UBGrassBlade::V0));
+            vertexArray->AddData(1, DataType::Vec4, offsetof(UBGrassBlade, UBGrassBlade::V1));
+            vertexArray->AddData(2, DataType::Vec4, offsetof(UBGrassBlade, UBGrassBlade::V2));
+            vertexArray->AddData(3, DataType::Vec4, offsetof(UBGrassBlade, UBGrassBlade::Up));
         }
         GraphicsPipelineConfiguration pipelineConfig = m_WorldRenderer->GetGeometryPass()->GetPipeline()->GetConfig();
 
@@ -53,9 +47,9 @@ namespace Proof
         pipelineConfig.DebugName = "Grass";
 
         pipelineConfig.Shader = Renderer::GetShader("GrassRenderer");
-       // pipelineConfig.VertexArray = vertexArray;
+        pipelineConfig.VertexArray = vertexArray;
 
-        pipelineConfig.DrawMode = DrawType::Triangle;
+        pipelineConfig.DrawMode = DrawType::PatchList;
         pipelineConfig.TessellationPatchControlPoints = 1;
         pipelineConfig.FillMode = PolygonFillMode::Fill;
 
@@ -64,10 +58,10 @@ namespace Proof
         pipelineConfig.CullMode = CullMode::None;
         pipelineConfig.FrontFace = FrontFace::CounterClockWise;
 
-        pipelineConfig.DepthTest = false;
+        pipelineConfig.DepthTest = true;
         pipelineConfig.WriteDepth = false; // (TODO) maybe for now 
        // pipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
-        pipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
+        pipelineConfig.DepthCompareOperator = DepthCompareOperator::Less;
 
         pipelineConfig.Blend = true;
 
@@ -113,70 +107,93 @@ namespace Proof
 
             for (GrassBladePlane& plane : m_Planes)
             {
-                //remebr only workign cause on only 1 plane in scen
-           
-
-                m_GrassGenerator->Dispatch((plane.GetNumBlades() + WORK_GROUP_SIZE - 1) / WORK_GROUP_SIZE, 1, 1);
+                GrassBladeDrawIndirect indirect = { .VertexCount = 0, .InstanceCount = 1, .FirstVertex = 0, .FirstInstance = 0 };
+                plane.NumBladesBuffer->GetBuffer()->SetData(Buffer(&indirect, sizeof(GrassBladeDrawIndirect)));
+                //remebr only workign cause on only 1 plane in sce
+                m_GrassGenerator->Dispatch(static_cast<uint32_t>((plane.GetNumBlades() + WORK_GROUP_SIZE - 1) /
+                    WORK_GROUP_SIZE), 1, 1);
             }
             Renderer::EndComputePass(m_GrassGenerator);
 
         }
-
+#if 0
         std::vector<VkBufferMemoryBarrier> barriers(m_Planes.size());
         for (uint32_t j = 0; j < barriers.size(); ++j)
         {
             barriers[j].sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
             barriers[j].srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
             barriers[j].dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
-            barriers[j].srcQueueFamilyIndex = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice()->GetPhysicalDevice()->GetQueueFamilyIndices().Compute;
-            barriers[j].dstQueueFamilyIndex = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice()->GetPhysicalDevice()->GetQueueFamilyIndices().Graphics;
+            //barriers[j].srcQueueFamilyIndex = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice()->GetPhysicalDevice()->GetQueueFamilyIndices().Compute;
+            //barriers[j].dstQueueFamilyIndex = Renderer::GetGraphicsContext().As<VulkanGraphicsContext>()->GetDevice()->GetPhysicalDevice()->GetQueueFamilyIndices().Graphics;
             barriers[j].srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barriers[j].dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             barriers[j].buffer = m_Planes[j].NumBladesBuffer->GetBuffer().As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer;
+            //barriers[j].buffer = m_Planes[j].NumBladesBuffer.As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer;
             barriers[j].offset = 0;
             barriers[j].size = sizeof(GrassBladeDrawIndirect);
+
         }
+#else
+        std::vector<VkBufferMemoryBarrier> barriers;
+        for (uint32_t j = 0; j < m_Planes.size(); ++j)
+        {
+            // NumBladesBuffer: for vkCmdDrawIndirect
+            VkBufferMemoryBarrier indirectBarrier = {};
+            indirectBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+            indirectBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+            indirectBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
+            indirectBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            indirectBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            indirectBarrier.buffer = m_Planes[j].NumBladesBuffer->GetBuffer().As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer;
+            indirectBarrier.offset = 0;
+            indirectBarrier.size = sizeof(GrassBladeDrawIndirect);
+            barriers.push_back(indirectBarrier);
+
+            // CulledBladesBuffer: for vertex fetch
+            VkBufferMemoryBarrier vertexBarrier = {};
+            vertexBarrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+            vertexBarrier.srcAccessMask = VK_ACCESS_SHADER_WRITE_BIT;
+            vertexBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
+            vertexBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            vertexBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            vertexBarrier.buffer = m_Planes[j].CulledBladesBuffer->GetBuffer().As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer;
+            vertexBarrier.offset = 0;
+            vertexBarrier.size = m_Planes[j].CulledBladesBuffer->GetBuffer().As<VulkanStorageBuffer>()->GetSize();
+            barriers.push_back(vertexBarrier);
+        }
+#endif
 
         Renderer::Submit([commandBuffer = cmdBuffer, grassCompute = m_GrassGenerator, barriers = barriers]()
             {
-                //vkCmdPipelineBarrier(commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
-                //    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                //    VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT, 0, 0, nullptr,
-                //    barriers.size(), barriers.data(), 0, nullptr);
+               
+                vkCmdPipelineBarrier(
+                    commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, // srcStageMask
+                    VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT | VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, // dstStageMask 
+                    0, 0, nullptr,
+                    static_cast<uint32_t>(barriers.size()), barriers.data(),
+                    0, nullptr);
             });
+      
         Renderer::BeginRenderPass(cmdBuffer, m_GrassRenderPass);
 
         for (GrassBladePlane& plane : m_Planes)
         {
             Renderer::Submit([commandBuffer = cmdBuffer, culledBufferBlades = plane.BladesBuffer,numBladesBuffer = plane.NumBladesBuffer]() mutable
                 {
-                    //VkDeviceSize instanceOffset[1] = { 0 };
-                    //vkCmdBindVertexBuffers(commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(), 0, 1, &culledBufferBlades->RT_GetBuffer().As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer, instanceOffset);
-                    
-                    //vkCmdDrawIndirect(commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
-                    //    numBladesBuffer->RT_GetBuffer().As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer, 0, 1,
-                    //    sizeof(GrassBladeDrawIndirect));
-
-                  
-
+                   VkDeviceSize instanceOffset[1] = { 0 };
+                   vkCmdBindVertexBuffers(commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(), 0, 1, 
+                       &culledBufferBlades->RT_GetBuffer().As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer, instanceOffset);
+                   //&culledBufferBlades.As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer, instanceOffset);
+                   
+                   vkCmdDrawIndirect(commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),
+                       numBladesBuffer->RT_GetBuffer().As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer, 0, 1,
+                       //numBladesBuffer.As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer, 0, 1,
+                       sizeof(GrassBladeDrawIndirect));
                 
                 });
-
-            auto cube = AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Cube).As<Mesh>();
-
-            cube->GetMeshSource()->GetVertexBuffer()->Bind(cmdBuffer);
-            cube->GetMeshSource()->GetIndexBuffer()->Bind(cmdBuffer);
-
-            const SubMesh& subMesh = cube->GetMeshSource()->GetSubMeshes()[0];
-            Renderer::DrawElementIndexed(cmdBuffer, subMesh.IndiceCount, 1, subMesh.BaseIndice, subMesh.BaseVertex);
         }
         Renderer::EndRenderPass(m_GrassRenderPass);
-
-   
-        //Renderer::EndCommandBuffer(m_RenderCommandBuffer);
-        //Renderer::SubmitCommandBuffer(m_RenderCommandBuffer);
-
-
 	}
 	GrassBladePlane::GrassBladePlane(float planeSize, uint32_t numBlades)
 		:m_PlaneSize(planeSize), m_NumBlades(numBlades)

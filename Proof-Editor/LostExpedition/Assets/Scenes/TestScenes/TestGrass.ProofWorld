@@ -1,24 +1,6 @@
 World:
   ID: 12732299734325070797
   Entities:
-    - Entity: 4910437129203580139
-      TagComponent:
-        Tag: Directional Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [1.39626336, 0.17453292, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 1
-        CastShadow: true
-        ShadowStrength: 0.5
-        CastSoftShadow: true
-        ShadowSoftness: 0.5
     - Entity: 17992759079134481128
       TagComponent:
         Tag: Sky Light
@@ -40,6 +22,24 @@ World:
         HosekWilkieTurbidity: 4
         HosekWilkieGroundReflectance: 0.100000001
         PreethamTurbidity: 4
+    - Entity: 4910437129203580139
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [1.39626336, 0.17453292, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+        CastShadow: true
+        ShadowStrength: 0.5
+        CastSoftShadow: true
+        ShadowSoftness: 0.5
     - Entity: 11164753136641318585
       TagComponent:
         Tag: Plane
@@ -47,7 +47,7 @@ World:
       TransformComponent:
         Location: [0, 0, 0]
         Rotation: [0, 0, 0]
-        Scale: [100, 0.100000001, 100]
+        Scale: [15, 1, 15]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
