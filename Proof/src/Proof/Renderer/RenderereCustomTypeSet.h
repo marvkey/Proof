@@ -26,8 +26,16 @@ namespace Proof
 			PF_CORE_ASSERT(m_Values.contains(index), "RendererCustomTypeSe Set Does not contain index");
 			return m_Values.at(index);
 		}
-
+		TCustomType& GetByIndex(uint32_t index)const
+		{
+			PF_CORE_ASSERT(m_Values.contains(index), "RendererCustomTypeSe Set Does not contain index");
+			return m_Values.at(index);
+		}
 		TCustomType& Get()
+		{
+			return GetByIndex(RenderCustomTypeSetHelper::GetCurrentFrameInFlight());
+		}
+		TCustomType& Get()const
 		{
 			return GetByIndex(RenderCustomTypeSetHelper::GetCurrentFrameInFlight());
 		}
@@ -36,6 +44,10 @@ namespace Proof
 			return GetByIndex(RenderCustomTypeSetHelper::RT_GetCurrentFrameInFlight());
 		}
 
+		TCustomType& RT_Get()const
+		{
+			return GetByIndex(RenderCustomTypeSetHelper::RT_GetCurrentFrameInFlight());
+		}
 		void ForEach(const std::function<void(TCustomType&)>& func)
 		{
 			for (auto& pair : m_Values)
@@ -47,8 +59,20 @@ namespace Proof
 		{
 			return m_Values.size();
 		}
+
+		void ForEach(const std::function<void(TCustomType&)>& func)const
+		{
+			for (auto& pair : m_Values)
+			{
+				func(pair.second);
+			}
+		}
+		uint32_t GetCount()const
+		{
+			return m_Values.size();
+		}
 	private:
-		std::map<uint32_t, TCustomType> m_Values;
+		mutable std::map<uint32_t, TCustomType> m_Values;
 		
 	};
 	

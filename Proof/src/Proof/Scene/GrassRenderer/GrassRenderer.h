@@ -3,6 +3,7 @@
 #include "Proof/Utils/MultiUse.h"
 namespace Proof
 {
+    
     struct UBGrassBlade 
     {
         // Base of the blade (root position on the surface)
@@ -24,6 +25,10 @@ namespace Proof
         // up.xyz = up vector (usually terrain normal)
         // up.w   = stiffness coefficient (resistance to bending)
         glm::vec4 Up;
+        UBGrassBlade() = default;
+
+        UBGrassBlade(glm::vec3 position);
+
     };
 
     struct GrassBladeDrawIndirect 
@@ -42,31 +47,35 @@ namespace Proof
     constexpr static float MAX_BEND = 13.0f;
 
 
-    struct GrassBladePlane
+    struct GrassBladePlane : public RefCounted
     {
         GrassBladePlane(float planeSize = 15.0f, uint32_t numBlades = NUM_BLADES);
+        GrassBladePlane(const std::vector<UBGrassBlade>& blades);
         Count< class StorageBufferSet>  BladesBuffer;
         Count< class StorageBufferSet>  CulledBladesBuffer;
         Count< class StorageBufferSet>  NumBladesBuffer;
 
         float GetPlaneSize() { return m_PlaneSize;};
         uint32_t GetNumBlades() { return m_NumBlades; }
+        UUID GetUUID() { return m_UUID; }
     private:
+        UUID m_UUID = UUID();
         float m_PlaneSize;
         uint32_t m_NumBlades;
+
+        friend class GrassRenderer;
     };
+
 	class GrassRenderer : public RefCounted
 	{
 	public:
 		GrassRenderer(Count<class WorldRenderer> worldRendere);
-		void Update(float deltaTime, const glm::mat4& transform);
+		void Update(float deltaTime);
 		void Render(Count<class WorldRenderer> renderer);
 
         Count<class RenderPass> m_GrassRenderPass;
         Count<class ComputePass> m_GrassGenerator;
 
-        Count<class UniformBufferSet> m_UBModelMatrix;
-        std::vector<GrassBladePlane> m_Planes;
         Count<class RenderCommandBuffer> m_RenderCommandBuffer;
         Count<class WorldRenderer> m_WorldRenderer;
 	};

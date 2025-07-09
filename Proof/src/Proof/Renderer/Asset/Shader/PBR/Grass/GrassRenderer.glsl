@@ -5,8 +5,11 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 
-layout(set = 0, binding = 0) uniform  ModelBufferObject { mat4 model; };
 
+layout(push_constant) uniform PushData
+{
+	mat4 Model;
+} u_PushData;
 
 // Declare vertex shader inputs and outputs
 // Inputs must align with CreateGrassPipeline()
@@ -24,6 +27,7 @@ layout(location = 3) out vec4 out_up;
 out gl_PerVertex { vec4 gl_Position; };
 
 void main() {
+	mat4 model = mat4(1.0f);
   // Write gl_Position and any other shader outputs
   gl_Position = model * vec4(v0.xyz, 1.f);
   out_v0      = vec4((model * vec4(v0.xyz, 1.f)).xyz, v0.w);

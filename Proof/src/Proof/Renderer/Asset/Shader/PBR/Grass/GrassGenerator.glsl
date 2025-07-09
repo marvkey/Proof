@@ -8,6 +8,59 @@
 layout(local_size_x = WORKGROUP_SIZE, local_size_y = 1, local_size_z = 1) in;
 #include <Common.glslh>
 
+//-------------------------------------------------------------
+//https://docs.unity3d.com/Packages/com.unity.shadergraph@7.1/manual/Simple-Noise-Node.html
+float unity_noise_randomValue(vec2 uv)
+{
+    return fract(sin(dot(uv, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+float unity_noise_interpolate(float a, float b, float t)
+{
+    return (1.0 - t) * a + t * b;
+}
+
+float unity_valueNoise(vec2 uv)
+{
+    vec2 i = floor(uv);
+    vec2 f = fract(uv);
+    f = f * f * (3.0 - 2.0 * f);
+
+    uv = abs(fract(uv) - 0.5);
+    vec2 c0 = i + vec2(0.0, 0.0);
+    vec2 c1 = i + vec2(1.0, 0.0);
+    vec2 c2 = i + vec2(0.0, 1.0);
+    vec2 c3 = i + vec2(1.0, 1.0);
+
+    float r0 = unity_noise_randomValue(c0);
+    float r1 = unity_noise_randomValue(c1);
+    float r2 = unity_noise_randomValue(c2);
+    float r3 = unity_noise_randomValue(c3);
+
+    float bottomOfGrid = unity_noise_interpolate(r0, r1, f.x);
+    float topOfGrid = unity_noise_interpolate(r2, r3, f.x);
+    return unity_noise_interpolate(bottomOfGrid, topOfGrid, f.y);
+}
+
+float Unity_SimpleNoise_float(vec2 UV, float Scale)
+{
+    float t = 0.0;
+
+    float freq = pow(2.0, 0.0);
+    float amp = pow(0.5, 3.0 - 0.0);
+    t += unity_valueNoise(vec2(UV.x * Scale / freq, UV.y * Scale / freq)) * amp;
+
+    freq = pow(2.0, 1.0);
+    amp = pow(0.5, 3.0 - 1.0);
+    t += unity_valueNoise(vec2(UV.x * Scale / freq, UV.y * Scale / freq)) * amp;
+
+    freq = pow(2.0, 2.0);
+    amp = pow(0.5, 3.0 - 2.0);
+    t += unity_valueNoise(vec2(UV.x * Scale / freq, UV.y * Scale / freq)) * amp;
+
+    return t;
+}
+//------------------------------------------------------
 struct Blade 
 {
         // Base of the blade (root position on the surface)
@@ -100,9 +153,40 @@ barrier();
     // Compute how far the tip has been displaced from that ideal position
     // Then pull it back based on the blade's stiffness
     vec3 recovery =(iV2 - v2) * stiffness;  
+    //------------------------------------------
 
     // ---------------------- WIND FORCE ----------------------
+    // 1. Compute scrolling UV based on world pos and time
+        // Step 1: World UV for sampling wind noise (add time for motion)
 
+            float time = u_FrameData.AppTimeSeconds; // or another time uniform you have
+
+    vec2 windDirection = vec2(-1.0, 0.1);   // wind blowing diagonally
+    float windStrength = 25.0;              // controls magnitude of wind
+    float windNoiseScale = 5.0;           // scale of procedural noise
+    float windNoiseOffset = -0.6;          // additional base strength
+    float windSpeed = 5;
+    vec2 worldUV = v0.xz + windDirection * time * windSpeed;
+
+    // Step 2: Sample layered noise
+    float noiseValue = Unity_SimpleNoise_float(worldUV, windNoiseScale);
+    noiseValue = noiseValue * 0.5 + 0.5; // normalize [0, 1]
+
+    // Step 3: Add spatially offset oscillation for natural wave movement
+        float phase = dot(v0.xz, windDirection); // offset based on position in wind dir
+        float oscillation = sin((time + phase) * windSpeed);
+        noiseValue *= oscillation * 0.5 + 0.5;
+
+    // Step 4: Final wind vector
+    vec3 wind = vec3(windDirection, 0.0) * (noiseValue + windNoiseOffset) * windStrength;
+
+    // Step 5: Compute blade alignment influence
+    float f_d = 1.0 - abs(dot(normalize(wind), normalize(v2 - v0))); // directional influence
+    float f_r = dot(v2 - v0, up) / height;                            // how vertical the blade is
+
+// Step 6: Final wind force applied to blade
+vec3 wind_force = wind * f_d * f_r;
+    /*
     // Sample procedural wind using a random function based on position
     // Output is modulated with time to simulate wind waves
     vec3 wind       = random3(v0) * 3.0 * sin(u_FrameData.AppTimeSeconds);
@@ -114,7 +198,7 @@ barrier();
 
     // Scale wind force based on blade alignment
     vec3 wind_force = wind * f_d * f_r;
-
+    */
     // ---------------------- APPLY TOTAL FORCE ----------------------
     // total force
     vec3 total_force = recovery + gravity + wind_force;

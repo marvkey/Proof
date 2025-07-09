@@ -179,7 +179,6 @@ namespace Proof
 	static constexpr int HBAO_RANDOM_ELEMENTS = HBAO_RANDOM_SIZE * HBAO_RANDOM_SIZE;
 	static constexpr int NUM_MRT = 8;
 
-	Count<GrassRenderer> grassRenderer;
 
 	WorldRenderer::~WorldRenderer() {
 		for (auto& transformBuffer : m_SubmeshTransformBuffers)
@@ -1480,8 +1479,7 @@ namespace Proof
 
 		}
 
-		if (!grassRenderer)
-			grassRenderer = Count<GrassRenderer>::Create(this);
+	
 		Renderer::Submit([instance = Count<WorldRenderer>(this)]() mutable { instance->m_ResourcesCreatedGPU = true; });
 		PF_ENGINE_TRACE("World Renderer Inititilized");
 	}
@@ -1865,6 +1863,8 @@ namespace Proof
 			m_ColliderDrawList.clear();
 			m_DynamicColliderDrawList.clear();
 			m_GeometryPassInstancesDrawList.clear();
+
+			m_GrassPlanes.Get().clear();
 		}
 
 		m_Timers.TotalDrawScene = drawSceneTimer.ElapsedMillis();
@@ -1899,6 +1899,17 @@ namespace Proof
 	Count<Image2D> WorldRenderer::GetShadowPassDebugImage()
 	{
 		return m_ShadowDebugPass->GetTargetFrameBuffer()->GetOutput(0).As<Image2D>();
+	}
+
+	void WorldRenderer::SubmitGrassPlane(Count<class GrassBladePlane> plane, const glm::mat4& transform)
+	{
+		if (!m_GrassRenderer)
+			m_GrassRenderer = Count<GrassRenderer>::Create(this);
+
+		if (m_GrassPlanes.Get().contains(plane->GetUUID()))
+			return;
+
+		m_GrassPlanes.Get()[plane->GetUUID()] = { plane, transform };
 	}
 
 	Count<Image2D> WorldRenderer::GetFinalPassImage()
@@ -2611,9 +2622,11 @@ namespace Proof
 		}
 		
 	#endif
-
-		grassRenderer->Render(this);
-		grassRenderer->Update(FrameTime::GetWorldDeltaTime(),glm::mat4(1.0f));
+		if (m_GrassRenderer)
+		{
+			m_GrassRenderer->Render(this);
+			m_GrassRenderer->Update(FrameTime::GetWorldDeltaTime());
+		}
 
 		m_Timers.GeometryPass = geometryPassTimer.ElapsedMillis();
 	}

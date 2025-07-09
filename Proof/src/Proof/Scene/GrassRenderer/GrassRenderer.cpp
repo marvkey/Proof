@@ -30,8 +30,6 @@ namespace Proof
 	{
         m_WorldRenderer = renderer.Get();
 
-        GrassBladePlane plane;
-        m_Planes.emplace_back(plane);
 
         if (vertexArray == nullptr)
         {
@@ -58,7 +56,7 @@ namespace Proof
         pipelineConfig.CullMode = CullMode::None;
         pipelineConfig.FrontFace = FrontFace::CounterClockWise;
 
-        pipelineConfig.DepthTest = true;
+        pipelineConfig.DepthTest =true;
         pipelineConfig.WriteDepth = false; // (TODO) maybe for now 
        // pipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
         pipelineConfig.DepthCompareOperator = DepthCompareOperator::Less;
@@ -72,20 +70,22 @@ namespace Proof
         renderPassConfig.TargetFrameBuffer = nullptr;
         m_GrassRenderPass = RenderPass::Create(renderPassConfig);
         m_GrassGenerator = ComputePass::Create("Grass", Renderer::GetShader("GrassGenerator"));
-
-        m_UBModelMatrix = UniformBufferSet::Create(sizeof(glm::mat4));
-
-        m_GrassRenderPass->SetInput("ModelBufferObject", m_UBModelMatrix);
-
 	}
-	void GrassRenderer::Update(float deltaTime, const glm::mat4& transform)
+	void GrassRenderer::Update(float deltaTime)
 	{
-        m_UBModelMatrix->GetBuffer()->SetData(Buffer(&transform, sizeof(glm::mat4)));
+
 	}
 	void GrassRenderer::Render(Count<class WorldRenderer> renderer)
 	{
+        const auto& planesMap = renderer->GetGrassPlanes().Get();
+        if (planesMap.empty())
+            return;
 
         PF_PROFILE_FUNC();
+
+        auto plane = planesMap.begin()->second.first;
+        glm::mat4 transform = planesMap.begin()->second.second;
+
 
         const uint32_t WORK_GROUP_SIZE = 32;
 
@@ -99,18 +99,18 @@ namespace Proof
         {
             PF_PROFILE_SCOPE_DYNAMIC("Grass Compute");
 
-            m_GrassGenerator->SetInput("InBlades", m_Planes[0].BladesBuffer);
-            m_GrassGenerator->SetInput("CulledBlades", m_Planes[0].CulledBladesBuffer);
-            m_GrassGenerator->SetInput("IndirectDrawBlades", m_Planes[0].NumBladesBuffer);
+            m_GrassGenerator->SetInput("InBlades", plane->BladesBuffer);
+            m_GrassGenerator->SetInput("CulledBlades", plane->CulledBladesBuffer);
+            m_GrassGenerator->SetInput("IndirectDrawBlades", plane->NumBladesBuffer);
 
             Renderer::BeginComputePass(cmdBuffer, m_GrassGenerator);
 
-            for (GrassBladePlane& plane : m_Planes)
+            //for (GrassBladePlane& plane : m_Planes)
             {
                 GrassBladeDrawIndirect indirect = { .VertexCount = 0, .InstanceCount = 1, .FirstVertex = 0, .FirstInstance = 0 };
-                plane.NumBladesBuffer->GetBuffer()->SetData(Buffer(&indirect, sizeof(GrassBladeDrawIndirect)));
+                plane->NumBladesBuffer->GetBuffer()->SetData(Buffer(&indirect, sizeof(GrassBladeDrawIndirect)));
                 //remebr only workign cause on only 1 plane in sce
-                m_GrassGenerator->Dispatch(static_cast<uint32_t>((plane.GetNumBlades() + WORK_GROUP_SIZE - 1) /
+                m_GrassGenerator->Dispatch(static_cast<uint32_t>((plane->GetNumBlades() + WORK_GROUP_SIZE - 1) /
                     WORK_GROUP_SIZE), 1, 1);
             }
             Renderer::EndComputePass(m_GrassGenerator);
@@ -135,7 +135,7 @@ namespace Proof
         }
 #else
         std::vector<VkBufferMemoryBarrier> barriers;
-        for (uint32_t j = 0; j < m_Planes.size(); ++j)
+        //for (uint32_t j = 0; j < m_Planes.size(); ++j)
         {
             // NumBladesBuffer: for vkCmdDrawIndirect
             VkBufferMemoryBarrier indirectBarrier = {};
@@ -144,7 +144,9 @@ namespace Proof
             indirectBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT;
             indirectBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             indirectBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            indirectBarrier.buffer = m_Planes[j].NumBladesBuffer->GetBuffer().As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer;
+            //indirectBarrier.buffer = m_Planes[j].NumBladesBuffer->GetBuffer().As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer;
+           // indirectBarrier.buffer = m_Planes[j].NumBladesBuffer->GetBuffer().As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer;
+            indirectBarrier.buffer = plane->NumBladesBuffer->GetBuffer().As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer;
             indirectBarrier.offset = 0;
             indirectBarrier.size = sizeof(GrassBladeDrawIndirect);
             barriers.push_back(indirectBarrier);
@@ -156,9 +158,11 @@ namespace Proof
             vertexBarrier.dstAccessMask = VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
             vertexBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
             vertexBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-            vertexBarrier.buffer = m_Planes[j].CulledBladesBuffer->GetBuffer().As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer;
+           // vertexBarrier.buffer = m_Planes[j].CulledBladesBuffer->GetBuffer().As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer;
+            vertexBarrier.buffer = plane->CulledBladesBuffer->GetBuffer().As<VulkanStorageBuffer>()->GetDescriptorInfoVulkan().buffer;
             vertexBarrier.offset = 0;
-            vertexBarrier.size = m_Planes[j].CulledBladesBuffer->GetBuffer().As<VulkanStorageBuffer>()->GetSize();
+           // vertexBarrier.size = m_Planes[j].CulledBladesBuffer->GetBuffer().As<VulkanStorageBuffer>()->GetSize();
+            vertexBarrier.size = plane->CulledBladesBuffer->GetBuffer().As<VulkanStorageBuffer>()->GetSize();
             barriers.push_back(vertexBarrier);
         }
 #endif
@@ -174,12 +178,14 @@ namespace Proof
                     static_cast<uint32_t>(barriers.size()), barriers.data(),
                     0, nullptr);
             });
+
       
         Renderer::BeginRenderPass(cmdBuffer, m_GrassRenderPass);
 
-        for (GrassBladePlane& plane : m_Planes)
+        //for (GrassBladePlane& plane : m_Planes)
         {
-            Renderer::Submit([commandBuffer = cmdBuffer, culledBufferBlades = plane.BladesBuffer,numBladesBuffer = plane.NumBladesBuffer]() mutable
+            m_GrassRenderPass->PushData("u_PushData", &transform);
+            Renderer::Submit([commandBuffer = cmdBuffer, culledBufferBlades = plane->BladesBuffer,numBladesBuffer = plane->NumBladesBuffer,transform = transform]() mutable
                 {
                    VkDeviceSize instanceOffset[1] = { 0 };
                    vkCmdBindVertexBuffers(commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(), 0, 1, 
@@ -243,4 +249,41 @@ namespace Proof
         CulledBladesBuffer = StorageBufferSet::Create(blades.size() * sizeof(UBGrassBlade));
         NumBladesBuffer = StorageBufferSet::Create(Buffer(&indirectDraw,sizeof(GrassBladeDrawIndirect)));
 	}
+    GrassBladePlane::GrassBladePlane(const std::vector<UBGrassBlade>& blades)
+    {
+        m_NumBlades = blades.size();
+		m_PlaneSize = 15.0f; // Default size, can be adjusted based on your needs
+
+
+        GrassBladeDrawIndirect indirectDraw;
+        indirectDraw.VertexCount = m_NumBlades;
+        indirectDraw.InstanceCount = 1;
+        indirectDraw.FirstVertex = 0;
+        indirectDraw.FirstInstance = 0;
+
+        BladesBuffer = StorageBufferSet::Create(Buffer(blades.data(), blades.size() * sizeof(UBGrassBlade)));
+        CulledBladesBuffer = StorageBufferSet::Create(blades.size() * sizeof(UBGrassBlade));
+        NumBladesBuffer = StorageBufferSet::Create(Buffer(&indirectDraw, sizeof(GrassBladeDrawIndirect)));
+    }
+    UBGrassBlade::UBGrassBlade(glm::vec3 position)
+    {
+        glm::vec3 bladeUp(0.0f, 1.0f, 0.0f);
+
+        float direction = generateRandomFloat() * 2.f * 3.14159265f;
+        V0 = glm::vec4(position, direction);
+
+        // Bezier point and height (v1)
+        float height =
+            MIN_HEIGHT + (generateRandomFloat() * (MAX_HEIGHT - MIN_HEIGHT));
+        V1 = glm::vec4(position + bladeUp * height, height);
+
+        // Physical model guide and width (v2)
+        float width = MIN_WIDTH + (generateRandomFloat() * (MAX_WIDTH - MIN_WIDTH));
+        V2 = glm::vec4(position + bladeUp * height, width);
+
+        // Up vector and stiffness coefficient (up)
+        float stiffness =
+            MIN_BEND + (generateRandomFloat() * (MAX_BEND - MIN_BEND));
+        Up = glm::vec4(bladeUp, stiffness);
+    }
 }

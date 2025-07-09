@@ -16,6 +16,9 @@
 #include "../Entity.h"
 #include "Proof/Physics/MeshCollider.h"
 #include <FastNoise/FastNoiseLite.h>
+#include "Proof/Math/Random.h"
+#include "../GrassRenderer/GrassRenderer.h"
+
 namespace Proof
 {
 
@@ -110,6 +113,7 @@ namespace Proof
 	}
 
 
+
 	TerrainRenderer::TerrainRenderer()
 	{
 		m_Chunks.clear();
@@ -131,24 +135,28 @@ namespace Proof
 	void TerrainRenderer::RegenerateTerrainMesh()
 	{
 		if (m_NormalTerrain)
+		{
 			m_NormalTerrain->Regenirate();
+			m_GrassBladePanel = Count<GrassBladePlane>::Create(m_GrassBlades);
+		}
 	}
 
 	struct TerrainType
 	{
+		std::string Name;
 		float Height;
 		glm::vec4 colour;
 	};
 
 	std::vector<TerrainType> regions = {
-		{ 0.0f, glm::vec4(0.0f, 0.0f, 0.6f, 1.0f) }, // Deep Water
-		{ 0.4f, glm::vec4(0.2f, 0.4f, 0.8f, 1.0f) }, // Shallow Water
-		{ 0.45f, glm::vec4(0.85f, 0.8f, 0.5f, 1.0f) }, // Sand
-		{ 0.5f,  glm::vec4(0.3f, 0.6f, 0.2f, 1.0f) }, // Grass
-		{ 0.6f,  glm::vec4(0.2f, 0.5f, 0.2f, 1.0f) }, // Darker Grass
-		{ 0.75f, glm::vec4(0.3f, 0.2f, 0.2f, 1.0f) }, // Rock
-		{ 0.9f,  glm::vec4(0.2f, 0.15f, 0.15f, 1.0f) }, // Dark Rock
-		{ 1.0f,  glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) }  // Snow
+		{ "Deep Water",0.0f, glm::vec4(0.0f, 0.0f, 0.6f, 1.0f) }, // Deep Water
+		{ "Shallow Water",0.4f, glm::vec4(0.2f, 0.4f, 0.8f, 1.0f) }, // Shallow Water
+		{ "Sand",0.45f, glm::vec4(0.85f, 0.8f, 0.5f, 1.0f) }, // Sand
+		{ "Grass",0.5f,  glm::vec4(0.3f, 0.6f, 0.2f, 1.0f) }, // Grass
+		{ "Darker Grass",0.6f,  glm::vec4(0.2f, 0.5f, 0.2f, 1.0f) }, // Darker Grass
+		{ "Rock",0.75f, glm::vec4(0.3f, 0.2f, 0.2f, 1.0f) }, // Rock
+		{ "Dark Rock",0.9f,  glm::vec4(0.2f, 0.15f, 0.15f, 1.0f) }, // Dark Rock
+		{ "Snow",1.0f,  glm::vec4(1.0f, 1.0f, 1.0f, 1.0f) }  // Snow
 	};
 
 
@@ -213,7 +221,10 @@ namespace Proof
 			//m_EndlessTerrain = Count<EndlessTerrain>::Create(this);
 
 		if (!m_NormalTerrain)
+		{
 			m_NormalTerrain = Count<NormalTerrain>::Create(this);
+			m_GrassBladePanel = Count<GrassBladePlane>::Create(m_GrassBlades);
+		}
 
 		m_Transform.SetTransform(transform);
 		m_NormalTerrain->OnUpdate(deltaTime);
@@ -273,6 +284,11 @@ namespace Proof
 			if (terrainChunk.Mesh)
 				renderer->SubmitMesh(terrainChunk.Mesh, terrainChunk.Mesh->GetMaterialTable(), terrainChunk.Transform.GetTransform() * m_Transform.GetTransform());
 		}
+
+		if (m_GrassBladePanel)
+		{
+			renderer->SubmitGrassPlane(m_GrassBladePanel, m_Transform.GetTransform());
+		}
 	}
 
 	TerrainMeshBuilderData TerrainRenderer::GenerateMesh(const std::vector<float>& heightMap, uint32_t width, uint32_t height)
@@ -313,7 +329,21 @@ namespace Proof
 		}
 		return meshBuilderData;
 	}
+	bool IsInRegionRange(const std::vector<TerrainType>& regions, const std::string& name, float height)
+	{
+		for (size_t i = 0; i < regions.size(); ++i)
+		{
+			if (regions[i].Name != name)
+				continue;
 
+			float minH = regions[i].Height;
+			float maxH = (i + 1 < regions.size()) ? regions[i + 1].Height : 1.0f;
+
+			return height >= minH && height < maxH;
+		}
+
+		return false;
+	}
 	TerrainChunkNoiseData TerrainRenderer::GenerateNoiseData(glm::vec2 extraOffset)
 	{
 		if (UseFallOff)
@@ -321,6 +351,7 @@ namespace Proof
 			if (m_FallOffData.empty())
 				m_FallOffData = GenerateFalloffMap(MapChunkSize, MapChunkSize);
 		}
+		
 		uint32_t width = MapChunkSize;
 		uint32_t height = MapChunkSize;
 
@@ -328,6 +359,11 @@ namespace Proof
 		chunkNoiseData.HeightMap = GenerateNoiseMap(MapChunkSize, MapChunkSize, Seed, NoiseParams, extraOffset);
 		chunkNoiseData.ColourMap.resize(width * height);
 
+		InterpolationCurve curveCopy = Curve;
+		float ScaleY = TerrainScale;
+		// Terrain center offset for mesh alignment
+		float topLeftX = (width - 1) / -2.0f;
+		float topLeftZ = (height - 1) / 2.0f;
 		std::vector<uint32_t> noiseMapData(width * height);
 
 		auto& colourMap = chunkNoiseData.ColourMap;
@@ -346,8 +382,34 @@ namespace Proof
 				noiseMapData[x + y * width] = packed;
 
 				for (int i = 0; i < regions.size(); i++) {
-					if (currentHeight >= regions[i].Height) {
+					if (currentHeight >= regions[i].Height) 
+					{
 						colourMap[y * width + x] = ConvertToBytes(regions[i].colour);
+						if (IsInRegionRange(regions,"Grass",currentHeight) && Random::Bool() == true)
+						{
+
+							float worldX = extraOffset.x + topLeftX + x;
+							float worldZ = extraOffset.y + topLeftZ - y;
+							float worldY = currentHeight * curveCopy.Evaluate(chunkNoiseData.HeightMap[y * width + x]) * ScaleY;
+
+							glm::vec3 rootPos(worldX, worldY, worldZ);
+
+							UBGrassBlade blade = UBGrassBlade(rootPos);
+							m_GrassBlades.push_back(blade);
+						}
+
+						if (IsInRegionRange(regions, "Darker Grass", currentHeight))
+						{
+							float worldX = extraOffset.x + topLeftX + x;
+							float worldZ = extraOffset.y + topLeftZ - y;
+							float worldY = currentHeight * curveCopy.Evaluate(chunkNoiseData.HeightMap[y * width + x]) * ScaleY;
+
+							glm::vec3 rootPos(worldX, worldY, worldZ);
+
+							UBGrassBlade blade = UBGrassBlade(rootPos);
+							m_GrassBlades.push_back(blade);
+						}
+
 					}
 					else
 						break;

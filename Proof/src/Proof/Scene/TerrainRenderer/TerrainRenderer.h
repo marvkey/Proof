@@ -177,6 +177,9 @@ namespace Proof
 
 		WeakCount<World> m_World;;
 		friend class World;
+
+		Count<class GrassBladePlane> m_GrassBladePanel;
+		std::vector<struct UBGrassBlade> m_GrassBlades; // gets cleared once its full and sento to gpu
 	};
 
 

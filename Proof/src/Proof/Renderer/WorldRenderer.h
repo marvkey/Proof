@@ -7,6 +7,7 @@
 #include <map>
 #include "WorldRendererBuffers.h"
 #include "WorldRendererSettings.h"
+#include "Proof/Renderer/RenderereCustomTypeSet.h"
 namespace Proof
 {
 	struct MeshKey
@@ -181,6 +182,9 @@ namespace Proof
 		// if the same size is passed it will not resize
 		void SetViewportSize(uint32_t width, uint32_t height);
 
+		// grass plane funciton does not chagne transform to mathc localpositon of grass plane
+		// have to do that manualy
+		void SubmitGrassPlane(Count<class GrassBladePlane> plane, const glm::mat4& transform);
 		Count<Image2D> GetFinalPassImage();
 		Count<Image2D> GetShadowPassDebugImage();
 
@@ -199,6 +203,10 @@ namespace Proof
 		}
 		Count<class GlobalBufferSet> GetGlobalInputs() { return m_GlobalInputs; }
 		Count<RenderPass> GetGeometryPass() { return m_GeometryPass; }
+		const RendererCustomTypeSet<std::unordered_map<UUID, std::pair<Count<class GrassBladePlane>, glm::mat4>>>& GetGrassPlanes()const
+		{
+			return m_GrassPlanes;
+		}
 
 	public:
 		// preProcess
@@ -212,6 +220,8 @@ namespace Proof
 		DepthOfFieldSettings& DOFSettings;
 		SSRSettings& SSRSettings;
 	private:
+
+		RendererCustomTypeSet<std::unordered_map<UUID, std::pair<Count<class GrassBladePlane>, glm::mat4>>> m_GrassPlanes;
 		Count<class World> m_ActiveWorld;
 		//buffer data
 		UBFrameData m_UBFrameData;
@@ -429,6 +439,9 @@ namespace Proof
 		bool m_ResourcesCreatedGPU = false;
 		bool m_ResourcesCreated = false;
 		bool m_InitalRanShadow = false;//idk why but hopfeully works
+
+		Count<class GrassRenderer> m_GrassRenderer;
+
 	private:
 
 		// only put attach to depth when you are sure u are not changing any vertex position
