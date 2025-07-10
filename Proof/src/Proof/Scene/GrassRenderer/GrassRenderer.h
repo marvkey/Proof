@@ -40,7 +40,7 @@ namespace Proof
     };
     constexpr static unsigned int NUM_BLADES = 1 << 13;
     constexpr static float MIN_HEIGHT = 1.3f;
-    constexpr static float MAX_HEIGHT = 2.5f;
+    constexpr static float MAX_HEIGHT = 2.0f;
     constexpr static float MIN_WIDTH = 0.1f;
     constexpr static float MAX_WIDTH = 0.14f;
     constexpr static float MIN_BEND = 7.0f;
@@ -71,12 +71,11 @@ namespace Proof
 	public:
 		GrassRenderer(Count<class WorldRenderer> worldRendere);
 		void Update(float deltaTime);
-		void Render(Count<class WorldRenderer> renderer);
+        void Render(Count<class WorldRenderer> renderer);
 
         Count<class RenderPass> m_GrassRenderPass;
         Count<class ComputePass> m_GrassGenerator;
 
-        Count<class RenderCommandBuffer> m_RenderCommandBuffer;
         Count<class WorldRenderer> m_WorldRenderer;
 	};
 }

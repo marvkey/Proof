@@ -387,27 +387,47 @@ namespace Proof
 						colourMap[y * width + x] = ConvertToBytes(regions[i].colour);
 						if (IsInRegionRange(regions,"Grass",currentHeight) && Random::Bool() == true)
 						{
+							int grassDensity = Random::Int(1, 10);
+							for (int i = 0; i < grassDensity; ++i)
+							{
+								// Random offset within the 1x1 cell space (to avoid perfect alignment)
+								float offsetX = Random::Real(0.0f, 1.0f);
+								float offsetZ = Random::Real(0.0f, 1.0f);
 
-							float worldX = extraOffset.x + topLeftX + x;
-							float worldZ = extraOffset.y + topLeftZ - y;
-							float worldY = currentHeight * curveCopy.Evaluate(chunkNoiseData.HeightMap[y * width + x]) * ScaleY;
+								float worldX = extraOffset.x + topLeftX + x + offsetX;
+								float worldZ = extraOffset.y + topLeftZ - y - offsetZ;
 
-							glm::vec3 rootPos(worldX, worldY, worldZ);
+								float rawHeight = chunkNoiseData.HeightMap[y * width + x];
+								float worldY = curveCopy.Evaluate(rawHeight) * ScaleY;
 
-							UBGrassBlade blade = UBGrassBlade(rootPos);
-							m_GrassBlades.push_back(blade);
+								glm::vec3 rootPos(worldX, worldY, worldZ);
+
+								UBGrassBlade blade = UBGrassBlade(rootPos);
+								m_GrassBlades.push_back(blade);
+							}
+							
 						}
 
 						if (IsInRegionRange(regions, "Darker Grass", currentHeight))
 						{
-							float worldX = extraOffset.x + topLeftX + x;
-							float worldZ = extraOffset.y + topLeftZ - y;
-							float worldY = currentHeight * curveCopy.Evaluate(chunkNoiseData.HeightMap[y * width + x]) * ScaleY;
+							int grassDensity = Random::Int(1, 5);
+							for (int i = 0; i < grassDensity; ++i)
+							{
+								// Random offset within the 1x1 cell space (to avoid perfect alignment)
+								float offsetX = Random::Real(0.0f, 1.0f);
+								float offsetZ = Random::Real(0.0f, 1.0f);
 
-							glm::vec3 rootPos(worldX, worldY, worldZ);
+								float worldX = extraOffset.x + topLeftX + x + offsetX;
+								float worldZ = extraOffset.y + topLeftZ - y - offsetZ;
 
-							UBGrassBlade blade = UBGrassBlade(rootPos);
-							m_GrassBlades.push_back(blade);
+								float rawHeight = chunkNoiseData.HeightMap[y * width + x];
+								float worldY = curveCopy.Evaluate(rawHeight) * ScaleY;
+
+								glm::vec3 rootPos(worldX, worldY, worldZ);
+
+								UBGrassBlade blade = UBGrassBlade(rootPos);
+								m_GrassBlades.push_back(blade);
+							}
 						}
 
 					}

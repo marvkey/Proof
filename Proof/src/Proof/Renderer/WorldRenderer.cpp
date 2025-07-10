@@ -306,6 +306,7 @@ namespace Proof
 			preDepthFramebufferSpec.Attachments = { ImageFormat::DEPTH32F };
 			preDepthFramebufferSpec.ClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 			preDepthFramebufferSpec.DepthClearValue = 1.0f;
+			preDepthFramebufferSpec.ClearDepthOnLoad = false;
 
 			GraphicsPipelineConfiguration pipelinelineConfig;
 			//pipelinelineConfig.Attachments = { ImageFormat::DEPTH32FSTENCIL8UI };
@@ -2406,8 +2407,8 @@ namespace Proof
 			}
 		}
 #endif
+		
 		Renderer::EndRenderPass(m_PreDepthPass);
-
 
 		m_Stats.Timers.PreDepthPass = preDepthTimer.ElapsedMillis();
 

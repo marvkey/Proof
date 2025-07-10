@@ -57,7 +57,7 @@ namespace Proof
         pipelineConfig.FrontFace = FrontFace::CounterClockWise;
 
         pipelineConfig.DepthTest =true;
-        pipelineConfig.WriteDepth = false; // (TODO) maybe for now 
+        pipelineConfig.WriteDepth = true; // (TODO) maybe for now  cause im sure its not clearig the whole framebuffer
        // pipelineConfig.DepthCompareOperator = DepthCompareOperator::LessOrEqual;
         pipelineConfig.DepthCompareOperator = DepthCompareOperator::Less;
 

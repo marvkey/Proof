@@ -208,6 +208,8 @@ namespace Proof
 			return m_GrassPlanes;
 		}
 
+		Count <RenderPass> GetPreDepthRenderPass() { return m_PreDepthPass; }
+
 	public:
 		// preProcess
 		WorldRendererDebugOptions DebugOptions;

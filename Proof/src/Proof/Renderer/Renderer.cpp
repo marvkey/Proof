@@ -222,6 +222,7 @@ namespace Proof {
 		//Grass
 		ShaderLibrary->LoadShader("GrassRenderer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Grass/GrassRenderer.glsl");
 		ShaderLibrary->LoadShader("GrassGenerator", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Grass/GrassGenerator.glsl");
+		ShaderLibrary->LoadShader("PreDepthGrassRenderer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Grass/PreDepthGrassRenderer.glsl");
 
 		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);

@@ -5,15 +5,15 @@ Assets:
   - Asset: 4130666624169366902
     Type: Material
     Path: Meshes\Shotgun\m_ShotGunMaterial.Material.ProofAsset
-  - Asset: 56963814104375806
-    Type: Texture
-    Path: Textures\InventoryItems\PistolImage.png
   - Asset: 1804100413018170951
     Type: Texture
     Path: Models\Pistol\textures\Pistol_Normal.png
   - Asset: 11013441240331562467
     Type: InputAction
     Path: Input\PlayerMovement\IA_Rotation.InputAction.ProofAsset
+  - Asset: 56963814104375806
+    Type: Texture
+    Path: Textures\InventoryItems\PistolImage.png
   - Asset: 1896371110154550254
     Type: World
     Path: Scenes\TerrainScene.ProofWorld
@@ -29,12 +29,12 @@ Assets:
   - Asset: 203935453544904822
     Type: ScriptFile
     Path: Scripts\HealthComponent.cs
-  - Asset: 5002844255029031354
-    Type: InputBindingContext
-    Path: Input\PlayerMovement\IB_PlayerMovement.InputBindingContext.ProofAsset
   - Asset: 7734857644237676712
     Type: Mesh
     Path: Meshes\Shotgun\Shotgun.Mesh.ProofAsset
+  - Asset: 5002844255029031354
+    Type: InputBindingContext
+    Path: Input\PlayerMovement\IB_PlayerMovement.InputBindingContext.ProofAsset
   - Asset: 6248028451720167464
     Type: Texture
     Path: Models\Pistol\textures\Pistol_Metallic.png
@@ -65,6 +65,9 @@ Assets:
   - Asset: 7382233147466968749
     Type: Mesh
     Path: Meshes\Pistol\Pistol.Mesh.ProofAsset
+  - Asset: 4846365366692412858
+    Type: Texture
+    Path: Projects\Facility22\tex\shotgunNormal_1.png
   - Asset: 10785136772344387073
     Type: InputBindingContext
     Path: Input\Weapon\IB_Weapons.InputBindingContext.ProofAsset
@@ -83,15 +86,15 @@ Assets:
   - Asset: 8385858429176898419
     Type: Texture
     Path: Textures\HDRMaps\lonely_road_afternoon_puresky_4k.hdr
-  - Asset: 14127438052321061638
-    Type: PhysicsMaterial
-    Path: Physics\Materials\pm_Player.PhysicsMaterial.ProofAsset
   - Asset: 13127080171188781274
     Type: Texture
     Path: Textures\InventoryItems\EmptyInventory.png
   - Asset: 14525028919524517166
     Type: UIPanel
     Path: UI\PlayerHUD.UIPanel.ProofAsset
+  - Asset: 14127438052321061638
+    Type: PhysicsMaterial
+    Path: Physics\Materials\pm_Player.PhysicsMaterial.ProofAsset
   - Asset: 17635570772855095165
     Type: Texture
     Path: Models\ShotGun\textures\shotgunNormal.png
@@ -128,9 +131,6 @@ Assets:
   - Asset: 17755560868630915795
     Type: Material
     Path: Meshes\Pistol\m_Pistol.Material.ProofAsset
-  - Asset: 16938980049507999488
+  - Asset: 14642667450666841635
     Type: Texture
     Path: Projects\Facility22\tex\shotgunColor_1.png
-  - Asset: 14129094021914064107
-    Type: Texture
-    Path: Projects\Facility22\tex\shotgunNormal_1.png
