@@ -1,46 +1,46 @@
 Assets:
-  - Asset: 1948765517176594391
-    Type: Material
-    Path: Materials\m_Black.Material.ProofAsset
-  - Asset: 4130666624169366902
-    Type: Material
-    Path: Meshes\Shotgun\m_ShotGunMaterial.Material.ProofAsset
-  - Asset: 1804100413018170951
-    Type: Texture
-    Path: Models\Pistol\textures\Pistol_Normal.png
   - Asset: 11013441240331562467
     Type: InputAction
     Path: Input\PlayerMovement\IA_Rotation.InputAction.ProofAsset
+  - Asset: 1804100413018170951
+    Type: Texture
+    Path: Models\Pistol\textures\Pistol_Normal.png
   - Asset: 56963814104375806
     Type: Texture
     Path: Textures\InventoryItems\PistolImage.png
-  - Asset: 1896371110154550254
-    Type: World
-    Path: Scenes\TerrainScene.ProofWorld
+  - Asset: 4130666624169366902
+    Type: Material
+    Path: Meshes\Shotgun\m_ShotGunMaterial.Material.ProofAsset
+  - Asset: 1948765517176594391
+    Type: Material
+    Path: Materials\m_Black.Material.ProofAsset
   - Asset: 7659929436396046509
     Type: Material
     Path: Materials\m_Green.Material.ProofAsset
+  - Asset: 1896371110154550254
+    Type: World
+    Path: Scenes\TerrainScene.ProofWorld
   - Asset: 4812082715384783110
     Type: InputAction
     Path: Input\PlayerMovement\IA_Movement.InputAction.ProofAsset
-  - Asset: 18216177543223532629
-    Type: World
-    Path: Scenes\New World.ProofWorld
   - Asset: 203935453544904822
     Type: ScriptFile
     Path: Scripts\HealthComponent.cs
-  - Asset: 7734857644237676712
-    Type: Mesh
-    Path: Meshes\Shotgun\Shotgun.Mesh.ProofAsset
+  - Asset: 18216177543223532629
+    Type: World
+    Path: Scenes\New World.ProofWorld
   - Asset: 5002844255029031354
     Type: InputBindingContext
     Path: Input\PlayerMovement\IB_PlayerMovement.InputBindingContext.ProofAsset
-  - Asset: 6248028451720167464
-    Type: Texture
-    Path: Models\Pistol\textures\Pistol_Metallic.png
+  - Asset: 7734857644237676712
+    Type: Mesh
+    Path: Meshes\Shotgun\Shotgun.Mesh.ProofAsset
   - Asset: 5896697494919537015
     Type: PhysicsMaterial
     Path: Physics\Materials\pm_slipper.PhysicsMaterial.ProofAsset
+  - Asset: 6248028451720167464
+    Type: Texture
+    Path: Models\Pistol\textures\Pistol_Metallic.png
   - Asset: 11692785166767351247
     Type: InputAction
     Path: Input\PlayerMovement\IA_Jump.InputAction.ProofAsset
@@ -53,21 +53,18 @@ Assets:
   - Asset: 14406167083753920302
     Type: Texture
     Path: Models\Pistol\textures\Pistol_BaseColor.png
-  - Asset: 12713853379028340398
-    Type: Texture
-    Path: Models\Pistol\textures\Pistol_Occlusion.png
   - Asset: 12732299734325070797
     Type: World
     Path: Scenes\TestScenes\TestGrass.ProofWorld
+  - Asset: 12713853379028340398
+    Type: Texture
+    Path: Models\Pistol\textures\Pistol_Occlusion.png
   - Asset: 15530846312733877534
     Type: Texture
     Path: Models\Pistol\textures\internal_ground_ao_texture.jpeg
   - Asset: 7382233147466968749
     Type: Mesh
     Path: Meshes\Pistol\Pistol.Mesh.ProofAsset
-  - Asset: 4846365366692412858
-    Type: Texture
-    Path: Projects\Facility22\tex\shotgunNormal_1.png
   - Asset: 10785136772344387073
     Type: InputBindingContext
     Path: Input\Weapon\IB_Weapons.InputBindingContext.ProofAsset
@@ -86,15 +83,15 @@ Assets:
   - Asset: 8385858429176898419
     Type: Texture
     Path: Textures\HDRMaps\lonely_road_afternoon_puresky_4k.hdr
+  - Asset: 14127438052321061638
+    Type: PhysicsMaterial
+    Path: Physics\Materials\pm_Player.PhysicsMaterial.ProofAsset
   - Asset: 13127080171188781274
     Type: Texture
     Path: Textures\InventoryItems\EmptyInventory.png
   - Asset: 14525028919524517166
     Type: UIPanel
     Path: UI\PlayerHUD.UIPanel.ProofAsset
-  - Asset: 14127438052321061638
-    Type: PhysicsMaterial
-    Path: Physics\Materials\pm_Player.PhysicsMaterial.ProofAsset
   - Asset: 17635570772855095165
     Type: Texture
     Path: Models\ShotGun\textures\shotgunNormal.png
@@ -104,12 +101,12 @@ Assets:
   - Asset: 6466768236783398328
     Type: Mesh
     Path: Meshes\AssaultRifle.Mesh.ProofAsset
-  - Asset: 12730130358352411224
-    Type: MeshSourceFile
-    Path: Models\ShotGun\source\shotgun.fbx
   - Asset: 14125218988744029477
     Type: Texture
     Path: Textures\InventoryItems\AssaultRifleImage.png
+  - Asset: 12730130358352411224
+    Type: MeshSourceFile
+    Path: Models\ShotGun\source\shotgun.fbx
   - Asset: 5288291075845151411
     Type: Texture
     Path: Models\ShotGun\textures\shotgunAO.png
@@ -131,6 +128,9 @@ Assets:
   - Asset: 17755560868630915795
     Type: Material
     Path: Meshes\Pistol\m_Pistol.Material.ProofAsset
-  - Asset: 14642667450666841635
+  - Asset: 4367720273144385980
     Type: Texture
     Path: Projects\Facility22\tex\shotgunColor_1.png
+  - Asset: 18087135917104905835
+    Type: Texture
+    Path: Projects\Facility22\tex\shotgunNormal_1.png

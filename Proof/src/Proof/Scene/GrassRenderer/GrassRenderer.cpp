@@ -185,7 +185,7 @@ namespace Proof
         //for (GrassBladePlane& plane : m_Planes)
         {
             m_GrassRenderPass->PushData("u_PushData", &transform);
-            Renderer::Submit([commandBuffer = cmdBuffer, culledBufferBlades = plane->BladesBuffer,numBladesBuffer = plane->NumBladesBuffer,transform = transform]() mutable
+            Renderer::Submit([commandBuffer = cmdBuffer, culledBufferBlades = plane->CulledBladesBuffer,numBladesBuffer = plane->NumBladesBuffer,transform = transform]() mutable
                 {
                    VkDeviceSize instanceOffset[1] = { 0 };
                    vkCmdBindVertexBuffers(commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(), 0, 1, 
@@ -265,7 +265,7 @@ namespace Proof
         CulledBladesBuffer = StorageBufferSet::Create(blades.size() * sizeof(UBGrassBlade));
         NumBladesBuffer = StorageBufferSet::Create(Buffer(&indirectDraw, sizeof(GrassBladeDrawIndirect)));
     }
-    UBGrassBlade::UBGrassBlade(glm::vec3 position)
+    UBGrassBlade::UBGrassBlade(glm::vec3 position, GrassBladeDefaultSettings settings)
     {
         glm::vec3 bladeUp(0.0f, 1.0f, 0.0f);
 
@@ -274,16 +274,17 @@ namespace Proof
 
         // Bezier point and height (v1)
         float height =
-            MIN_HEIGHT + (generateRandomFloat() * (MAX_HEIGHT - MIN_HEIGHT));
+            settings.MinHeight + (generateRandomFloat() * (settings.MaxHeight - settings.MinHeight));
         V1 = glm::vec4(position + bladeUp * height, height);
 
         // Physical model guide and width (v2)
-        float width = MIN_WIDTH + (generateRandomFloat() * (MAX_WIDTH - MIN_WIDTH));
+        float width = settings.MinWidth + (generateRandomFloat() * (settings.MaxWidth - settings.MinWidth));
         V2 = glm::vec4(position + bladeUp * height, width);
 
         // Up vector and stiffness coefficient (up)
         float stiffness =
-            MIN_BEND + (generateRandomFloat() * (MAX_BEND - MIN_BEND));
+            settings.MinBend + (generateRandomFloat() * (settings.MaxBend - settings.MinBend));
         Up = glm::vec4(bladeUp, stiffness);
     }
+   
 }

@@ -3,7 +3,27 @@
 #include "Proof/Utils/MultiUse.h"
 namespace Proof
 {
-    
+    constexpr static unsigned int NUM_BLADES = 1 << 13;
+    constexpr static float MIN_HEIGHT = 1.3f;
+    constexpr static float MAX_HEIGHT = 2.5f;
+    constexpr static float MIN_WIDTH = 0.1f;
+    constexpr static float MAX_WIDTH = 0.14f;
+    constexpr static float MIN_BEND = 7.0f;
+    constexpr static float MAX_BEND = 13.0f;
+
+    struct GrassBladeDefaultSettings
+    {
+        float MinHeight = MIN_HEIGHT;
+        float MaxHeight = MAX_HEIGHT;
+
+        float MinWidth = MIN_WIDTH;
+        float MaxWidth = MAX_WIDTH;
+
+        float MinBend = MIN_BEND;
+        float MaxBend = MAX_BEND;
+
+    };
+
     struct UBGrassBlade 
     {
         // Base of the blade (root position on the surface)
@@ -27,7 +47,7 @@ namespace Proof
         glm::vec4 Up;
         UBGrassBlade() = default;
 
-        UBGrassBlade(glm::vec3 position);
+        UBGrassBlade(glm::vec3 position, GrassBladeDefaultSettings settings = GrassBladeDefaultSettings());
 
     };
 
@@ -38,15 +58,7 @@ namespace Proof
         uint32_t FirstVertex;
         uint32_t FirstInstance;
     };
-    constexpr static unsigned int NUM_BLADES = 1 << 13;
-    constexpr static float MIN_HEIGHT = 1.3f;
-    constexpr static float MAX_HEIGHT = 2.0f;
-    constexpr static float MIN_WIDTH = 0.1f;
-    constexpr static float MAX_WIDTH = 0.14f;
-    constexpr static float MIN_BEND = 7.0f;
-    constexpr static float MAX_BEND = 13.0f;
-
-
+  
     struct GrassBladePlane : public RefCounted
     {
         GrassBladePlane(float planeSize = 15.0f, uint32_t numBlades = NUM_BLADES);

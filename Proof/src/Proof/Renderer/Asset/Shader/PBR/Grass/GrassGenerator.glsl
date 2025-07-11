@@ -162,7 +162,7 @@ barrier();
             float time = u_FrameData.AppTimeSeconds; // or another time uniform you have
 
     vec2 windDirection = vec2(-1.0, 0.1);   // wind blowing diagonally
-    float windStrength = 25.0;              // controls magnitude of wind
+    float windStrength = 12.0;              // controls magnitude of wind
     float windNoiseScale = 5.0;           // scale of procedural noise
     float windNoiseOffset = -0.6;          // additional base strength
     float windSpeed = 5;
@@ -286,15 +286,17 @@ vec3 wind_force = wind * f_d * f_r;
   vec3 c =
       vec3(inverse(u_Camera.View) * vec4(0.0, 0.0, 0.0, 1.0));  // camera position
   float d_proj          = length(v0 - c - up * dot(v0 - c, up));
-  const float d_max     = 15.0;
+  //const float d_max     = 15.0;
+  const float d_max     = 50.0;
   const int num_buckets = 20;
   bool culledByDistance = ((gl_GlobalInvocationID.x % num_buckets) >
                            floor(num_buckets * (1 - d_proj / d_max)));
 
     // ---------------------- WRITE BACK TO BUFFER ----------------------
    // final output
-  //if (!culledByDistance && !culledByOrientation && !culledByViewFrustum) {
+  if (!culledByDistance && !culledByOrientation && !culledByViewFrustum) 
+  {
     culledBlades.culled_blades[atomicAdd(numBlades.vertexCount, 1)] = blade;
-  //}
+  }
 
 }
