@@ -2390,7 +2390,7 @@ namespace Proof
 		}
 		*/
 
-#if 0
+#if 1
 		for (auto& [shaderName, meshDrawList] : m_GeometryPassInstancesDrawList)
 		{
 			if (!m_GeometryPassInstances.contains(shaderName))

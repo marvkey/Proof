@@ -77,7 +77,7 @@ struct VertexOutput
 {
    vec4 Color;
 };
-layout(location = 23) out VertexOutput Output;
+layout(location = CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_PBR) out VertexOutput Output;
 /*
 WaveOutput GetSingleGerstnerWave(GerstnerWave currentWave, vec3 vertexPosition)
 {
@@ -428,7 +428,7 @@ struct VertexOutput
 {
    vec4 Color;
 };
-layout(location = 23) in VertexOutput Input;
+layout(location = CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_PBR) in VertexOutput Input;
 
 void Fragment(inout PBRData pbrData)
 {

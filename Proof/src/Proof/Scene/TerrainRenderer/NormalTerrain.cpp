@@ -68,6 +68,7 @@ namespace Proof
         }
         for (auto& chunk : m_Terrain->m_Chunks)
             chunk.GeneratePhysicsCollisons();
+
         PF_EC_TRACE("Terrain Generator generated {} Chunks", chunksCount);
 	}
 }

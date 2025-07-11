@@ -131,7 +131,6 @@ namespace Proof
 		LevelOfDetail = otherTerrain->LevelOfDetail;
 		UseFallOff = otherTerrain->UseFallOff;
 	}
-	static bool onlyLayer = true;
 
 	void TerrainRenderer::RegenerateTerrainMesh()
 	{
@@ -139,7 +138,7 @@ namespace Proof
 		{
 			m_NormalTerrain->Regenirate();
 			m_GrassBladePanel = Count<GrassBladePlane>::Create(m_GrassBlades);
-			Math::ChangeBool(onlyLayer);
+			EndGenerateTerrain();
 		}
 	}
 
@@ -226,6 +225,7 @@ namespace Proof
 		{
 			m_NormalTerrain = Count<NormalTerrain>::Create(this);
 			m_GrassBladePanel = Count<GrassBladePlane>::Create(m_GrassBlades);
+			EndGenerateTerrain();
 		}
 
 		m_Transform.SetTransform(transform);
@@ -255,25 +255,6 @@ namespace Proof
 
 		for (auto& chunk : m_Chunks)
 			chunk.UpdateTerrainChunk(viewerPosition, maxViewDistance);
-
-
-#if 0
-
-		{
-			std::lock_guard<std::mutex> lock(queueMutex);
-			while (!mapDataQueue.empty()) {
-				auto& info = mapDataQueue.front();
-				info.Callback(info.Data);
-				mapDataQueue.pop();
-			}
-
-			while (!meshDataQueue.empty()) {
-				auto& info = meshDataQueue.front();
-				info.Callback(info.Data);
-				meshDataQueue.pop();
-			}
-		}
-#endif
 	}
 
 	void TerrainRenderer::Render(Count<class WorldRenderer> renderer)
@@ -391,55 +372,51 @@ namespace Proof
 					if (currentHeight >= regions[i].Height) 
 					{
 						colourMap[y * width + x] = ConvertToBytes(regions[i].colour);
-						if (onlyLayer)
+
+						if (IsInRegionRange(regions, "Grass", currentHeight) && Random::Bool() == true)
 						{
-
-							if (IsInRegionRange(regions, "Grass", currentHeight) && Random::Bool() == true)
+							int grassDensity = Random::Int(1, 10);
+							for (int i = 0; i < grassDensity; ++i)
 							{
-								int grassDensity = Random::Int(1, 10);
-								for (int i = 0; i < grassDensity; ++i)
-								{
-									// Random offset within the 1x1 cell space (to avoid perfect alignment)
-									float offsetX = Random::Real(0.0f, 1.0f);
-									float offsetZ = Random::Real(0.0f, 1.0f);
+								// Random offset within the 1x1 cell space (to avoid perfect alignment)
+								float offsetX = Random::Real(0.0f, 1.0f);
+								float offsetZ = Random::Real(0.0f, 1.0f);
 
-									float worldX = extraOffset.x + topLeftX + x + offsetX;
-									float worldZ = extraOffset.y + topLeftZ - y - offsetZ;
+								float worldX = extraOffset.x + topLeftX + x + offsetX;
+								float worldZ = extraOffset.y + topLeftZ - y - offsetZ;
 
-									float rawHeight = chunkNoiseData.HeightMap[y * width + x];
-									float worldY = curveCopy.Evaluate(rawHeight) * ScaleY;
+								float rawHeight = chunkNoiseData.HeightMap[y * width + x];
+								float worldY = curveCopy.Evaluate(rawHeight) * ScaleY;
 
-									glm::vec3 rootPos(worldX, worldY, worldZ);
+								glm::vec3 rootPos(worldX, worldY, worldZ);
 
-									UBGrassBlade blade = UBGrassBlade(rootPos, grassBladeSettings);
-									m_GrassBlades.push_back(blade);
-								}
-
+								UBGrassBlade blade = UBGrassBlade(rootPos, grassBladeSettings);
+								m_GrassBlades.push_back(blade);
 							}
 
-							if (IsInRegionRange(regions, "Darker Grass", currentHeight))
-							{
-								int grassDensity = Random::Int(1, 5);
-								for (int i = 0; i < grassDensity; ++i)
-								{
-									// Random offset within the 1x1 cell space (to avoid perfect alignment)
-									float offsetX = Random::Real(0.0f, 1.0f);
-									float offsetZ = Random::Real(0.0f, 1.0f);
-
-									float worldX = extraOffset.x + topLeftX + x + offsetX;
-									float worldZ = extraOffset.y + topLeftZ - y - offsetZ;
-
-									float rawHeight = chunkNoiseData.HeightMap[y * width + x];
-									float worldY = curveCopy.Evaluate(rawHeight) * ScaleY;
-
-									glm::vec3 rootPos(worldX, worldY, worldZ);
-
-									UBGrassBlade blade = UBGrassBlade(rootPos, grassBladeSettings);
-									m_GrassBlades.push_back(blade);
-								}
-							}
 						}
 
+						if (IsInRegionRange(regions, "Darker Grass", currentHeight))
+						{
+							int grassDensity = Random::Int(1, 5);
+							for (int i = 0; i < grassDensity; ++i)
+							{
+								// Random offset within the 1x1 cell space (to avoid perfect alignment)
+								float offsetX = Random::Real(0.0f, 1.0f);
+								float offsetZ = Random::Real(0.0f, 1.0f);
+
+								float worldX = extraOffset.x + topLeftX + x + offsetX;
+								float worldZ = extraOffset.y + topLeftZ - y - offsetZ;
+
+								float rawHeight = chunkNoiseData.HeightMap[y * width + x];
+								float worldY = curveCopy.Evaluate(rawHeight) * ScaleY;
+
+								glm::vec3 rootPos(worldX, worldY, worldZ);
+
+								UBGrassBlade blade = UBGrassBlade(rootPos, grassBladeSettings);
+								m_GrassBlades.push_back(blade);
+							}
+						}
 
 					}
 					else
@@ -472,10 +449,6 @@ namespace Proof
 		return chunkNoiseData;
 	}
 
-	void TerrainRenderer::RequestMapData(std::function<void(TerrainChunkNoiseData)> callback) {
-		std::thread([=]() { MapDataThread(callback); }).detach();
-	}
-
 	void TerrainRenderer::SetWorld(Count<World> world)
 	{
 		PF_CORE_ASSERT(world->GetState() != WorldState::Edit, "Has to be in edit state");
@@ -496,20 +469,10 @@ namespace Proof
 			chunk.GeneratePhysicsCollisons();
 	}
 
-	void TerrainRenderer::MapDataThread(std::function<void(TerrainChunkNoiseData)> callback) {
-		TerrainChunkNoiseData mapData = GenerateNoiseData();
-		std::lock_guard<std::mutex> lock(queueMutex);
-		mapDataQueue.emplace(callback, mapData);
-	}
 
-	void TerrainRenderer::RequestMeshData(const TerrainChunkNoiseData& mapData, std::function<void(TerrainMeshBuilderData)> callback) {
-		std::thread([=]() { MeshDataThread(mapData, callback); }).detach();
-	}
-
-	void TerrainRenderer::MeshDataThread(const TerrainChunkNoiseData& mapData, std::function<void(TerrainMeshBuilderData)> callback) {
-		TerrainMeshBuilderData meshData = GenerateMesh(mapData.HeightMap, MapChunkSize, MapChunkSize); // This should match what Unity was doing
-		std::lock_guard<std::mutex> lock(queueMutex);
-		meshDataQueue.emplace(callback, meshData);
+	void TerrainRenderer::EndGenerateTerrain()
+	{
+		m_GrassBlades.clear();
 	}
 
 	TerrainChunk::TerrainChunk(Count<TerrainRenderer> terrain)
@@ -519,41 +482,6 @@ namespace Proof
 			return;
 
 
-		//terrain->RequestMapData([this](TerrainChunkNoiseData mapData)
-		//	{
-		//		OnMapDataReceived(mapData);
-		//	});
-	}
-
-	void TerrainChunk::OnMapDataReceived(TerrainChunkNoiseData mapData)
-	{
-		if (!m_TerrainRenderer.IsValid())
-			return;
-
-		//auto terrain = m_TerrainRenderer.Lock();
-		//
-		//terrain->RequestMeshData(mapData, [this](TerrainMeshBuilderData meshData)
-		//	{
-		//		OnMeshDataReceived(meshData);
-		//	});
-	}
-
-	void TerrainChunk::OnMeshDataReceived(TerrainMeshBuilderData meshData)
-	{
-		if (Mesh == nullptr)
-		{
-			Mesh = meshData.GenerateMesh();
-			AssetManager::CreateRuntimeAsset(Mesh, "Terrain Mesh chunk");
-		}
-		else
-		{
-			meshData.RecalculateNormals(meshData.Vertices, meshData.Indices);
-			Mesh->Reset("Terrain Mesh", meshData.Vertices, meshData.Indices);
-		}
-
-		//Mesh->GetMaterialTable()->GetMaterial(0)->SetAlbedoMap(m_ColorTexture);
-		Mesh->GetMaterialTable()->GetMaterial(0)->SetAlbedo(glm::vec3(1));
-		Mesh->GetMaterialTable()->GetMaterial(0)->SetEmission(0.0f);
 	}
 	void TerrainChunk::GeneratePhysicsCollisons()
 	{

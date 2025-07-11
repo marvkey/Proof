@@ -92,13 +92,21 @@ namespace Proof
 	public:
 		TerrainRenderer();
 		TerrainRenderer(Count<TerrainRenderer> otherTerrain);
-
 	public:
 		ClampedValue<float, 0.1f, 1000.0f> TerrainScale = 30.0f; // scale of the terrain
 		InterpolationCurve Curve;
 		int Seed = 0;
 		ClampedValue<int, 0, 6> LevelOfDetail = 0;
 		bool UseFallOff = false;
+
+		float GetMinHeight()
+		{
+			return TerrainScale * Curve.Evaluate(0.0f);
+		}
+		float GetMaxHeight()
+		{
+			return TerrainScale * Curve.Evaluate(1.0f);
+		}
 		struct NoiseSettings
 		{
 			glm::vec2 Offset = glm::vec2(0.0f);
@@ -127,10 +135,6 @@ namespace Proof
 		void Update(float deltaTime, const glm::mat4& transform);
 		void Render(Count<class WorldRenderer> renderer);
 
-		// Asynchronous requests
-		void RequestMapData(std::function<void(TerrainChunkNoiseData)> callback);
-		void RequestMeshData(const TerrainChunkNoiseData& mapData, std::function<void(TerrainMeshBuilderData)> callback);
-
 		Entity GetPhysicsEntity()// only active in runtime
 		{
 			return m_PhysicsEntity;
@@ -147,10 +151,7 @@ namespace Proof
 		void SetWorld(Count<World> world);
 
 	private:
-		// Worker threads
-		void MapDataThread(std::function<void(TerrainChunkNoiseData)> callback);
-		void MeshDataThread(const TerrainChunkNoiseData& mapData, std::function<void(TerrainMeshBuilderData)> callback);
-
+		void EndGenerateTerrain();// every tiem we generate terrain just clean up adn set some deafult valeus
 
 		TerrainMeshBuilderData GenerateMesh(const std::vector<float>& heightMap, uint32_t width, uint32_t height);
 		TerrainChunkNoiseData GenerateNoiseData(glm::vec2 extraOffset = glm::vec2(0));
@@ -159,6 +160,7 @@ namespace Proof
 	private:
 		//https://www.youtube.com/watch?v=417kJGPKwDg&list=PLFt_AvWsXl0eBW2EiBtl_sxmDtSgZBxB3&index=6
 		
+		Transform m_Transform;
 		const uint32_t MapChunkSize = 241;
 		Count<class Texture2D> m_NoiseTexture;
 		Count<class Texture2D> m_ColorTexture;
@@ -167,11 +169,6 @@ namespace Proof
 		Count<class EndlessTerrain> m_EndlessTerrain;
 		Count<class NormalTerrain> m_NormalTerrain;
 		std::vector<float> m_FallOffData;
-		Transform m_Transform;
-
-		std::queue<MapThreadInfo<TerrainChunkNoiseData>> mapDataQueue;
-		std::queue<MapThreadInfo<TerrainMeshBuilderData>> meshDataQueue;
-		std::mutex queueMutex;
 
 		Entity m_PhysicsEntity;; // only used in runtime for phsycics collisons
 
@@ -180,6 +177,8 @@ namespace Proof
 
 		Count<class GrassBladePlane> m_GrassBladePanel;
 		std::vector<struct UBGrassBlade> m_GrassBlades; // gets cleared once its full and sento to gpu
+
+		Count<class RenderMaterial> m_TerrainRenderMaterial;
 	};
 
 
@@ -200,12 +199,7 @@ namespace Proof
 			bool visible = viewerDstFromNearestEdge <= maxViewDst;
 			SetVisible(visible);
 		}
-
-		void OnMapDataReceived(TerrainChunkNoiseData mapData);
-		void OnMeshDataReceived(TerrainMeshBuilderData meshData);
 		void GeneratePhysicsCollisons();
-
-	private:
 	private:
 
 		Entity m_PhysicsEntity;

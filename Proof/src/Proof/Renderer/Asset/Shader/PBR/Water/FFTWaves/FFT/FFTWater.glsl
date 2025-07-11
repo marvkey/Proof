@@ -40,7 +40,7 @@ struct VertexOutput
    float WaveHeight;
 };
 
-layout(location = 23) out VertexOutput Output;
+layout(location = CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_PBR) out VertexOutput Output;
 
 float ModifiedManhattanDistance(vec3 a, vec3 b) {
     vec3 v = a - b;
@@ -133,7 +133,7 @@ struct VertexOutput
    float WaveHeight;
 };
 
-layout(location = 23) flat in VertexOutput Input;
+layout(location = CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_PBR) flat in VertexOutput Input;
 
 /** Filter weights for a cubic B-spline. */
 vec4 cubic_weights(float a) {

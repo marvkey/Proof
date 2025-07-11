@@ -4,6 +4,7 @@
 const float PI = 3.14159265358979323846264338327950288f;
 const float TWO_PI = 2 * PI;
 const float Epsilon = 0.00001;
+#define CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_PBR 23
 layout(set = 3, binding = 0) uniform FrameData
 {
 	uint FrameCount;
