@@ -45,7 +45,7 @@ vec3 triplaner(vec3 worldPos, float scale, vec3 blendAxes, int textureIndex)
     vec3 scaleWorldPos = worldPos / scale;
 
     vec3 xProjection = texture(u_Textures[textureIndex], scaleWorldPos.yz).rgb * blendAxes.x;
-    vec3 yProjection = texture(u_Textures[textureIndex], scaleWorldPos.xz).rgb * blendAxes.x;
+    vec3 yProjection = texture(u_Textures[textureIndex], scaleWorldPos.xz).rgb * blendAxes.y;
     vec3 zProjection = texture(u_Textures[textureIndex], scaleWorldPos.xy).rgb * blendAxes.z;
 
     return xProjection + yProjection + zProjection;
@@ -57,7 +57,7 @@ void Fragment(inout PBRData pbrData)
      float heightPercent = InverseLerp(u_TerrainInfo.MinHeight,u_TerrainInfo.MaxHeight,PBR_Input.WorldPosition.y);
 
     vec3 blendAxes = abs(PBR_Input.VecWorldNormal);
-    blendAxes /= blendAxes.x + blendAxes.y + blendAxes.z;
+    //blendAxes /= blendAxes.x + blendAxes.y + blendAxes.z; // makes everythign brigher
 
      for(int layerIndex = 0; layerIndex < u_TerrainInfo.LayerCount; layerIndex++)
      {
@@ -66,7 +66,10 @@ void Fragment(inout PBRData pbrData)
 
         vec3 baseColor = layer.Colour * layer.ColorTint;
         vec3 textureColor = triplaner(PBR_Input.WorldPosition, layer.TextureScale, blendAxes, layerIndex);
-        pbrData.Albedo = pbrData.Albedo * (1.0 - drawStrength) + (baseColor + textureColor) * drawStrength;
+
+        vec3 finalBaseColor = textureColor * baseColor;
+
+        pbrData.Albedo = pbrData.Albedo * (1.0 - drawStrength) + finalBaseColor * drawStrength;
      }
 }
 

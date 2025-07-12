@@ -1,13 +1,4 @@
 Assets:
-  - Asset: 1948765517176594391
-    Type: Material
-    Path: Materials\m_Black.Material.ProofAsset
-  - Asset: 13676478487902172363
-    Type: Texture
-    Path: Textures\TerrainTextues\RockFace\textures\rock_face_disp_2k.png
-  - Asset: 4130666624169366902
-    Type: Material
-    Path: Meshes\Shotgun\m_ShotGunMaterial.Material.ProofAsset
   - Asset: 1804100413018170951
     Type: Texture
     Path: Models\Pistol\textures\Pistol_Normal.png
@@ -17,6 +8,15 @@ Assets:
   - Asset: 56963814104375806
     Type: Texture
     Path: Textures\InventoryItems\PistolImage.png
+  - Asset: 13676478487902172363
+    Type: Texture
+    Path: Textures\TerrainTextues\RockFace\textures\rock_face_disp_2k.png
+  - Asset: 1948765517176594391
+    Type: Material
+    Path: Materials\m_Black.Material.ProofAsset
+  - Asset: 4130666624169366902
+    Type: Material
+    Path: Meshes\Shotgun\m_ShotGunMaterial.Material.ProofAsset
   - Asset: 542749660691896517
     Type: Texture
     Path: Textures\TerrainTextues\Grass007\Grass007_2K-PNG_Roughness.png
@@ -26,87 +26,90 @@ Assets:
   - Asset: 7659929436396046509
     Type: Material
     Path: Materials\m_Green.Material.ProofAsset
+  - Asset: 17359469819360106960
+    Type: Texture
+    Path: Textures\TerrainTextues\Ground084\Ground084_2K-PNG_Color.png
   - Asset: 16432727462520141266
     Type: Texture
     Path: Textures\TerrainTextues\Grass001\Grass001_2K-PNG_NormalGL.png
   - Asset: 4812082715384783110
     Type: InputAction
     Path: Input\PlayerMovement\IA_Movement.InputAction.ProofAsset
-  - Asset: 203935453544904822
-    Type: ScriptFile
-    Path: Scripts\HealthComponent.cs
   - Asset: 18216177543223532629
     Type: World
     Path: Scenes\New World.ProofWorld
-  - Asset: 11245583771173121786
-    Type: Texture
-    Path: Textures\TerrainTextues\RockyTerrain\textures\rocky_terrain_ao_2k.png
-  - Asset: 5002844255029031354
-    Type: InputBindingContext
-    Path: Input\PlayerMovement\IB_PlayerMovement.InputBindingContext.ProofAsset
+  - Asset: 203935453544904822
+    Type: ScriptFile
+    Path: Scripts\HealthComponent.cs
   - Asset: 7734857644237676712
     Type: Mesh
     Path: Meshes\Shotgun\Shotgun.Mesh.ProofAsset
-  - Asset: 6248028451720167464
+  - Asset: 5002844255029031354
+    Type: InputBindingContext
+    Path: Input\PlayerMovement\IB_PlayerMovement.InputBindingContext.ProofAsset
+  - Asset: 11245583771173121786
     Type: Texture
-    Path: Models\Pistol\textures\Pistol_Metallic.png
+    Path: Textures\TerrainTextues\RockyTerrain\textures\rocky_terrain_ao_2k.png
   - Asset: 15459032021119268140
     Type: Texture
     Path: Textures\TerrainTextues\RockFace\textures\rock_face_ao_2k.png
   - Asset: 5896697494919537015
     Type: PhysicsMaterial
     Path: Physics\Materials\pm_slipper.PhysicsMaterial.ProofAsset
-  - Asset: 6263508086911642556
+  - Asset: 6248028451720167464
     Type: Texture
-    Path: Textures\TerrainTextues\Grass007\Grass007.png
+    Path: Models\Pistol\textures\Pistol_Metallic.png
   - Asset: 11692785166767351247
     Type: InputAction
     Path: Input\PlayerMovement\IA_Jump.InputAction.ProofAsset
+  - Asset: 6263508086911642556
+    Type: Texture
+    Path: Textures\TerrainTextues\Grass007\Grass007.png
   - Asset: 15329971953129210005
     Type: Texture
     Path: Models\Pistol\textures\Pistol_Roughness.png
   - Asset: 12226295763662669733
     Type: MeshSourceFile
     Path: Models\Pistol\source\Pistol.fbx
-  - Asset: 767540007456876724
-    Type: Texture
-    Path: Textures\TerrainTextues\Grass001\Grass001_2K-PNG_Displacement.png
   - Asset: 14406167083753920302
     Type: Texture
     Path: Models\Pistol\textures\Pistol_BaseColor.png
-  - Asset: 12732299734325070797
-    Type: World
-    Path: Scenes\TestScenes\TestGrass.ProofWorld
+  - Asset: 767540007456876724
+    Type: Texture
+    Path: Textures\TerrainTextues\Grass001\Grass001_2K-PNG_Displacement.png
   - Asset: 12713853379028340398
     Type: Texture
     Path: Models\Pistol\textures\Pistol_Occlusion.png
-  - Asset: 17749409581713164031
-    Type: Texture
-    Path: Textures\TerrainTextues\RockyTerrain\textures\rocky_terrain_arm_2k.png
-  - Asset: 6876134793656559956
-    Type: Texture
-    Path: Textures\TerrainTextues\Grass001\Grass001_2K-PNG_Color.png
+  - Asset: 12732299734325070797
+    Type: World
+    Path: Scenes\TestScenes\TestGrass.ProofWorld
   - Asset: 15530846312733877534
     Type: Texture
     Path: Models\Pistol\textures\internal_ground_ao_texture.jpeg
+  - Asset: 6876134793656559956
+    Type: Texture
+    Path: Textures\TerrainTextues\Grass001\Grass001_2K-PNG_Color.png
+  - Asset: 17749409581713164031
+    Type: Texture
+    Path: Textures\TerrainTextues\RockyTerrain\textures\rocky_terrain_arm_2k.png
   - Asset: 7382233147466968749
     Type: Mesh
     Path: Meshes\Pistol\Pistol.Mesh.ProofAsset
   - Asset: 10785136772344387073
     Type: InputBindingContext
     Path: Input\Weapon\IB_Weapons.InputBindingContext.ProofAsset
-  - Asset: 13756665953438142826
-    Type: Texture
-    Path: Textures\TerrainTextues\Grass007\Grass007_2K-PNG_Color.png
   - Asset: 1490467677047270823
     Type: InputAction
     Path: Input\Weapon\IA_WeaponActivate.InputAction.ProofAsset
-  - Asset: 6109572104614141404
+  - Asset: 13756665953438142826
     Type: Texture
-    Path: Textures\TerrainTextues\Grass007\Grass007_2K-PNG_NormalDX.png
+    Path: Textures\TerrainTextues\Grass007\Grass007_2K-PNG_Color.png
   - Asset: 12113877820451625735
     Type: Material
     Path: Materials\m_Red.Material.ProofAsset
+  - Asset: 6109572104614141404
+    Type: Texture
+    Path: Textures\TerrainTextues\Grass007\Grass007_2K-PNG_NormalDX.png
   - Asset: 18446508233467783024
     Type: Prefab
     Path: Prefabs\Muzzle Flash.Prefab.ProofAsset
@@ -116,21 +119,21 @@ Assets:
   - Asset: 8385858429176898419
     Type: Texture
     Path: Textures\HDRMaps\lonely_road_afternoon_puresky_4k.hdr
-  - Asset: 14127438052321061638
-    Type: PhysicsMaterial
-    Path: Physics\Materials\pm_Player.PhysicsMaterial.ProofAsset
   - Asset: 13127080171188781274
     Type: Texture
     Path: Textures\InventoryItems\EmptyInventory.png
   - Asset: 14525028919524517166
     Type: UIPanel
     Path: UI\PlayerHUD.UIPanel.ProofAsset
-  - Asset: 12274530240805587851
-    Type: Texture
-    Path: Textures\TerrainTextues\RockyTerrain\textures\rocky_terrain_nor_dx_2k.png
+  - Asset: 14127438052321061638
+    Type: PhysicsMaterial
+    Path: Physics\Materials\pm_Player.PhysicsMaterial.ProofAsset
   - Asset: 17635570772855095165
     Type: Texture
     Path: Models\ShotGun\textures\shotgunNormal.png
+  - Asset: 12274530240805587851
+    Type: Texture
+    Path: Textures\TerrainTextues\RockyTerrain\textures\rocky_terrain_nor_dx_2k.png
   - Asset: 3830735361629502473
     Type: Texture
     Path: Textures\TerrainTextues\RockyTerrain\textures\rocky_terrain_disp_2k.png
@@ -140,24 +143,24 @@ Assets:
   - Asset: 6466768236783398328
     Type: Mesh
     Path: Meshes\AssaultRifle.Mesh.ProofAsset
-  - Asset: 14125218988744029477
-    Type: Texture
-    Path: Textures\InventoryItems\AssaultRifleImage.png
   - Asset: 12730130358352411224
     Type: MeshSourceFile
     Path: Models\ShotGun\source\shotgun.fbx
+  - Asset: 14125218988744029477
+    Type: Texture
+    Path: Textures\InventoryItems\AssaultRifleImage.png
   - Asset: 5288291075845151411
     Type: Texture
     Path: Models\ShotGun\textures\shotgunAO.png
-  - Asset: 1761259172894955743
-    Type: Texture
-    Path: Textures\TerrainTextues\Grass001\Grass001_2K-PNG_NormalDX.png
-  - Asset: 1153925666671568919
-    Type: Texture
-    Path: Textures\TerrainTextues\Grass007\Grass007_2K-PNG_Displacement.png
   - Asset: 11324605874358132166
     Type: Texture
     Path: Models\ShotGun\textures\shotgunColor.png
+  - Asset: 1153925666671568919
+    Type: Texture
+    Path: Textures\TerrainTextues\Grass007\Grass007_2K-PNG_Displacement.png
+  - Asset: 1761259172894955743
+    Type: Texture
+    Path: Textures\TerrainTextues\Grass001\Grass001_2K-PNG_NormalDX.png
   - Asset: 471701952801843012
     Type: Texture
     Path: Models\ShotGun\textures\shotgunMetallic.png
@@ -182,12 +185,12 @@ Assets:
   - Asset: 734880259989813942
     Type: Texture
     Path: Textures\TerrainTextues\Grass001\Grass001_2K-PNG_AmbientOcclusion.png
-  - Asset: 10335309030915454841
-    Type: Texture
-    Path: Textures\TerrainTextues\Grass001\Grass001.png
   - Asset: 995149312916262284
     Type: Texture
     Path: Textures\TerrainTextues\Grass001\Grass001_2K-PNG_Roughness.png
+  - Asset: 10335309030915454841
+    Type: Texture
+    Path: Textures\TerrainTextues\Grass001\Grass001.png
   - Asset: 8272555076784383631
     Type: Texture
     Path: Textures\TerrainTextues\RockyTerrain\textures\rocky_terrain_diff_2k.png
@@ -212,9 +215,27 @@ Assets:
   - Asset: 12693666112428530959
     Type: Texture
     Path: Textures\TerrainTextues\RockFace\textures\rock_face_rough_2k.png
-  - Asset: 9019218445804917665
+  - Asset: 15774312299195432015
+    Type: Texture
+    Path: Textures\TerrainTextues\Ground084\Ground084.png
+  - Asset: 12666197413299457135
+    Type: Texture
+    Path: Textures\TerrainTextues\Ground084\Ground084_2K-PNG_AmbientOcclusion.png
+  - Asset: 4983831330360712598
+    Type: Texture
+    Path: Textures\TerrainTextues\Ground084\Ground084_2K-PNG_Displacement.png
+  - Asset: 13813091649708503554
+    Type: Texture
+    Path: Textures\TerrainTextues\Ground084\Ground084_2K-PNG_NormalDX.png
+  - Asset: 323208586395221621
+    Type: Texture
+    Path: Textures\TerrainTextues\Ground084\Ground084_2K-PNG_NormalGL.png
+  - Asset: 7186535299582552243
+    Type: Texture
+    Path: Textures\TerrainTextues\Ground084\Ground084_2K-PNG_Roughness.png
+  - Asset: 11844464505511535379
     Type: Texture
     Path: Projects\Facility22\tex\shotgunColor_1.png
-  - Asset: 14545271128891142905
+  - Asset: 11223074871483957119
     Type: Texture
     Path: Projects\Facility22\tex\shotgunNormal_1.png
