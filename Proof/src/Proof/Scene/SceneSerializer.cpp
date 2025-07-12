@@ -250,6 +250,7 @@ namespace Proof
 					out << YAML::Key << "Seed" << YAML::Value << terrain->Seed;
 					//out << YAML::Key << "MapSize" << YAML::Value << terrain->MapSize;
 					out << YAML::Key << "TerrainScale" << YAML::Value << terrain->TerrainScale;
+					out << YAML::Key << "UseFallOff" << YAML::Value << terrain->UseFallOff;
 
 					out << YAML::Key << "NoiseParams";
 					out << YAML::BeginMap; // noise
@@ -265,7 +266,30 @@ namespace Proof
 
 					SerializeCommon::SerializeInterpolationCurve(out, "Curve", terrain->Curve);
 
-					out << YAML::EndMap; // ter
+
+					terrain->LayerStack.ResortLayerStack(); // maintain order
+					{
+						out << YAML::Key << "TerrainLayerStack";
+						out << YAML::BeginSeq;//Terainlayer
+						for (auto& layer : terrain->LayerStack.Layers)
+						{
+							out << YAML::BeginMap;// Layer
+
+							// we nned th "" for some reason 
+							out << YAML::Key << "Layer" << YAML::Key << "";
+
+							out << YAML::Key << "Name" << YAML::Value << layer.Name;
+							out << YAML::Key << "StartHeight" << YAML::Value << layer.StartHeight;
+							out << YAML::Key << "Texture" << YAML::Value << layer.Texture.GetAssetID();
+							out << YAML::Key << "ColorTint" << YAML::Value << layer.ColorTint;
+							out << YAML::Key << "ColorTintStrength" << YAML::Value << layer.ColorTintStrength;
+							out << YAML::Key << "BlendStrength" << YAML::Value << layer.BlendStrength;
+							out << YAML::Key << "TextureScale" << YAML::Value << layer.TextureScale;
+							out << YAML::EndMap;// layer
+						}
+						out << YAML::EndSeq; // TerrainLayerStack
+					}
+					out << YAML::EndMap; // terrain
 				}
 			}
 		}
@@ -1016,6 +1040,7 @@ namespace Proof
 					terrain->Seed = terrainComponent["Seed"].as<int>(0);
 					//terrain->MapSize = terrainComponent["MapSize"].as<int>(terrain->MapSize);
 					terrain->TerrainScale = terrainComponent["TerrainScale"].as<float>(terrain->TerrainScale);
+					terrain->UseFallOff = terrainComponent["UseFallOff"].as<bool>(terrain->UseFallOff);
 
 					const auto& noiseNode = terrainComponent["NoiseParams"];
 					terrain->NoiseParams.Scale = noiseNode["Scale"].as<float>(terrain->NoiseParams.Scale);
@@ -1026,6 +1051,25 @@ namespace Proof
 					terrain->RegenerateTerrainMesh();
 
 					SerializeCommon::LoadInterpolationCurve(terrainComponent, "Curve", terrain->Curve);
+
+					if (terrainComponent["TerrainLayerStack"])
+					{
+						for (auto layer : terrainComponent["TerrainLayerStack"])
+						{
+							TerrainLayer layerData;
+							layerData.Name = layer["Name"].as<std::string>("");
+							layerData.StartHeight = layer["StartHeight"].as<float>(1.0f);
+							layerData.Texture = layer["Texture"].as<AssetID>(AssetID(0));
+							layerData.ColorTint = layer["ColorTint"].as<glm::vec3>(layerData.ColorTint);
+							layerData.ColorTintStrength = layer["ColorTintStrength"].as<float>(layerData.ColorTintStrength);
+							layerData.BlendStrength = layer["BlendStrength"].as<float>(layerData.BlendStrength);
+							layerData.TextureScale = layer["TextureScale"].as<float>(layerData.TextureScale);
+
+							terrain->LayerStack.AddLayer(layerData);
+						}
+
+					}
+
 				}
 
 			}

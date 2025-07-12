@@ -30,6 +30,7 @@ struct PBRVertexOutput
     vec3 VertexPosition;
     vec3 Normal;
     mat3 WorldNormals;
+    vec3 VecWorldNormal;
     vec2 TexCoords;
     vec3 Tangent;
     vec3 Bitangent;
@@ -66,6 +67,7 @@ struct PBRData
     int OutDirectLighting;
 };
 layout(location = 0) in PBRVertexOutput PBR_Input;
+
 
 layout(location = 0) out vec4 out_FragColor;
 layout(location = 1) out vec4 out_ViewNormalsLuminance;

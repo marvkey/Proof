@@ -42,6 +42,7 @@ namespace Proof::UI
 	bool AttributeAssetKeyReference(const std::string& label, StaticAssetKey& assetKey, const PropertyAssetReferenceSettings& settings = {});
 
 	bool AttributeTextureAssetReference(const std::string& label, AssetID& id, const PropertyAssetReferenceSettings& settings = {});
+	bool AttributeTextureAssetReference(const std::string& label, AssetKey<AssetType::Texture>& assetKey, const PropertyAssetReferenceSettings& settings = {});
 	bool AttributeDrawMaterialTable(Count<MaterialTable> materialTable, Count<MaterialTable> sourceMaterialTable);
 	bool AttributeDrawUITable(Count<UITable> UITable);
 

@@ -1361,6 +1361,55 @@ namespace Proof
 					meshComp.Terrain->RegenerateTerrainMesh();
 				
 				}
+
+				if (UI::AttributeTreeNode("TerrainLayerStack", true, 3.0f, 3.0f))
+				{
+					bool modifiedStack = false;
+					UI::PushModified(modifiedStack);
+
+					TerrainLayerStack& layerStack = meshComp.Terrain->LayerStack;	
+					if (UI::AttributeButton("Add Layer"))
+					{
+						layerStack.AddLayer(TerrainLayer());
+						modifiedStack = true;
+					}
+					for (int i = 0; i <layerStack.Layers.size(); i++)
+					{
+						TerrainLayer& layer = layerStack.Layers[i];
+					
+
+						if (UI::AttributeTreeNode(fmt::format("Terrain Layer: {} : {}",i,layer.Name), true, 3.0f, 3.0f))
+						{
+							UI::ScopedID scopeID(fmt::format("Terrain LayerID{} ", i).c_str());
+							
+							UI::BeginPropertyGrid();
+
+							UI::AttributeInputText("Name (Optional)", layer.Name);
+							UI::AttributeSlider("Start Height", layer.StartHeight);
+							UI::AttributeTextureAssetReference("Texture", layer.Texture);
+							UI::AttributeDrag("TextureScale", layer.TextureScale);
+
+							UI::AttributeColor("ColorTint", layer.ColorTint);
+							UI::AttributeSlider("ColorTintStrengh", layer.ColorTintStrength);
+							UI::AttributeSlider("BlendStrength", layer.BlendStrength);
+							UI::EndPropertyGrid();
+
+							UI::EndTreeNode();
+
+							if (UI::AttributeButton("Remove Layer"))
+							{
+								layerStack.RemoveLayer(i);
+								modifiedStack = true;
+								break; // we are removing so we break
+							}
+						}
+					}
+
+					UI::PopModified();
+
+
+					UI::EndTreeNode();
+				}
 			});
 		DrawComponents<SpriteComponent>({ "Sprite" }, entity, [](SpriteComponent& spriteComp) {
 

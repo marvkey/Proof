@@ -18,6 +18,10 @@
 #include <FastNoise/FastNoiseLite.h>
 #include "Proof/Math/Random.h"
 #include "../GrassRenderer/GrassRenderer.h"
+#include "Proof/Renderer/RenderMaterial.h"
+#include "Proof/Renderer/Renderer.h"
+#include "Proof/Renderer/Shader.h"
+#include "Proof/Renderer/UniformBuffer.h"
 
 namespace Proof
 {
@@ -113,15 +117,40 @@ namespace Proof
 	}
 
 
+	struct alignas(16) UBTerrainShaderInfos
+	{
+		uint32_t LayerCount;
+		float MinHeight;
+		float MaxHeight;
+	};
 
+	
+	struct alignas(16) UBTerrainLayer
+	{
+		float StartHeight;
+		float BlendStrength;
+		float ColorTint;
+		float TextureScale;
+
+		glm::vec3 Colour;
+	};
 	TerrainRenderer::TerrainRenderer()
 	{
 		m_Chunks.clear();
+		m_TerrainRenderMaterial = RenderMaterial::Create("Terrain Material",Renderer::GetShader("TerrainShader"));
+		m_SBTerainLayers = StorageBufferSet::Create(sizeof(UBTerrainLayer));
+		m_UBTerrainInfo = UniformBufferSet::Create(sizeof(UBTerrainShaderInfos));
+
+		m_TerrainRenderMaterial->Set("TerrainInfos", m_UBTerrainInfo);
+		m_TerrainRenderMaterial->Set("TerrainLayers", m_SBTerainLayers);
 	}
 
 	TerrainRenderer::TerrainRenderer(Count<TerrainRenderer> otherTerrain)
 	{
 		m_Chunks.clear();
+		m_TerrainRenderMaterial = RenderMaterial::Create("Terrain Material", Renderer::GetShader("TerrainShader"));
+		m_SBTerainLayers = StorageBufferSet::Create(sizeof(UBTerrainLayer));
+		m_UBTerrainInfo = UniformBufferSet::Create(sizeof(UBTerrainShaderInfos));
 
 		NoiseParams = otherTerrain->NoiseParams;
 
@@ -142,11 +171,13 @@ namespace Proof
 		}
 	}
 
+	
 	struct TerrainType
 	{
-		std::string Name;
+		std::string Name; // opotional
 		float Height;
 		glm::vec4 colour;
+
 	};
 
 	std::vector<TerrainType> regions = {
@@ -259,18 +290,56 @@ namespace Proof
 
 	void TerrainRenderer::Render(Count<class WorldRenderer> renderer)
 	{
+		PF_PROFILE_FUNC();
+		{
+			UBTerrainShaderInfos terrainInfo;
+			terrainInfo.LayerCount = LayerStack.Layers.size();
+			terrainInfo.MinHeight = GetMinHeight();
+			terrainInfo.MaxHeight = GetMaxHeight();
+			m_UBTerrainInfo->GetBuffer()->SetData(Buffer(&terrainInfo, sizeof(UBTerrainShaderInfos)));
+			
+		}
+
+		{
+			std::vector<UBTerrainLayer> layers(LayerStack.Layers.size());
+
+			for (int i = 0; i < layers.size(); i++)
+			{
+				layers[i].StartHeight = LayerStack.Layers[i].StartHeight;
+				layers[i].Colour = LayerStack.Layers[i].ColorTint;
+				layers[i].ColorTint = LayerStack.Layers[i].ColorTintStrength;
+				layers[i].TextureScale = LayerStack.Layers[i].TextureScale;
+				layers[i].BlendStrength = LayerStack.Layers[i].BlendStrength;
+			}
+			Buffer buffer{ (void*)layers.data(), layers.size() * sizeof(UBTerrainLayer) };
+			m_SBTerainLayers->GetBuffer()->Resize(buffer);
+		}
+
+		{
+			std::vector<Count<Texture2D>> textures(LayerStack.Layers.size());
+			for (int i = 0; i < textures.size(); i++)
+			{
+				if (LayerStack.Layers[i].Texture.IsValid())
+					textures[i] = LayerStack.Layers[i].Texture.GetAsset<Texture2D>();
+				else
+					textures[i] = Renderer::GetWhiteTexture();
+			}
+
+			m_TerrainRenderMaterial->Set("u_Textures", textures);
+		}
+
 		for (auto& terrainChunk : m_Chunks)
 		{
 			if (!terrainChunk.GetIsVisible())
 				continue;
 
 			if (terrainChunk.Mesh)
-				renderer->SubmitMesh(terrainChunk.Mesh, terrainChunk.Mesh->GetMaterialTable(), terrainChunk.Transform.GetTransform() * m_Transform.GetTransform());
+				renderer->SubmitMesh(terrainChunk.Mesh, m_TerrainRenderMaterial, terrainChunk.Transform.GetTransform() * m_Transform.GetTransform());
 		}
 
 		if (m_GrassBladePanel)
 		{
-			renderer->SubmitGrassPlane(m_GrassBladePanel, m_Transform.GetTransform());
+			//renderer->SubmitGrassPlane(m_GrassBladePanel, m_Transform.GetTransform());
 		}
 	}
 

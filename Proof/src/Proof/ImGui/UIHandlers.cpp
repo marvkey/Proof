@@ -421,6 +421,18 @@ namespace Proof::UI
 		return modified;
 	}
 
+	bool AttributeTextureAssetReference(const std::string& label, AssetKey<AssetType::Texture>& assetKey, const PropertyAssetReferenceSettings& settings)
+	{
+		AssetID id = assetKey.GetAssetID();
+
+		if(AttributeTextureAssetReference(label, id, settings))
+		{
+			assetKey.SetAssetID(id);
+			return true;
+		}
+		return false;
+	}
+
 	struct ConvertRuntimeMaterialToDiskMaterial
 	{
 		std::string SavePath = "Materials/";

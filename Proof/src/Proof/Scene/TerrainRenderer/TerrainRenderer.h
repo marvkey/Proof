@@ -5,6 +5,7 @@
 #include "Proof/Math/AABB.h"
 #include "../SceneUtils.h"
 #include "Proof/Scene/Mesh.h"
+#include "Proof/Asset/Asset.h"
 #include "../Entity.h"
 #include <queue>
 #include <mutex>
@@ -86,6 +87,100 @@ namespace Proof
 			: Callback(callback), Data(data) {
 		}
 	};
+
+	struct TerrainLayer
+	{
+		std::string Name = "";
+		ClampedValue<float, 0.0f, 1.0f> StartHeight = 0.0f;
+		AssetKey<AssetType::Texture> Texture = AssetID(0);
+		glm::vec3 ColorTint = glm::vec3(1.0f);
+		ClampedValue<float, 0.0f, 1.0f> ColorTintStrength = 1.0f;
+		ClampedValue<float, 0.0f, 1.0f> BlendStrength = 1.0f;
+		float TextureScale = 1.0f;
+	};
+
+	struct TerrainLayerStack
+	{
+		std::vector<TerrainLayer> Layers;
+
+		void AddLayer(const TerrainLayer& layerToAdd) {
+			TerrainLayer newLayer = layerToAdd;
+			if(newLayer.StartHeight == 0.0f)
+				newLayer.StartHeight = Layers.empty()  ? 0.0f : 1.0f; // Default to 1.0 if not redistributing
+
+			Layers.push_back(newLayer);
+			RedistributeLayerHeightsIfNeeded();
+		}
+
+		void RemoveLayer(size_t index) {
+			if (index < Layers.size()) {
+				Layers.erase(Layers.begin() + index);
+			}
+		}
+
+		void RedistributeLayerHeightsIfNeeded() {
+			if (Layers.empty())
+				return;
+
+			// Only redistribute if the last layer's StartHeight is 1.0
+			if (Layers.back().StartHeight != 1.0f)
+				return;
+
+			//size_t count = Layers.size();
+			//float spacing = 1.0f / static_cast<float>(count);
+			//
+			//for (size_t i = 0; i < count; ++i) {
+			//	Layers[i].StartHeight = std::clamp(i * spacing, 0.0f, 1.0f);
+			//}
+		}
+
+		void ResortLayerStack() {
+			std::sort(Layers.begin(), Layers.end(), [](const TerrainLayer& a, const TerrainLayer& b)
+				{
+					return a.StartHeight < b.StartHeight;
+				});
+		}
+
+		void InsertLayerAt(TerrainLayer newLayer, int index) {
+			/*
+			if (index < 0) index = 0;
+			if (index > static_cast<int>(Layers.size())) index = static_cast<int>(Layers.size());
+
+			float minHeight = 0.0f;
+			float maxHeight = 1.0f;
+
+			if (!Layers.empty()) {
+				if (index == 0) {
+					maxHeight = Layers[0].StartHeight;
+				}
+				else if (index == Layers.size()) {
+					minHeight = Layers.back().StartHeight;
+				}
+				else {
+					minHeight = Layers[index - 1].StartHeight;
+					maxHeight = Layers[index].StartHeight;
+				}
+			}
+
+			newLayer.StartHeight = (minHeight + maxHeight) * 0.5f;
+			Layers.insert(Layers.begin() + index, newLayer);
+
+			// Redistribute just the local region to make room
+			int start = std::max(index - 1, 0);
+			int end = std::min(index + 2, static_cast<int>(Layers.size()));
+
+			int count = end - start;
+			if (count > 1) {
+				for (int i = 0; i < count; ++i) {
+					float t = static_cast<float>(i) / static_cast<float>(count - 1);
+					Layers[start + i].StartHeight = std::lerp(Layers[start].StartHeight, Layers[end - 1].StartHeight, t);
+				}
+			}
+			*/
+			ResortLayerStack(); // maintain order
+		}
+	};
+
 	struct TerrainChunk;
 	class TerrainRenderer : public RefCounted
 	{
@@ -98,15 +193,8 @@ namespace Proof
 		int Seed = 0;
 		ClampedValue<int, 0, 6> LevelOfDetail = 0;
 		bool UseFallOff = false;
-
-		float GetMinHeight()
-		{
-			return TerrainScale * Curve.Evaluate(0.0f);
-		}
-		float GetMaxHeight()
-		{
-			return TerrainScale * Curve.Evaluate(1.0f);
-		}
+		TerrainLayerStack LayerStack;
+	
 		struct NoiseSettings
 		{
 			glm::vec2 Offset = glm::vec2(0.0f);
@@ -157,6 +245,15 @@ namespace Proof
 		TerrainChunkNoiseData GenerateNoiseData(glm::vec2 extraOffset = glm::vec2(0));
 
 		friend class NormalTerrain;
+
+		float GetMinHeight() // for shader
+		{
+			return TerrainScale * Curve.Evaluate(0.0f);
+		}
+		float GetMaxHeight() // for shader
+		{
+			return TerrainScale * Curve.Evaluate(1.0f);
+		}
 	private:
 		//https://www.youtube.com/watch?v=417kJGPKwDg&list=PLFt_AvWsXl0eBW2EiBtl_sxmDtSgZBxB3&index=6
 		
@@ -179,6 +276,8 @@ namespace Proof
 		std::vector<struct UBGrassBlade> m_GrassBlades; // gets cleared once its full and sento to gpu
 
 		Count<class RenderMaterial> m_TerrainRenderMaterial;
+		Count<class UniformBufferSet> m_UBTerrainInfo; // used for shader infos
+		Count<class StorageBufferSet> m_SBTerainLayers; // used for shader infos
 	};
 
 

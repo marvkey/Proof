@@ -15,6 +15,7 @@ struct PBRVertexOutput
     vec3 VertexPosition;
     vec3 Normal;
     mat3 WorldNormals;
+    vec3 VecWorldNormal;
     vec2 TexCoords;
     vec3 Tangent;
     vec3 Bitangent;
@@ -47,7 +48,16 @@ struct PBRVertexInput
     vec3 WorldPositionOffset;
 };
 
+vec3 GetWorldNormal(vec3 objectNormal, mat4 modelViewMatrix, mat4 inverseViewMatrix)
+{
+    // Transform to view space first (don't affect original normal)
+    vec3 viewNormal = normalize((modelViewMatrix * vec4(objectNormal, 0.0)).xyz);
 
+    // Transform back to world space
+    vec3 worldNormal = normalize((inverseViewMatrix * vec4(viewNormal, 0.0)).xyz);
+
+    return worldNormal;
+}
 void ApplyPbrVertex(PBRVertexInput pbrvertex)
 {
     vec3 modifiedPosition = pbrvertex.VertexPosition;
@@ -76,6 +86,8 @@ void ApplyPbrVertex(PBRVertexInput pbrvertex)
     mat3 normalMatrix = transpose(inverse(mat3(aTransform)));
     PBR_Output.Normal = mat3(aTransform) * pbrvertex.Normal;
     PBR_Output.WorldNormals = mat3(aTransform) * mat3(pbrvertex.Tangent, pbrvertex.Bitangent, pbrvertex.Normal);
+    PBR_Output.VecWorldNormal = GetWorldNormal(PBR_Output.Normal, aTransform, u_Camera.InverseView);
+
 
    // PBR_Output.Normal = normalMatrix * pbrvertex.Normal; 
     //PBR_Output.Normal = mat3(aTransform) * pbrvertex.Normal;

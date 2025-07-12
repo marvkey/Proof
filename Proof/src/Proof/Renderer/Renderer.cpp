@@ -117,7 +117,8 @@ namespace Proof {
 		ShaderLibrary->LoadShader("ProofPBR_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl");
 		ShaderLibrary->LoadShader("ProofPBRTransparent_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBRTransparent_Static.glsl");
 		ShaderLibrary->LoadShader("ProofPBRTransparent_Composite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBRTransparent_Composite.glsl");
-
+		ShaderLibrary->LoadShader("TerrainShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Terrain/TerrainRenderer.glsl");
+		
 		// predepth
 		ShaderLibrary->LoadShader("PreDepth_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PreDepth/PreDepth_Static.glsl");
 
@@ -224,6 +225,7 @@ namespace Proof {
 		ShaderLibrary->LoadShader("GrassGenerator", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Grass/GrassGenerator.glsl");
 		ShaderLibrary->LoadShader("PreDepthGrassRenderer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Grass/PreDepthGrassRenderer.glsl");
 
+		
 		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
 		SamplerFactory::Init();

@@ -14,7 +14,8 @@ World:
         Children: []
       TerrainComponent:
         Seed: 0
-        TerrainScale: 5
+        TerrainScale: 15
+        UseFallOff: false
         NoiseParams:
           Scale: 25
           Octaves: 5
@@ -35,6 +36,55 @@ World:
             - [0.846621096, 0.662751675]
             - [0.902809441, 0.82718122]
             - [0.996203482, 0.989932895]
+        TerrainLayerStack:
+          - Layer: ""
+            Name: DeepWater
+            StartHeight: 0
+            Texture: 0
+            ColorTint: [0, 0, 0.600000024]
+            ColorTintStrength: 1
+            BlendStrength: 0
+            TextureScale: 1
+          - Layer: ""
+            Name: sand
+            StartHeight: 0.0430000015
+            Texture: 0
+            ColorTint: [0.850000024, 0.800000012, 0.5]
+            ColorTintStrength: 0.745000005
+            BlendStrength: 0.136000007
+            TextureScale: -2
+          - Layer: ""
+            Name: DarkerGrass
+            StartHeight: 0.201000005
+            Texture: 13756665953438142826
+            ColorTint: [0.200000003, 0.5, 0.200000003]
+            ColorTintStrength: 1
+            BlendStrength: 0.0920000002
+            TextureScale: -451
+          - Layer: ""
+            Name: Grass
+            StartHeight: 0.207000002
+            Texture: 6876134793656559956
+            ColorTint: [0.300000012, 0.600000024, 0.200000003]
+            ColorTintStrength: 1
+            BlendStrength: 0
+            TextureScale: 1565
+          - Layer: ""
+            Name: Rock
+            StartHeight: 0.625
+            Texture: 8272555076784383631
+            ColorTint: [0.300000012, 0.200000003, 0.200000003]
+            ColorTintStrength: 1
+            BlendStrength: 0.375
+            TextureScale: 1
+          - Layer: ""
+            Name: DarkRock
+            StartHeight: 0.935000002
+            Texture: 9112554493657358421
+            ColorTint: [0.200000003, 0.150000006, 0.150000006]
+            ColorTintStrength: 1
+            BlendStrength: 0.685000002
+            TextureScale: 51
     - Entity: 13519868178400244974
       TagComponent:
         Tag: Sky Light
