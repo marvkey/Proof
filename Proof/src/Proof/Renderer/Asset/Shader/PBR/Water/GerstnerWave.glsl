@@ -419,8 +419,7 @@ vec3 Normal = normalize(vec3(nxy.x, nxy.y, 1));
 #Fragment Shader
 #version 450 core
 
-//#include <PBR/PBRShaderBases/PBR.Fragment.glsl>
-#include <PBR/PBRShaderBases/PBR.FragmentTransperant.glsl>
+#include <PBR/PBRShaderBases/PBR.Fragment.glsl>
 
 layout(set = 0, binding = 3) uniform sampler2D u_TextureMap;
 
@@ -445,6 +444,10 @@ void Fragment(inout PBRData pbrData)
 
 }
 void LightLateUpdate(inout vec3 lightDir, inout vec3 diffuseBRDF, inout vec3 specularBRDF,DirectionalLight currentLight)
+{
+}
+
+void PreEndFragment()
 {
 }
 

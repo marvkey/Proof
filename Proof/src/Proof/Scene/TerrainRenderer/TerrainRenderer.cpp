@@ -151,7 +151,8 @@ namespace Proof
 		m_TerrainRenderMaterial = RenderMaterial::Create("Terrain Material", Renderer::GetShader("TerrainShader"));
 		m_SBTerainLayers = StorageBufferSet::Create(sizeof(UBTerrainLayer));
 		m_UBTerrainInfo = UniformBufferSet::Create(sizeof(UBTerrainShaderInfos));
-
+		m_TerrainRenderMaterial->Set("TerrainInfos", m_UBTerrainInfo);
+		m_TerrainRenderMaterial->Set("TerrainLayers", m_SBTerainLayers);
 		NoiseParams = otherTerrain->NoiseParams;
 
 		TerrainScale = otherTerrain->TerrainScale;
@@ -159,6 +160,8 @@ namespace Proof
 		Seed = otherTerrain->Seed;
 		LevelOfDetail = otherTerrain->LevelOfDetail;
 		UseFallOff = otherTerrain->UseFallOff;
+
+		LayerStack = otherTerrain->LayerStack;
 	}
 
 	void TerrainRenderer::RegenerateTerrainMesh()

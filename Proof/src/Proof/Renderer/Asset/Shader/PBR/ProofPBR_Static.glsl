@@ -18,29 +18,49 @@ layout(set = 0, binding = 6) uniform sampler2D u_NormalMap;
 layout(set = 0, binding = 7) uniform sampler2D u_MetallicMap;
 layout(set = 0, binding = 8) uniform sampler2D u_RoughnessMap;
 
+#ifdef PBR_USE_TRANSPARENCY
+    layout(push_constant) uniform Material
+    {
+        vec4 Albedo;
 
-layout(push_constant) uniform Material
-{
-    vec3 Albedo;
-    float Metalness;
+        float Metalness;
+        float Roughness;
+        float Emission;
+        bool NormalTexToggle;
 
-    float Roughness;
-    float Emission;
-    bool EmissionOverrideColorToggle;
-    bool NormalTexToggle;
+        vec2 TextureTiling;
+        vec2 TextureOffset;
 
-    vec2 TextureTiling;
-    vec2 TextureOffset;
+        vec3 EmissionOverrideColor; // if EmissionOverrideColorToggle is equal to true then we will override the emission color
+        bool EmissionOverrideColorToggle;
+    } u_MaterialUniform;
+#else
+    layout(push_constant) uniform Material
+    {
+        vec3 Albedo;
+        float Metalness;
 
-    vec3 EmissionOverrideColor; // if EmissionOverrideColorToggle is equal to true then we will override the emission color
-} u_MaterialUniform;
+        float Roughness;
+        float Emission;
+        bool EmissionOverrideColorToggle;
+        bool NormalTexToggle;
+
+        vec2 TextureTiling;
+        vec2 TextureOffset;
+
+        vec3 EmissionOverrideColor; // if EmissionOverrideColorToggle is equal to true then we will override the emission color
+    } u_MaterialUniform;
+#endif
+
 
 void Fragment(inout PBRData pbrData)
 {
     vec2 texCoords = PBR_Input.TexCoords * u_MaterialUniform.TextureTiling + u_MaterialUniform.TextureOffset;
-
-    pbrData.Albedo = texture(u_AlbedoMap, texCoords).rgb * u_MaterialUniform.Albedo;
-    pbrData.Albedo = texture(u_AlbedoMap, texCoords).rgb * u_MaterialUniform.Albedo;
+    #ifdef PBR_USE_TRANSPARENCY
+        pbrData.Albedo = texture(u_AlbedoMap, texCoords).rgb * u_MaterialUniform.Albedo.xyz;
+    #else
+        pbrData.Albedo = texture(u_AlbedoMap, texCoords).rgb * u_MaterialUniform.Albedo;
+    #endif
     pbrData.Metalness = texture(u_MetallicMap, texCoords).r * u_MaterialUniform.Metalness;
     pbrData.Roughness = texture(u_RoughnessMap, texCoords).r * max(u_MaterialUniform.Roughness,0.00);
 
@@ -56,14 +76,15 @@ void Fragment(inout PBRData pbrData)
     
     if(u_MaterialUniform.EmissionOverrideColorToggle == false)
     {
-        pbrData.EmissionColour = u_MaterialUniform.Albedo;//emision
+        pbrData.EmissionColour = pbrData.Albedo;//emision
     }
     else
     {
         pbrData.EmissionColour = u_MaterialUniform.EmissionOverrideColor ;//emision
     }
-    pbrData.OutFinalColor = 1;
-
+    #ifdef PBR_USE_TRANSPARENCY
+        pbrData.Alpha = u_MaterialUniform.Albedo.a;
+    #endif
 }
 
 

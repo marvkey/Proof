@@ -7,8 +7,7 @@ struct CustomOutPutData
     
 };
 
-// starts at 20 because the pbr takes the first 19 positon for now
-layout(location = 23) out CustomOutPutData OutPutData;
+layout(location = CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_PBR) out CustomOutPutData OutPutData;
 
 void Vertex(inout PBRVertexInput vertexInput)
 {
@@ -24,8 +23,7 @@ struct CustomOutPutData
 {
     
 };
-// starts at 20 because the pbr takes the first 19 positon for now
-layout(location = 23) in CustomOutPutData Input;
+layout(location = CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_PBR) in CustomOutPutData Input;
 
 void Fragment(inout PBRData pbrData)
 {

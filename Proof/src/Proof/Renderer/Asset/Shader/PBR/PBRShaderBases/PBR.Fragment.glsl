@@ -76,6 +76,11 @@ layout(location = 3) out vec2 out_Velocity; //R16G16 float, velocity
 layout(location = 4) out vec4 out_DirectLighting; //RGBA float Point Light,Directional Light,Spotlight,Area Light
 
 
+#ifdef PBR_USE_TRANSPARENCY
+    layout(location = 5) out vec4 out_Accum; 
+    layout(location = 6) out float out_Reveal; 
+#endif
+
 //environmentMap
 layout(set = 1, binding = 2) uniform samplerCube u_IrradianceMap;
 layout(set = 1, binding = 3) uniform samplerCube u_PrefilterMap;
@@ -425,9 +430,18 @@ void main()
     Fragment(pbrData);
 
     ApplyPBR(pbrData);
+
+    // prend fragment 
+    #ifdef PBR_USE_TRANSPARENCY
+        float weight = clamp(pow(min(1.0, finalEndingCOlor.a * 10.0) + 0.01, 3.0) * 1e8 * pow(1.0 - gl_FragCoord.z * 0.9, 3.0), 1e-2, 3e3);
+
+	    // store pixel color accumulation
+	    out_Accum = vec4(finalEndingCOlor.rgb * finalEndingCOlor.a, finalEndingCOlor.a) * weight;
+	
+	    // store pixel revealage threshold
+	    out_Reveal = finalEndingCOlor.a;
+    #endif
+
     PreEndFragment();
-
-    
-
 }
 

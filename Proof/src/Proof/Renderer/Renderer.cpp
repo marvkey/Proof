@@ -115,7 +115,15 @@ namespace Proof {
 
 		//PBR
 		ShaderLibrary->LoadShader("ProofPBR_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl");
-		ShaderLibrary->LoadShader("ProofPBRTransparent_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBRTransparent_Static.glsl");
+		{
+			std::unordered_map<std::string, std::string> macroDefintions = {
+				{ "PBR_USE_TRANSPARENCY", "" }
+			};
+			ShaderLibrary->LoadShader("ProofPBRTransparent_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl", macroDefintions);
+		}
+		
+
+		//ShaderLibrary->LoadShader("ProofPBRTransparent_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBRTransparent_Static.glsl");
 		ShaderLibrary->LoadShader("ProofPBRTransparent_Composite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBRTransparent_Composite.glsl");
 		ShaderLibrary->LoadShader("TerrainShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Terrain/TerrainRenderer.glsl");
 		

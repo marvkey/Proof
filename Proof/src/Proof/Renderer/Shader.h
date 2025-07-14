@@ -21,8 +21,8 @@ namespace Proof
     class Shader : public RefCounted {
     public:
         virtual ~Shader() = default;
-        static Count<Shader>Create(const std::string& name, const std::string& ShaderPath);
-        static Count<Shader>Create(const std::string& name, const std::unordered_map<ShaderStage, std::string> strings);
+        static Count<Shader>Create(const std::string& name, const std::string& ShaderPath, const std::unordered_map<std::string, std::string>& macroDefintions = {});
+        static Count<Shader>Create(const std::string& name, const std::unordered_map<ShaderStage, std::string> strings, const std::unordered_map<std::string, std::string>& macroDefintions = {});
 
         virtual const std::string& GetName()const= 0;
         virtual const std::unordered_map<ShaderStage, std::string>& GetPath()const =0;
@@ -34,6 +34,9 @@ namespace Proof
         // do not call this function in the funciton pointer being passed
         virtual uint32_t AddShaderReloadCallback(const ShaderReloadCallback& callback) = 0;
         virtual void RemoveShaderReloadCallback(uint32_t index) = 0;
+
+        virtual const std::unordered_map<std::string, std::string>& GetAllShaderMacroDefines() const = 0;
+        virtual const std::unordered_map<std::string, std::string>& GetAllShaderMacroDefines() = 0;
     protected:
         friend class Application;
         friend class Renderer;
@@ -41,7 +44,7 @@ namespace Proof
 
     class ShaderLibrary : RefCounted{
     public:
-        void LoadShader(const std::string& name, const std::filesystem::path& path);
+        void LoadShader(const std::string& name, const std::filesystem::path& path, const std::unordered_map<std::string, std::string>& macroDefintions = {});
         Count<Shader> GetShader(const std::string& name);
         bool HasShader(const std::string& name);
         void AddShader(const Count<Shader>& shader);

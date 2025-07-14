@@ -213,7 +213,7 @@ World:
         Tag: Player
         tags: []
       TransformComponent:
-        Location: [23.4281254, 5.60162926, -7.35994864]
+        Location: [32.9080086, 5.60162926, -7.35994864]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -358,7 +358,7 @@ World:
         Tag: Pistol
         tags: []
       TransformComponent:
-        Location: [-0.873287439, 0.304001242, 5.74086857]
+        Location: [-0.873287439, 2.70000005, 5.74086857]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -439,7 +439,7 @@ World:
         Tag: AssaultRifle
         tags: []
       TransformComponent:
-        Location: [0, 0.690752625, 2.01169276]
+        Location: [0, 2.70000005, 2.01169276]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -535,7 +535,7 @@ World:
         Tag: Shotgun
         tags: []
       TransformComponent:
-        Location: [2.43184471, 0.714671731, 2.50749516]
+        Location: [2.43184471, 2.70000005, 2.50749516]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:

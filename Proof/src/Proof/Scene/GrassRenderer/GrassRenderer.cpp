@@ -251,6 +251,8 @@ namespace Proof
 	}
     GrassBladePlane::GrassBladePlane(const std::vector<UBGrassBlade>& blades)
     {
+        if (blades.size() == 0)
+            return;
         m_NumBlades = blades.size();
 		m_PlaneSize = 15.0f; // Default size, can be adjusted based on your needs
 

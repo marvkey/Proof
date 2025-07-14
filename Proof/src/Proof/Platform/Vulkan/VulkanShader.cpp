@@ -106,6 +106,21 @@ namespace Proof
             if (enableread) {
                 source += line;
                 source += "\n";
+
+
+                // It skips macro functions like #define DO_SOMETHING(x) (x + 1) 
+                // Extract macros if requested
+                if (line.rfind("#define", 0) == 0) 
+                {
+                    std::istringstream iss(line);
+                    std::string defineKeyword, macroName, macroValue;
+
+                    iss >> defineKeyword >> macroName;
+                    std::getline(iss, macroValue);
+                    macroValue.erase(0, macroValue.find_first_not_of(" \t")); // trim leading whitespace
+
+                    m_AllShaderMacroDefines[macroName] = macroValue;
+                }
             }
         }
         
@@ -146,9 +161,11 @@ namespace Proof
         }
     }
 
-    VulkanShader::VulkanShader(const std::string& name, const std::filesystem::path& filePath) {
+    VulkanShader::VulkanShader(const std::string& name, const std::filesystem::path& filePath, const std::unordered_map<std::string, std::string>& macroDefintions) 
+    {
         m_Name = name;
         m_ConstructorSamePaths = true;
+        m_MacroDefinitions = macroDefintions;
         magic_enum::enum_for_each<ShaderStage>([&](ShaderStage stage) {
             m_Paths[stage] = filePath.string();
             std::string source = ProcessStage(stage, filePath);
@@ -162,8 +179,10 @@ namespace Proof
 
     }
 
-    VulkanShader::VulkanShader(const std::string& name, const std::unordered_map<ShaderStage, std::string> shaders) {
+    VulkanShader::VulkanShader(const std::string& name, const std::unordered_map<ShaderStage, std::string> shaders, const std::unordered_map<std::string, std::string>& macroDefintions)
+    {
         m_Name = name;
+		m_MacroDefinitions = macroDefintions;
         for (auto& [stage, path] : shaders) {
             std::ifstream shaderFile;
             shaderFile.open(path);
@@ -341,7 +360,6 @@ namespace Proof
     };
     bool VulkanShader::Compile(const std::unordered_map<ShaderStage, std::string>& sourceCode)
     {
-
         auto graphicsContext = VulkanRenderer::GetGraphicsContext();
 
         shaderc::Compiler compiler;
@@ -356,8 +374,23 @@ namespace Proof
         Special<shaderc::CompileOptions::IncluderInterface> include = CreateSpecial< ShaderIncluder>();
         compilerOptions.SetIncluder(std::move(include));
 
-        for(auto [name, value] : Renderer::GetShaderDefines())
-            compilerOptions.AddMacroDefinition(name.c_str(), name.size(), value.c_str(),value.size());
+        for(const auto& [name, value] : Renderer::GetShaderDefines())
+        {
+            if (value.empty())
+                compilerOptions.AddMacroDefinition(name);
+            else
+                compilerOptions.AddMacroDefinition(name, value);
+			m_AllShaderMacroDefines[name] = value;
+        }
+
+        for (const auto& [name, value] : m_MacroDefinitions)
+        {
+			if (value.empty())
+				compilerOptions.AddMacroDefinition(name);
+			else
+                compilerOptions.AddMacroDefinition(name, value);
+            m_AllShaderMacroDefines[name] = value;
+        }
 
         // do not want to change any of the current shader properteis excpet if the shader has been compiled properly
         std::unordered_map<ShaderStage, shaderc::SpvCompilationResult> shaderModules;
@@ -402,6 +435,7 @@ namespace Proof
     {
         if (m_ConstructorSamePaths)
         {
+			m_AllShaderMacroDefines.clear();
             if (!m_InitialCompile)
             {
                 /*

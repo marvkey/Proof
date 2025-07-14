@@ -80,7 +80,7 @@ void Vertex(inout PBRVertexInput vertexInput)
 //#define MID
 #include <Common.glslh>
 //#include <PBR/PBRShaderBases/PBR.Fragment.glsl>
-#include <PBR/PBRShaderBases/PBR.FragmentTransperant.glsl>
+#include <PBR/PBRShaderBases/PBR.Fragment.glsl>
 struct VertexOutput
 {
    vec2 vWorldUV;
@@ -224,4 +224,7 @@ void LightLateUpdate(inout vec3 lightDirection, inout vec3 diffuseBRDF, inout ve
     fresnel = pow5(fresnel);
 
 
+}
+void PreEndFragment()
+{
 }

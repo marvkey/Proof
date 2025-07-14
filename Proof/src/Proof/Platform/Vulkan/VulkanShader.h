@@ -28,8 +28,8 @@ namespace Proof
     };
     class VulkanShader : public Shader {
     public:
-        VulkanShader(const std::string& name, const std::filesystem::path& filePath);
-        VulkanShader(const std::string& name, const std::unordered_map<ShaderStage, std::string> shaders);
+        VulkanShader(const std::string& name, const std::filesystem::path& filePath, const std::unordered_map<std::string, std::string>& macroDefintions = {});
+        VulkanShader(const std::string& name, const std::unordered_map<ShaderStage, std::string> shaders, const std::unordered_map<std::string, std::string>& macroDefintions = {});
         ~VulkanShader();
         virtual const std::unordered_map<ShaderStage, std::string>& GetPath()const { return m_Paths; }
         virtual const std::string& GetName()const { return m_Name; }
@@ -59,6 +59,8 @@ namespace Proof
 
         virtual uint32_t AddShaderReloadCallback(const ShaderReloadCallback& callback);
         virtual void RemoveShaderReloadCallback(uint32_t index);
+        virtual const std::unordered_map<std::string, std::string>& GetAllShaderMacroDefines() const { return m_AllShaderMacroDefines; };
+        virtual const std::unordered_map<std::string, std::string>& GetAllShaderMacroDefines() { return m_AllShaderMacroDefines; };
     private:
 
         std::map<uint32_t,ShaderReloadCallback> m_ShaderReloads;
@@ -97,7 +99,9 @@ namespace Proof
         // the first compile of the shader
         bool m_InitialCompile = true;
         friend class VulkanGraphicsPipeline;
+		std::unordered_map<std::string, std::string> m_MacroDefinitions;// defines from the construcot
 
+		std::unordered_map<std::string, std::string> m_AllShaderMacroDefines;// all defiens in the shader, from the paremeter
 
     };
 }

@@ -98,7 +98,7 @@ vertexInput.VertexPosition += displacement * distanceFactor;
 #version 450 core
 
 //#include <PBR/PBRShaderBases/PBR.Fragment.glsl>
-#include <PBR/PBRShaderBases/PBR.FragmentTransperant.glsl>
+#include <PBR/PBRShaderBases/PBR.Fragment.glsl>
 
 
 layout(set = 0, binding = 2) uniform sampler2DArray u_Normals;
@@ -247,4 +247,6 @@ void LightLateUpdate(inout vec3 lightDirection, inout vec3 diffuseBRDF, inout ve
 	diffuseBRDF = mix((sss_height + sss_near) * sss_modifier / (1.0 + light_mask) + lambertian, u_PC.FoamColor.rgb, FoamFactor) * (1.0 - Fresnel) * ATTENUATION * currentLight.Color;
 }
 
-
+void PreEndFragment()
+{
+}

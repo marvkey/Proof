@@ -7,23 +7,25 @@
 namespace Proof
 {
 
-    Count<Shader> Shader::Create(const std::string& name, const std::string& path) {
+    Count<Shader> Shader::Create(const std::string& name, const std::string& path, const std::unordered_map<std::string, std::string>& macroDefintions ) {
+
         switch (Renderer::GetAPI()) {
             case Renderer::API::None:  PF_CORE_ASSERT(false, "Shader None it needs an api"); return nullptr;
             case Renderer::API::OpenGL: return nullptr;//Renderer::GetShaderLibrary().AddShader(CreateCount<class OpenGLShader>(_ShaderName, ShaderPath));
             case Renderer::API::Vulkan:
                 {
-                    Count<Shader> shader = Count<class VulkanShader>::Create(name, path);
+                    Count<Shader> shader = Count<class VulkanShader>::Create(name, path, macroDefintions);
                     return shader;
                 }
         }
     }
-    Count<Shader> Shader::Create(const std::string& name, const std::unordered_map<ShaderStage, std::string> stages) {
+    Count<Shader> Shader::Create(const std::string& name, const std::unordered_map<ShaderStage, std::string> stages, const std::unordered_map<std::string, std::string>& macroDefintions)
+    {
         switch (Renderer::GetAPI()) {
             case Renderer::API::None:  PF_CORE_ASSERT(false, "Shader None it needs an api"); return nullptr;
             case Renderer::API::Vulkan:
             {
-                Count<Shader> shader = Count<class VulkanShader>::Create(name, stages);
+                Count<Shader> shader = Count<class VulkanShader>::Create(name, stages, macroDefintions);
                 return shader;
             }
         }
@@ -31,7 +33,7 @@ namespace Proof
     }
  
   
-    void ShaderLibrary::LoadShader(const std::string& name, const std::filesystem::path& path)
+    void ShaderLibrary::LoadShader(const std::string& name, const std::filesystem::path& path, const std::unordered_map<std::string, std::string>& macroDefintions)
     {
         if (!std::filesystem::exists(path))
         {
@@ -40,7 +42,7 @@ namespace Proof
         }
         PF_CORE_ASSERT(HasShader(name) ==false, "Canot load shader with thesame name");
 
-        auto shader = Shader::Create(name, path.string());
+        auto shader = Shader::Create(name, path.string(), macroDefintions);
         AddShader(shader);
     }
     Count<Shader> ShaderLibrary::GetShader(const std::string& name) {
