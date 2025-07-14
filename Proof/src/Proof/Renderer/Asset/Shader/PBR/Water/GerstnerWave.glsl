@@ -419,6 +419,14 @@ vec3 Normal = normalize(vec3(nxy.x, nxy.y, 1));
 #Fragment Shader
 #version 450 core
 
+// Depth drawing modes for PBR shaders
+#define PBR_DRAW_DEPTH_NONE      0   // Do not write depth (transparent or UI objects)
+#define PBR_DRAW_DEPTH_PREPASS   1   // Write depth in the depth pre-pass
+#define PBR_DRAW_DEPTH_OVERRIDE  2   // Write depth during main pass (used when displacement can't be replicated in pre-pass)
+
+
+#define PBR_DRAW_DEPTH PBR_DRAW_DEPTH_NONE  // Options: NONE, PREPASS, OVERRIDE
+
 #include <PBR/PBRShaderBases/PBR.Fragment.glsl>
 
 layout(set = 0, binding = 3) uniform sampler2D u_TextureMap;

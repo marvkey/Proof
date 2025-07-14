@@ -7,7 +7,7 @@
 //https://github.com/Shot511/RapidGL/blob/master/src/demos/22_pbr/pbr-lighting.glh
 //https://github.com/Angelo1211/HybridRenderingEngine/blob/master/assets/shaders/PBRClusteredShader.frag
 //https://github.com/HighLo-Engine/HighLo-Engine/blob/b9bf9c3ed87e63ba358ff50ec180927a3801829c/HighLo/assets/shaders/HighLoPBR.glsl
-
+#define PBR_SHADER_FRAGMENT_BASE
 /*
 struct PBRParameters
 {

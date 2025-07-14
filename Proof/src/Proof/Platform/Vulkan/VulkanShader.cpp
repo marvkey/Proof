@@ -56,7 +56,8 @@ namespace Proof
      
     }
 
-    std::string VulkanShader::ProcessStage(ShaderStage stage, const std::filesystem::path& path) {
+    std::string VulkanShader::ProcessStage(ShaderStage stage, const std::filesystem::path& path) 
+    {
         std::string symbol;
         switch (stage) {
             case Proof::ShaderStage::Vertex:
@@ -95,6 +96,7 @@ namespace Proof
         std::string line;
         bool enableread = false;
         std::string source;
+
         while (std::getline(shaderFile, line)) {
             if (line == symbol) {
                 enableread = true;
@@ -110,16 +112,59 @@ namespace Proof
 
                 // It skips macro functions like #define DO_SOMETHING(x) (x + 1) 
                 // Extract macros if requested
-                if (line.rfind("#define", 0) == 0) 
-                {
+                if (line.rfind("#define", 0) == 0) {
                     std::istringstream iss(line);
-                    std::string defineKeyword, macroName, macroValue;
+                    std::string defineKeyword, macroName;
+                    std::string macroValue;
 
                     iss >> defineKeyword >> macroName;
-                    std::getline(iss, macroValue);
-                    macroValue.erase(0, macroValue.find_first_not_of(" \t")); // trim leading whitespace
 
-                    m_AllShaderMacroDefines[macroName] = macroValue;
+                    // Skip macro functions
+                    if (macroName.find('(') != std::string::npos)
+                        continue;
+
+                    std::getline(iss, macroValue);
+
+                    // Remove inline comment if present
+                    {
+                        size_t commentPos = macroValue.find("//");
+                        if (commentPos != std::string::npos)
+                            macroValue = macroValue.substr(0, commentPos);
+                    }
+
+                    {
+                        size_t commentPos = macroValue.find("/*");
+                        if (commentPos != std::string::npos)
+                            macroValue = macroValue.substr(0, commentPos);
+                    }
+
+                    // Trim leading and trailing whitespace from macroValue
+                    macroValue.erase(0, macroValue.find_first_not_of(" \t"));
+                    macroValue.erase(macroValue.find_last_not_of(" \t\r\n") + 1);
+
+                    // Check if it's numeric
+                    bool isNumeric = !macroValue.empty() &&
+                        std::all_of(macroValue.begin(), macroValue.end(), [](char c) 
+                            {
+                                    return std::isdigit(c);
+                            });
+
+                    // If it's numeric, store directly
+                    if (isNumeric) {
+                        m_AllShaderMacroDefines[macroName] = macroValue;
+                    }
+                    // Else, try to resolve to a numeric value
+                    else if (m_AllShaderMacroDefines.contains(macroValue)) {
+                        const std::string& resolved = m_AllShaderMacroDefines[macroValue];
+
+                        bool resolvedIsNumeric = !resolved.empty() &&
+                            std::all_of(resolved.begin(), resolved.end(), [](char c) {
+                            return std::isdigit(c) || c == '.' || c == '-';
+                                });
+
+                        if (resolvedIsNumeric)
+                            m_AllShaderMacroDefines[macroName] = resolved;
+                    }
                 }
             }
         }

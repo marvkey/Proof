@@ -98,6 +98,12 @@ namespace Proof {
 		// blue noise sampler 1spp.
 		#include <Proof/Utils/samplerCPP/samplerBlueNoiseErrorDistribution_128x128_OptimizedFor_2d2d2d2d_1spp.cpp>
 	}
+
+	std::unordered_set<std::string> AllPossiblePBRShaderDefines = { // FOR INSTANCES 
+		"PBR_USE_TRANSPARENCY",
+		"PBR_DRAW_DEPTH", //0 (no), 1(yes use pre depth), 2(but draw over dont use pre depth things liek water where it cannot be replicated in depth bfufer)
+
+	};
 	void Renderer::Init()
 	{
 		Timer time;
@@ -114,6 +120,7 @@ namespace Proof {
 		ShaderLibrary = Count<class ShaderLibrary>::Create();
 
 		//PBR
+		ShaderLibrary->LoadShader("TerrainShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Terrain/TerrainRenderer.glsl");
 		ShaderLibrary->LoadShader("ProofPBR_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl");
 		{
 			std::unordered_map<std::string, std::string> macroDefintions = {
@@ -125,7 +132,6 @@ namespace Proof {
 
 		//ShaderLibrary->LoadShader("ProofPBRTransparent_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBRTransparent_Static.glsl");
 		ShaderLibrary->LoadShader("ProofPBRTransparent_Composite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBRTransparent_Composite.glsl");
-		ShaderLibrary->LoadShader("TerrainShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Terrain/TerrainRenderer.glsl");
 		
 		// predepth
 		ShaderLibrary->LoadShader("PreDepth_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PreDepth/PreDepth_Static.glsl");

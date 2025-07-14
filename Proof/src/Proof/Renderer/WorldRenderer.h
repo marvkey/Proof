@@ -286,7 +286,7 @@ namespace Proof
 
 		std::map<MeshKey, MeshDrawInfo> m_TransparentMeshDrawList;
 
-		std::unordered_map<std::string,std::map<MeshKey, MeshDrawInfo>> m_GeometryPassInstancesDrawList; // shaderName
+		std::unordered_map<Count<class Shader>,std::map<MeshKey, MeshDrawInfo>> m_GeometryPassInstancesDrawList; // shaderName
 
 		Count<class Environment> m_Environment;
 		bool m_InContext = false;
@@ -295,8 +295,22 @@ namespace Proof
 		Count<RenderPass> m_GeometryPass;
 		Count<RenderPass> m_TransparentGeometryPass;
 		Count<RenderPass> m_TransparentPassComposite;
+
+		struct GeometryInstanceRenderData
+		{
+			Count<class RenderPass> RenderPass;
+			enum class DepthDrawType
+			{
+				None = 0,
+				PreDepth = 1, // render depth
+				OverrideDepthNecessary = 2, // render depth but same tim drawign col
+			};
+
+			bool TransperantPass = false;
+			DepthDrawType DepthDraw = DepthDrawType::PreDepth;
+		};
 		// shader name, (render pass, drawing with dpeth buffer)
-		std::unordered_map<std::string, std::pair<Count<RenderPass>,bool>> m_GeometryPassInstances;
+		std::unordered_map<Count<class Shader>, GeometryInstanceRenderData> m_GeometryPassInstances; // the int is how rendred depth
 		Count<FrameBuffer> m_GeometryPassNoDepthFrameBuffer;
 		// pre pass
 		Count<RenderPass> m_PreDepthPass;
@@ -449,8 +463,10 @@ namespace Proof
 		// only put attach to depth when you are sure u are not changing any vertex position
 		// if you change teh vertex positon and this is true u are going to see wierd things happen
 		// as the depth buffer drawing is different so we do not want this drawn onto depth buffer for things like water
-		Count<RenderPass> CreateGeometryPassInstance(const std::string& shaderName, bool drawWithDepth = false);
-		Count<RenderPass> CreateTransparentPassInstance(const std::string& shaderName);
+
+		GeometryInstanceRenderData CreateGeometryInstanceRenderData(Count<class Shader> shader);
+		Count<RenderPass> CreateGeometryPassInstance(Count<class Shader>shader, GeometryInstanceRenderData::DepthDrawType type);
+		Count<RenderPass> CreateTransparentPassInstance(Count<class Shader>shader, bool drawWithDepth);
 		void Init();
 		void CalculateCascades(CascadeData* cascades, const glm::vec3& lightDirection);
 		void CalculateCascadesManualSplit(CascadeData* cascades, const glm::vec3& lightDirection);

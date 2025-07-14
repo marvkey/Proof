@@ -63,6 +63,10 @@
 	* 5:SpotLightBuffer
 	* 6:LightInformationBuffer
 */
+#define PBR_DRAW_DEPTH_NONE      0   // Do not write depth (transparent or UI objects)
+#define PBR_DRAW_DEPTH_PREPASS   1   // Write depth in the depth pre-pass
+#define PBR_DRAW_DEPTH_OVERRIDE  2   // Write depth during main pass (used when displacement can't be replicated in pre-pass)
+
 
 namespace Proof
 {
@@ -196,6 +200,7 @@ namespace Proof
 		Init();
 	}
 	Count<VertexArray> staticVertexArray;
+	
 	void WorldRenderer::Init()
 	{
 		//AmbientOcclusion.Enabled = true;
@@ -2396,7 +2401,7 @@ namespace Proof
 			if (!m_GeometryPassInstances.contains(shaderName))
 				continue;
 
-			if (m_GeometryPassInstances.at(shaderName).second == false)
+			if (m_GeometryPassInstances.at(shaderName).DepthDraw != GeometryInstanceRenderData::DepthDrawType::PreDepth)
 				continue;
 			
 			for (auto& [meshKey, dc] : meshDrawList)
@@ -2575,24 +2580,25 @@ namespace Proof
 #if 1
 		{
 			PF_PROFILE_FUNC("GeometryPass::Instances");
-			std::unordered_set<std::string> addedInstances;
-			for (auto& [shaderName, meshDrawList] : m_GeometryPassInstancesDrawList)
+			std::unordered_set<Count<Shader>> addedInstances;
+			for (auto& [shader, meshDrawList] : m_GeometryPassInstancesDrawList)
 			{
-				if (!m_GeometryPassInstances.contains(shaderName))
+				if (!m_GeometryPassInstances.contains(shader))
 				{
 					// we do not attach to depth because the vertex shader 
 					// in water shader will change so it will create wierd effect
 					// only put attach to depth when you are sure u are not changing any vertex position
 
-					bool drawWithDepth = false;
-					//m_GeometryPassInstances[shaderName] = { CreateGeometryPassInstance(shaderName,drawWithDepth), drawWithDepth };
-					m_GeometryPassInstances[shaderName] = { CreateTransparentPassInstance(shaderName), drawWithDepth };
-					addedInstances.insert({ shaderName });
+
+					m_GeometryPassInstances[shader] = CreateGeometryInstanceRenderData(shader);
+					addedInstances.insert(shader);
 					continue;
 				}
-				if (addedInstances.contains(shaderName))
+				if (addedInstances.contains(shader))
 					continue;
-				auto renderPass = m_GeometryPassInstances[shaderName].first;
+
+
+				auto renderPass = m_GeometryPassInstances[shader].RenderPass;
 
 				renderPass->SetInput("u_IrradianceMap", m_Environment->GetPrefilterMap());
 				renderPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
@@ -3810,6 +3816,12 @@ namespace Proof
 		//TODO FASTER HASH FUNCTION FOR MESHKEY
 		PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
 
+		
+		PF_CORE_ASSERT(!(renderMaterial->GetConfig().Shader->GetAllShaderMacroDefines().contains("PBR_SHADER_VERTEX_BASE") && 
+			renderMaterial->GetConfig().Shader->GetAllShaderMacroDefines().contains("PBR_SHADER_FRAGMENT_BASE")),
+		"Shader has to be a sub of PBR_SHADER_BASES");
+
+
 		AssetID meshID = mesh->GetID();
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
 		for (uint32_t submeshIndex : mesh->GetSubMeshes())
@@ -3831,7 +3843,7 @@ namespace Proof
 			}
 			// geo pass
 			{
-				auto& dc = m_GeometryPassInstancesDrawList[renderMaterial->GetConfig().Shader->GetName()][meshKey];
+				auto& dc = m_GeometryPassInstancesDrawList[renderMaterial->GetConfig().Shader][meshKey];
 				dc.MaterialTable = nullptr;
 				dc.OverrideMaterial = renderMaterial;
 				dc.Mesh = mesh;
@@ -4036,16 +4048,45 @@ namespace Proof
 
 		m_LightScene.PointLightCount = pointLights.PointLights.size();
 	}
+	WorldRenderer::GeometryInstanceRenderData WorldRenderer::CreateGeometryInstanceRenderData(Count<class Shader> shader)
+	{
+		GeometryInstanceRenderData instanceData;
+		bool renderDepth = true;
+		if (shader->GetAllShaderMacroDefines().at("PBR_DRAW_DEPTH") == std::to_string((int)GeometryInstanceRenderData::DepthDrawType::None))
+		{
+			instanceData.DepthDraw = GeometryInstanceRenderData::DepthDrawType::None;
+			renderDepth = false;
+		}
+		else if(shader->GetAllShaderMacroDefines().at("PBR_DRAW_DEPTH") == std::to_string((int)GeometryInstanceRenderData::DepthDrawType::PreDepth))
+			instanceData.DepthDraw = GeometryInstanceRenderData::DepthDrawType::PreDepth;
+		else if (shader->GetAllShaderMacroDefines().at("PBR_DRAW_DEPTH") == std::to_string((int)GeometryInstanceRenderData::DepthDrawType::OverrideDepthNecessary))
+			instanceData.DepthDraw = GeometryInstanceRenderData::DepthDrawType::OverrideDepthNecessary;
 
-	Count<RenderPass> WorldRenderer::CreateGeometryPassInstance(const std::string& shaderName, bool drawWithDepth )
+		if (shader->GetAllShaderMacroDefines().contains("PBR_USE_TRANSPARENCY"))
+		{
+			instanceData.TransperantPass = true;
+			instanceData.RenderPass = CreateGeometryPassInstance(shader, instanceData.DepthDraw);
+		}
+		else
+		{
+			instanceData.TransperantPass = false;
+			instanceData.RenderPass = CreateTransparentPassInstance(shader, renderDepth);
+		}
+
+		return instanceData;
+	}
+	Count<RenderPass> WorldRenderer::CreateGeometryPassInstance(Count<class Shader>shader, GeometryInstanceRenderData::DepthDrawType depthDrawtype)
 	{
 		Count<RenderPass> geometryInstance;
 
-		if (drawWithDepth)
+		auto shaderName = shader->GetName();
+
+
+		if (depthDrawtype == GeometryInstanceRenderData::DepthDrawType::PreDepth)
 		{
 			Count<RenderPass> geometryInstance;
 			GraphicsPipelineConfiguration pipelineConfig = m_GeometryPass->GetPipeline()->GetConfig();
-			pipelineConfig.Shader = Renderer::GetShader(shaderName);
+			pipelineConfig.Shader = shader;
 			pipelineConfig.DebugName = fmt::format("{}_static", shaderName);
 
 			Count<GraphicsPipeline> pipeline = GraphicsPipeline::Create(pipelineConfig);
@@ -4059,6 +4100,26 @@ namespace Proof
 			return geometryInstance;
 			
 		}
+		else if (depthDrawtype == GeometryInstanceRenderData::DepthDrawType::OverrideDepthNecessary)
+		{
+			Count<RenderPass> geometryInstance;
+			GraphicsPipelineConfiguration pipelineConfig = m_GeometryPass->GetPipeline()->GetConfig();
+			pipelineConfig.Shader = shader;
+			pipelineConfig.WriteDepth = true;
+			pipelineConfig.DebugName = fmt::format("{}_static", shaderName);
+
+			Count<GraphicsPipeline> pipeline = GraphicsPipeline::Create(pipelineConfig);
+
+			RenderPassConfig geoPassConfig;
+			geoPassConfig.DebugName = fmt::format("{}pass", shaderName);;
+			geoPassConfig.Pipeline = pipeline;
+			geoPassConfig.TargetFrameBuffer = m_GeometryPass->GetTargetFrameBuffer();
+
+			geometryInstance = RenderPass::Create(geoPassConfig);
+			return geometryInstance;
+		}
+
+
 		GraphicsPipelineConfiguration pipelineConfig = m_GeometryPass->GetPipeline()->GetConfig();
 		pipelineConfig.Shader = Renderer::GetShader(shaderName);
 		pipelineConfig.DebugName = fmt::format("{}_static", shaderName);
@@ -4093,90 +4154,15 @@ namespace Proof
 		geometryInstance->SetInput("VisiblePointLightIndicesBuffer", m_SBVisiblePointLightIndicesBuffer);
 		geometryInstance->SetInput("VisibleSpotLightIndicesBuffer", m_SBVisibleSpotLightIndicesBuffer);
 		return geometryInstance;
-
-	#if 0
-		FrameBufferConfig extCompFramebufferSpec;
-		extCompFramebufferSpec.DebugName = fmt::format("FrameBuffer {}",shaderName);
-		extCompFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
-		extCompFramebufferSpec.ClearColor = { 0.5f, 0.1f, 0.1f, 1.0f };
-		extCompFramebufferSpec.ClearColorOnLoad = false;
-		extCompFramebufferSpec.ClearDepthOnLoad = false;
-		// Use the color buffer from the final compositing pass, but the depth buffer from
-		// the actual 3D geometry pass, in case we want to composite elements behind meshes
-		// in the scene
-		extCompFramebufferSpec.Attachments.Attachments[0].ExistingImage = m_GeometryPass->GetOutput(0);
-		extCompFramebufferSpec.Attachments.Attachments[1].ExistingImage = m_PreDepthPass->GetOutput(0);
-
-		//auto frameBuffer = FrameBuffer::Create(extCompFramebufferSpec);
-
-
-		GraphicsPipelineConfiguration pipelineConfig;
-		//pipelineConfig.DebugName = shaderName;
-		//pipelineConfig.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
-		//pipelineConfig.DepthTest = true;
-		//pipelineConfig.WriteDepth = false;
-		//pipelineConfig.VertexArray = staticVertexArray;
-		pipelineConfig = m_GeometryPass->GetConfig().Pipeline->GetConfig();
-		pipelineConfig.Shader = Renderer::GetShader(shaderName);
-		pipelineConfig.DebugName = fmt::format("{}_static", shaderName);
-
-		Count<GraphicsPipeline> pipeline = GraphicsPipeline::Create(pipelineConfig);
-
-		RenderPassConfig geoPassConfig;
-		geoPassConfig.DebugName = fmt::format("{}Pass", shaderName);
-		geoPassConfig.Pipeline = pipeline;
-		//geoPassConfig.TargetFrameBuffer = frameBuffer;
-		geoPassConfig.TargetFrameBuffer = m_GeometryPass->GetTargetFrameBuffer();
-
-		auto geometryInstance = RenderPass::Create(geoPassConfig);
-
-		geometryInstance->AddGlobalInput(m_GlobalInputs);
-
-		return geometryInstance;
-		
-		Count<RenderPass> geometryInstance;
-		GraphicsPipelineConfiguration pipelineConfig = m_GeometryPass->GetPipeline()->GetConfig();
-		pipelineConfig.Shader = Renderer::GetShader(shaderName);
-		pipelineConfig.DebugName = fmt::format("{}_static", shaderName);
-
-		Count<GraphicsPipeline> pipeline = GraphicsPipeline::Create(pipelineConfig);
-
-		RenderPassConfig geoPassConfig;
-		geoPassConfig.DebugName = fmt::format("{}pass", shaderName);;
-		geoPassConfig.Pipeline = pipeline;
-		geoPassConfig.TargetFrameBuffer = m_GeometryPass->GetTargetFrameBuffer();
-
-		geometryInstance = RenderPass::Create(geoPassConfig);
-
-		geometryInstance->SetInput("DirectionalLightStorageBuffer", m_SBDirectionalLightsBuffer);
-		geometryInstance->SetInput("PointLightBuffer", m_SBPointLightsBuffer);
-		geometryInstance->SetInput("SpotLightBuffer", m_SBSpotLightsBuffer);
-		geometryInstance->SetInput("u_IrradianceMap", m_Environment->GetIrradianceMap());
-		geometryInstance->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
-		geometryInstance->SetInput("u_BRDFLUT", Renderer::GetBRDFLut());
-		geometryInstance->SetInput("SkyBoxData", m_UBSKyBoxBuffer);
-		geometryInstance->SetInput("u_ShadowMap", m_ShadowPassImage);
-		geometryInstance->SetInput("RendererData", m_UBRenderDataBuffer);
-		geometryInstance->SetInput("SceneData", m_UBSceneDataBuffer);
-		geometryInstance->SetInput("ShadowMapProjections", m_UBCascadeProjectionBuffer);
-
-		geometryInstance->AddGlobalInput(m_GlobalInputs);
-
-		geometryInstance->SetInput("LightInformationBuffer", m_UBLightSceneBuffer);
-
-		geometryInstance->SetInput("VisiblePointLightIndicesBuffer", m_SBVisiblePointLightIndicesBuffer);
-		geometryInstance->SetInput("VisibleSpotLightIndicesBuffer", m_SBVisibleSpotLightIndicesBuffer);
-
-		return geometryInstance;
-	#endif
 	}
 
-	Count<RenderPass> WorldRenderer::CreateTransparentPassInstance(const std::string& shaderName)
+	Count<RenderPass> WorldRenderer::CreateTransparentPassInstance(Count<class Shader>shader, bool drawWithDepth)
 	{
 		Count<RenderPass> instance;
+		auto shaderName = shader->GetName();
 
 		GraphicsPipelineConfiguration pipelineConfig = m_TransparentGeometryPass->GetPipeline()->GetConfig();
-		pipelineConfig.Shader = Renderer::GetShader(shaderName);
+		pipelineConfig.Shader = shader;
 		pipelineConfig.DebugName = fmt::format("{}_static", shaderName);
 
 		auto pipeline = GraphicsPipeline::Create(pipelineConfig);

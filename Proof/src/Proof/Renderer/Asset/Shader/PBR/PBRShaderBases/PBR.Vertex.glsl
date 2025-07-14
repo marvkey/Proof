@@ -9,6 +9,8 @@ invariant gl_Position;
 
 #extension GL_ARB_explicit_attrib_location : enable
 #include <Common.glslh>
+
+#define PBR_SHADER_VERTEX_BASE
 struct PBRVertexOutput
 {
     vec3 WorldPosition;
