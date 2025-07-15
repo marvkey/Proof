@@ -3,7 +3,6 @@
 #include <Common.glslh>
 #include <PBR/PBRShaderBases/PBR.Vertex.glsl>
 
-//#define MID
 
 // === Uniforms ===
 layout(set = 0, binding = 0) uniform sampler2D _Displacement_c0;
@@ -26,11 +25,12 @@ struct VertexOutput
    vec4 vLodScales;
 };
 
-layout(location = 23) out VertexOutput Output;
+layout(location = CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_PBR) out VertexOutput Output;
 
+
+#define MID //todo
 void Vertex(inout PBRVertexInput vertexInput)
 {
-
 // Transform local vertex position to world space using aTransform
     vec4 worldPos = aTransform * vec4(vertexInput.VertexPosition, 1.0);
     vec2 worldUV = worldPos.xz;
@@ -50,19 +50,20 @@ void Vertex(inout PBRVertexInput vertexInput)
     float largeWavesBias = 0.0;
 
     displacement += textureLod(_Displacement_c0, worldUV / LengthScale0, 0.0).xyz * lod_c0;
+
     largeWavesBias = displacement.y;
 
-#if defined(MID) || defined(CLOSE)
-    displacement += textureLod(_Displacement_c1, worldUV / LengthScale1, 0.0).xyz * lod_c1;
-#endif
-#if defined(CLOSE)
-    displacement += textureLod(_Displacement_c2, worldUV / LengthScale2, 0.0).xyz * lod_c2;
-#endif
+    #if defined(MID) || defined(CLOSE)
+        displacement += textureLod(_Displacement_c1, worldUV / LengthScale1, 0.0).xyz * lod_c1;
+    #endif
+    #if defined(CLOSE)
+        displacement += textureLod(_Displacement_c2, worldUV / LengthScale2, 0.0).xyz * lod_c2;
+    #endif
 
     // Apply displacement in object space
     mat4 inverseTransform = inverse(aTransform);
     vec3 displacedLocal = (inverseTransform * vec4(displacement, 0.0)).xyz;
-    vertexInput.VertexPosition += displacement;
+    vertexInput.VertexPosition += displacedLocal;
 
     // Output LOD scales
     Output.vLodScales = vec4(
@@ -77,7 +78,7 @@ void Vertex(inout PBRVertexInput vertexInput)
 #Fragment Shader
 #version 450 core
 
-//#define MID
+#define MID  //todo
 #include <Common.glslh>
 
 // Depth drawing modes for PBR shaders
@@ -88,6 +89,7 @@ void Vertex(inout PBRVertexInput vertexInput)
 
 #define PBR_DRAW_DEPTH PBR_DRAW_DEPTH_OVERRIDE  // Options: NONE, PREPASS, OVERRIDE
 
+#define PBR_USE_TRANSPARENCY
 //#include <PBR/PBRShaderBases/PBR.Fragment.glsl>
 #include <PBR/PBRShaderBases/PBR.Fragment.glsl>
 struct VertexOutput
@@ -97,8 +99,7 @@ struct VertexOutput
    vec4 vLodScales;
 };
 
-layout(location = 23) in VertexOutput Input;
-
+layout(location = CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_PBR) in VertexOutput Input;
 
 // === Uniforms ===
 layout(set = 0, binding = 5) uniform sampler2D f_Derivatives_c0;
@@ -109,7 +110,7 @@ layout(set = 0, binding = 8) uniform sampler2D f_Turbulence_c0;
 layout(set = 0, binding = 9) uniform sampler2D f_Turbulence_c1;
 layout(set = 0, binding = 10) uniform sampler2D f_Turbulence_c2;
 
-layout(set = 0, binding = 11) uniform sampler2D f_FoamTexture;
+layout(set = 0, binding = 11) uniform sampler2D f_FoamTexture; // default grey texture
 
 layout(set = 0, binding = 13) uniform OceanSettings {
     vec4 _Color;
@@ -166,6 +167,13 @@ vec4 DecomposeEmission(vec3 emissiondecoom)
     return vec4(color, intensity);
 }
 
+// Converts depth from [0,1] to view-space Z (you may already have this)
+float LinearizeDepth(float z, float nearPlane, float farPlane) 
+{
+    return (2.0 * nearPlane) / (farPlane + nearPlane - z * (farPlane - nearPlane));
+}
+
+
 vec3 emission;
 vec3 sssColor;
 float fresnel;
@@ -192,10 +200,26 @@ void Fragment(inout PBRData pbrData)
 #endif
 
     // --- Contact Foam Approximation ---
-    //float foamNoise = texture(f_FoamTexture, uv * 0.5).r;
-    float foamNoise = 0.2;
+    float foamNoise = texture(f_FoamTexture, uv * 0.5 + u_FrameData.AppTimeSeconds * 2).r;
+    //float foamNoise = 0.2;
     jacobian += _ContactFoam * clamp(foamNoise * 0.9, 0.0, 1.0);
 
+    {
+        vec3 worldNormal = getWorldNormal(Input.vWorldUV);
+        vec3 viewDir = normalize(Input.vViewVector);
+        // --- Subsurface Lighting ---
+        vec3 lightDir = normalize(u_DirectionalLightData.Lights[0].Direction);
+        vec3 halfVec = normalize(-worldNormal + lightDir);
+        float ViewDotH = pow5(clamp(dot(viewDir, -halfVec), 0.0, 1.0)) * 30.0 * _SSSStrength;
+
+        sssColor = mix(_Color.rgb,
+                            clamp(_Color.rgb + _SSSColor.rgb * ViewDotH * Input.vLodScales.w, 0.0, 1.0),
+                            Input.vLodScales.z);
+
+          // --- Fresnel Emission ---
+        fresnel = clamp(1.0 - dot(worldNormal, viewDir), 0.0, 1.0);
+        fresnel = pow5(fresnel);
+    }
     emission = mix(sssColor * (1.0 - fresnel), vec3(0.0), jacobian);
 
     // --- Gloss & Roughness ---
@@ -205,33 +229,22 @@ void Fragment(inout PBRData pbrData)
   
     vec3 foamColor = mix(vec3(0.0), _FoamColor.rgb, jacobian);
 
+    
     // --- Assign PBR Outputs ---
-    pbrData.Albedo = vec3(0,0,1);
-    //pbrData.Albedo = foamColor;
-    //pbrData.Roughness = 1.0 - smoothness;
-    //pbrData.Metalness = 0.0;
-    //pbrData.Normal = worldNormal;
-   // pbrData.EmissionColour = DecomposeEmission(emission).rgb;
+    pbrData.Albedo = foamColor;// blend edge into color
+    pbrData.Roughness = 1.0 - smoothness;
+    pbrData.Metalness = 0.0;
+    pbrData.Normal = worldNormal;
     //pbrData.Emission = DecomposeEmission(emission).a;
+    //pbrData.Emission =0.1f ;
+    pbrData.EmissionColour = emission;
+    pbrData.Emission = 0.2;
 }
 
 void LightLateUpdate(inout vec3 lightDirection, inout vec3 diffuseBRDF, inout vec3 specularBRDF,DirectionalLight currentLight)
 {
-    vec3 worldNormal = getWorldNormal(Input.vWorldUV);
-    vec3 viewDir = normalize(Input.vViewVector);
-    // --- Subsurface Lighting ---
-    vec3 lightDir = normalize(lightDirection);
-    vec3 halfVec = normalize(-worldNormal + lightDir);
-    float ViewDotH = pow5(clamp(dot(viewDir, -halfVec), 0.0, 1.0)) * 30.0 * _SSSStrength;
 
-    sssColor = mix(_Color.rgb,
-                        clamp(_Color.rgb + _SSSColor.rgb * ViewDotH * Input.vLodScales.w, 0.0, 1.0),
-                        Input.vLodScales.z);
-
-      // --- Fresnel Emission ---
-    fresnel = clamp(1.0 - dot(worldNormal, viewDir), 0.0, 1.0);
-    fresnel = pow5(fresnel);
-
+   
 
 }
 void PreEndFragment()

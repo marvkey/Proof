@@ -29,7 +29,7 @@ void main() {
     ivec2 id = ivec2(gl_GlobalInvocationID.xy);
 
     vec4 wave = texelFetch(WavesData, id, 0);
-    float phase = wave.w * 1000;
+    float phase = wave.w * u_PC.Time;
     vec2 exponent = vec2(cos(phase), sin(phase));
 
     vec4 h0 = texelFetch(H0, id, 0);
@@ -57,4 +57,6 @@ void main() {
     imageStore(DyDxz, id, vec4(dispY.x - dispZ_dx.y, dispY.y + dispZ_dx.x, 0.0, 0.0));
     imageStore(DyxDyz, id, vec4(dispY_dx.x - dispY_dz.y, dispY_dx.y + dispY_dz.x, 0.0, 0.0));
     imageStore(DxxDzz, id, vec4(dispX_dx.x - dispZ_dz.y, dispX_dx.y + dispZ_dz.x, 0.0, 0.0));
+
+ 
 }

@@ -13,6 +13,7 @@
 #include "Proof/Renderer/ComputePipeline.h"
 #include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Renderer/CommandBuffer.h"
+#include "Proof/Renderer/RenderPass.h"
 #include "Proof/Renderer/UniformBuffer.h"
 #include "Proof/Scene/World.h"
 #include "Proof/Scene/SceneUtils.h"
@@ -24,6 +25,8 @@
 #include "Proof/Asset/MeshImpoter.h"
 #include "Proof/Renderer/MeshWorkShop.h"
 #include "Proof/Asset/AssetManager.h"
+#include "Proof/Renderer/SamplerFactory.h"
+#include "Proof/Renderer/RendererSampler.h"
 #include "FFTClipMap.h"
 
 #include "Proof/Platform/Vulkan/Vulkan.h"
@@ -126,18 +129,44 @@ namespace Proof
         auto tex = Image2D::Create(rt,wrap,filter);
         return tex;
     }
+    Count<Image2D> CreateStorageTextureSampler(std::string debugName, uint32_t width, uint32_t height, ImageFormat  format, Count<RenderSampler> sampler,bool generateMips = false)
+    {
 
+        ImageConfiguration rt;
+        rt.DebugName = debugName;
+        rt.Width = width;
+        rt.Height = height;
+        rt.Format = format;
+        rt.Usage = ImageUsage::Storage;
+        rt.Transfer = true;
+        if (generateMips)
+            rt.Mips = Utils::GetMipLevelCount(width, height);
+
+        auto tex = Image2D::Create(rt, sampler);
+        return tex;
+    }
 
     const uint32_t Size = 256;
-    static float g = 9.81f;
+    static float G = 9.81f;
+
+    static float JonswapAlpha(float g, float fetch, float windSpeed) 
+    {
+        return 0.076f * std::pow(g * fetch / windSpeed / windSpeed, -0.22f);
+    }
+
+    static float JonswapPeakFrequency(float g, float fetch, float windSpeed) 
+    {
+        return 22.0f * std::pow(windSpeed * fetch / g / g, -0.33f);
+    }
+
     void FFTWaveRealisticCascade::FillSettingsStruct(const DisplaySpectrumSettings& display, UBSpectrumSettings& settings)
     {
         settings.Scale = display.Scale;
         settings.Angle = glm::radians((float)display.WindDirection);
         settings.SpreadBlend = display.SpreadBlend;
         settings.Swell = std::max(0.01f, static_cast<float>(display.Swell));
-        settings.Alpha = JonswapAlpha(g, display.Fetch, display.WindSpeed);
-        settings.PeakOmega = JonswapPeakFrequency(g, display.Fetch, display.WindSpeed);
+        settings.Alpha = JonswapAlpha(G, display.Fetch, display.WindSpeed);
+        settings.PeakOmega = JonswapPeakFrequency(G, display.Fetch, display.WindSpeed);
         settings.Gamma = display.PeakEnhancement;
         settings.ShortWavesFade = display.ShortWavesFade;
     }
@@ -165,12 +194,17 @@ namespace Proof
 		m_TimeDependentSpectrum->SetInput("DyxDyz", m_DyxDyz);
 		m_TimeDependentSpectrum->SetInput("DxxDzz", m_DxxDzz);
 
-
-        m_DisplacementMap = CreateStorageTexture(fmt::format("FFT Displacement map Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA32F, SamplerFilter::Linear);
-		m_DerivativesMap = CreateStorageTexture(fmt::format("FFT Derivatives map Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA32F, SamplerFilter::Linear,true);
-		m_TurbulenceMap = CreateStorageTexture(fmt::format("FFT Turbulence map Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA32F, SamplerFilter::Linear, true);
-		m_Turbulence2Map = CreateStorageTexture(fmt::format("FFT Turbulence2 map Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA32F, SamplerFilter::Linear, true);
-
+#if 0
+        m_DisplacementMap = CreateStorageTexture(fmt::format("FFT Displacement map Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA16F, SamplerFilter::Linear);
+		m_DerivativesMap = CreateStorageTexture(fmt::format("FFT Derivatives map Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA16F, SamplerFilter::Linear,true);
+		m_TurbulenceMap = CreateStorageTexture(fmt::format("FFT Turbulence map Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA16F, SamplerFilter::Linear, true);
+		m_Turbulence2Map = CreateStorageTexture(fmt::format("FFT Turbulence2 map Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA16F, SamplerFilter::Linear, true);
+#else
+        m_DisplacementMap = CreateStorageTextureSampler(fmt::format("FFT Displacement map Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA16F, SamplerFactory::GetBilinear());
+        m_DerivativesMap = CreateStorageTextureSampler(fmt::format("FFT Derivatives map Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA16F, SamplerFactory::GetTrilinear(), true);
+        m_TurbulenceMap = CreateStorageTextureSampler(fmt::format("FFT Turbulence map Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA16F, SamplerFactory::GetTrilinear(), true);
+        m_Turbulence2Map = CreateStorageTextureSampler(fmt::format("FFT Turbulence2 map Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA16F, SamplerFactory::GetTrilinear(), true);
+#endif
 		m_TextureMergePass = ComputePass::Create(fmt::format("FFT Texture merge cascade {}",cascadeIndex),Renderer::GetShader("FFTTextureMerger"));
         m_TextureMergePass->SetInput("Displacement", m_DisplacementMap);
         m_TextureMergePass->SetInput("Derivatives", m_DerivativesMap);
@@ -213,6 +247,7 @@ namespace Proof
         const uint32_t WorkGroup = 8;
         //time dependent
         {
+            time = FrameTime::GetTime();
             Renderer::BeginComputePass(cmdBuffer, m_TimeDependentSpectrum);
             m_TimeDependentSpectrum->PushData("u_PC", &time);
             m_TimeDependentSpectrum->Dispatch({ Size/ WorkGroup, Size / WorkGroup,1 });
@@ -226,7 +261,7 @@ namespace Proof
 			wave->IFFT2D(m_DxxDzz, m_CascadeBufferMap);
         }
 
-        float deltaTime = FrameTime::GetWorldDeltaTime()/1000 ;
+        float deltaTime = FrameTime::GetWorldDeltaTime();
 
         if (deltaTime > 0.5) 
         {
@@ -257,7 +292,7 @@ namespace Proof
     }
 
 
-    struct UBCascadeSettings
+    struct alignas(16) UBCascadeSettings
     {
         uint32_t Size;
         float LengthScale;
@@ -303,7 +338,7 @@ namespace Proof
         m_WavesData = CreateStorageTexture(fmt::format("FFT Precompute Cascade {}", cascadeIndex), Size, Size, ImageFormat::RGBA32F);
         m_BufferMap = CreateStorageTexture(fmt::format("FFT Buffer map Cascade {}", cascadeIndex), Size, Size, ImageFormat::RG32F);
 
-        m_SpectrumParameters = UniformBufferSet::Create(sizeof(UBSpectrumSettings) * 2); // 2 of these
+        m_SpectrumParameters = StorageBufferSet::Create(sizeof(UBSpectrumSettings) * 2); // 2 of these
         m_ParamBuffer = UniformBufferSet::Create(sizeof(UBCascadeSettings));
         
         m_InitialSpectrumPass->SetInput("WavesData", m_WavesData);
@@ -322,7 +357,7 @@ namespace Proof
 
     std::vector<UBSpectrumSettings> contain(2);
 
-    void FFTWaveRealisticCascade::InitialSpectrumContainer::Generate(Count<class FFTWaveRealistic> waveRealistic,uint32_t lengthScale, uint32_t cutOfflow, uint32_t CutOffHigh, Count<RenderCommandBuffer> cmdBuffer)
+    void FFTWaveRealisticCascade::InitialSpectrumContainer::Generate(Count<class FFTWaveRealistic> waveRealistic,uint32_t lengthScale, float cutOfflow, float CutOffHigh, Count<RenderCommandBuffer> cmdBuffer)
     {
         const uint32_t WorkGroup = 8;
 
@@ -331,7 +366,7 @@ namespace Proof
         settings.LengthScale = lengthScale;
         settings.CutoffLow = cutOfflow;
         settings.CutoffHigh = CutOffHigh;
-        settings.GravityAcceleration = g;
+        settings.GravityAcceleration = G;
         settings.Depth = 3;
 
 
@@ -364,7 +399,7 @@ namespace Proof
         : Wave(water, WaveType::RealisticFastFourierTransformWave)
     {
         Init();
-		startTime = FrameTime::GetTime() / 1000;
+		startTime = FrameTime::GetTime() / 1000.0f;
     }
     FFTWaveRealistic::~FFTWaveRealistic()
     {
@@ -395,22 +430,29 @@ namespace Proof
             m_InitilizedPrecompute = true;
             std::array<uint32_t, 3> lengthScales = { 250,17,5 };
 
-
-            uint32_t boundary1 = 0.0001f;
+#if 0
+            float boundary1 = 0.0001f;
             for (int i = 0; i < m_Cascades.size(); i++)
             {
-                const auto boundary2 = i < lengthScales.size() - 1 ? 2 * glm::pi<float>() / lengthScales[i + 1] * 6 : 9999;
+                const float boundary2 = (float)i < (float)lengthScales.size() - 1.0f ? 2.0f * glm::pi<float>() / lengthScales[i + 1] * 6.0f : 9999.0f;
                 m_Cascades[i]->m_InitialSpectrumContainer.Generate(Count<FFTWaveRealistic>(this), lengthScales[i], boundary1, boundary2, m_CommandBuffer);
                 boundary1 = boundary2;
             }
 
+#else
+            float boundary1 = 2 * Math::PIE() / lengthScales[1] * 6.0f;
+            float boundary2 = 2 * Math::PIE() / lengthScales[2] * 6.0f;
+            m_Cascades[0]->m_InitialSpectrumContainer.Generate(Count<FFTWaveRealistic>(this), lengthScales[0], 0.0001f, boundary1,m_CommandBuffer);
+            m_Cascades[1]->m_InitialSpectrumContainer.Generate(Count<FFTWaveRealistic>(this), lengthScales[1], boundary1, boundary2, m_CommandBuffer);
+            m_Cascades[2]->m_InitialSpectrumContainer.Generate(Count<FFTWaveRealistic>(this), lengthScales[2], boundary2, 9999, m_CommandBuffer);
+#endif
         }
 
 
         
 
-        for(auto cascade : m_Cascades)
-          cascade->CalculateWavesAtTime(m_CommandBuffer,Count<FFTWaveRealistic>(this), (FrameTime::GetTime()/1000) - startTime);
+        for(Count<FFTWaveRealisticCascade> cascade : m_Cascades)
+          cascade->CalculateWavesAtTime(m_CommandBuffer,Count<FFTWaveRealistic>(this), (FrameTime::GetTime()/1000.0f) - startTime);
 
 
 
@@ -455,7 +497,7 @@ namespace Proof
                 m_UBOceanSettingsBuffer->SetData(Renderer::GetCurrentFrameInFlight(), Buffer(&oceanSettings, sizeof(oceanSettings)));
             }
         }
-		renderer->SubmitMesh(m_Grid, m_RenderMaterial,GetTransform());
+		renderer->SubmitMesh(m_Grid, m_RenderMaterial, GetTransform());
 
     }
     void FFTWaveRealistic::IFFT2D(Count<Image2D> inputImage, Count<Image2D> bufferImage)
@@ -625,7 +667,7 @@ namespace Proof
 		m_RenderMaterial->Set("f_FoamTexture", Renderer::GetWhiteTexture());
 
         Settings.Local.Scale = 0.5f;
-        Settings.Local.WindSpeed = 1.5f;
+        Settings.Local.WindSpeed = 0.1f;
         Settings.Local.WindDirection = -29.81f;
         Settings.Local.Fetch = 100000.0f;
         Settings.Local.SpreadBlend = 1.0f;
@@ -634,7 +676,7 @@ namespace Proof
         Settings.Local.ShortWavesFade = 0.01f;
 
         Settings.Swell.Scale = 0.5f;
-        Settings.Swell.WindSpeed = 1.5f;
+        Settings.Swell.WindSpeed = 0.001f;
         Settings.Swell.WindDirection = 90.0f;
         Settings.Swell.Fetch = 300000.0f;
         Settings.Swell.SpreadBlend = 1.0f;
@@ -643,4 +685,5 @@ namespace Proof
         Settings.Swell.ShortWavesFade = 0.01f;
 
     }
+    
 }

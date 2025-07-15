@@ -74,6 +74,7 @@ namespace Proof {
 		static Count<class TextureCube> CreateHosekWilkieSky(float turbidity, float GroundReflectance, glm::vec3 sunDirection);
 		static Count<class Texture2D> GetWhiteTexture();
 		static Count<class Texture2D> GetBlackTexture();
+		static Count<class Texture2D> GetGreyTexture();
 		static Count<class TextureCube> GetWhiteTextureCube();
 		static Count<class TextureCube> GetBlackTextureCube();
 		
@@ -148,6 +149,7 @@ namespace Proof {
 	{
 		Count<class Texture2D> WhiteTexture;
 		Count<class Texture2D> BlackTexture;
+		Count<class Texture2D> GreyTexture;
 		Count<class Texture2D> NullTexture;
 		Count<class Image2D> BRDFLutImage;
 		Count<class TextureCube> WhiteTextureCube;

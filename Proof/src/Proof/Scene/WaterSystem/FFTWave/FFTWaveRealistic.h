@@ -13,6 +13,7 @@ namespace Proof
         float Angle;
         float SpreadBlend;
         float Swell;
+
         float Alpha;
         float PeakOmega;
         float Gamma;
@@ -86,7 +87,7 @@ namespace Proof
         {
             InitialSpectrumContainer(Count<Texture2D> noiseTexture,uint32_t cascadeIndex);
 
-            void Generate(Count<class FFTWaveRealistic> waveRealistic, uint32_t lengthScale, uint32_t cutOfflow, uint32_t CutOffHigh, Count<class RenderCommandBuffer> renderCommandBuffer);
+            void Generate(Count<class FFTWaveRealistic> waveRealistic, uint32_t lengthScale, float cutOfflow, float CutOffHigh, Count<class RenderCommandBuffer> renderCommandBuffer);
         private:
 
             Count<ComputePass> m_InitialSpectrumPass;
@@ -97,7 +98,7 @@ namespace Proof
             Count<Image2D> m_WavesData;
             Count<Image2D> m_BufferMap;
 
-            Count<class UniformBufferSet> m_SpectrumParameters;
+            Count<class StorageBufferSet> m_SpectrumParameters;
             Count<class UniformBufferSet> m_ParamBuffer; // settigns of the cascade
             friend class FFTWaveRealisticCascade;
          };
@@ -119,13 +120,7 @@ namespace Proof
         uint32_t m_CascadeIndex = 0;
 
 		bool m_PingPongTurbulence = false; // used to ping pong the turbulence maps
-       static float JonswapAlpha(float g, float fetch, float windSpeed) {
-            return 0.076f * std::pow(g * fetch / windSpeed / windSpeed, 0.22f);
-        }
-
-       static float JonswapPeakFrequency(float g, float fetch, float windSpeed) {
-            return 22.0f * std::pow(windSpeed * fetch / g / g, -0.33f);
-        }
+       
 
        InitialSpectrumContainer m_InitialSpectrumContainer;
        friend class FFTWaveRealistic;
@@ -147,39 +142,41 @@ namespace Proof
         const std::vector<Count<FFTWaveRealisticCascade>>& GetCascades() { return m_Cascades; };
         struct OceanSettings
         {
-            glm::vec4 Color = glm::vec4(1.0f);                    // _Color
-            glm::vec4 FoamColor = glm::vec4(0.73f, 0.67f, 0.62f, 1.0f); // _FoamColor
-            glm::vec4 SSSColor = glm::vec4(0,0,0.7,1);                 // _SSSColor
-
-            ClampedValue<float, 0.0f, 2.0f> SSSStrength = 0.2f;   // _SSSStrength
-            ClampedValue<float, 0.0f, 1.0f> Roughness = 0.2f;     // _Roughness
-            ClampedValue<float, 0.0f, 0.01f> RoughnessScale = 0.005f; // _RoughnessScale
-            ClampedValue<float, 0.0f, 1.0f> MaxGloss = 0.9f;      // _MaxGloss
-
-            ClampedValue<float, 0.0f, 7.0f> FoamBiasLOD0 = 1.0f;  // _FoamBiasLOD0
-            ClampedValue<float, 0.0f, 7.0f> FoamBiasLOD1 = 1.0f;  // _FoamBiasLOD1
-            ClampedValue<float, 0.0f, 7.0f> FoamBiasLOD2 = 1.0f;  // _FoamBiasLOD2
-            ClampedValue<float, 0.0f, 20.0f> FoamScale = 1.0f;    // _FoamScale
-            ClampedValue<float, 0.0f, 1.0f> ContactFoam = 1.0f;   // _ContactFoam
-
-            ClampedValue<float, 1.0f, 10.0f> LODScale = 7.0f;   // Controls LOD fade, higher = more aggressive LOD
-            ClampedValue<float, -5.0f, 1.0f> SSSBase = -1.0f;  // Base depth of subsurface, negative for realism
-            ClampedValue<float, 0.1f, 50.0f> SSSScale = 4.0f;   // Spread/falloff of SSS, higher = softer fade
-
-
+            ClampedValue<float, 0.0f, 1.0f> lambda = 1.0f;
             float g = 9.81f;
-            float depth = 100.0f;
-            ClampedValue<float, 0.0f, 1.0f> lambda = 0.5f;
+            float depth = 3.0f;
 
             DisplaySpectrumSettings Local;
             DisplaySpectrumSettings Swell;
 
+            glm::vec4 Color = glm::vec4(0.011126082368383245, 0.05637409755197975, 0.09868919754109445,1.0f);                    // _Color
+            ClampedValue<float, 0.0f, 1.0f> MaxGloss = 0.91f;      // _MaxGloss
+            ClampedValue<float, 0.0f, 0.01f> RoughnessScale = 0.0044f; // _RoughnessScale
+            ClampedValue<float, 1.0f, 10.0f> LODScale = 7.13f;   // Controls LOD fade, higher = more aggressive LOD
+
+            glm::vec4 FoamColor = glm::vec4(1.0f); // _FoamColor
+            ClampedValue<float, 0.0f, 20.0f> FoamScale = 2.4f;    // _FoamScale
+            ClampedValue<float, 0.0f, 1.0f> ContactFoam = 1.0f;   // _ContactFoam
+            ClampedValue<float, 0.0f, 7.0f> FoamBiasLOD0 = 2.72f;  // _FoamBiasLOD0
+            ClampedValue<float, 0.0f, 7.0f> FoamBiasLOD1 = 2.72f;  // _FoamBiasLOD1
+            ClampedValue<float, 0.0f, 7.0f> FoamBiasLOD2 = 2.72f;  // _FoamBiasLOD2
+
+            glm::vec4 SSSColor = glm::vec4(0.1541919, 0.8857628, 0.990566,1.0f);                 // _SSSColor
+            ClampedValue<float, -5.0f, 1.0f> SSSBase = -0.261f;  // Base depth of subsurface, negative for realism
+            ClampedValue<float, 0.1f, 50.0f> SSSScale = 4.7f;   // Spread/falloff of SSS, higher = softer fade
+            ClampedValue<float, 0.0f, 2.0f> SSSStrength = 0.15f;   // _SSSStrength
+
+
+            ClampedValue<float, 0.0f, 1.0f> Roughness = 0.311f;     // _Roughness
+
             auto operator<=>(const OceanSettings&) const = default;
         }Settings;
+        Count<class RenderMaterial> GetRenderMaterial(int lodLevel);
 
     private:
 
         void Init();
+    private:
         Count<class Texture2D> m_NoiseTexture;
         std::array<Count<ComputePass>,2> m_HorizontalStep;
         std::array<Count<ComputePass>, 2> m_VerticalStep;

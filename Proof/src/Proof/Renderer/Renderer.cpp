@@ -772,6 +772,11 @@ namespace Proof {
 		return s_BaseTextures->BlackTexture;
 	}
 
+	Count<class Texture2D> Renderer::GetGreyTexture()
+	{
+		return s_BaseTextures->GreyTexture;
+	}
+
 	Count<class TextureCube> Renderer::GetWhiteTextureCube()
 	{
 		return s_BaseTextures->WhiteTextureCube;
@@ -1144,6 +1149,8 @@ namespace Proof {
 
 		uint32_t blackTexturedata = 0xFF000000;
 		BlackTexture = Texture2D::Create(TextureConfiguration("Black Texture"), Buffer(&blackTexturedata, sizeof(uint32_t)));
+		uint32_t greyTexturedata = 0x808080FF; // RGBA(128,128,128,255)
+		GreyTexture = Texture2D::Create(TextureConfiguration("Grey Texture"), Buffer(&greyTexturedata, sizeof(uint32_t)));
 		//brdflut
 		{
 			const uint32_t imageSize = 512;

@@ -60,11 +60,6 @@ struct PBRData
     float Alpha; // float 1
     bool UseOnlyAlbedo;// false
 
-    int OutFinalColor;
-    int OutViewNormalsLuminance;
-    int OutMetallnessRoughness;
-    int OutVelocity;
-    int OutDirectLighting;
 };
 layout(location = 0) in PBRVertexOutput PBR_Input;
 
@@ -317,7 +312,7 @@ vec3 PBR_GetGradient(float value)
 	return color;
 }
 vec4 finalEndingCOlor;
-void PBR_FinalOutput(vec3 directLighting, float shadowScale, vec3 IblEffect, vec3 emissionColor, float emission,uint shadowCascadeIndex,float alpha,int outputColor,PBRData pbrData)
+void PBR_FinalOutput(vec3 directLighting, float shadowScale, vec3 IblEffect, vec3 emissionColor, float emission,uint shadowCascadeIndex,float alpha,PBRData pbrData)
 {
     vec3 finalColor = vec3(0);
     
@@ -398,7 +393,7 @@ void ApplyPBR(PBRData pbrData)
     uint cascadeIndex = 0;
     float shadowFactor = PBR_CastShadow(cascadeIndex); // edits the value of the cascadeIndex and gives shadowFacotr
 
-    PBR_FinalOutput(directLighting,shadowFactor,iblEffect,pbrData.EmissionColour,pbrData.Emission,cascadeIndex,pbrData.Alpha,pbrData.OutFinalColor,pbrData);
+    PBR_FinalOutput(directLighting,shadowFactor,iblEffect,pbrData.EmissionColour,pbrData.Emission,cascadeIndex,pbrData.Alpha,pbrData);
 }
 
 void Fragment(inout PBRData pbrData);
@@ -421,11 +416,6 @@ void main()
     pbrData.Alpha = 1;
     pbrData.UseOnlyAlbedo = false;
 
-    pbrData.OutFinalColor = 1;
-    pbrData.OutViewNormalsLuminance = 1;
-    pbrData.OutMetallnessRoughness = 1;
-    pbrData.OutVelocity = 1;
-    pbrData.OutDirectLighting = 1;
 
     Fragment(pbrData);
 

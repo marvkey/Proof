@@ -30,12 +30,15 @@ struct PointLight
 {
 	vec3 Position;
 	float Intensity;
+
 	vec3 Colour;
 	float MinRadius;
+
 	float Radius;
 	float Falloff;
 	bool CastsShadows;
 	bool SoftShadows;
+
 	float ShadowStrength;
 	float ShadowSoftness;
 };

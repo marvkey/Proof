@@ -2188,11 +2188,11 @@ namespace Proof
 #if 1
 
 					UI::ViewDebugImage("Noise Texure", fftWave->GetNoiseTexture());
-					//UI::ViewDebugImage("Precompute dataMap", fftWave->GetPrcomuteData());
+					UI::ViewDebugImage("Precompute dataMap  twiddle pass", fftWave->GetPrcomuteData());
 
 					{
-
-						//UI::Image(fftWave->GetPrcomuteData().As<Image>(), ImVec2{ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().x}, {0, 1}, {1, 0});
+						//auto image = fftWave->GetPrcomuteData().As<Image>();
+						//UI::Image(image, ImVec2{ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().x}, {0, 1}, {1, 0});
 					}
 
 					for (auto cascade : fftWave->GetCascades())
@@ -2204,9 +2204,9 @@ namespace Proof
 							{
 								UI::AttributeText("Initial Spectrum");
 
-								UI::ViewDebugImage("Initial Spectrum Map", cascade->GetInitialSpectrumMap());
-								UI::ViewDebugImage("cascade Buffer ma", cascade->GetInitialSpectrumBufferMap());
-								UI::ViewDebugImage("Waves data", cascade->GetWavesData());
+								UI::ViewDebugImage("Precompute Waves data", cascade->GetWavesData());
+								UI::ViewDebugImage("cascade Buffer map (H0K)", cascade->GetInitialSpectrumBufferMap());
+								UI::ViewDebugImage("Initial Spectrum Map(H0)", cascade->GetInitialSpectrumMap());
 
 								UI::Separator();
 								UI::AttributeText("Cascade Settings Map");
