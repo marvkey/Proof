@@ -151,8 +151,10 @@ namespace Proof
 		m_TerrainRenderMaterial = RenderMaterial::Create("Terrain Material", Renderer::GetShader("TerrainShader"));
 		m_SBTerainLayers = StorageBufferSet::Create(sizeof(UBTerrainLayer));
 		m_UBTerrainInfo = UniformBufferSet::Create(sizeof(UBTerrainShaderInfos));
+
 		m_TerrainRenderMaterial->Set("TerrainInfos", m_UBTerrainInfo);
 		m_TerrainRenderMaterial->Set("TerrainLayers", m_SBTerainLayers);
+
 		NoiseParams = otherTerrain->NoiseParams;
 
 		TerrainScale = otherTerrain->TerrainScale;
@@ -164,12 +166,16 @@ namespace Proof
 		LayerStack = otherTerrain->LayerStack;
 	}
 
+	TerrainRenderer::~TerrainRenderer()
+	{
+	}
+
 	void TerrainRenderer::RegenerateTerrainMesh()
 	{
 		if (m_NormalTerrain)
 		{
 			m_NormalTerrain->Regenirate();
-			m_GrassBladePanel = Count<GrassBladePlane>::Create(m_GrassBlades);
+			//m_GrassBladePanel = Count<GrassBladePlane>::Create(m_GrassBlades);
 			EndGenerateTerrain();
 		}
 	}
@@ -258,7 +264,7 @@ namespace Proof
 		if (!m_NormalTerrain)
 		{
 			m_NormalTerrain = Count<NormalTerrain>::Create(this);
-			m_GrassBladePanel = Count<GrassBladePlane>::Create(m_GrassBlades);
+			//m_GrassBladePanel = Count<GrassBladePlane>::Create(m_GrassBlades);
 			EndGenerateTerrain();
 		}
 
@@ -302,7 +308,7 @@ namespace Proof
 			m_UBTerrainInfo->GetBuffer()->SetData(Buffer(&terrainInfo, sizeof(UBTerrainShaderInfos)));
 			
 		}
-
+		if (!LayerStack.Layers.empty())
 		{
 			std::vector<UBTerrainLayer> layers(LayerStack.Layers.size());
 
@@ -318,6 +324,7 @@ namespace Proof
 			m_SBTerainLayers->GetBuffer()->Resize(buffer);
 		}
 
+		if (!LayerStack.Layers.empty())
 		{
 			std::vector<Count<Texture2D>> textures(LayerStack.Layers.size());
 			for (int i = 0; i < textures.size(); i++)
@@ -340,7 +347,7 @@ namespace Proof
 				renderer->SubmitMesh(terrainChunk.Mesh, m_TerrainRenderMaterial, terrainChunk.Transform.GetTransform() * m_Transform.GetTransform());
 		}
 
-		if (m_GrassBladePanel)
+		//if (m_GrassBladePanel)
 		{
 			//renderer->SubmitGrassPlane(m_GrassBladePanel, m_Transform.GetTransform());
 		}
@@ -399,8 +406,51 @@ namespace Proof
 
 		return false;
 	}
+
+	static bool ShouldSpawnItem(const TerrainItemSpawner& spawner, float currentHeight, glm::vec2 offset)
+	{
+		// Check height range
+		if (currentHeight < spawner.MinHeight || currentHeight > spawner.MaxHeight)
+			return false;
+
+		// Create and configure FastNoiseLite (based on spawner settings)
+		FastNoiseLite noise;
+		noise.SetSeed(12345); // You can make this customizable per spawner if needed
+		noise.SetNoiseType(FastNoiseLite::NoiseType_Perlin);
+		noise.SetFrequency(spawner.Density); // You might want to pass this in via spawner too
+
+		// Sample and normalize
+		float noiseVal = noise.GetNoise(offset.x, offset.y); // [-1, 1]
+		float normalized = (noiseVal + 1.0f) * 0.5f; // Normalize to [0, 1]
+
+		// Threshold check
+		if (normalized > spawner.SpawnThreshold)
+		{
+			if (Random::Real(0.0f, 1.0f) < spawner.ChanceSpawan) // e.g 30 then 30% chance to actually spawn
+				return true;
+		}
+		return false;
+	}
+
+
+	struct TerrainSpawnlater
+	{
+		AssetKey<AssetType::Mesh> Mesh;
+		glm::vec3 Position;
+	};
+	std::vector<TerrainSpawnlater> SpawnlaterItems;
 	TerrainChunkNoiseData TerrainRenderer::GenerateNoiseData(glm::vec2 extraOffset)
 	{
+		TerrainItemSpawner Spawner =
+		{
+				.MinHeight = 0.11f,
+				.MaxHeight = 0.35f,
+				.Density = 0.01f,
+				.SpawnThreshold = 0.5f
+		};
+
+		Spawner.Items.push_back(AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Cube)->GetID());
+
 		if (UseFallOff)
 		{
 			if (m_FallOffData.empty())
@@ -435,11 +485,45 @@ namespace Proof
 				glm::vec3 color = Math::Lerp(Colors::Black, Colors::White, currentHeight); // grayscale
 				uint32_t packed = ConvertToBytes(color);
 				noiseMapData[x + y * width] = packed;
+
+				// avoid dividing by 0
+				if (Spawner.Spacing != 0)
+				{
+					// Only allow spawn every 'spacing' units
+					if ((x) % Spawner.Spacing != 0 || (y) % Spawner.Spacing != 0)
+						continue;
+				}
+
+				if (ShouldSpawnItem(Spawner, curveCopy.Evaluate(currentHeight), { extraOffset.x + (float)topLeftX + (float)x,extraOffset.y + (float)topLeftZ - (float)y }))
+				{
+					
+					float offsetX = Random::Real(0.0f, 1.0f);
+					float offsetZ = Random::Real(0.0f, 1.0f);
+
+					float worldX = extraOffset.x + topLeftX + x + offsetX;
+					float worldZ = extraOffset.y + topLeftZ - y - offsetZ;
+
+					float rawHeight = chunkNoiseData.HeightMap[y * width + x];
+					float worldY = curveCopy.Evaluate(rawHeight) * ScaleY;
+
+					glm::vec3 rootPos(worldX, worldY, worldZ);
+					//e.GetTransformComponent().Location = (rootPos);
+
+					TerrainSpawnlater spawnLater;
+					spawnLater.Mesh = Spawner.Items[Random::Int<int>(0, Spawner.Items.size() - 1)];
+					spawnLater.Position = rootPos;
+
+					SpawnlaterItems.push_back(spawnLater);
+				}
+
+#if 0
 				GrassBladeDefaultSettings grassBladeSettings;
 				grassBladeSettings.MinHeight = 0.5;
 				grassBladeSettings.MaxHeight = 1.0f;
 				grassBladeSettings.MinBend = 20;
 				grassBladeSettings.MaxBend = 25;
+
+
 				for (int i = 0; i < regions.size(); i++) {
 					if (currentHeight >= regions[i].Height) 
 					{
@@ -493,8 +577,8 @@ namespace Proof
 					}
 					else
 						break;
-
 				}
+#endif
 			}
 		}
 #if 0
@@ -539,6 +623,16 @@ namespace Proof
 
 		for (auto& chunk : m_Chunks)
 			chunk.GeneratePhysicsCollisons();
+
+
+		for (auto& laterItem : SpawnlaterItems)
+		{
+			Entity e = m_World.Lock()->CreateEntity();
+			e.AddComponent<MeshComponent>().SetMesh(laterItem.Mesh, true);
+			e.GetTransformComponent().Location = laterItem.Position;
+			//e.GetTransformComponent().SetRotation(glm::vec3(0, Random::Real(0.0f, 360.0f), 0));
+			//e.GetTransformComponent().SetScale(glm::vec3(1.0f));
+		}
 	}
 
 

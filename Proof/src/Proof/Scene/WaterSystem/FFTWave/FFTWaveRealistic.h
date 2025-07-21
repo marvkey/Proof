@@ -23,7 +23,7 @@ namespace Proof
     struct DisplaySpectrumSettings
     {
         ClampedValue<float, 0.0f, 1.0f> Scale = 1.0f;
-        float WindSpeed = 10.0f;
+        float WindSpeed = 1.5f;
         ClampedValue<float, -360.0f, 360.0f> WindDirection = 180.0f;
         float Fetch = 100000.0f;
         ClampedValue<float, 0.0f, 1.0f> SpreadBlend = 0.5f;

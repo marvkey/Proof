@@ -17,12 +17,13 @@ layout(push_constant) restrict readonly uniform PushConstants {
 }params;
 
 // === Complex math ===
-vec2 complexMult(vec2 a, vec2 b) {
-    return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
+vec2 complexMult(vec2 a, vec2 b) 
+{
+    return vec2(a.r * b.r - a.g * b.g, a.r * b.g + a.g * b.r);
 }
 
 vec2 complexExp(vec2 a) {
-    return exp(vec2(a.x)) * vec2(cos(a.y), sin(a.y));
+    return vec2(cos(a.y), sin(a.y)) * exp(a.x);
 }
 
 void main() 

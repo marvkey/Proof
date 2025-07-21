@@ -2183,8 +2183,83 @@ namespace Proof
 				if (water->GetWaveType() == WaveType::RealisticFastFourierTransformWave)
 				{
 					Count<FFTWaveRealistic> fftWave = water->GetWave().As<FFTWaveRealistic>();
-					UI::BeginPropertyGrid();
-					UI::EndPropertyGrid();
+					if (UI::AttributeTreeNode("Color", true, 3, 3))
+					{
+						FFTWaveRealistic::OceanSettings& settings = fftWave->Settings;
+						UI::BeginPropertyGrid();
+
+						UI::AttributeSlider("Lamda", settings.lambda);
+
+						UI::AttributeColor("Color", settings.Color);
+						UI::AttributeSlider("MaxGloss", settings.MaxGloss);
+						UI::AttributeSlider("RoughnessScale", settings.RoughnessScale);
+						UI::AttributeSlider("LODScale", settings.LODScale);
+
+						UI::AttributeColor("FoamColor", settings.FoamColor);
+						UI::AttributeSlider("FoamScale", settings.FoamScale);
+						UI::AttributeSlider("ContactFoam", settings.ContactFoam);
+						UI::AttributeSlider("FoamBiasLOD0", settings.FoamBiasLOD0);
+						UI::AttributeSlider("FoamBiasLOD1", settings.FoamBiasLOD1);
+						UI::AttributeSlider("FoamBiasLOD2", settings.FoamBiasLOD2);
+
+
+						UI::AttributeColor("SSSColor", settings.SSSColor);
+						UI::AttributeSlider("SSSBase", settings.SSSBase);
+						UI::AttributeSlider("SSSScale", settings.SSSScale);
+						UI::AttributeSlider("SSSStrength", settings.SSSStrength);
+						UI::AttributeSlider("Roughness", settings.Roughness);
+
+						UI::EndPropertyGrid();
+
+						UI::EndTreeNode();
+
+					}
+
+
+					if (UI::AttributeTreeNode("Local", true, 3, 3))
+					{
+						UI::ScopedID id("FFTWaveRealistic Local Settings");
+
+
+						DisplaySpectrumSettings& settings = fftWave->Settings.Local;
+						UI::BeginPropertyGrid();
+
+						UI::AttributeSlider("Scale", settings.Scale);
+						UI::AttributeDrag("WindSpeed", settings.WindSpeed, 0.25);
+						UI::AttributeDrag("WindDirection", settings.WindDirection, 0.25);
+						UI::AttributeDrag("Fetch", settings.Fetch, 0.25);
+						UI::AttributeSlider("SpreadBlend", settings.SpreadBlend);
+						UI::AttributeSlider("Swell", settings.Swell);
+						UI::AttributeDrag("PeakEnhancement", settings.PeakEnhancement, 0.01);
+						UI::AttributeDrag("ShortWavesFade", settings.ShortWavesFade,0.01);
+
+						UI::EndPropertyGrid();
+
+						UI::EndTreeNode();
+
+					}
+
+					if (UI::AttributeTreeNode("Swell", true, 3, 3))
+					{
+						UI::ScopedID id("FFTWaveRealistic swell Settings");
+
+						DisplaySpectrumSettings& settings = fftWave->Settings.Swell;
+
+						UI::BeginPropertyGrid();
+
+						UI::AttributeSlider("Scale", settings.Scale);
+						UI::AttributeDrag("WindSpeed", settings.WindSpeed, 0.25);
+						UI::AttributeDrag("WindDirection", settings.WindDirection, 0.25);
+						UI::AttributeDrag("Fetch", settings.Fetch, 0.25);
+						UI::AttributeSlider("SpreadBlend", settings.SpreadBlend);
+						UI::AttributeSlider("Swell", settings.Swell);
+						UI::AttributeDrag("PeakEnhancement", settings.PeakEnhancement, 0.01);
+						UI::AttributeDrag("ShortWavesFade", settings.ShortWavesFade, 0.01);
+
+						UI::EndPropertyGrid();
+
+						UI::EndTreeNode();
+					}
 #if 1
 
 					UI::ViewDebugImage("Noise Texure", fftWave->GetNoiseTexture());

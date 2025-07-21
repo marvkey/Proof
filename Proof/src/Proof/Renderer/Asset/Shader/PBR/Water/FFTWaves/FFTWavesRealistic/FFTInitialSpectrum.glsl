@@ -14,7 +14,8 @@ layout(binding = 2, rg32f)  uniform writeonly image2D H0K;
 layout(binding = 4) uniform sampler2D Noise;
 
 // === Uniform Params ===
-layout(std140, binding = 5) uniform Params {
+layout(std140, binding = 5) uniform Params 
+{
     uint Size;
     float LengthScale;
     float CutoffHigh;
@@ -91,18 +92,25 @@ float TMACorrection(float omega, float g, float depth) {
     return 1.0;
 }
 
-float JONSWAP(float omega, float g, float depth, SpectrumParameter pars) {
-    float sigma = (omega <= pars.peakOmega) ? 0.07 : 0.09;
-    float r = exp(-(omega - pars.peakOmega) * (omega - pars.peakOmega)
-                  / (2.0 * sigma * sigma * pars.peakOmega * pars.peakOmega));
+float JONSWAP(float omega, float g, float depth, SpectrumParameter pars) 
+{
+ float sigma;
+	if (omega <= pars.peakOmega)
+		sigma = 0.07;
+	else
+		sigma = 0.09;
+	float r = exp(-(omega - pars.peakOmega) * (omega - pars.peakOmega)
+		/ 2 / sigma / sigma / pars.peakOmega / pars.peakOmega);
+	
+	float oneOverOmega = 1 / omega;
+	float peakOmegaOverOmega = pars.peakOmega / omega;
 
-    float oneOverOmega = 1.0 / omega;
-    float peakOverOmega = pars.peakOmega / omega;
 
-    return pars.scale * TMACorrection(omega, g, depth) * pars.alpha * g * g
-        * pow(oneOverOmega, 5.0)
-        * exp(-1.25 * pow(peakOverOmega, 4.0))
-        * pow(abs(pars.gamma), r);
+
+	return pars.scale * TMACorrection(omega, g, depth) * pars.alpha * g * g
+		* oneOverOmega * oneOverOmega * oneOverOmega * oneOverOmega * oneOverOmega
+		* exp(-1.25 * peakOmegaOverOmega * peakOmegaOverOmega * peakOmegaOverOmega * peakOmegaOverOmega)
+		* pow(abs(pars.gamma), r);
 }
 
 float ShortWavesFade(float kLength, SpectrumParameter pars) {
@@ -114,8 +122,8 @@ void main() {
     ivec2 id = ivec2(gl_GlobalInvocationID.xy);
 
     float deltaK = 2.0 * PI / LengthScale;
-    int nx = id.x - int(Size) / 2;
-    int nz = id.y - int(Size) / 2;
+    int nx = int(id.x) - int(Size) / 2;
+    int nz = int(id.y) - int(Size) / 2;
     vec2 k = vec2(float(nx), float(nz)) * deltaK;
     float kLength = length(k);
 
@@ -128,7 +136,7 @@ void main() {
 
         float spectrum = JONSWAP(omega, GravityAcceleration, Depth, spectrums.elements[0])
                        * DirectionSpectrum(kAngle, omega, spectrums.elements[0])
-                       * ShortWavesFade(kLength, spectrums.elements[0]);
+                      * ShortWavesFade(kLength, spectrums.elements[0]);
 
         if (spectrums.elements[1].scale > 0.0) 
         {
@@ -137,9 +145,12 @@ void main() {
                       * ShortWavesFade(kLength, spectrums.elements[1]);
         }
 
+
+
         vec2 noise = texelFetch(Noise, id, 0).xy;
-        float h0 = sqrt(2.0 * spectrum * abs(dOmegadk) / kLength * deltaK * deltaK);
-        imageStore(H0K, id, vec4(noise.x * h0, noise.y * h0, 0.0, 0.0));
+        float h0 = sqrt(2.0 * (spectrum) * abs(dOmegadk) / kLength * deltaK * deltaK);
+        imageStore(H0K, id, vec4(noise * h0 , 0.0, 0.0));
+
     } 
     else 
     {

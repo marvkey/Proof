@@ -253,6 +253,8 @@ namespace Proof{
 	{
 		Renderer::SubmitResourceFree([buffer = m_StorageBuffer]() 
 			{
+				if (!buffer.Buffer || !buffer.Allocation)
+					return;
 				VulkanAllocator allocator("VulkanStorageBufferRelease");
 				allocator.DestroyBuffer(buffer);
 			});

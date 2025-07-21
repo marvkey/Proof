@@ -26,6 +26,7 @@
 #include "Proof/Scene/WaterSystem/Water.h"
 #include "Proof/Scene/WaterSystem/GerstnerWave.h"
 #include "Proof/Scene/WaterSystem/FFTWave/FFTWave.h"
+#include "Proof/Scene/WaterSystem/FFTWave/FFTWaveRealistic.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Utils/VariableSystem/Variable.h"
 #include "Proof/Renderer/ParticleSystem.h"
@@ -836,6 +837,68 @@ namespace Proof
 
 						break;
 					}
+					case Proof::WaveType::RealisticFastFourierTransformWave:
+					{
+						FFTWaveRealistic::OceanSettings& setti = waterComponent.Water->GetWave().As<FFTWaveRealistic>()->Settings;
+
+
+						out << YAML::Key << "lambda" << YAML::Value << float(setti.lambda);
+						out << YAML::Key << "g" << YAML::Value << setti.g;
+						out << YAML::Key << "depth" << YAML::Value << setti.depth;
+
+						// --- Local Spectrum ---
+						out << YAML::Key << "Local";
+						out << YAML::BeginMap;
+						{
+							const auto& local = setti.Local;
+							out << YAML::Key << "Scale" << YAML::Value << float(local.Scale);
+							out << YAML::Key << "WindSpeed" << YAML::Value << local.WindSpeed;
+							out << YAML::Key << "WindDirection" << YAML::Value << float(local.WindDirection);
+							out << YAML::Key << "Fetch" << YAML::Value << local.Fetch;
+							out << YAML::Key << "SpreadBlend" << YAML::Value << float(local.SpreadBlend);
+							out << YAML::Key << "Swell" << YAML::Value << float(local.Swell);
+							out << YAML::Key << "PeakEnhancement" << YAML::Value << local.PeakEnhancement;
+							out << YAML::Key << "ShortWavesFade" << YAML::Value << local.ShortWavesFade;
+						}
+						out << YAML::EndMap;
+
+						// --- Swell Spectrum ---
+						out << YAML::Key << "Swell";
+						out << YAML::BeginMap;
+						{
+							const auto& swell = setti.Swell;
+							out << YAML::Key << "Scale" << YAML::Value << float(swell.Scale);
+							out << YAML::Key << "WindSpeed" << YAML::Value << swell.WindSpeed;
+							out << YAML::Key << "WindDirection" << YAML::Value << float(swell.WindDirection);
+							out << YAML::Key << "Fetch" << YAML::Value << swell.Fetch;
+							out << YAML::Key << "SpreadBlend" << YAML::Value << float(swell.SpreadBlend);
+							out << YAML::Key << "Swell" << YAML::Value << float(swell.Swell);
+							out << YAML::Key << "PeakEnhancement" << YAML::Value << swell.PeakEnhancement;
+							out << YAML::Key << "ShortWavesFade" << YAML::Value << swell.ShortWavesFade;
+						}
+						out << YAML::EndMap;
+
+						// --- Surface Appearance ---
+						out << YAML::Key << "Color" << YAML::Value << setti.Color;
+						out << YAML::Key << "MaxGloss" << YAML::Value << float(setti.MaxGloss);
+						out << YAML::Key << "RoughnessScale" << YAML::Value << float(setti.RoughnessScale);
+						out << YAML::Key << "LODScale" << YAML::Value << float(setti.LODScale);
+						out << YAML::Key << "Roughness" << YAML::Value << float(setti.Roughness);
+
+						// --- Foam ---
+						out << YAML::Key << "FoamColor" << YAML::Value << setti.FoamColor;
+						out << YAML::Key << "FoamScale" << YAML::Value << float(setti.FoamScale);
+						out << YAML::Key << "ContactFoam" << YAML::Value << float(setti.ContactFoam);
+						out << YAML::Key << "FoamBiasLOD0" << YAML::Value << float(setti.FoamBiasLOD0);
+						out << YAML::Key << "FoamBiasLOD1" << YAML::Value << float(setti.FoamBiasLOD1);
+						out << YAML::Key << "FoamBiasLOD2" << YAML::Value << float(setti.FoamBiasLOD2);
+
+						// --- Subsurface Scattering ---
+						out << YAML::Key << "SSSColor" << YAML::Value << setti.SSSColor;
+						out << YAML::Key << "SSSBase" << YAML::Value << float(setti.SSSBase);
+						out << YAML::Key << "SSSScale" << YAML::Value << float(setti.SSSScale);
+						out << YAML::Key << "SSSStrength" << YAML::Value << float(setti.SSSStrength);
+					}
 					default:
 						break;
 				}
@@ -1033,8 +1096,7 @@ namespace Proof
 				if (terrainComponent)
 				{
 					auto& trc = NewEntity.AddComponent<TerrainComponent>();
-					auto terrain = Count<TerrainRenderer>::Create(); // or Create/Make if you have a factory
-					trc.Terrain = terrain;
+					auto terrain = NewEntity.AddComponent<TerrainComponent>().Terrain; 
 
 
 					terrain->Seed = terrainComponent["Seed"].as<int>(0);
@@ -1615,6 +1677,64 @@ namespace Proof
 								}
 							}
 
+
+						}
+
+
+						case Proof::WaveType::RealisticFastFourierTransformWave:
+						{
+							FFTWaveRealistic::OceanSettings& setti = water->GetWave().As<FFTWaveRealistic>()->Settings;
+							setti.lambda = waterComponent["lambda"].as<float>(setti.lambda);
+							setti.g = waterComponent["g"].as<float>(setti.g);
+							setti.depth = waterComponent["depth"].as<float>(setti.depth);
+
+							// --- Local Spectrum ---
+							if (waterComponent["Local"])
+							{
+								const auto& local = waterComponent["Local"];
+								setti.Local.Scale = local["Scale"].as<float>(setti.Local.Scale);
+								setti.Local.WindSpeed = local["WindSpeed"].as<float>(setti.Local.WindSpeed);
+								setti.Local.WindDirection = local["WindDirection"].as<float>(setti.Local.WindDirection);
+								setti.Local.Fetch = local["Fetch"].as<float>(setti.Local.Fetch);
+								setti.Local.SpreadBlend = local["SpreadBlend"].as<float>(setti.Local.SpreadBlend);
+								setti.Local.Swell = local["Swell"].as<float>(setti.Local.Swell);
+								setti.Local.PeakEnhancement = local["PeakEnhancement"].as<float>(setti.Local.PeakEnhancement);
+								setti.Local.ShortWavesFade = local["ShortWavesFade"].as<float>(setti.Local.ShortWavesFade);
+							}
+
+							// --- Swell Spectrum ---
+							if (waterComponent["Swell"])
+							{
+								const auto& swell = waterComponent["Swell"];
+								setti.Swell.Scale = swell["Scale"].as<float>(setti.Swell.Scale);
+								setti.Swell.WindSpeed = swell["WindSpeed"].as<float>(setti.Swell.WindSpeed);
+								setti.Swell.WindDirection = swell["WindDirection"].as<float>(setti.Swell.WindDirection);
+								setti.Swell.Fetch = swell["Fetch"].as<float>(setti.Swell.Fetch);
+								setti.Swell.SpreadBlend = swell["SpreadBlend"].as<float>(setti.Swell.SpreadBlend);
+								setti.Swell.Swell = swell["Swell"].as<float>(setti.Swell.Swell);
+								setti.Swell.PeakEnhancement = swell["PeakEnhancement"].as<float>(setti.Swell.PeakEnhancement);
+								setti.Swell.ShortWavesFade = swell["ShortWavesFade"].as<float>(setti.Swell.ShortWavesFade);
+							}
+
+							// --- Appearance and Foam ---
+							setti.Color = waterComponent["Color"].as<glm::vec4>(setti.Color);
+							setti.MaxGloss = waterComponent["MaxGloss"].as<float>(setti.MaxGloss);
+							setti.RoughnessScale = waterComponent["RoughnessScale"].as<float>(setti.RoughnessScale);
+							setti.LODScale = waterComponent["LODScale"].as<float>(setti.LODScale);
+							setti.Roughness = waterComponent["Roughness"].as<float>(setti.Roughness);
+
+							setti.FoamColor = waterComponent["FoamColor"].as<glm::vec4>(setti.FoamColor);
+							setti.FoamScale = waterComponent["FoamScale"].as<float>(setti.FoamScale);
+							setti.ContactFoam = waterComponent["ContactFoam"].as<float>(setti.ContactFoam);
+							setti.FoamBiasLOD0 = waterComponent["FoamBiasLOD0"].as<float>(setti.FoamBiasLOD0);
+							setti.FoamBiasLOD1 = waterComponent["FoamBiasLOD1"].as<float>(setti.FoamBiasLOD1);
+							setti.FoamBiasLOD2 = waterComponent["FoamBiasLOD2"].as<float>(setti.FoamBiasLOD2);
+
+							// --- Subsurface Scattering ---
+							setti.SSSColor = waterComponent["SSSColor"].as<glm::vec4>(setti.SSSColor);
+							setti.SSSBase = waterComponent["SSSBase"].as<float>(setti.SSSBase);
+							setti.SSSScale = waterComponent["SSSScale"].as<float>(setti.SSSScale);
+							setti.SSSStrength = waterComponent["SSSStrength"].as<float>(setti.SSSStrength);
 
 						}
 							break;

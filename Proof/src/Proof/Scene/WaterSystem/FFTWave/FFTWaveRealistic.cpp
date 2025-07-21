@@ -151,7 +151,9 @@ namespace Proof
 
     static float JonswapAlpha(float g, float fetch, float windSpeed) 
     {
-        return 0.076f * std::pow(g * fetch / windSpeed / windSpeed, -0.22f);
+        //return 0.076f * std::pow(g * fetch / windSpeed / windSpeed, -0.22f);
+        return 0.076f * std::pow((windSpeed * windSpeed) / (fetch * g), 0.22f);
+
     }
 
     static float JonswapPeakFrequency(float g, float fetch, float windSpeed) 
@@ -159,14 +161,17 @@ namespace Proof
         return 22.0f * std::pow(windSpeed * fetch / g / g, -0.33f);
     }
 
+    // const int logSize = static_cast<int>(CustomLog(Size, 2));
+    const int logSize = static_cast<int>(std::log2(Size));
+
     void FFTWaveRealisticCascade::FillSettingsStruct(const DisplaySpectrumSettings& display, UBSpectrumSettings& settings)
     {
         settings.Scale = display.Scale;
         settings.Angle = glm::radians((float)display.WindDirection);
         settings.SpreadBlend = display.SpreadBlend;
         settings.Swell = std::max(0.01f, static_cast<float>(display.Swell));
-        settings.Alpha = JonswapAlpha(G, display.Fetch, display.WindSpeed);
-        settings.PeakOmega = JonswapPeakFrequency(G, display.Fetch, display.WindSpeed);
+        settings.Alpha = JonswapAlpha(G, display.Fetch , display.WindSpeed);
+        settings.PeakOmega = JonswapPeakFrequency(G, display.Fetch , display.WindSpeed);
         settings.Gamma = display.PeakEnhancement;
         settings.ShortWavesFade = display.ShortWavesFade;
     }
@@ -247,7 +252,6 @@ namespace Proof
         const uint32_t WorkGroup = 8;
         //time dependent
         {
-            time = FrameTime::GetTime();
             Renderer::BeginComputePass(cmdBuffer, m_TimeDependentSpectrum);
             m_TimeDependentSpectrum->PushData("u_PC", &time);
             m_TimeDependentSpectrum->Dispatch({ Size/ WorkGroup, Size / WorkGroup,1 });
@@ -262,13 +266,6 @@ namespace Proof
         }
 
         float deltaTime = FrameTime::GetWorldDeltaTime();
-
-        if (deltaTime > 0.5) 
-        {
-            // avoid too big delta time
-           deltaTime = 0.5;
-        }
-
         {
 			m_PingPongTurbulence = !m_PingPongTurbulence;
 
@@ -398,8 +395,9 @@ namespace Proof
     FFTWaveRealistic::FFTWaveRealistic(Water* water, Count<FFTWaveRealistic> other)
         : Wave(water, WaveType::RealisticFastFourierTransformWave)
     {
+        Settings = other->Settings;
         Init();
-		startTime = FrameTime::GetTime() / 1000.0f;
+		startTime = FrameTime::GetTime();
     }
     FFTWaveRealistic::~FFTWaveRealistic()
     {
@@ -416,10 +414,9 @@ namespace Proof
         {
             Renderer::BeginComputePass(Renderer::GetRendererCommandBuffer(), m_TwiddleFacorsPass);
             {
-                glm::uvec2 data{ 1,Size };
+                glm::ivec2 data{ 1,Size };
                 m_TwiddleFacorsPass->PushData("params", &data);
             }
-            const int logSize = static_cast<int>(CustomLog(Size,2));
            
 
             const uint32_t WorkGroup = 8;
@@ -452,7 +449,7 @@ namespace Proof
         
 
         for(Count<FFTWaveRealisticCascade> cascade : m_Cascades)
-          cascade->CalculateWavesAtTime(m_CommandBuffer,Count<FFTWaveRealistic>(this), (FrameTime::GetTime()/1000.0f) - startTime);
+          cascade->CalculateWavesAtTime(m_CommandBuffer,Count<FFTWaveRealistic>(this), FrameTime::GetTime() - startTime);
 
 
 
@@ -505,7 +502,6 @@ namespace Proof
         const uint32_t WorkGroup = 8;
 
         
-        const uint32_t logSize = static_cast<int>(CustomLog(Size, 2));
 
         bool pingPong = false;
 		// horizontal pass
@@ -514,7 +510,7 @@ namespace Proof
             for (int i = 0; i < logSize; i++)
             {
                 pingPong = !pingPong;
-                glm::uvec2 data{ i,Size };
+                glm::ivec2 data{ i,Size };
 
 				m_HorizontalStep[0]->SetInput("InputBuffer", pingPong ? inputImage : bufferImage);
 				m_HorizontalStep[0]->SetInput("OutputBuffer", pingPong ? bufferImage : inputImage);
@@ -534,7 +530,7 @@ namespace Proof
             for (int i = 0; i < logSize; i++)
             {
                 pingPong = !pingPong;
-                glm::uvec2 data{ i,Size };
+                glm::ivec2 data{ i,Size };
 
                 m_VerticalStep[0]->SetInput("InputBuffer", pingPong ? inputImage : bufferImage);
                 m_VerticalStep[0]->SetInput("OutputBuffer", pingPong ? bufferImage : inputImage);
@@ -565,7 +561,7 @@ namespace Proof
     {
         return glm::cos(2 * glm::pi<float>() * Random::Real<float>(0,1)) * glm::sqrt(-2 * Math::Loge(Random::Real<float>(0, 1)));
     }
-    const float VertexDensity = 35;
+    const float VertexDensity = 70;
     const int ClipMapLevels = 7;
     const float MinMeshScale = 15;
 
@@ -599,7 +595,6 @@ namespace Proof
 		m_TwiddleFacorsPass = ComputePass::Create("FFT Twiddle Factors Pass", Renderer::GetShader("FFTPrecomputeTwiddleFactorsAndInputIndices"));
 
 
-       const int logSize = static_cast<int>(CustomLog(Size, 2));
 
        const uint32_t WorkGroup = 8;
 		m_CommandBuffer = RenderCommandBuffer::Create("FFT Wave Realistic Command Buffer");
@@ -665,24 +660,25 @@ namespace Proof
         m_RenderMaterial->Set("fOceanParams", m_UBOceanParamsBuffer);
         m_RenderMaterial->Set("OceanParams", m_UBOceanParamsBuffer);
 		m_RenderMaterial->Set("f_FoamTexture", Renderer::GetWhiteTexture());
-
-        Settings.Local.Scale = 0.5f;
-        Settings.Local.WindSpeed = 0.1f;
+#if 0
+        Settings.Local.Scale = 0.2f;
+        Settings.Local.WindSpeed = 1.5f;
         Settings.Local.WindDirection = -29.81f;
         Settings.Local.Fetch = 100000.0f;
         Settings.Local.SpreadBlend = 1.0f;
         Settings.Local.Swell = 0.198f;
-        Settings.Local.PeakEnhancement = 3.3f;
-        Settings.Local.ShortWavesFade = 0.01f;
+        Settings.Local.PeakEnhancement = 1.8f;
+        Settings.Local.ShortWavesFade = 0.05f;
 
-        Settings.Swell.Scale = 0.5f;
-        Settings.Swell.WindSpeed = 0.001f;
+        Settings.Swell.Scale = 0.2f;
+        Settings.Swell.WindSpeed = 1.5f;
         Settings.Swell.WindDirection = 90.0f;
         Settings.Swell.Fetch = 300000.0f;
         Settings.Swell.SpreadBlend = 1.0f;
         Settings.Swell.Swell = 1.0f;
-        Settings.Swell.PeakEnhancement = 3.3f;
-        Settings.Swell.ShortWavesFade = 0.01f;
+        Settings.Swell.PeakEnhancement = 1.8f;
+        Settings.Swell.ShortWavesFade = 0.05f;
+#endif
 
     }
     

@@ -28,7 +28,7 @@ struct VertexOutput
 layout(location = CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_PBR) out VertexOutput Output;
 
 
-#define MID //todo
+#define CLOSE //todo
 void Vertex(inout PBRVertexInput vertexInput)
 {
 // Transform local vertex position to world space using aTransform
@@ -63,8 +63,8 @@ void Vertex(inout PBRVertexInput vertexInput)
     // Apply displacement in object space
     mat4 inverseTransform = inverse(aTransform);
     vec3 displacedLocal = (inverseTransform * vec4(displacement, 0.0)).xyz;
-    vertexInput.VertexPosition += displacedLocal;
-
+    //vertexInput.VertexPosition += displacedLocal;
+    vertexInput.WorldPositionOffset +=displacement;
     // Output LOD scales
     Output.vLodScales = vec4(
         lod_c0,
@@ -78,7 +78,7 @@ void Vertex(inout PBRVertexInput vertexInput)
 #Fragment Shader
 #version 450 core
 
-#define MID  //todo
+#define CLOSE  //todo
 #include <Common.glslh>
 
 // Depth drawing modes for PBR shaders
@@ -158,21 +158,30 @@ vec3 getWorldNormal(vec2 uv)
     vec2 slope = vec2(d.x / (1.0 + d.z), d.y / (1.0 + d.w));
     return normalize(vec3(-slope.x, 1.0, -slope.y));
 }
+ 
 
-//r,g,b color, a inteisty
-vec4 DecomposeEmission(vec3 emissiondecoom) 
-{
-    float intensity = max(max(emissiondecoom.r, emissiondecoom.g), emissiondecoom.b);
-    vec3 color = (intensity > 0.0) ? emissiondecoom / intensity : vec3(0.0);
-    return vec4(color, intensity);
-}
 
 // Converts depth from [0,1] to view-space Z (you may already have this)
 float LinearizeDepth(float z, float nearPlane, float farPlane) 
 {
     return (2.0 * nearPlane) / (farPlane + nearPlane - z * (farPlane - nearPlane));
 }
+mat3 ComputeTangentToWorldMatrix(vec3 normalWS, vec3 viewDirWS)
+{
+    // Build a stable tangent basis using the view vector and normal
+    vec3 tangent = normalize(cross(vec3(0.0, 1.0, 0.0), normalWS));
+    if (length(tangent) < 0.01)
+        tangent = normalize(cross(vec3(1.0, 0.0, 0.0), normalWS));
 
+    vec3 bitangent = normalize(cross(normalWS, tangent));
+    return mat3(tangent, bitangent, normalWS); // TBN matrix
+}
+
+vec3 TransformToWorldNormal(vec3 normalTS, vec3 normalWS, vec3 viewDirWS)
+{
+    mat3 TBN = ComputeTangentToWorldMatrix(normalWS, viewDirWS);
+    return normalize(TBN * normalTS);
+}
 
 vec3 emission;
 vec3 sssColor;
@@ -206,7 +215,6 @@ void Fragment(inout PBRData pbrData)
 
     {
         vec3 worldNormal = getWorldNormal(Input.vWorldUV);
-        vec3 viewDir = normalize(Input.vViewVector);
         // --- Subsurface Lighting ---
         vec3 lightDir = normalize(u_DirectionalLightData.Lights[0].Direction);
         vec3 halfVec = normalize(-worldNormal + lightDir);
@@ -227,18 +235,27 @@ void Fragment(inout PBRData pbrData)
     float gloss = mix(1.0 - _Roughness, _MaxGloss, 1.0 / (1.0 + viewLen * _RoughnessScale));
     float smoothness = mix(gloss, 0.0, jacobian);
   
-    vec3 foamColor = mix(vec3(0.0), _FoamColor.rgb, jacobian);
+    //vec3 foamColor = mix(vec3(0.0), _FoamColor.rgb, jacobian);
+    vec3 foamColor = mix(_Color.rgb, _FoamColor.rgb, jacobian);
 
     
     // --- Assign PBR Outputs ---
     pbrData.Albedo = foamColor;// blend edge into color
     pbrData.Roughness = 1.0 - smoothness;
     pbrData.Metalness = 0.0;
-    pbrData.Normal = worldNormal;
-    //pbrData.Emission = DecomposeEmission(emission).a;
-    //pbrData.Emission =0.1f ;
+
+    // Your tangent-space normal, e.g. from normal map (use (0, 0, 1) for flat)
+    vec3 normalTS = vec3(0.0, 0.0, 1.0);
+
+    // Convert tangent-space normal to world-space
+    vec3 correctedNormalWS = TransformToWorldNormal(normalTS, worldNormal, viewDir);
+
+    // Now use correctedNormalWS for lighting
+    pbrData.Normal = correctedNormalWS;
     pbrData.EmissionColour = emission;
-    pbrData.Emission = 0.2;
+    //pbrData.Emission = length(emission);
+    //pbrData.Emission = dot(emission, vec3(0.2126, 0.7152, 0.0722)); // emission brightness
+    pbrData.Emission = dot(emission, vec3(0.2126, 0.7152, 0.0722)); // emission brightness
 }
 
 void LightLateUpdate(inout vec3 lightDirection, inout vec3 diffuseBRDF, inout vec3 specularBRDF,DirectionalLight currentLight)

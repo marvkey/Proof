@@ -181,12 +181,26 @@ namespace Proof
 		}
 	};
 
+	struct TerrainItemSpawner
+	{
+		ClampedValue<float, 0.0f, 1.0f> MinHeight = 0.0f; // minimum height to spawn items
+		ClampedValue<float, 0.0f, 1.0f> MaxHeight = 1.0f; // minimum height to spawn items
+
+		std::vector<AssetKey<AssetType::Mesh>> Items; // Randomizes wich one to spawn ( like trees dont wanna spawn teh same trees)
+
+		float Density = 0.01f;        // Frequency of the noise map
+		float SpawnThreshold = 0.6f;  // Controls how clustered / sparse items are
+
+		ClampedValue<float, 0.0f, 1.0f> ChanceSpawan = 0.10; // minimum height to spawn items
+
+	};
 	struct TerrainChunk;
 	class TerrainRenderer : public RefCounted
 	{
 	public:
 		TerrainRenderer();
 		TerrainRenderer(Count<TerrainRenderer> otherTerrain);
+		virtual ~TerrainRenderer();
 	public:
 		ClampedValue<float, 0.1f, 1000.0f> TerrainScale = 30.0f; // scale of the terrain
 		InterpolationCurve Curve;

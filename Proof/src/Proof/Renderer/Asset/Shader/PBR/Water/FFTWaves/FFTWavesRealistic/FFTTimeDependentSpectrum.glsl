@@ -7,8 +7,8 @@
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 
 // === Bindings ===
-layout(binding = 1) uniform sampler2D H0;
-layout(binding = 3) uniform sampler2D WavesData;
+layout(binding = 0) uniform sampler2D H0;
+layout(binding = 1) uniform sampler2D WavesData;
 
 layout(push_constant) restrict readonly uniform PushConstants {
     float Time;

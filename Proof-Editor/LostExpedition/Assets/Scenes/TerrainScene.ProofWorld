@@ -15,7 +15,7 @@ World:
       TerrainComponent:
         Seed: 0
         TerrainScale: 15
-        UseFallOff: false
+        UseFallOff: true
         NoiseParams:
           Scale: 25
           Octaves: 5
@@ -28,15 +28,15 @@ World:
           Points:
             - [0.0128654987, 0.00546213798]
             - [0.100633219, 0.00559271825]
-            - [0.164912283, 0.0915492997]
+            - [0.180116966, 0.0971831009]
             - [0.328966677, 0.0937052369]
-            - [0.402804941, 0.110335194]
-            - [0.473306507, 0.15363127]
-            - [0.574427664, 0.152234629]
-            - [0.700400233, 0.309972137]
-            - [0.815933287, 0.493757278]
-            - [0.872121632, 0.658186853]
-            - [0.987737894, 0.964793265]
+            - [0.398126572, 0.184983075]
+            - [0.474476099, 0.180391833]
+            - [0.573258102, 0.183220536]
+            - [0.748423517, 0.332507342]
+            - [0.848681808, 0.47967276]
+            - [0.901313424, 0.583898127]
+            - [1, 0.71127218]
         TerrainLayerStack:
           - Layer: ""
             Name: DeepWater
@@ -107,12 +107,41 @@ World:
         HosekWilkieTurbidity: 4
         HosekWilkieGroundReflectance: 0.100000001
         PreethamTurbidity: 4
+    - Entity: 13002574944404870795
+      TagComponent:
+        Tag: WeaponHolder
+        tags: []
+      TransformComponent:
+        Location: [1.09892821, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 10869204382231457587
+        Children: []
+    - Entity: 3385011559091816577
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [-0.0270984769, 0.0406479686, -0.0385721028]
+        Rotation: [1.39626336, 0.17453292, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+        CastShadow: true
+        ShadowStrength: 0.5
+        CastSoftShadow: true
+        ShadowSoftness: 0.5
     - Entity: 14402709176397042912
       TagComponent:
         Tag: Enemy
         tags: []
       TransformComponent:
-        Location: [39.7155342, 3.39103079, -15.3603973]
+        Location: [39.7155342, 4.52106285, -23.8611774]
         Rotation: [0, 0, 0]
         Scale: [4.56269979, 4.56269979, 4.56269979]
       HierarchyComponent:
@@ -180,35 +209,6 @@ World:
         FOV: 45
         UseLocalRotation: false
         ActiveForRendering: true
-    - Entity: 3385011559091816577
-      TagComponent:
-        Tag: Directional Light
-        tags: []
-      TransformComponent:
-        Location: [-0.0270984769, 0.0406479686, -0.0385721028]
-        Rotation: [1.39626336, 0.17453292, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 1
-        CastShadow: true
-        ShadowStrength: 0.5
-        CastSoftShadow: true
-        ShadowSoftness: 0.5
-    - Entity: 13002574944404870795
-      TagComponent:
-        Tag: WeaponHolder
-        tags: []
-      TransformComponent:
-        Location: [1.09892821, 0, 0]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 10869204382231457587
-        Children: []
     - Entity: 10869204382231457587
       TagComponent:
         Tag: Player
@@ -270,19 +270,6 @@ World:
               - NameID: LostExpedition.PlayerInput.ChangeInventorySlotAction
                 Type: InputAction
                 Data: 1027319137170532747
-          - Script: LostExpedition.HealthComponent
-            ScriptClassName: LostExpedition.HealthComponent
-            ScriptName: LostExpedition.HealthComponent
-            Fields:
-              - NameID: LostExpedition.HealthComponent.Health
-                Type: Float
-                Data: 100
-              - NameID: LostExpedition.HealthComponent.MaxHealth
-                Type: Float
-                Data: 100
-              - NameID: LostExpedition.HealthComponent.DestoryIfHealthZero
-                Type: Bool
-                Data: false
           - Script: LostExpedition.PlayerHUDManager
             ScriptClassName: LostExpedition.PlayerHUDManager
             ScriptName: LostExpedition.PlayerHUDManager
@@ -296,6 +283,19 @@ World:
               - NameID: LostExpedition.PlayerHUDManager.PlayerDefaultHUD
                 Type: UIPanel
                 Data: 14525028919524517166
+          - Script: LostExpedition.HealthComponent
+            ScriptClassName: LostExpedition.HealthComponent
+            ScriptName: LostExpedition.HealthComponent
+            Fields:
+              - NameID: LostExpedition.HealthComponent.Health
+                Type: Float
+                Data: 100
+              - NameID: LostExpedition.HealthComponent.MaxHealth
+                Type: Float
+                Data: 100
+              - NameID: LostExpedition.HealthComponent.DestoryIfHealthZero
+                Type: Bool
+                Data: false
           - Script: LostExpedition.Inventory
             ScriptClassName: LostExpedition.Inventory
             ScriptName: LostExpedition.Inventory
@@ -435,17 +435,6 @@ World:
       HierarchyComponent:
         ParentHandle: 808178663378393566
         Children: []
-    - Entity: 14117072415498231087
-      TagComponent:
-        Tag: Muzzle flash pos
-        tags: []
-      TransformComponent:
-        Location: [0, 0.344680905, -0.743670106]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 16039414171671641192
-        Children: []
     - Entity: 12260921287360388382
       TagComponent:
         Tag: AssaultRifle
@@ -512,6 +501,36 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: true
         CollisionDetection: Discrete
+    - Entity: 14117072415498231087
+      TagComponent:
+        Tag: Muzzle flash pos
+        tags: []
+      TransformComponent:
+        Location: [0, 0.344680905, -0.743670106]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 16039414171671641192
+        Children: []
+    - Entity: 2621550850620323061
+      TagComponent:
+        Tag: Health Text23
+        tags: []
+      TransformComponent:
+        Location: [-0.800000012, 1.20000005, 0]
+        Rotation: [0, -0, 0]
+        Scale: [0.5, 0.5, 0.5]
+      HierarchyComponent:
+        ParentHandle: 14402709176397042912
+        Children: []
+      TextComponent:
+        Color: [1, 1, 1, 1]
+        Kerning: 0
+        LineSpacing: 1
+        Text: "Health: 10"
+        Visible: true
+        UseLocalRotation: false
+        RenderInViewSpace: false
     - Entity: 808178663378393566
       TagComponent:
         Tag: Shotgun
@@ -582,25 +601,6 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: true
         CollisionDetection: Discrete
-    - Entity: 2621550850620323061
-      TagComponent:
-        Tag: Health Text23
-        tags: []
-      TransformComponent:
-        Location: [-0.800000012, 1.20000005, 0]
-        Rotation: [0, -0, 0]
-        Scale: [0.5, 0.5, 0.5]
-      HierarchyComponent:
-        ParentHandle: 14402709176397042912
-        Children: []
-      TextComponent:
-        Color: [1, 1, 1, 1]
-        Kerning: 0
-        LineSpacing: 1
-        Text: "Health: 10"
-        Visible: true
-        UseLocalRotation: false
-        RenderInViewSpace: false
     - Entity: 14563262016486527326
       TagComponent:
         Tag: Muzzle flash pos
@@ -617,7 +617,7 @@ World:
         Tag: Water
         tags: []
       TransformComponent:
-        Location: [0, 1, 0]
+        Location: [0, 0.899999976, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -626,3 +626,39 @@ World:
       WaterComponent:
         WaveType: RealisticFastFourierTransformWave
         Density: 1
+        lambda: 1
+        g: 9.81000042
+        depth: 3
+        Local:
+          Scale: 1
+          WindSpeed: 0.100000001
+          WindDirection: 180
+          Fetch: 100000
+          SpreadBlend: 0.442999989
+          Swell: 0.216000006
+          PeakEnhancement: 1
+          ShortWavesFade: 0.479999989
+        Swell:
+          Scale: 1
+          WindSpeed: 0.0500000007
+          WindDirection: 180
+          Fetch: 100000
+          SpreadBlend: 1
+          Swell: 0.277999997
+          PeakEnhancement: 1.02999997
+          ShortWavesFade: 0.0399999991
+        Color: [0.0588235296, 0.368627459, 0.611764729, 1]
+        MaxGloss: 1
+        RoughnessScale: 0.00999999978
+        LODScale: 1
+        Roughness: 1
+        FoamColor: [1, 1, 1, 1]
+        FoamScale: 6.59800005
+        ContactFoam: 0.330000013
+        FoamBiasLOD0: 1.76800001
+        FoamBiasLOD1: 1.91199994
+        FoamBiasLOD2: 2.95900011
+        SSSColor: [0.181893006, 0.654515743, 0.722222209, 1]
+        SSSBase: -5
+        SSSScale: 17.8479996
+        SSSStrength: 0.463999987
