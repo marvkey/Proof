@@ -21,6 +21,7 @@
 #include "Proof/Renderer/RenderMaterial.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/Shader.h"
+#include "Proof/Scene/Prefab.h"
 #include "Proof/Renderer/UniformBuffer.h"
 
 namespace Proof
@@ -164,6 +165,8 @@ namespace Proof
 		UseFallOff = otherTerrain->UseFallOff;
 
 		LayerStack = otherTerrain->LayerStack;
+		ItemSpawner = otherTerrain->ItemSpawner;
+		m_SpawnLater = otherTerrain->m_SpawnLater;
 	}
 
 	TerrainRenderer::~TerrainRenderer()
@@ -174,6 +177,7 @@ namespace Proof
 	{
 		if (m_NormalTerrain)
 		{
+			//m_SpawnLater.clear(); // clear any spawn later items
 			m_NormalTerrain->Regenirate();
 			//m_GrassBladePanel = Count<GrassBladePlane>::Create(m_GrassBlades);
 			EndGenerateTerrain();
@@ -433,14 +437,10 @@ namespace Proof
 	}
 
 
-	struct TerrainSpawnlater
-	{
-		AssetKey<AssetType::Mesh> Mesh;
-		glm::vec3 Position;
-	};
-	std::vector<TerrainSpawnlater> SpawnlaterItems;
+	
 	TerrainChunkNoiseData TerrainRenderer::GenerateNoiseData(glm::vec2 extraOffset)
 	{
+#if 0
 		TerrainItemSpawner Spawner =
 		{
 				.MinHeight = 0.11f,
@@ -450,7 +450,7 @@ namespace Proof
 		};
 
 		Spawner.Items.push_back(AssetManager::GetDefaultAsset(DefaultRuntimeAssets::Cube)->GetID());
-
+#endif
 		if (UseFallOff)
 		{
 			if (m_FallOffData.empty())
@@ -486,35 +486,36 @@ namespace Proof
 				uint32_t packed = ConvertToBytes(color);
 				noiseMapData[x + y * width] = packed;
 
-				// avoid dividing by 0
-				if (Spawner.Spacing != 0)
+				for (uint32_t spawnerIndex = 0; spawnerIndex < ItemSpawner.size(); spawnerIndex++)
 				{
-					// Only allow spawn every 'spacing' units
-					if ((x) % Spawner.Spacing != 0 || (y) % Spawner.Spacing != 0)
-						continue;
-				}
+					const TerrainItemSpawner& Spawner = ItemSpawner[spawnerIndex];
+					// avoid dividing by 0
+					if (Spawner.Spacing != 0)
+					{
+						// Only allow spawn every 'spacing' units
+						if ((x) % Spawner.Spacing != 0 || (y) % Spawner.Spacing != 0)
+							continue;
+					}
 
-				float offsetX = Random::Real(0.0f, 1.0f);
-				float offsetZ = Random::Real(0.0f, 1.0f);
+					float offsetX = Random::Real(0.0f, 1.0f) * Spawner.MaxPositionOffset;
+					float offsetZ = Random::Real(0.0f, 1.0f) * Spawner.MaxPositionOffset;
 
-				float worldX = extraOffset.x + topLeftX + x + offsetX;
-				float worldZ = extraOffset.y + topLeftZ - y - offsetZ;
-
-				if (ShouldSpawnItem(Spawner, curveCopy.Evaluate(currentHeight), { worldX, worldZ }))
-				{
-					
-				
+					float worldX = extraOffset.x + topLeftX + x + offsetX;
+					float worldZ = extraOffset.y + topLeftZ - y - offsetZ;
 					float worldY = curveCopy.Evaluate(currentHeight) * ScaleY;
 
-					glm::vec3 rootPos(worldX, worldY, worldZ);
-					//e.GetTransformComponent().Location = (rootPos);
+					// Check if the item should spawn based on noise and chance
+					if (ShouldSpawnItem(Spawner, curveCopy.Evaluate(currentHeight), { worldX, worldZ }))
+					{
+						glm::vec3 rootPos(worldX, worldY, worldZ);
+						TerrainSpawnlater spawnLater;
+						spawnLater.Prefab = Spawner.Items[Random::Int<int>(0, Spawner.Items.size() - 1)];
+						spawnLater.Position = rootPos;
+						m_SpawnLater.push_back(spawnLater);
+					}
 
-					TerrainSpawnlater spawnLater;
-					spawnLater.Mesh = Spawner.Items[Random::Int<int>(0, Spawner.Items.size() - 1)];
-					spawnLater.Position = rootPos;
-
-					SpawnlaterItems.push_back(spawnLater);
 				}
+				
 
 #if 0
 				GrassBladeDefaultSettings grassBladeSettings;
@@ -625,16 +626,16 @@ namespace Proof
 			chunk.GeneratePhysicsCollisons();
 
 
-		for (auto& laterItem : SpawnlaterItems)
+		for (auto& laterItem : m_SpawnLater)
 		{
-			Entity e = m_World.Lock()->CreateEntity();
-			e.AddComponent<MeshComponent>().SetMesh(laterItem.Mesh, true);
+			Entity e = m_World.Lock()->CreateEntity("TerrainItem",laterItem.Prefab.GetAsset<Prefab>(),TransformComponent());
 			e.GetTransformComponent().Location = laterItem.Position;
 			e.GetTransformComponent().Location *= m_Transform.Scale;
 			e.GetTransformComponent().Scale *= m_Transform.Scale;
 			//e.GetTransformComponent().SetRotation(glm::vec3(0, Random::Real(0.0f, 360.0f), 0));
 			//e.GetTransformComponent().SetScale(glm::vec3(1.0f));
 		}
+		//m_SpawnLater.clear();
 	}
 
 

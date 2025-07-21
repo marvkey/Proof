@@ -1410,6 +1410,59 @@ namespace Proof
 
 					UI::EndTreeNode();
 				}
+
+
+				if (UI::AttributeTreeNode("TerrainItemSpawn", true, 3.0f, 3.0f))
+				{
+					std::vector<TerrainItemSpawner>& itemSpawner = meshComp.Terrain->ItemSpawner;
+					if (UI::AttributeButton("Add item"))
+					{
+						itemSpawner.push_back(TerrainItemSpawner());
+					}
+
+					for (int itemSpawnerIndex = 0; itemSpawnerIndex < itemSpawner.size(); itemSpawnerIndex++)
+					{
+						TerrainItemSpawner& currentItemSpawner = itemSpawner[itemSpawnerIndex];
+
+						if (UI::AttributeTreeNode(fmt::format("TerrainItemSpawn Index{}", itemSpawnerIndex), true, 1.0f, 1.0f))
+						{
+
+							UI::ScopedID scopeID(fmt::format("TerrainItemSpawnerID Index {}", itemSpawnerIndex).c_str());
+
+							UI::BeginPropertyGrid();
+
+							UI::AttributeSlider("MinHeight", currentItemSpawner.MinHeight);
+							UI::AttributeSlider("MaxHeight", currentItemSpawner.MaxHeight);
+
+							ImGui::NewLine();
+
+							UI::AttributeDrag("Density", currentItemSpawner.Density, 0.001f, 0.00001f, 1000, "Frequency of the noise map");
+							UI::AttributeSlider("SpawnThreshold", currentItemSpawner.SpawnThreshold, "Controls how clustered / sparse items are");
+							UI::AttributeSlider("ChanceSpawan", currentItemSpawner.ChanceSpawan, "percent chance of spawning // eg change 0.5f to have 50% chance of spawning");
+							UI::AttributeSlider("MaxPositionOffset", currentItemSpawner.MaxPositionOffset, "max of how much to offset the position of the spawned item in its cell");
+							UI::AttributeSlider("Spacing", currentItemSpawner.Spacing, 0, 100, "how many cells to skip before spawning another item (eg 4 means every 4th cell will spawn an item)");
+							UI::EndPropertyGrid();
+
+							if (UI::AttributeTreeNode("Items to spawn", true, 1.0f, 1.0f))
+							{
+								UI::AttributeAssetKeysReferenceList("Item to spawn", currentItemSpawner.Items);
+
+								UI::EndTreeNode();
+							}
+
+							UI::EndTreeNode();
+
+						}
+
+						if (UI::AttributeButton("Remove"))
+						{
+							itemSpawner.erase(itemSpawner.begin() + itemSpawnerIndex);
+						}
+					}
+
+					
+					UI::EndTreeNode();
+				}
 			});
 		DrawComponents<SpriteComponent>({ "Sprite" }, entity, [](SpriteComponent& spriteComp) {
 

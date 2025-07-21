@@ -1,0 +1,45 @@
+AssetType: Prefab
+ID: 15638204258216792047
+EntityOwner: 5600982952953510577
+Entities:
+  - Entity: 5600982952953510577
+    TagComponent:
+      Tag: LowPolyTree
+      tags: []
+    TransformComponent:
+      Location: [0, 15.4014034, 26.7421761]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: [6516122390391531724]
+  - Entity: 6516122390391531724
+    TagComponent:
+      Tag: LowPolyTree
+      tags: []
+    TransformComponent:
+      Location: [0, -1, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 5600982952953510577
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 14075414392747790104
+      Visible: true
+    MeshColliderComponent:
+      ColliderID: 17949286409091753867
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Static
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete

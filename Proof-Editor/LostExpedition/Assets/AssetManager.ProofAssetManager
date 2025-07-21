@@ -110,6 +110,9 @@ Assets:
   - Asset: 12113877820451625735
     Type: Material
     Path: Materials\m_Red.Material.ProofAsset
+  - Asset: 4175886174754542783
+    Type: Texture
+    Path: Projects\Facility22\tex\shotgunNormal_1.png
   - Asset: 18446508233467783024
     Type: Prefab
     Path: Prefabs\Muzzle Flash.Prefab.ProofAsset
@@ -230,12 +233,57 @@ Assets:
   - Asset: 323208586395221621
     Type: Texture
     Path: Textures\TerrainTextues\Ground084\Ground084_2K-PNG_NormalGL.png
+  - Asset: 16894342766367303544
+    Type: Texture
+    Path: Projects\Facility22\tex\shotgunColor_1.png
   - Asset: 7186535299582552243
     Type: Texture
     Path: Textures\TerrainTextues\Ground084\Ground084_2K-PNG_Roughness.png
-  - Asset: 9693337899192446356
+  - Asset: 9429674661627017022
+    Type: MeshSourceFile
+    Path: Models\Trees\HandPaintedPineTree\source\PineTree_001.fbx
+  - Asset: 812331647443226358
     Type: Texture
-    Path: Projects\Facility22\tex\shotgunColor_1.png
-  - Asset: 7366032085912308820
+    Path: Models\Trees\HandPaintedPineTree\textures\PineTree_001.png
+  - Asset: 2236110959667834781
+    Type: MeshSourceFile
+    Path: Models\Trees\LowPolyTree\source\LowPoly_Tree.fbx
+  - Asset: 1347615435114057383
+    Type: MeshSourceFile
+    Path: Models\Trees\LowPolyTreeTwistingBranches\source\PP_Tree_winding_01.fbx
+  - Asset: 415048175415552905
     Type: Texture
-    Path: Projects\Facility22\tex\shotgunNormal_1.png
+    Path: Models\Trees\LowPolyTreeTwistingBranches\textures\FarbPalette256x256.png
+  - Asset: 12630066519131923400
+    Type: Texture
+    Path: Models\Trees\LowPolyTreeTwistingBranches\textures\PP_Texture_256.png
+  - Asset: 10021860386005409918
+    Type: MeshSourceFile
+    Path: Models\Trees\PineTreeLowPoly\source\pine tree.fbx
+  - Asset: 13745970981795294868
+    Type: Mesh
+    Path: Meshes\Trees\HandPaintedPineTree.Mesh.ProofAsset
+  - Asset: 7360607633324499815
+    Type: Material
+    Path: Meshes\Trees\m_LowPolyTwistedBranchesMaterial.Material.ProofAsset
+  - Asset: 14075414392747790104
+    Type: Mesh
+    Path: Meshes\Trees\LowPolyTree.Mesh.ProofAsset
+  - Asset: 12022276253044728967
+    Type: Mesh
+    Path: Meshes\Trees\LowPolyTreeTwistedbranches.Mesh.ProofAsset
+  - Asset: 8653134549898656156
+    Type: Mesh
+    Path: Meshes\Trees\PineTreelowPoly.Mesh.ProofAsset
+  - Asset: 17949286409091753867
+    Type: MeshCollider
+    Path: Meshes\Trees\pm_LowPolyTree.MeshCollider.ProofAsset
+  - Asset: 7479981665922657657
+    Type: Material
+    Path: Meshes\Trees\m_pinetree.Material.ProofAsset
+  - Asset: 2430226858086831705
+    Type: Prefab
+    Path: Prefabs\LowPolyTreeTwistedbranches.Prefab.ProofAsset
+  - Asset: 15638204258216792047
+    Type: Prefab
+    Path: Prefabs\LowPolyTree.Prefab.ProofAsset

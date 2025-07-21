@@ -266,6 +266,42 @@ namespace Proof::UI
 		HandleModified(modified);
 		return modified;
 	}
+	bool AttributeAssetReferenceList(const std::string& label, AssetType type, std::vector<AssetID>& assetIDs, const PropertyAssetReferenceSettings& settings)
+	{
+		bool modified = false;
+
+		if (ImGui::Button("+", ImVec2{ ImGui::GetContentRegionAvail().x,20 }))
+		{
+			assetIDs.push_back(AssetID());
+			modified = true;
+		}
+
+
+		for (uint32_t assetIndex = 0; assetIndex < assetIDs.size(); assetIndex++)
+		{
+			std::string layerLabel = fmt::format("[{} Index: {}]", label, assetIndex);
+			std::string layerId = fmt::format("{0}-{1}", layerLabel, assetIndex);
+
+			ImGui::PushID(layerId.c_str());
+
+			AssetID& ID = assetIDs[assetIndex];
+			if (UI::AttributeAssetReference(layerLabel, type, ID))
+			{
+				modified = true;
+			}
+
+
+			if (ImGui::Button("Remove", ImVec2{ ImGui::GetContentRegionAvail().x,20 }))
+			{
+				assetIDs.erase(assetIDs.begin() + assetIndex);
+				modified = true;
+			}
+			ImGui::PopID();
+
+		}
+		UI::HandleModified(modified);
+		return modified;
+	}
 	bool AttributeAssetKeyReference(const std::string& label, DynamicAssetKey& assetKey, const PropertyAssetReferenceSettings& settings)
 	{
 		AssetID id = assetKey.GetAssetID();

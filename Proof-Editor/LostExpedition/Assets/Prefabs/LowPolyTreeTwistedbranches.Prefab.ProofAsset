@@ -1,0 +1,49 @@
+AssetType: Prefab
+ID: 2430226858086831705
+EntityOwner: 5000000258834409566
+Entities:
+  - Entity: 5000000258834409566
+    TagComponent:
+      Tag: LowPolyTreeTwistedbranches
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: [2508879037028666158]
+  - Entity: 2508879037028666158
+    TagComponent:
+      Tag: LowPolyTreeTwistedbranches
+      tags: []
+    TransformComponent:
+      Location: [3, 15, 3]
+      Rotation: [0, -0, 0]
+      Scale: [3, 3, 3]
+    HierarchyComponent:
+      ParentHandle: 5000000258834409566
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 12022276253044728967
+      Visible: true
+      MaterialTable:
+        - Material: ""
+          AssetID: 7360607633324499815
+          Index: 0
+    MeshColliderComponent:
+      ColliderID: 12728533540082266167
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Static
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete

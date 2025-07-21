@@ -29,6 +29,9 @@ namespace Proof::UI
 	bool AttributeAssetReference(const std::string& label, AssetType type, AssetID& id, const PropertyAssetReferenceSettings& settings = {});
 	bool AttributeMultiAssetReference(const std::string& label,std::initializer_list< AssetType> assetTypes, AssetID& id, const PropertyAssetReferenceSettings& settings = {});
 
+
+	bool AttributeAssetReferenceList(const std::string& label, AssetType type, std::vector<AssetID>& id, const PropertyAssetReferenceSettings& settings = {});
+
 	template <AssetType Type>
 	bool AttributeAssetKeyReference(const std::string& label, AssetKey<Type>& assetKey, const PropertyAssetReferenceSettings& settings = {}) {
 		AssetID id = assetKey.GetAssetID();
@@ -37,6 +40,29 @@ namespace Proof::UI
 			return true;
 		}
 		return false;
+	}
+
+	template <AssetType Type>
+	bool AttributeAssetKeysReferenceList(const std::string& label, std::vector<AssetKey<Type>>& assetKeys, const PropertyAssetReferenceSettings& settings = {}) 
+	{
+
+		std::vector<AssetID> ids;
+		ids.resize(assetKeys.size());
+		for (size_t i = 0; i < assetKeys.size(); ++i) {
+			ids[i] = assetKeys[i].GetAssetID();
+		}
+
+		bool val = AttributeAssetReferenceList(label, Type, ids, settings);
+
+		if (val) 
+		{
+			assetKeys.resize(ids.size());
+			for (size_t i = 0; i < assetKeys.size(); ++i) {
+				assetKeys[i].SetAssetID(ids[i]);
+			}
+		}
+		
+		return val;
 	}
 	bool AttributeAssetKeyReference(const std::string& label, DynamicAssetKey& assetKey, const PropertyAssetReferenceSettings& settings = {});
 	bool AttributeAssetKeyReference(const std::string& label, StaticAssetKey& assetKey, const PropertyAssetReferenceSettings& settings = {});

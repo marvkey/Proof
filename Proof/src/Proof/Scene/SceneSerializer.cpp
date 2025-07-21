@@ -290,6 +290,39 @@ namespace Proof
 						}
 						out << YAML::EndSeq; // TerrainLayerStack
 					}
+
+					{
+						out << YAML::Key << "TerrainItemSpawners";
+						out << YAML::BeginSeq;
+						for (const auto& spawner : terrain->ItemSpawner)
+						{
+							out << YAML::BeginMap;
+
+							out << YAML::Key << "Spawner" << YAML::Key << "";
+
+							out << YAML::Key << "MinHeight" << YAML::Value << (float)spawner.MinHeight;
+							out << YAML::Key << "MaxHeight" << YAML::Value << (float)spawner.MaxHeight;
+
+							// Save prefab asset IDs
+							out << YAML::Key << "Items";
+							out << YAML::BeginSeq;
+							for (const auto& item : spawner.Items)
+							{
+								if(item.IsValid())
+									out << item.GetAssetID();
+							}
+							out << YAML::EndSeq;
+
+							out << YAML::Key << "Density" << YAML::Value << spawner.Density;
+							out << YAML::Key << "SpawnThreshold" << YAML::Value << (float)spawner.SpawnThreshold;
+							out << YAML::Key << "ChanceSpawn" << YAML::Value << (float)spawner.ChanceSpawan;
+							out << YAML::Key << "MaxPositionOffset" << YAML::Value << (float)spawner.MaxPositionOffset;
+							out << YAML::Key << "Spacing" << YAML::Value << spawner.Spacing;
+
+							out << YAML::EndMap;
+						}
+						out << YAML::EndSeq;
+					}
 					out << YAML::EndMap; // terrain
 				}
 			}
@@ -1131,6 +1164,37 @@ namespace Proof
 						}
 
 					}
+
+
+					if (terrainComponent["TerrainItemSpawners"])
+					{
+						for (auto spawnerNode : terrainComponent["TerrainItemSpawners"])
+						{
+							TerrainItemSpawner spawner;
+
+							spawner.MinHeight = spawnerNode["MinHeight"].as<float>(spawner.MinHeight.GetValue());
+							spawner.MaxHeight = spawnerNode["MaxHeight"].as<float>(spawner.MaxHeight.GetValue());
+
+							if (spawnerNode["Items"])
+							{
+								for (auto item : spawnerNode["Items"])
+								{
+									AssetKey<AssetType::Prefab> itemKey = (UUID)item.as<uint64_t>();
+									if(itemKey.IsValid())
+										spawner.Items.push_back(itemKey);
+								}
+							}
+
+							spawner.Density = spawnerNode["Density"].as<float>(spawner.Density);
+							spawner.SpawnThreshold = spawnerNode["SpawnThreshold"].as<float>(spawner.SpawnThreshold.GetValue());
+							spawner.ChanceSpawan = spawnerNode["ChanceSpawn"].as<float>(spawner.ChanceSpawan.GetValue());
+							spawner.MaxPositionOffset = spawnerNode["MaxPositionOffset"].as<float>(spawner.MaxPositionOffset.GetValue());
+							spawner.Spacing = spawnerNode["Spacing"].as<uint32_t>(spawner.Spacing);
+
+							terrain->ItemSpawner.push_back(spawner);
+						}
+					}
+
 
 				}
 

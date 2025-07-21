@@ -204,7 +204,7 @@ namespace Proof
 	void WorldRenderer::Init()
 	{
 		//AmbientOcclusion.Enabled = true;
-		const size_t TransformBufferCount = 4096; // 4096 transforms
+		const size_t TransformBufferCount = 6000; // 6000 transforms
 		m_SubmeshTransformBuffers.resize(Renderer::GetConfig().FramesFlight);
 		for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
 		{

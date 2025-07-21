@@ -186,14 +186,14 @@ namespace Proof
 		ClampedValue<float, 0.0f, 1.0f> MinHeight = 0.0f; // minimum height to spawn items
 		ClampedValue<float, 0.0f, 1.0f> MaxHeight = 1.0f; // minimum height to spawn items
 
-		std::vector<AssetKey<AssetType::Mesh>> Items; // Randomizes wich one to spawn ( like trees dont wanna spawn teh same trees)
+		std::vector<AssetKey<AssetType::Prefab>> Items; // Randomizes wich one to spawn ( like trees dont wanna spawn teh same trees)
 
 		float Density = 0.01f;        // Frequency of the noise map
-		float SpawnThreshold = 0.6f;  // Controls how clustered / sparse items are
+		ClampedValue<float, 0.0f, 1.0f> SpawnThreshold = 0.6f;  // Controls how clustered / sparse items are
 
 		ClampedValue<float, 0.0f, 1.0f> ChanceSpawan = 0.30; // percent changce of spawning // eg change 0.5f to have 50% chance of spawning
 
-		ClampedValue<float, 0.0f, 1.0f> PositionOffset = 0.5f; // how much to offset the position of the spawned item in its cell
+		ClampedValue<float, 0.0f, 1.0f> MaxPositionOffset = 0.5f; // how much to offset the position of the spawned item in its cell
 		
 		uint32_t Spacing = 2; // how many cells to skip before spawning another item (eg 4 means every 4th cell will spawn an item)
 
@@ -297,6 +297,14 @@ namespace Proof
 		Count<class RenderMaterial> m_TerrainRenderMaterial;
 		Count<class UniformBufferSet> m_UBTerrainInfo; // used for shader infos
 		Count<class StorageBufferSet> m_SBTerainLayers; // used for shader infos
+
+		struct TerrainSpawnlater
+		{
+			AssetKey<AssetType::Prefab> Prefab;
+			glm::vec3 Position;
+		};
+
+		std::vector< TerrainSpawnlater> m_SpawnLater;
 	};
 
 
