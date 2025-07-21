@@ -191,7 +191,11 @@ namespace Proof
 		float Density = 0.01f;        // Frequency of the noise map
 		float SpawnThreshold = 0.6f;  // Controls how clustered / sparse items are
 
-		ClampedValue<float, 0.0f, 1.0f> ChanceSpawan = 0.10; // minimum height to spawn items
+		ClampedValue<float, 0.0f, 1.0f> ChanceSpawan = 0.30; // percent changce of spawning // eg change 0.5f to have 50% chance of spawning
+
+		ClampedValue<float, 0.0f, 1.0f> PositionOffset = 0.5f; // how much to offset the position of the spawned item in its cell
+		
+		uint32_t Spacing = 2; // how many cells to skip before spawning another item (eg 4 means every 4th cell will spawn an item)
 
 	};
 	struct TerrainChunk;
@@ -208,6 +212,7 @@ namespace Proof
 		ClampedValue<int, 0, 6> LevelOfDetail = 0;
 		bool UseFallOff = false;
 		TerrainLayerStack LayerStack;
+		std::vector<TerrainItemSpawner> ItemSpawner;
 	
 		struct NoiseSettings
 		{
@@ -262,11 +267,11 @@ namespace Proof
 
 		float GetMinHeight() // for shader
 		{
-			return TerrainScale * Curve.Evaluate(0.0f);
+			return TerrainScale * Curve.Evaluate(0.0f) * m_Transform.Scale.y;
 		}
 		float GetMaxHeight() // for shader
 		{
-			return TerrainScale * Curve.Evaluate(1.0f);
+			return TerrainScale * Curve.Evaluate(1.0f) * m_Transform.Scale.y;
 		}
 	private:
 		//https://www.youtube.com/watch?v=417kJGPKwDg&list=PLFt_AvWsXl0eBW2EiBtl_sxmDtSgZBxB3&index=6

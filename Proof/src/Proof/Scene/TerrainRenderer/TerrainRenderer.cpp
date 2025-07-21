@@ -494,17 +494,17 @@ namespace Proof
 						continue;
 				}
 
-				if (ShouldSpawnItem(Spawner, curveCopy.Evaluate(currentHeight), { extraOffset.x + (float)topLeftX + (float)x,extraOffset.y + (float)topLeftZ - (float)y }))
+				float offsetX = Random::Real(0.0f, 1.0f);
+				float offsetZ = Random::Real(0.0f, 1.0f);
+
+				float worldX = extraOffset.x + topLeftX + x + offsetX;
+				float worldZ = extraOffset.y + topLeftZ - y - offsetZ;
+
+				if (ShouldSpawnItem(Spawner, curveCopy.Evaluate(currentHeight), { worldX, worldZ }))
 				{
 					
-					float offsetX = Random::Real(0.0f, 1.0f);
-					float offsetZ = Random::Real(0.0f, 1.0f);
-
-					float worldX = extraOffset.x + topLeftX + x + offsetX;
-					float worldZ = extraOffset.y + topLeftZ - y - offsetZ;
-
-					float rawHeight = chunkNoiseData.HeightMap[y * width + x];
-					float worldY = curveCopy.Evaluate(rawHeight) * ScaleY;
+				
+					float worldY = curveCopy.Evaluate(currentHeight) * ScaleY;
 
 					glm::vec3 rootPos(worldX, worldY, worldZ);
 					//e.GetTransformComponent().Location = (rootPos);
@@ -630,6 +630,8 @@ namespace Proof
 			Entity e = m_World.Lock()->CreateEntity();
 			e.AddComponent<MeshComponent>().SetMesh(laterItem.Mesh, true);
 			e.GetTransformComponent().Location = laterItem.Position;
+			e.GetTransformComponent().Location *= m_Transform.Scale;
+			e.GetTransformComponent().Scale *= m_Transform.Scale;
 			//e.GetTransformComponent().SetRotation(glm::vec3(0, Random::Real(0.0f, 360.0f), 0));
 			//e.GetTransformComponent().SetScale(glm::vec3(1.0f));
 		}
@@ -663,6 +665,8 @@ namespace Proof
 		if (!m_PhysicsEntity.IsValid())
 		{
 			m_PhysicsEntity = world->CreateChildEntity(terrain->GetPhysicsEntity(), fmt::format("Mesh Chunk coord {}", Math::ToString(Coord)));
+		
+			m_PhysicsEntity.GetTransformComponent() = TransformComponent();
 		}
 
 		m_MeshCollider = Count<MeshCollider>::Create(Mesh->GetID());

@@ -8,10 +8,10 @@ World:
       TransformComponent:
         Location: [0, -5.96046448e-08, 0]
         Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
+        Scale: [5, 5, 5]
       HierarchyComponent:
         ParentHandle: 0
-        Children: []
+        Children: [5740334690689538788]
       TerrainComponent:
         Seed: 0
         TerrainScale: 15
@@ -141,7 +141,7 @@ World:
         Tag: Enemy
         tags: []
       TransformComponent:
-        Location: [39.7155342, 4.52106285, -23.8611774]
+        Location: [39.7155342, 17.185648, 28.5699997]
         Rotation: [0, 0, 0]
         Scale: [4.56269979, 4.56269979, 4.56269979]
       HierarchyComponent:
@@ -214,7 +214,7 @@ World:
         Tag: Player
         tags: []
       TransformComponent:
-        Location: [32.9080086, 5.60162926, -7.35994864]
+        Location: [32.9080086, 28.9803238, -7.35994864]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -359,7 +359,7 @@ World:
         Tag: Pistol
         tags: []
       TransformComponent:
-        Location: [-0.873287439, 2.70000005, 5.74086857]
+        Location: [-0.873287439, 16.5300903, 5.74086857]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -440,7 +440,7 @@ World:
         Tag: AssaultRifle
         tags: []
       TransformComponent:
-        Location: [0, 2.70000005, 2.01169276]
+        Location: [0, 14.6166172, 2.01169276]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -536,7 +536,7 @@ World:
         Tag: Shotgun
         tags: []
       TransformComponent:
-        Location: [2.43184471, 2.70000005, 2.50749516]
+        Location: [2.43184471, 14.5211687, 2.50749516]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -617,11 +617,11 @@ World:
         Tag: Water
         tags: []
       TransformComponent:
-        Location: [0, 0.899999976, 0]
-        Rotation: [0, 0, 0]
+        Location: [0, 1, 0]
+        Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
-        ParentHandle: 0
+        ParentHandle: 7604409643476520192
         Children: []
       WaterComponent:
         WaveType: RealisticFastFourierTransformWave

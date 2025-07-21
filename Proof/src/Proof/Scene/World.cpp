@@ -1604,6 +1604,7 @@ namespace Proof
 
 		ForEachEnitityWith<TerrainComponent>([&](Entity e)
 		{
+				e.GetComponent<TerrainComponent>().Terrain->m_Transform.SetTransform(GetWorldSpaceTransform(e));
 				e.GetComponent<TerrainComponent>().Terrain->SetWorld(this);
 
 		});

@@ -233,9 +233,9 @@ Assets:
   - Asset: 7186535299582552243
     Type: Texture
     Path: Textures\TerrainTextues\Ground084\Ground084_2K-PNG_Roughness.png
-  - Asset: 9908843901059845284
+  - Asset: 9693337899192446356
     Type: Texture
     Path: Projects\Facility22\tex\shotgunColor_1.png
-  - Asset: 9117090146397771092
+  - Asset: 7366032085912308820
     Type: Texture
     Path: Projects\Facility22\tex\shotgunNormal_1.png
