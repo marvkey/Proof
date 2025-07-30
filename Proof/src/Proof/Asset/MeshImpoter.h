@@ -4,7 +4,7 @@
 #include <filesystem>
 namespace Proof
 {
-	class AnimationData;
+	class InternalAnimation;
 	class SkeletonData;
 
 	class MeshImporter
@@ -15,7 +15,7 @@ namespace Proof
 		Count<class MeshSource> ImportToMeshSource(bool importMaterialAndTextures = true);
 		void UpdateMeshSourceAssetCustomSettings(Count<class MeshSource> meshSource);
 		bool ImportSkeleton(Special<SkeletonData>& skeleton);
-		bool ImportAnimations(const uint32_t animationIndex, const SkeletonData& skeleton, std::vector<Special<AnimationData>>& animations);
+		bool ImportAnimations(const uint32_t animationIndex, const SkeletonData& skeleton, std::vector<Special<InternalAnimation>>& animations);
 		bool IsCompatibleSkeleton(const uint32_t animationIndex, const SkeletonData& skeleton);
 		uint32_t GetAnimationCount();
 	private:

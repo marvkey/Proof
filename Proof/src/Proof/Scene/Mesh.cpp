@@ -95,8 +95,10 @@ namespace Proof
     {
         m_Name = name;
         m_SubMeshes = submeshes;
-        m_VertexBuffer = VertexBuffer::Create(vertices.data(),(vertices.size() * sizeof(Vertex)));
-        m_IndexBuffer = IndexBuffer::Create(indices.data(), (indices.size() * sizeof(Index)));
+        if(!vertices.empty())
+            m_VertexBuffer = VertexBuffer::Create(vertices.data(),(vertices.size() * sizeof(Vertex)));
+		if (!indices.empty())
+            m_IndexBuffer = IndexBuffer::Create(indices.data(), (indices.size() * sizeof(Index)));
 
         m_Vertices = vertices;
         m_Indices = indices;
@@ -167,8 +169,10 @@ namespace Proof
         m_SubMeshes = {};
         m_SubMeshes.emplace_back(subMesh);
 
-        m_VertexBuffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(Vertex));
-        m_IndexBuffer = IndexBuffer::Create(indices.data(), indices.size() * sizeof(Index));
+        if (!vertices.empty())
+            m_VertexBuffer = VertexBuffer::Create(vertices.data(), (vertices.size() * sizeof(Vertex)));
+        if (!indices.empty())
+            m_IndexBuffer = IndexBuffer::Create(indices.data(), (indices.size() * sizeof(Index)));
 
         m_Vertices = vertices;
         m_Indices = indices;
@@ -176,8 +180,6 @@ namespace Proof
         Count<MeshSource> instance = this;
         Renderer::Submit([instance]() mutable
             {
-               // instance->m_Vertices.clear();
-               // instance->m_Indices.clear();
             });
         m_Materials = Count<MaterialTable>::Create();
 
@@ -218,13 +220,17 @@ namespace Proof
     {
         m_Name = name;
 
-        m_VertexBuffer = VertexBuffer::Create(vertices.data(), vertices.size() * sizeof(Vertex));
-        m_IndexBuffer = IndexBuffer::Create(indices.data(), indices.size() * sizeof(Index));
+        if (!vertices.empty())
+            m_VertexBuffer = VertexBuffer::Create(vertices.data(), (vertices.size() * sizeof(Vertex)));
+        if (!indices.empty())
+            m_IndexBuffer = IndexBuffer::Create(indices.data(), (indices.size() * sizeof(Index)));
         m_SubMeshes = subMeshes;
         m_Nodes = nodes;
         m_BoundingBox = boundingBox;
         m_Materials = Count<MaterialTable>::CreateFrom(materials);
 
+        m_Vertices = vertices;
+        m_Indices = indices;
         // maybe each mesh might have its own material asset maybe
         for (auto& [index, material] : m_Materials->GetMaterials())
         {
@@ -322,7 +328,8 @@ namespace Proof
             return m_Indices;
         return m_IndexBuffer->GetDataAs<Index>();
     }
-    // TODO (0x): this is temporary.. and will eventually be replaced with some kind of skeleton retargeting
+
+
     bool MeshSource::IsCompatibleSkeleton(const uint32_t animationIndex, const SkeletonData& skeleton) const
     {
         if (!m_Skeleton)
@@ -358,7 +365,7 @@ namespace Proof
         }
     }
 
-    const AnimationData& MeshSource::GetAnimation(const uint32_t animationIndex, const SkeletonData& skeleton) const
+    const InternalAnimation& MeshSource::GetAnimation(const uint32_t animationIndex, const SkeletonData& skeleton) const
     {
         if (!m_Skeleton)
         {

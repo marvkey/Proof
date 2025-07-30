@@ -758,7 +758,7 @@ namespace Proof
 
         auto meshSource  = Count<MeshSource>::Create(FileSystem::GetFileName(m_Path), vertices, indices, subMeshes, nodes, materialTable, meshSourceBoundingBox);
 
-		//meshSource->m_Skeleton = AnimationImporter::ImportSkeleton(scene);
+		meshSource->m_Skeleton = AnimationImporter::ImportSkeleton(scene);
 		PF_ENGINE_INFO("Animation Skeleton {0} found in mesh file '{1}'", meshSource->HasSkeleton() ? "" : "Not", m_Path.string());
 		if (meshSource->HasSkeleton())
 		{
@@ -768,6 +768,7 @@ namespace Proof
 			{
 				meshSource->m_Animations.emplace_back(AnimationImporter::ImportAnimation(scene, animationName, *meshSource->m_Skeleton));
 			}
+
 		}
 
 		// Bones
@@ -886,7 +887,7 @@ namespace Proof
 		return true;
 	}
 
-	bool MeshImporter::ImportAnimations(const uint32_t animationIndex, const SkeletonData& skeleton, std::vector<Special<AnimationData>>& animations)
+	bool MeshImporter::ImportAnimations(const uint32_t animationIndex, const SkeletonData& skeleton, std::vector<Special<InternalAnimation>>& animations)
 	{
 		Assimp::Importer importer;
 		importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);

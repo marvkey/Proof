@@ -63,6 +63,9 @@ namespace Proof
 			s_AssetManagerData->AssetSerilizer[AssetType::World] = CreateSpecial<WorldAssetSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::InputAction] = CreateSpecial<InputActionSerealizer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::InputBindingContext] = CreateSpecial<InputBindingContextSerializer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::Animation] = CreateSpecial<AnimationSerializer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::Skeleton] = CreateSpecial<SkeletonSerializer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::AnimationController] = CreateSpecial<AnimationControllerSerializer>();
 		}
 
 		{

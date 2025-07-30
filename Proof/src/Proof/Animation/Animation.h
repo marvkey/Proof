@@ -16,8 +16,7 @@ namespace Proof
 	{
 		T Value;
 		float TimeStep;// 0.0f = beginning of animation clip, 1.0f = end of animation clip
-		uint32_t Track;
-
+		uint32_t Track; // Track is the index of the bone (BoneIndex) in the skeleton that this keyframe applies to.
 		AnimationFrameKey() = default;
 		AnimationFrameKey	(const float timeStep, const uint32_t track, const T& value)
 			: TimeStep(timeStep), Track(track), Value(value) {}
@@ -28,10 +27,10 @@ namespace Proof
 	using RotationKey = AnimationFrameKey<glm::quat>;
 	using ScaleKey = AnimationFrameKey<glm::vec3>;
 
-	class AnimationData
+	class InternalAnimation
 	{
 	public:
-		AnimationData(const std::string_view name, const float duration)
+		InternalAnimation(const std::string_view name, const float duration)
 			:m_Name(name), m_Duration(duration)
 		{
 
@@ -61,14 +60,20 @@ namespace Proof
 	class Animation : public Asset
 	{
 	public:
-		Animation(const Count<MeshSource> meshSource);
+		Animation(const Count<MeshSource> meshSource,uint32_t animationIndex);
 
 		ASSET_CLASS_TYPE(Animation);
 
 		Count<MeshSource> GetMeshSource() const;
 		uint32_t GetAnimationCount() const;
-		const AnimationData& GetAnimation(const uint32_t animationIndex, const SkeletonData& skeleton) const;
+		const InternalAnimation& GetAnimation(const uint32_t animationIndex, const SkeletonData& skeleton) const;
+
+		uint32_t GetAnimationIndex()
+		{
+			return m_AnimationIndex;
+		}
 	private:
 		Count<MeshSource> m_MeshSource;
+		uint32_t m_AnimationIndex = 0; 
 	};
 }

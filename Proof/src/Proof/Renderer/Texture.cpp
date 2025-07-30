@@ -271,10 +271,12 @@ namespace Proof
 		}
 		else
 		{
-			imageBuffer.SetData(stbi_load_from_memory((const stbi_uc*)buffer.Get(), (int)buffer.GetSize(), &width, &height, &channels, STBI_rgb_alpha), width * height * 4,0);
+			imageBuffer.Data = stbi_load_from_memory((const stbi_uc*)buffer.Data, (int)buffer.Size, &width, &height, &channels, STBI_rgb_alpha);
+			imageBuffer.Size = width * height * 4;
+			outFormat = ImageFormat::RGBA;
 		}
 
-		if (!imageBuffer.Get())
+		if (!imageBuffer.Data)
 			return {};
 
 		outWidth = width;

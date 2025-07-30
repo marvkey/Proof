@@ -93,6 +93,7 @@
     <Compile Include="Assets\Scripts\Player\PlayerHUDManager.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerInput.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
+    <Compile Include="Assets\Scripts\Weapons\GrappleGun.cs" />
     <Compile Include="Assets\Scripts\Weapons\Gun.cs" />
     <Compile Include="Assets\Scripts\Weapons\Weapon.cs" />
   </ItemGroup>

@@ -14,7 +14,7 @@ namespace Proof
     class Material;
     class MaterialTable;
     class SkeletonData;
-    class AnimationData;
+    class InternalAnimation;
     class Texture2D;
 
     struct BoneInfo
@@ -171,7 +171,7 @@ namespace Proof
         const SkeletonData& GetSkeleton() const { PF_CORE_ASSERT(m_Skeleton, "Attempted to access null skeleton!"); return *m_Skeleton; }
         bool IsCompatibleSkeleton(const uint32_t animationIndex, const SkeletonData& skeleton) const;
         uint32_t GetAnimationCount() const;
-        const AnimationData& GetAnimation(const uint32_t animationIndex, const SkeletonData& skeleton) const;
+        const InternalAnimation& GetAnimation(const uint32_t animationIndex, const SkeletonData& skeleton) const;
         std::vector<BoneInfluence> GetBoneInfluences()const;
     private:
         std::string m_Name;
@@ -187,7 +187,8 @@ namespace Proof
 
         std::vector<BoneInfo> m_BoneInfo;
         mutable Special<SkeletonData> m_Skeleton;
-        mutable std::vector<Special<AnimationData>> m_Animations;
+		mutable Count<class Skeleton> m_SkeletonAsset;
+        mutable std::vector<Special<InternalAnimation>> m_Animations;
 
         std::vector<MeshNode> m_Nodes;
         Count<class VertexBuffer> m_VertexBuffer = nullptr;
@@ -310,6 +311,7 @@ namespace Proof
 
         DynamicMesh(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes = {});
         ~DynamicMesh() {};
+        bool HasSkeleton() { return m_MeshSource && m_MeshSource->HasSkeleton(); }
 
         void Reset(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes = {});
         void SetSubMeshes(const std::vector<uint32_t>& submeshes = {});

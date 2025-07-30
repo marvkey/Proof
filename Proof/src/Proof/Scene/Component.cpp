@@ -25,6 +25,8 @@
 #include "Proof/Renderer/ParticleSystem.h"
 #include "Proof/Physics/MeshCollider.h"
 #include "Proof/Scene/TerrainRenderer/TerrainRenderer.h"
+#include "Proof/Animation/Animation.h"
+#include "Proof/Animation/AnimationController.h"
 
 #include "Material.h"
 
@@ -247,5 +249,18 @@ namespace Proof
 	TerrainComponent::TerrainComponent(const TerrainComponent& other)
 	{
 		Terrain = Count<TerrainRenderer>::Create(other.Terrain);
+	}
+	AnimationComponent::AnimationComponent()
+	{
+		AnimationData = Count<class AnimationData > ::Create(); // Cached info about the current "state" of animation for this component.
+
+	}
+	AnimationComponent::AnimationComponent(const AnimationComponent& other)
+		: AnimationController(other.AnimationController)
+		, BoneEntityIds(other.BoneEntityIds) // After copying an AnimationComponent, we will generally need to reset the bone entity ids (e.g. to point to copied entities that the copied component belongs to.)  See Scene::DuplicateEntity()
+		, AnimationData(Count<class AnimationData>::Create(other.AnimationData)) // Each AnimationComponent needs its own data
+		, RootMotionEntityTarget(other.RootMotionEntityTarget)
+		, EnableRootMotion(other.EnableRootMotion)
+	{
 	}
 }

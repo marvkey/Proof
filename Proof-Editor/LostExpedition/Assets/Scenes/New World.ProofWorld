@@ -53,6 +53,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
+        Visible: true
       BoxColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
@@ -82,6 +83,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 52
+        Visible: true
       CapsuleColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
@@ -96,6 +98,36 @@ World:
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 11048209697403773621
+      TagComponent:
+        Tag: Jacob(Character)
+        tags: []
+      TransformComponent:
+        Location: [0, 3.29999995, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 0
+        Visible: true
+      MeshColliderComponent:
+        ColliderID: 0
+        IsTrigger: false
+        UseSharedShape: false
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
         Kinematic: false

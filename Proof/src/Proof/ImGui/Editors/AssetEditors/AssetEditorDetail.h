@@ -9,7 +9,7 @@ namespace Proof
 	protected:
 		virtual void RenderDetailSettings() = 0;
 		virtual void SetAsset(const Count<class Asset>& asset);
-		virtual Count<class Asset> GetAsset() = 0;
+		virtual Count<class Asset> GetAsset();;
 		virtual void OnImGuiRender() override final;
 		virtual bool IsSaved() { return !m_NeedsSaving; };
 		virtual void Save();
@@ -21,5 +21,6 @@ namespace Proof
 		Count< class DetailsPanel> m_DetailsPanel;
 		bool m_IsDetailsPanelOpen = true;
 		std::string m_DetailsPanelName;
+		Count<Asset> m_Asset;
 	};
 }

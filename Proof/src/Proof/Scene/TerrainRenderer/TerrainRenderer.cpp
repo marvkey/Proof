@@ -21,7 +21,7 @@
 #include "Proof/Renderer/RenderMaterial.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/Shader.h"
-#include "Proof/Scene/Prefab.h"
+#include "Proof/Scene/Prefab.h" 
 #include "Proof/Renderer/UniformBuffer.h"
 
 namespace Proof
@@ -166,7 +166,14 @@ namespace Proof
 
 		LayerStack = otherTerrain->LayerStack;
 		ItemSpawner = otherTerrain->ItemSpawner;
-		m_SpawnLater = otherTerrain->m_SpawnLater;
+
+		if (!m_NormalTerrain)
+		{
+			m_NormalTerrain = Count<NormalTerrain>::Create(this);
+			//m_GrassBladePanel = Count<GrassBladePlane>::Create(m_GrassBlades);
+			EndGenerateTerrain();
+		}
+		//m_SpawnLater = otherTerrain->m_SpawnLater;
 	}
 
 	TerrainRenderer::~TerrainRenderer()

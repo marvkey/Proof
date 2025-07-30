@@ -28,6 +28,9 @@
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 #include "Proof/Input/ElevatedInputSystem/ElevatedActionKeyMapping.h"
 #include "SerializeCommon.h"
+#include "Proof/Animation/Animation.h"
+#include "Proof/Animation/AnimationController.h"
+#include "Proof/Animation/Skeleton.h"
 namespace Proof {
 	void AssetSerializer::SetID(const AssetInfo& data, const Count<class Asset>& asset)
 	{
@@ -1149,6 +1152,131 @@ namespace $NAMESPACE_NAME$
 		out:
 		SetID(assetData, inputBindingContext);
 		return inputBindingContext;
+	}
+
+	void AnimationSerializer::Save(const AssetInfo& data, const Count<class Asset>& asset) const
+	{
+		Count<Animation> animation = asset.As<Animation>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(animation->GetAssetType());
+		out << YAML::Key << "ID" << YAML::Value << animation->GetID();
+		out << YAML::Key << "AnimationIndex" << YAML::Value << animation->GetAnimationIndex();
+		out << YAML::Key << "MeshSource" << YAML::Value << animation->GetMeshSource()->GetID();
+		out << YAML::EndMap;
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(data.Path).string());
+		stream << out.c_str();
+		stream.close();
+	}
+
+	Count<class Asset> AnimationSerializer::TryLoadAsset(const AssetInfo& assetData) const
+	{
+		YAML::Node yamlData = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		if (!yamlData["AssetType"])
+			return nullptr;
+
+		AssetKey<AssetType::MeshSourceFile> meshSourceKey = (AssetID)yamlData["MeshSource"].as<uint64_t>();
+		if (!meshSourceKey.IsValid())
+			return nullptr;
+
+		Count<Animation> animation = Count<Animation>::Create(meshSourceKey.GetAsset<MeshSource>(), yamlData["AnimationIndex"].as<uint32_t>());
+		SetID(assetData, animation);
+		return animation;
+	}
+
+	void SkeletonSerializer::Save(const AssetInfo& data, const Count<class Asset>& asset) const
+	{
+		Count<Skeleton> skeleton = asset.As<Skeleton>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(skeleton->GetAssetType());
+		out << YAML::Key << "ID" << YAML::Value << skeleton->GetID();
+		out << YAML::Key << "MeshSource" << YAML::Value << skeleton->GetMeshSource()->GetID();
+		out << YAML::EndMap;
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(data.Path).string());
+		stream << out.c_str();
+		stream.close();
+	}
+
+	Count<class Asset> SkeletonSerializer::TryLoadAsset(const AssetInfo& assetData) const
+	{
+		YAML::Node yamlData = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		if (!yamlData["AssetType"])
+			return nullptr;
+
+		AssetKey<AssetType::MeshSourceFile> meshSourceKey = (AssetID)yamlData["MeshSource"].as<uint64_t>();
+		if (!meshSourceKey.IsValid())
+			return nullptr;
+
+		Count<Skeleton> skeleton = Count<Skeleton>::Create(meshSourceKey.GetAsset<MeshSource>());
+		SetID(assetData, skeleton);
+		return skeleton;
+	}
+
+	void AnimationControllerSerializer::Save(const AssetInfo& data, const Count<class Asset>& asset) const
+	{
+		Count<AnimationController> animationController = asset.As<AnimationController>();
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(animationController->GetAssetType());
+		out << YAML::Key << "ID" << YAML::Value << animationController->GetID();
+
+		// Skeleton Reference
+		if (animationController->GetSkeleton())
+		{
+			out << YAML::Key << "Skeleton" << YAML::Value << animationController->GetSkeleton()->GetID();
+		}
+		else
+		{
+			out << YAML::Key << "Skeleton" << YAML::Value << 0; // Null UUID or fallback
+		}
+
+		// Root Motion Masks
+		out << YAML::Key << "RootTranslationMask" << YAML::Value << animationController->m_RootTranslationMask;
+		out << YAML::Key << "RootTranslationExtractMask" << YAML::Value << animationController->m_RootTranslationExtractMask;
+		out << YAML::Key << "RootRotationMask" << YAML::Value << animationController->m_RootRotationMask;
+		out << YAML::Key << "RootRotationExtractMask" << YAML::Value << animationController->m_RootRotationExtractMask;
+
+		// Looping
+		out << YAML::Key << "IsLooping" << YAML::Value << animationController->m_IsLooping;
+
+		out << YAML::EndMap;
+
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(data.Path).string());
+		stream << out.c_str();
+		stream.close();
+
+	}
+
+	Count<class Asset> AnimationControllerSerializer::TryLoadAsset(const AssetInfo& assetData) const
+	{
+		YAML::Node yamlData = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		if (!yamlData["AssetType"])
+			return nullptr;
+
+
+		Count<AnimationController> animationController = Count<AnimationController>::Create();
+
+		// Load Skeleton Asset
+		AssetKey<AssetType::Skeleton> skeleton = (UUID)yamlData["Skeleton"].as<uint64_t>(0);
+		if (skeleton.IsValid())
+		{
+			Count<Skeleton> skeletonAsset = skeleton.GetAsset<Skeleton>();
+			if (skeletonAsset)
+				animationController->SetSkeleton(skeletonAsset);
+		}
+
+		// Root Motion Masks
+		animationController->m_RootTranslationMask = yamlData["RootTranslationMask"].as<glm::vec3>(animationController->m_RootTranslationMask);
+		animationController->m_RootTranslationExtractMask = yamlData["RootTranslationExtractMask"].as<glm::vec3>(animationController->m_RootTranslationExtractMask);
+		animationController->m_RootRotationMask = yamlData["RootRotationMask"].as<float>(animationController->m_RootRotationMask);
+		animationController->m_RootRotationExtractMask = yamlData["RootRotationExtractMask"].as<float>(animationController->m_RootRotationExtractMask);
+
+		// Looping flag
+		animationController->m_IsLooping = yamlData["IsLooping"].as<bool>(animationController->m_IsLooping);
+
+		SetID(assetData, animationController);
+		return animationController;
 	}
 
 }

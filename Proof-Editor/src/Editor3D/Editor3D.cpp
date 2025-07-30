@@ -57,6 +57,7 @@
 #include "Proof/ImGui/Editors/EditorWorkspace/EditorWorkspace.h"
 #include "Proof/ImGui/Editors/EditorWorkspace/ViewPortEditorWorkspace.h"
 #include "Proof/Renderer/Image.h"
+#include "Proof/Animation/Animation.h"
 
 #include "Proof/Input/ElevatedInputSystem/ElevatedInputDevices/ElevatedInputDeviceManager.h"
 
@@ -2216,9 +2217,12 @@ namespace Proof
 				static bool doGenerateColliders = true;
 				static bool doImportSkeleton = false;
 				static bool doImportAnimations = false;
+				static bool doImportMesh = true;
 
 				UI::AttributeBool("Dynamic", dynamicMesh);
 				UI::AttributeBool("Generate Colliders", doGenerateColliders, "Controls whether physics components (collider and rigid body) will be added to the newly created entity.");
+				UI::AttributeBool("Import mesh", doImportMesh, "import mesh");
+
 				if (UI::AttributeTreeNode("Transform", true, 6, 3))
 				{
 					UI::AttributeDrag("Translation", s_EditorData->CreateNewMeshPopupData.Translation);
@@ -2226,9 +2230,19 @@ namespace Proof
 					UI::AttributeDrag("Scale", s_EditorData->CreateNewMeshPopupData.Scale);
 					UI::EndTreeNode();
 				}
+
+				UI::AttributeBool("Skeleton", doImportSkeleton, "Imort mesh skeelton ");
+				UI::AttributeBool("Animation", doImportAnimations, "Import animation");
+
 				ImGui::Separator();
 				ImGui::Text(Project::GetActive()->GetProjectDirectory().filename().string().c_str());
 				UI::AttributeInputText("MeshPath", s_EditorData->CreateNewMeshPopupData.CreateMeshFilenameBuffer);
+
+				if (doImportAnimations)
+					UI::AttributeInputText("AnimationPath", s_EditorData->CreateNewMeshPopupData.CreateAnimationFilenameBuffer);
+
+				if (doImportSkeleton)
+					UI::AttributeInputText("SkeletonPath", s_EditorData->CreateNewMeshPopupData.CreateSkeletonFilenameBuffer);
 
 				PF_CORE_ASSERT(s_EditorData->CreateNewMeshPopupData.MeshToCreate);
 				if (ImGui::Button("Create"))
@@ -2244,8 +2258,9 @@ namespace Proof
 						FileSystem::CreateDirectory(savedPath.parent_path());
 
 					savedPath = FileSystem::GenerateUniqueFileName(savedPath);
+					Count<MeshSource> meshSource = s_EditorData->CreateNewMeshPopupData.MeshToCreate;
 
-					if (!s_EditorData->CreateNewMeshPopupData.MeshToCreate->GetSubMeshes().empty())
+					if (!s_EditorData->CreateNewMeshPopupData.MeshToCreate->GetSubMeshes().empty() && doImportMesh == true)
 					{
 
 						SelectionManager::DeselectAll(SelectionContext::Scene);
@@ -2296,7 +2311,45 @@ namespace Proof
 						AssetManager::SaveAsset(baseMesh->GetID());
 					}
 
+
+
+					if (doImportAnimations)
+					{
+						for (uint32_t i = 0; i < meshSource->GetAnimationCount(); i++)
+						{
+
+						}
+						std::filesystem::path animationPath = Project::GetActive()->GetAssetDirectory() / s_EditorData->CreateNewMeshPopupData.CreateAnimationFilenameBuffer;
+						animationPath += Utils::GetAssetExtensionString(AssetType::Animation);
+
+
+						if (!FileSystem::Exists(animationPath.parent_path()))
+							FileSystem::CreateDirectory(animationPath.parent_path());
+
+
+						animationPath = FileSystem::GenerateUniqueFileName(animationPath);
+
+						Count<Animation> animation = AssetManager::NewAsset<Animation>(animationPath, meshSource, 0);
+						AssetManager::SaveAsset(animation->GetID());
+					}
+
+					if (doImportSkeleton)
+					{
+						std::filesystem::path skeletonPath = Project::GetActive()->GetAssetDirectory() / s_EditorData->CreateNewMeshPopupData.CreateSkeletonFilenameBuffer;
+						skeletonPath += Utils::GetAssetExtensionString(AssetType::Skeleton);
+
+						if (!FileSystem::Exists(skeletonPath.parent_path()))
+							FileSystem::CreateDirectory(skeletonPath.parent_path());
+
+
+						skeletonPath = FileSystem::GenerateUniqueFileName(skeletonPath);
+
+						Count<Skeleton> skeleton = AssetManager::NewAsset<Skeleton>(skeletonPath, meshSource);
+						AssetManager::SaveAsset(skeleton->GetID());
+					}
+
 					s_EditorData->CreateNewMeshPopupData = {};
+
 					ImGui::CloseCurrentPopup();
 				}
 				ImGui::SameLine();

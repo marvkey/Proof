@@ -13,6 +13,7 @@
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Input/Input.h"
 #include "Proof/ImGui/Editors/AssetEditors/PrefabEditor.h"
+#include "Proof/ImGui/Editors/AssetEditors/AnimationControllerEditorPanel.h"
 #include "GuiEditorPanel.h"
 #include "InputActionPanel.h"
 #include "InputBindingContextPanel.h"
@@ -200,6 +201,7 @@ namespace Proof
 		RegisterEditor(AssetType::InputAction);
 		RegisterEditor(AssetType::InputBindingContext);
 		RegisterEditor(AssetType::UIPanel);
+		RegisterEditor(AssetType::AnimationController);
 	}
 
 	void AssetEditorPanel::UnregisterAllEditors()
@@ -304,6 +306,9 @@ namespace Proof
 					break;
 				case Proof::AssetType::InputBindingContext:
 					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<InputBindingContextPanel>::Create();
+					break;
+				case Proof::AssetType::AnimationController:
+					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<AnimationControllerPanel>::Create();
 					break;
 				default:
 					break;

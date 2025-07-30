@@ -40,10 +40,10 @@ namespace Proof
 		void ExtractBones()
 		{
 			// Note: ASSIMP does not appear to support import of digital content files that contain _only_ an armature/skeleton and no mesh.
-			for (uint32_t meshIndex = 0; meshIndex < m_Scene->mNumMeshes; ++meshIndex)
+			for (uint32_t meshIndex = 0; meshIndex < m_Scene->mNumMeshes; meshIndex++)
 			{
 				const aiMesh* mesh = m_Scene->mMeshes[meshIndex];
-				for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+				for (uint32_t boneIndex = 0; boneIndex < mesh->mNumBones; boneIndex++)
 				{
 					m_Bones.emplace(mesh->mBones[boneIndex]->mName.C_Str());
 				}
@@ -51,13 +51,14 @@ namespace Proof
 		}
 		void TraverseNode(aiNode* node, SkeletonData* skeleton)
 		{
-			if (m_Bones.find(node->mName.C_Str()) != m_Bones.end())
+			// is this node a bone
+			if (m_Bones.contains(node->mName.C_Str()))
 			{
 				TraverseBone(node, skeleton, SkeletonData::NullIndex);
 			}
 			else
 			{
-				for (uint32_t nodeIndex = 0; nodeIndex < node->mNumChildren; ++nodeIndex)
+				for (uint32_t nodeIndex = 0; nodeIndex < node->mNumChildren; nodeIndex++)
 				{
 					TraverseNode(node->mChildren[nodeIndex], skeleton);
 				}
@@ -65,8 +66,11 @@ namespace Proof
 		}
 		void TraverseBone(aiNode* node, SkeletonData* skeleton, uint32_t parentIndex)
 		{
+			// Ensure this node is actually a bone
+			PF_CORE_ASSERT(m_Bones.contains(node->mName.C_Str()));
+
 			uint32_t boneIndex = skeleton->AddBone(node->mName.C_Str(), parentIndex, Utils::Mat4FromAIMatrix4x4(node->mTransformation));
-			for (uint32_t nodeIndex = 0; nodeIndex < node->mNumChildren; ++nodeIndex)
+			for (uint32_t nodeIndex = 0; nodeIndex < node->mNumChildren; nodeIndex++)
 			{
 				TraverseBone(node->mChildren[nodeIndex], skeleton, boneIndex);
 			}
@@ -106,14 +110,14 @@ namespace Proof
 		BoneHierarchy boneHierarchy(scene);
 		return boneHierarchy.CreateSkeleton();
 	}
-	Special<AnimationData> AnimationImporter::ImportAnimation(const std::string_view filename, const SkeletonData& skeleton)
+	Special<InternalAnimation> AnimationImporter::ImportAnimation(const std::string_view filename, const SkeletonData& skeleton)
 	{
-		Special<AnimationData> animation;
-		PF_ENGINE_INFO("AnimationData Loading animation: {0}", filename);
+		Special<InternalAnimation> animation;
+		PF_ENGINE_INFO("InternalAnimation Loading animation: {0}", filename);
 
 		if (skeleton.GetNumBones() == 0)
 		{
-			PF_ENGINE_INFO("AnimationData Empty skeleton passed to animation asset for file '{0}'", filename);
+			PF_ENGINE_INFO("InternalAnimation Empty skeleton passed to animation asset for file '{0}'", filename);
 			return nullptr;
 		}
 
@@ -121,7 +125,7 @@ namespace Proof
 		const aiScene* scene = importer.ReadFile(filename.data(), s_AnimationImportFlags);
 		if (!scene || !scene->HasAnimations())
 		{
-			PF_ENGINE_INFO("AnimationData Failed to load animation from file '{0}'", filename);
+			PF_ENGINE_INFO("InternalAnimation Failed to load animation from file '{0}'", filename);
 			return nullptr;
 		}
 
@@ -130,7 +134,7 @@ namespace Proof
 		auto localSkeleton = ImportSkeleton(scene);
 		if (localSkeleton && *localSkeleton != skeleton)
 		{
-			PF_ENGINE_INFO("AnimationData SkeletonData found in animation file '{0}' differs from expected.  All animations in an animation controller must share the same skeleton!", filename);
+			PF_ENGINE_INFO("InternalAnimation SkeletonData found in animation file '{0}' differs from expected.  All animations in an animation controller must share the same skeleton!", filename);
 			return nullptr;
 		}
 
@@ -138,20 +142,20 @@ namespace Proof
 		if (animationNames.empty())
 		{
 			// shouldn't ever get here, since we already checked scene.HasAnimations()...
-			PF_ENGINE_INFO("AnimationData Failed to load animation from file: {0}", filename);
+			PF_ENGINE_INFO("InternalAnimation Failed to load animation from file: {0}", filename);
 			return nullptr;
 		}
 
 		if (animationNames.size() > 1)
 		{
-			PF_ENGINE_INFO("AnimationData File '{0}' contains {1} animations.  Only the first will be imported", filename, animationNames.size());
+			PF_ENGINE_INFO("InternalAnimation File '{0}' contains {1} animations.  Only the first will be imported", filename, animationNames.size());
 		}
 
 		aiString animationName;
 		animation = ImportAnimation(scene, animationNames.front(), skeleton);
 		if (!animation)
 		{
-			PF_ENGINE_INFO("AnimationData Failed to extract animation '{}' from file '{}'", animationNames.front(), filename);
+			PF_ENGINE_INFO("InternalAnimation Failed to extract animation '{}' from file '{}'", animationNames.front(), filename);
 		}
 		return animation;
 	}
@@ -169,14 +173,14 @@ namespace Proof
 				}
 				else
 				{
-					PF_EC_WARN("AnimationData '{0}' duration is zero or negative.  This animation was ignored!", scene->mAnimations[i]->mName.C_Str());
+					PF_EC_WARN("InternalAnimation '{0}' duration is zero or negative.  This animation was ignored!", scene->mAnimations[i]->mName.C_Str());
 				}
 			}
 		}
 		return animationNames;
 	}
 
-
+	// singel ke frame for animationg
 	template<typename T> struct KeyFrame
 	{
 		float FrameTime;
@@ -184,19 +188,46 @@ namespace Proof
 		KeyFrame(const float frameTime, const T& value) : FrameTime(frameTime), Value(value) {}
 	};
 
+	//A channel is a set of keyframes for a single bone in an animation.
+	/*
+	
+		In Simpler Terms:
+		Imagine you have a character skeleton with bones like:
 
+			Spine
+
+			Head
+
+			LeftArm
+
+			RightArm
+
+		Each of these bones moves over time in an animation — that's a channel.
+
+		So:
+
+		The Head bone has a channel with:
+
+			Position keys
+
+			Rotation keys
+
+			Scale keys
+
+		The LeftArm bone has its own channel with its own keyframes.
+
+	*/
 	struct Channel
 	{
 		std::vector<KeyFrame<glm::vec3>> Translations;
 		std::vector<KeyFrame<glm::quat>> Rotations;
 		std::vector<KeyFrame<glm::vec3>> Scales;
-		uint32_t Index;
+		uint32_t Index; // the bone index
 	};
 
 	// Import all of the channels from anim that refer to bones in skeleton
 	static auto ImportChannels(const aiAnimation* anim, const SkeletonData& skeleton)
 	{
-		std::vector<Channel> channels;
 
 		std::unordered_map<std::string_view, uint32_t> boneIndices;
 		for (uint32_t i = 0; i < skeleton.GetNumBones(); ++i)
@@ -204,7 +235,7 @@ namespace Proof
 			boneIndices.emplace(skeleton.GetBoneName(i), i);
 		}
 
-		std::map<uint32_t, aiNodeAnim*> validChannels;
+		std::map<uint32_t, aiNodeAnim*> validChannels; // bone id, and poointer to the animation
 		for (uint32_t channelIndex = 0; channelIndex < anim->mNumChannels; ++channelIndex)
 		{
 			aiNodeAnim* nodeAnim = anim->mChannels[channelIndex];
@@ -215,14 +246,16 @@ namespace Proof
 			}
 		}
 
+		std::vector<Channel> channels;
+
 		channels.resize(skeleton.GetNumBones());
-		for (uint32_t boneIndex = 0; boneIndex < skeleton.GetNumBones(); ++boneIndex)
+		for (uint32_t boneIndex = 0; boneIndex < skeleton.GetNumBones(); boneIndex++)
 		{
 			channels[boneIndex].Index = boneIndex;
 			if (auto validChannel = validChannels.find(boneIndex); validChannel != validChannels.end())
 			{
 				auto nodeAnim = validChannel->second;
-				channels[boneIndex].Translations.reserve(nodeAnim->mNumPositionKeys + 2); // +2 because worst case we insert two more keys
+				channels[boneIndex].Translations.reserve(nodeAnim->mNumPositionKeys + 2); // +2 because worst case we insert two more keys, for starting at 0.0f and make sure end at 1.0f
 				channels[boneIndex].Rotations.reserve(nodeAnim->mNumRotationKeys + 2);
 				channels[boneIndex].Scales.reserve(nodeAnim->mNumScalingKeys + 2);
 
@@ -234,19 +267,21 @@ namespace Proof
 					float frameTime = std::clamp(static_cast<float>(key.mTime / anim->mDuration), 0.0f, 1.0f);
 					if ((keyIndex == 0) && (frameTime > 0.0f))
 					{
+						// make sure initial key start at 0.0f, if the first key is not at 0.0f
 						channels[boneIndex].Translations.emplace_back(0.0f, glm::vec3{ static_cast<float>(key.mValue.x), static_cast<float>(key.mValue.y), static_cast<float>(key.mValue.z) });
 					}
 					channels[boneIndex].Translations.emplace_back(frameTime, glm::vec3{ static_cast<float>(key.mValue.x), static_cast<float>(key.mValue.y), static_cast<float>(key.mValue.z) });
 				}
 				if (channels[boneIndex].Translations.empty())
 				{
-					PF_ENGINE_WARN("AnimationData No translation track found for bone '{}'", skeleton.GetBoneName(boneIndex));
-					channels[boneIndex].Translations = { {0.0f, glm::vec3{0.0f}}, {1.0f, glm::vec3{0.0f}} };
+					PF_ENGINE_WARN("InternalAnimation No translation track found for bone '{}'", skeleton.GetBoneName(boneIndex));
+					channels[boneIndex].Translations = { {0.0f, glm::vec3{0.0f}}, {1.0f, glm::vec3{0.0f}} }; // set innital frame to 0.0f and end frame to 1.0f no interpolation so keep at 0.0
 				}
 				else if (channels[boneIndex].Translations.back().FrameTime < 1.0f)
 				{
-					channels[boneIndex].Translations.emplace_back(1.0f, channels[boneIndex].Translations.back().Value);
+					channels[boneIndex].Translations.emplace_back(1.0f, channels[boneIndex].Translations.back().Value); // make sure last key is at 1.0f
 				}
+
 				for (uint32_t keyIndex = 0; keyIndex < nodeAnim->mNumRotationKeys; ++keyIndex)
 				{
 					aiQuatKey key = nodeAnim->mRotationKeys[keyIndex];
@@ -255,6 +290,7 @@ namespace Proof
 					// WARNING: constructor parameter order for a quat is still WXYZ even if you have defined GLM_FORCE_QUAT_DATA_XYZW
 					if ((keyIndex == 0) && (frameTime > 0.0f))
 					{
+						// make sure initial key start at 0.0f, if the first key is not at 0.0f
 						channels[boneIndex].Rotations.emplace_back(0.0f, glm::quat{ static_cast<float>(key.mValue.w), static_cast<float>(key.mValue.x), static_cast<float>(key.mValue.y), static_cast<float>(key.mValue.z) });
 					}
 					channels[boneIndex].Rotations.emplace_back(frameTime, glm::quat{ static_cast<float>(key.mValue.w), static_cast<float>(key.mValue.x), static_cast<float>(key.mValue.y), static_cast<float>(key.mValue.z) });
@@ -262,36 +298,39 @@ namespace Proof
 				}
 				if (channels[boneIndex].Rotations.empty())
 				{
-					PF_ENGINE_WARN("AnimationData No rotation track found for bone '{}'", skeleton.GetBoneName(boneIndex));
-					channels[boneIndex].Rotations = { {0.0f, glm::quat{1.0f, 0.0f, 0.0f, 0.0f}}, {1.0f, glm::quat{1.0f, 0.0f, 0.0f, 0.0f}} };
+					PF_ENGINE_WARN("InternalAnimation No rotation track found for bone '{}'", skeleton.GetBoneName(boneIndex));
+					channels[boneIndex].Rotations = { {0.0f, glm::quat{1.0f, 0.0f, 0.0f, 0.0f}}, {1.0f, glm::quat{1.0f, 0.0f, 0.0f, 0.0f}} }; // set innital frame to 0.0f and end frame to 1.0f no interpolation so keep at 0.0
 				}
 				else if (channels[boneIndex].Rotations.back().FrameTime < 1.0f)
 				{
-					channels[boneIndex].Rotations.emplace_back(1.0f, channels[boneIndex].Rotations.back().Value);
+					channels[boneIndex].Rotations.emplace_back(1.0f, channels[boneIndex].Rotations.back().Value); // make sure last key is at 1.0f
 				}
+
 				for (uint32_t keyIndex = 0; keyIndex < nodeAnim->mNumScalingKeys; ++keyIndex)
 				{
 					aiVectorKey key = nodeAnim->mScalingKeys[keyIndex];
 					float frameTime = std::clamp(static_cast<float>(key.mTime / anim->mDuration), 0.0f, 1.0f);
 					if (keyIndex == 0 && frameTime > 0.0f)
 					{
+						// make sure initial key start at 0.0f, if the first key is not at 0.0f
 						channels[boneIndex].Scales.emplace_back(0.0f, glm::vec3{ static_cast<float>(key.mValue.x), static_cast<float>(key.mValue.y), static_cast<float>(key.mValue.z) });
 					}
 					channels[boneIndex].Scales.emplace_back(frameTime, glm::vec3{ static_cast<float>(key.mValue.x), static_cast<float>(key.mValue.y), static_cast<float>(key.mValue.z) });
 				}
+
 				if (channels[boneIndex].Scales.empty())
 				{
-					PF_ENGINE_WARN("AnimationData No scale track found for bone '{}'", skeleton.GetBoneName(boneIndex));
-					channels[boneIndex].Scales = { {0.0f, glm::vec3{1.0f}}, {1.0f, glm::vec3{1.0f}} };
+					PF_ENGINE_WARN("InternalAnimation No scale track found for bone '{}'", skeleton.GetBoneName(boneIndex));
+					channels[boneIndex].Scales = { {0.0f, glm::vec3{1.0f}}, {1.0f, glm::vec3{1.0f}} }; // set innital frame to 0.0f and end frame to 1.0f no interpolation so keep at 0.0
 				}
 				else if (channels[boneIndex].Scales.back().FrameTime < 1.0f)
 				{
-					channels[boneIndex].Scales.emplace_back(1.0f, channels[boneIndex].Scales.back().Value);
+					channels[boneIndex].Scales.emplace_back(1.0f, channels[boneIndex].Scales.back().Value);  // make sure last key is at 1.0f
 				}
 			}
 			else
 			{
-				PF_ENGINE_WARN("AnimationData No animation tracks found for bone '{}'", skeleton.GetBoneName(boneIndex));
+				PF_ENGINE_WARN("InternalAnimation No animation tracks found for bone '{}'", skeleton.GetBoneName(boneIndex));
 				channels[boneIndex].Translations = { {0.0f, glm::vec3{0.0f}}, {1.0f, glm::vec3{0.0f}} };
 				channels[boneIndex].Rotations = { {0.0f, glm::quat{1.0f, 0.0f, 0.0f, 0.0f}}, {1.0f, glm::quat{1.0f, 0.0f, 0.0f, 0.0f}} };
 				channels[boneIndex].Scales = { {0.0f, glm::vec3{1.0f}}, {1.0f, glm::vec3{1.0f}} };
@@ -300,6 +339,7 @@ namespace Proof
 
 		return channels;
 	}
+
 	static auto ConcatenateChannelsAndSort(const std::vector<Channel>& channels)
 	{
 		// We concatenate the Locations for all the channels into one big long vector, and then sort
@@ -317,14 +357,25 @@ namespace Proof
 			numScales += static_cast<uint32_t>(channel.Scales.size());
 		}
 
-		std::vector<std::pair<float, LocationKey>> translationKeysTemp;
-		std::vector<std::pair<float, RotationKey>> rotationKeysTemp;
+		// stores previous frmame data
+		std::vector<std::pair<float, LocationKey>> translationKeysTemp; 
+		std::vector<std::pair<float, RotationKey>> rotationKeysTemp; // 
 		std::vector<std::pair<float, ScaleKey>> scaleKeysTemp;
 		translationKeysTemp.reserve(numTranslations);
 		rotationKeysTemp.reserve(numRotations);
 		scaleKeysTemp.reserve(numScales);
 		for (const auto& channel : channels)
 		{
+			/*(
+				The prevFrameTime is used to optimize forward playback of animations.
+				When you later sample or blend keyframes during animation playback, this gives you a hint:
+				“The last key was at time X — start looking from there.”
+
+				At -1.0f It's just a sentinel value — a special value that means:
+				"This is the first keyframe in this channel."
+			*/
+
+
 			float prevFrameTime = -1.0f;
 			for (const auto& translation : channel.Translations)
 			{
@@ -346,6 +397,15 @@ namespace Proof
 				prevFrameTime = scale.FrameTime;
 			}
 		}
+
+
+		// Sort all keyframes by their previous frame time (a.first), so they can be processed
+		// in forward playback order. If multiple keys have the same previous time, we sort them
+		// by bone index (Track) to ensure a stable and deterministic order. This layout is ideal
+		// for efficient linear sampling during animation playback.
+
+		// waitng b to be bigger
+
 		std::sort(translationKeysTemp.begin(), translationKeysTemp.end(), [](const auto& a, const auto& b) { return (a.first < b.first) || ((a.first == b.first) && a.second.Track < b.second.Track); });
 		std::sort(rotationKeysTemp.begin(), rotationKeysTemp.end(), [](const auto& a, const auto& b) { return (a.first < b.first) || ((a.first == b.first) && a.second.Track < b.second.Track); });
 		std::sort(scaleKeysTemp.begin(), scaleKeysTemp.end(), [](const auto& a, const auto& b) { return (a.first < b.first) || ((a.first == b.first) && a.second.Track < b.second.Track); });
@@ -379,16 +439,16 @@ namespace Proof
 	}
 
 
-	Special<AnimationData> AnimationImporter::ImportAnimation(const aiScene* scene, const std::string_view animationName, const SkeletonData& skeleton)
+	Special<InternalAnimation> AnimationImporter::ImportAnimation(const aiScene* scene, const std::string_view animationName, const SkeletonData& skeleton)
 	{
 		if (!scene)
 		{
 			return nullptr;
 		}
 
-		Special<AnimationData> animation = nullptr;
+		Special<InternalAnimation> animation = nullptr;
 
-		for (uint32_t animIndex = 0; animIndex < scene->mNumAnimations; ++animIndex)
+		for (uint32_t animIndex = 0; animIndex < scene->mNumAnimations; animIndex++)
 		{
 			const aiAnimation* anim = scene->mAnimations[animIndex];
 			if (animationName == anim->mName.C_Str())
@@ -403,7 +463,7 @@ namespace Proof
 					samplingRate = 1.0;
 				}
 
-				animation = CreateSpecial<AnimationData>(animationName, static_cast<float>(anim->mDuration / samplingRate));
+				animation = CreateSpecial<InternalAnimation>(animationName, static_cast<float>(anim->mDuration / samplingRate));
 				animation->SetKeyFrames(translationKeys, rotationKeys, scaleKeys);
 				break;
 			}

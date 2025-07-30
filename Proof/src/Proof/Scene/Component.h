@@ -289,6 +289,7 @@ namespace Proof
 		DynamicMeshComponent();
 		DynamicMeshComponent(const DynamicMeshComponent& other);
 		Count<class MaterialTable> MaterialTable;
+
 		void SetMesh(AssetID ID, bool takeMaterialTable = true);
 		void RemoveMesh();
 
@@ -310,7 +311,22 @@ namespace Proof
 		friend class Editore3D;
 		AssetID m_MeshID;
 		uint32_t m_SubmeshIndex = 0;
+		std::vector<UUID> BoneEntityIds; // If mesh is rigged, these are the entities whose transforms will used to "skin" the rig.
 	};
+
+
+	struct AnimationComponent
+	{
+		AssetKey<AssetType::AnimationController> AnimationController;
+		std::vector<UUID> BoneEntityIds; // AnimationController refers to a skeleton.  Skeleton has a collection of bones.  Each bone affects the transform of an entity. These are those entities.
+		Count < class AnimationData > AnimationData; // Cached info about the current "state" of animation for this component.
+		UUID RootMotionEntityTarget = 0; // If root motion is enabled, apply extracted root motion to the transform of this entity (can be "null", in which case root motion is not applied anywhere, effectively making the animation play "in-place")
+		bool EnableRootMotion = false;
+
+		AnimationComponent();
+		AnimationComponent(const AnimationComponent&);
+	};
+
 	struct SpriteComponent
 	{
 		SpriteComponent(const SpriteComponent&) = default;

@@ -30,6 +30,7 @@
 #include "Proof/Input/ElevatedInputSystem/InputAction.h"
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 #include "Proof/Renderer/Font.h"
+
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/UIRenderer/UIRenderer.h"
 #include "Proof/Renderer/CommandBuffer.h"
@@ -42,6 +43,8 @@
 #include "Proof/Scene/WaterSystem/BuoyancyActor.h"
 #include "Proof/Renderer/Colors.h"
 #include "Proof/Scene/SceneUtils.h"
+#include "Proof/Animation/AnimationController.h"
+#include "Proof/Animation/Skeleton.h"
 
 #include "GameMode/LocalGameMode.h"
 #include "Proof/Scripting/ScriptWorld.h"
@@ -1318,6 +1321,7 @@ namespace Proof
 		return AllActiveWorlds;
 	}
 
+
 	void World::PrefabCopyEntity(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity,bool includeChildren)
 	{
 		// first id is the src, second is dstEntity
@@ -1357,6 +1361,8 @@ namespace Proof
 		Entity newEntity = CreateEntityFromOtherReal(entity,entitySwapIDs, includeChildren);
 
 		UnPauseRigidBodyOnConstruct();
+
+		BuildBoneEntityIds(newEntity);
 
 		return entity;
 	}
@@ -1408,6 +1414,47 @@ namespace Proof
 			m_PhysicsWorld->CreateActor(e);
 
 		m_RigidBodyWaitingList.clear();
+	}
+
+	void World::BuildBoneEntityIds(Entity entity)
+	{
+		BuildMeshBoneEntityIds(entity, entity);
+		BuildAnimationBoneEntityIds(entity, entity);
+	}
+	void World::BuildMeshBoneEntityIds(Entity entity, Entity rootEntity)
+	{
+		PF_PROFILE_FUNC();
+		if (entity.HasComponent<DynamicMeshComponent>())
+		{
+			auto& mc = entity.GetComponent<DynamicMeshComponent>();
+			auto mesh = mc.GetMesh();
+
+			if (mesh && mesh->HasSkeleton())
+				mc.BoneEntityIds = FindBoneEntityIds(entity, rootEntity,Count<Skeleton>::Create(mesh->GetMeshSource()));
+		}
+		for (auto childId : entity.Children())
+		{
+			Entity child = GetEntity(childId);
+			BuildMeshBoneEntityIds(child, rootEntity);
+		}
+	}
+
+	void World::BuildAnimationBoneEntityIds(Entity entity, Entity rootEntity)
+	{
+		PF_PROFILE_FUNC();
+
+		if (entity.HasComponent<AnimationComponent>())
+		{
+			auto& anim = entity.GetComponent<AnimationComponent>();
+			auto animationController = anim.AnimationController.GetAsset<AnimationController>();
+			if (animationController)
+				anim.BoneEntityIds = FindBoneEntityIds(entity, rootEntity, animationController->GetSkeleton());
+		}
+		for (auto childId : entity.Children())
+		{
+			Entity child = GetEntity(childId);
+			BuildAnimationBoneEntityIds(child, rootEntity);
+		}
 	}
 
 	Entity World::CreateEntity(Count<class DynamicMesh> mesh, bool generateCollider)
@@ -1689,6 +1736,61 @@ namespace Proof
 		}
 
 		return Entity{};
+	}
+	Entity World::TryGetDescendantEntityWithTag(Entity entity, const std::string& tag)
+	{
+		PF_PROFILE_FUNC();
+
+		if (entity)
+		{
+			if (entity.GetComponent<TagComponent>().Tag == tag)
+				return entity;
+
+			for (const auto childId : entity.Children())
+			{
+				Entity descendant = TryGetDescendantEntityWithTag(GetEntity(childId), tag);
+				if (descendant)
+					return descendant;
+			}
+		}
+		return {};
+	}
+	std::vector<UUID> World::FindBoneEntityIds(Entity entity, Entity rootEntity, Count<Skeleton> skeleton)
+	{
+		std::vector<UUID> boneEntityIds;
+		// given a parent entity, find descendant entities holding the transforms for the specified animation controller's skeleton
+		if (skeleton == nullptr)
+			return {};
+
+
+		Entity rootParentEntity = rootEntity.GetParent();
+		auto boneNames = skeleton->GetSkeleton().GetBoneNames();
+		boneEntityIds.reserve(boneNames.size());
+		bool foundAtLeastOne = false;
+		for (const auto& boneName : boneNames)
+		{
+			bool found = false;
+			Entity e = entity;
+			while (e && e != rootParentEntity)
+			{
+				Entity boneEntity = TryGetDescendantEntityWithTag(entity, boneName);
+				if (boneEntity)
+				{
+					boneEntityIds.emplace_back(boneEntity.GetUUID());
+					found = true;
+					break;
+				}
+				e = e.GetParent();
+			}
+			if (found)
+				foundAtLeastOne = true;
+			else
+				boneEntityIds.emplace_back(0);
+		}
+		if (!foundAtLeastOne)
+			boneEntityIds.resize(0);
+
+		return std::vector<UUID>();
 	}
 #define  CaluclateTransformationWithStep 0
 	glm::vec3 World::GetWorldSpaceLocation(Entity entity) const 

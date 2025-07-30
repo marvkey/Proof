@@ -5,33 +5,32 @@
 namespace Proof
 {
     
-    uint32_t SkeletonData::GetParentBoneIndex(const uint32_t boneIndex) const { PF_CORE_ASSERT(boneIndex < m_ParentBoneIndices.size(), "bone index out of range in SkeletonData::GetParentIndex()!"); return m_ParentBoneIndices[boneIndex]; }
-    const std::string& SkeletonData::GetBoneName(const uint32_t boneIndex) const { PF_CORE_ASSERT(boneIndex < m_BoneNames.size(), "bone index out of range in SkeletonData::GetBoneName()!"); return m_BoneNames[boneIndex]; }
+    uint32_t SkeletonData::GetParentBoneIndex(const uint32_t boneIndex) const { PF_CORE_ASSERT(boneIndex < m_Bones.size(), "bone index out of range in SkeletonData::GetParentIndex()!"); return m_Bones[boneIndex].ParentIndex; }
+    const std::string& SkeletonData::GetBoneName(const uint32_t boneIndex) const { PF_CORE_ASSERT(boneIndex < m_Bones.size(), "bone index out of range in SkeletonData::GetBoneName()!"); return m_Bones[boneIndex].Name; }
 	
 	SkeletonData::SkeletonData(uint32_t size)
 	{
-		m_BoneNames.reserve(size);
-		m_ParentBoneIndices.reserve(size);
+		m_Bones.reserve(size);
 	}
 
 	uint32_t SkeletonData::AddBone(std::string name, uint32_t parentIndex, const glm::mat4& transform)
 	{
-		uint32_t index = static_cast<uint32_t>(m_BoneNames.size());
-		m_BoneNames.emplace_back(name);
-		m_ParentBoneIndices.emplace_back(parentIndex);
-		m_BoneLocations.emplace_back();
-		m_BoneRotations.emplace_back();
-		m_BoneScales.emplace_back();
-		MathResource::DecomposeTransform(transform, m_BoneLocations.back(), m_BoneRotations.back(), m_BoneScales.back());
+		uint32_t index = static_cast<uint32_t>(m_Bones.size());
 
+		SkeletonBone bone;
+		bone.Name = name;
+		bone.ParentIndex = parentIndex;
+		MathResource::DecomposeTransform(transform, bone.Location, bone.Rotation, bone.Scale);
+
+		m_BonesNames.push_back(name);
 		return index;
 	}
 
 	uint32_t SkeletonData::GetBoneIndex(const std::string_view name) const
 	{
-		for (size_t i = 0; i < m_BoneNames.size(); ++i)
+		for (size_t i = 0; i < m_Bones.size(); ++i)
 		{
-			if (m_BoneNames[i] == name)
+			if (m_Bones[i].Name == name)
 			{
 				return static_cast<uint32_t>(i);
 			}
@@ -58,7 +57,7 @@ namespace Proof
 	}
 
 
-	Skeleton::Skeleton(const Count<MeshSource> meshSource) : m_MeshSource(meshSource)
+	Skeleton::Skeleton(Count<MeshSource> meshSource) : m_MeshSource(meshSource)
 	{
 	}
 

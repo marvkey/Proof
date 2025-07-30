@@ -98,6 +98,9 @@ namespace Proof {
 		Entity TryGetEntityWithUUID(UUID id)const;
 		Entity GetEntity(UUID id);
 		Entity TryGetEntityByTag(const std::string& tag);
+		Entity TryGetDescendantEntityWithTag(Entity entity, const std::string& tag);
+
+		std::vector<UUID> FindBoneEntityIds(Entity entity, Entity rootEntity, Count<class Skeleton> skeleton);
 		// entities get added to a que and deleted at teh e end of the frame
 		void DeleteEntity(class Entity ent, bool deleteChildren = true, float time = 0.0f);
 		//only workdsd if it does not have a parent
@@ -160,6 +163,7 @@ namespace Proof {
 		}
 		static std::vector<WeakCount<World>>&const GetAllActiveWorlds();
 
+		void BuildBoneEntityIds(Entity entity);
 
 	private:
 		RuntimeConfiguration m_RuntimeConfig;
@@ -205,8 +209,9 @@ namespace Proof {
 			m_RigidBodyOnConstruct = false;
 		}
 		void UnPauseRigidBodyOnConstruct();
-		
 
+		void BuildMeshBoneEntityIds(Entity entity, Entity rootEntity);
+		void BuildAnimationBoneEntityIds(Entity entity, Entity rootEntity);
 	private:
 
 		std::vector<Entity> m_RigidBodyWaitingList;

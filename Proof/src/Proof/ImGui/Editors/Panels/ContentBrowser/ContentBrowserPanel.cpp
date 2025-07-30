@@ -19,6 +19,7 @@
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/MouseEvent.h"
+#include "Proof/Animation/AnimationController.h"
 #include "../../EditorResources.h"
 
 #include "../ApplicationSettings.h"
@@ -289,6 +290,10 @@ namespace Proof
 
 								if (ImGui::MenuItem("UI"))
 									CreateAsset<UIPanel>("New UI");
+
+								if(ImGui::MenuItem("AnimationController"))
+									CreateAsset<AnimationController>("New AnimationController");
+
 								ImGui::EndMenu();
 							}
 							if (ImGui::MenuItem("Folder"))

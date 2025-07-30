@@ -11,10 +11,10 @@ World:
         Scale: [5, 5, 5]
       HierarchyComponent:
         ParentHandle: 0
-        Children: [5740334690689538788]
+        Children: [11858749730000493593]
       TerrainComponent:
         Seed: 0
-        TerrainScale: 15
+        TerrainScale: 31
         UseFallOff: true
         NoiseParams:
           Scale: 25
@@ -27,7 +27,7 @@ World:
           Max: [1, 1]
           Points:
             - [0.0128654987, 0.00546213798]
-            - [0.100633219, 0.00559271825]
+            - [0.142107874, 0.00559271825]
             - [0.180116966, 0.0971831009]
             - [0.328966677, 0.0937052369]
             - [0.398126572, 0.184983075]
@@ -48,7 +48,7 @@ World:
             TextureScale: 1
           - Layer: ""
             Name: sand
-            StartHeight: 0.100000001
+            StartHeight: 0.129999995
             Texture: 17359469819360106960
             ColorTint: [0.918518543, 0.694508493, 0.398024708]
             ColorTintStrength: 1
@@ -88,13 +88,13 @@ World:
             TextureScale: 1317
         TerrainItemSpawners:
           - Spawner: ""
-            MinHeight: 0.200000003
+            MinHeight: 0.150000006
             MaxHeight: 0.600000024
             Items:
               - 15638204258216792047
             Density: 0.00999999978
             SpawnThreshold: 0.600000024
-            ChanceSpawn: 0.300000012
+            ChanceSpawn: 0.375999987
             MaxPositionOffset: 0.5
             Spacing: 2
     - Entity: 13519868178400244974
@@ -118,35 +118,6 @@ World:
         HosekWilkieTurbidity: 4
         HosekWilkieGroundReflectance: 0.100000001
         PreethamTurbidity: 4
-    - Entity: 13002574944404870795
-      TagComponent:
-        Tag: WeaponHolder
-        tags: []
-      TransformComponent:
-        Location: [1.09892821, 0, 0]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 10869204382231457587
-        Children: []
-    - Entity: 3385011559091816577
-      TagComponent:
-        Tag: Directional Light
-        tags: []
-      TransformComponent:
-        Location: [-0.0270984769, 0.0406479686, -0.0385721028]
-        Rotation: [1.39626336, 0.17453292, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 1
-        CastShadow: true
-        ShadowStrength: 0.5
-        CastSoftShadow: true
-        ShadowSoftness: 0.5
     - Entity: 14402709176397042912
       TagComponent:
         Tag: Enemy
@@ -220,19 +191,48 @@ World:
         FOV: 45
         UseLocalRotation: false
         ActiveForRendering: true
+    - Entity: 3385011559091816577
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [-0.0270984769, 0.0406479686, -0.0385721028]
+        Rotation: [1.39626336, 0.17453292, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+        CastShadow: true
+        ShadowStrength: 0.5
+        CastSoftShadow: true
+        ShadowSoftness: 0.5
+    - Entity: 13002574944404870795
+      TagComponent:
+        Tag: WeaponHolder
+        tags: []
+      TransformComponent:
+        Location: [1.09892821, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 10869204382231457587
+        Children: []
     - Entity: 10869204382231457587
       TagComponent:
         Tag: Player
         tags: []
       TransformComponent:
-        Location: [32.9080086, 28.9803238, -7.35994864]
-        Rotation: [0, 0, 0]
+        Location: [-40.2214851, 47.0649452, -191.012894]
+        Rotation: [0, 1.40499008, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: [15432167700584823006, 13002574944404870795]
       MeshComponent:
-        MeshAssetPointerID: 52
+        MeshAssetPointerID: 50
         Visible: true
         MaterialTable:
           - Material: ""
@@ -281,19 +281,6 @@ World:
               - NameID: LostExpedition.PlayerInput.ChangeInventorySlotAction
                 Type: InputAction
                 Data: 1027319137170532747
-          - Script: LostExpedition.PlayerHUDManager
-            ScriptClassName: LostExpedition.PlayerHUDManager
-            ScriptName: LostExpedition.PlayerHUDManager
-            Fields:
-              - NameID: LostExpedition.PlayerHUDManager.GunPanel
-                Type: UIPanel
-                Data: 15995043814273079981
-              - NameID: LostExpedition.PlayerHUDManager.EmptyInventory
-                Type: Texture2D
-                Data: 13127080171188781274
-              - NameID: LostExpedition.PlayerHUDManager.PlayerDefaultHUD
-                Type: UIPanel
-                Data: 14525028919524517166
           - Script: LostExpedition.HealthComponent
             ScriptClassName: LostExpedition.HealthComponent
             ScriptName: LostExpedition.HealthComponent
@@ -307,6 +294,19 @@ World:
               - NameID: LostExpedition.HealthComponent.DestoryIfHealthZero
                 Type: Bool
                 Data: false
+          - Script: LostExpedition.PlayerHUDManager
+            ScriptClassName: LostExpedition.PlayerHUDManager
+            ScriptName: LostExpedition.PlayerHUDManager
+            Fields:
+              - NameID: LostExpedition.PlayerHUDManager.GunPanel
+                Type: UIPanel
+                Data: 15995043814273079981
+              - NameID: LostExpedition.PlayerHUDManager.EmptyInventory
+                Type: Texture2D
+                Data: 13127080171188781274
+              - NameID: LostExpedition.PlayerHUDManager.PlayerDefaultHUD
+                Type: UIPanel
+                Data: 14525028919524517166
           - Script: LostExpedition.Inventory
             ScriptClassName: LostExpedition.Inventory
             ScriptName: LostExpedition.Inventory
@@ -317,13 +317,6 @@ World:
               - NameID: LostExpedition.Inventory.InventoryHandleSlot
                 Type: Entity
                 Data: 13002574944404870795
-      CapsuleColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Radius: 0.5
-        Height: 2
-        Direction: Y
-        PhysicsMaterialPointerID: 14127438052321061638
       RigidBodyComponent:
         Mass: 1
         LinearDrag: 0.00999999978
@@ -446,6 +439,17 @@ World:
       HierarchyComponent:
         ParentHandle: 808178663378393566
         Children: []
+    - Entity: 14117072415498231087
+      TagComponent:
+        Tag: Muzzle flash pos
+        tags: []
+      TransformComponent:
+        Location: [0, 0.344680905, -0.743670106]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 16039414171671641192
+        Children: []
     - Entity: 12260921287360388382
       TagComponent:
         Tag: AssaultRifle
@@ -512,36 +516,6 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: true
         CollisionDetection: Discrete
-    - Entity: 14117072415498231087
-      TagComponent:
-        Tag: Muzzle flash pos
-        tags: []
-      TransformComponent:
-        Location: [0, 0.344680905, -0.743670106]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 16039414171671641192
-        Children: []
-    - Entity: 2621550850620323061
-      TagComponent:
-        Tag: Health Text23
-        tags: []
-      TransformComponent:
-        Location: [-0.800000012, 1.20000005, 0]
-        Rotation: [0, -0, 0]
-        Scale: [0.5, 0.5, 0.5]
-      HierarchyComponent:
-        ParentHandle: 14402709176397042912
-        Children: []
-      TextComponent:
-        Color: [1, 1, 1, 1]
-        Kerning: 0
-        LineSpacing: 1
-        Text: "Health: 10"
-        Visible: true
-        UseLocalRotation: false
-        RenderInViewSpace: false
     - Entity: 808178663378393566
       TagComponent:
         Tag: Shotgun
@@ -612,6 +586,25 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: true
         CollisionDetection: Discrete
+    - Entity: 2621550850620323061
+      TagComponent:
+        Tag: Health Text23
+        tags: []
+      TransformComponent:
+        Location: [-0.800000012, 1.20000005, 0]
+        Rotation: [0, -0, 0]
+        Scale: [0.5, 0.5, 0.5]
+      HierarchyComponent:
+        ParentHandle: 14402709176397042912
+        Children: []
+      TextComponent:
+        Color: [1, 1, 1, 1]
+        Kerning: 0
+        LineSpacing: 1
+        Text: "Health: 10"
+        Visible: true
+        UseLocalRotation: false
+        RenderInViewSpace: false
     - Entity: 14563262016486527326
       TagComponent:
         Tag: Muzzle flash pos
@@ -623,12 +616,12 @@ World:
       HierarchyComponent:
         ParentHandle: 12260921287360388382
         Children: []
-    - Entity: 5740334690689538788
+    - Entity: 11858749730000493593
       TagComponent:
-        Tag: Water
+        Tag: Empty Entity
         tags: []
       TransformComponent:
-        Location: [0, 1, 0]
+        Location: [0, 2, 0]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:

@@ -32,6 +32,8 @@
 #include "Proof/Renderer/ParticleSystem.h"
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
+#include "Proof/Animation/AnimationController.h"
+#include "Proof/Animation/Animation.h"
 #include "Material.h"
 #include "TerrainRenderer/TerrainRenderer.h"
 namespace Proof
@@ -182,6 +184,11 @@ namespace Proof
 				out << YAML::Key << "CastShadow" << YAML::Value << dynamicMeshComponent.CastShadow;
 				out << YAML::Key << "Visible" << YAML::Value << dynamicMeshComponent.Visible;
 				out << YAML::Key << "SubMeshIndex" << YAML::Value << dynamicMeshComponent.m_SubmeshIndex;
+
+				if (!dynamicMeshComponent.BoneEntityIds.empty())
+					out << YAML::Key << "BoneEntities" << YAML::Value << YAML::Flow << dynamicMeshComponent.BoneEntityIds;
+
+
 				if (AssetManager::HasAsset(dynamicMeshComponent.GetMesh()))
 				{
 					//if (*dynamicMeshComponent.GetMesh()->GetMaterialTable() == *dynamicMeshComponent.MaterialTable)
@@ -234,6 +241,31 @@ namespace Proof
 				}
 				leavedynamic:
 				out << YAML::EndMap; // DynamicMesh component
+			}
+		}
+
+		{
+			if (entity.HasComponent<AnimationComponent>())
+			{
+				out << YAML::Key << "AnimationComponent";
+				out << YAML::BeginMap; // AnimationComponent
+
+				auto& anim = entity.GetComponent<AnimationComponent>();
+				if (anim.AnimationController)
+				{
+					out << YAML::Key << "AnimationController" << YAML::Value << anim.AnimationController;
+				}
+				if (!anim.BoneEntityIds.empty())
+				{
+					out << YAML::Key << "BoneEntities" << YAML::Value << YAML::Flow << anim.BoneEntityIds;
+				}
+				out << YAML::Key << "EnableAnimation" << YAML::Value << anim.AnimationData->IsAnimationPlaying;
+				out << YAML::Key << "PlaybackSpeed" << YAML::Value << anim.AnimationData->PlaybackSpeed;
+				out << YAML::Key << "AnimationTime" << YAML::Value << anim.AnimationData->AnimationTime;
+				out << YAML::Key << "EnableRootMotion" << YAML::Value << anim.EnableRootMotion;
+				out << YAML::Key << "RootMotionTarget" << YAML::Value << anim.RootMotionEntityTarget;
+
+				out << YAML::EndMap; // AnimationComponent
 			}
 		}
 
@@ -1254,6 +1286,7 @@ namespace Proof
 					src.CastShadow = dynamicMeshComponent["CastShadow"].as<bool>();
 					src.Visible = dynamicMeshComponent["Visible"].as<bool>();
 					src.m_SubmeshIndex =dynamicMeshComponent["SubMeshIndex"].as<uint32_t>();
+					src.BoneEntityIds = dynamicMeshComponent["BoneEntities"].as<std::vector<UUID>>(std::vector<UUID>{});
 
 					if (dynamicMeshComponent["MaterialTable"])
 					{
@@ -1496,6 +1529,42 @@ namespace Proof
 					//doing this so we dont generate a default collider if collider is not 0
 					NewEntity.AddComponent<MeshColliderComponent>(src);
 
+				}
+			}
+
+			// AnimationComponent
+			{
+				auto animationComponent = entity["AnimationComponent"];
+				if (animationComponent)
+				{
+					auto& component = NewEntity.AddComponent<AnimationComponent>();
+					if (animationComponent["AnimationController"])
+					{
+						component.AnimationController =(AssetID) animationComponent["AnimationController"].as<uint64_t>();
+						if (component.AnimationController.IsValid())
+						{
+							auto animationController = component.AnimationController.GetAsset<AnimationController>();
+							if (animationController->GetSkeleton())
+							{
+								const auto& skeleton = animationController->GetSkeleton()->GetSkeleton();
+								component.AnimationData->Resize(skeleton.GetNumBones());
+								// If the skeleton has a default pose, we can use it to initialize the transforms
+								std::vector<glm::vec3> boneTranslations;
+								std::vector<glm::quat> boneRotation;
+								std::vector<glm::vec3> boneScale;
+								skeleton.GetSkeletonTransforms(boneTranslations, boneRotation, boneScale);
+								component.AnimationData->SetLocalTransforms(boneTranslations, boneRotation, boneScale);
+							}
+						}
+					}
+
+
+					component.BoneEntityIds = animationComponent["BoneEntities"].as<std::vector<UUID>>(std::vector<UUID>{});
+					component.AnimationData->IsAnimationPlaying = animationComponent["EnableAnimation"].as<bool>(component.AnimationData->IsAnimationPlaying);
+					component.AnimationData->PlaybackSpeed = animationComponent["PlaybackSpeed"].as<float>(component.AnimationData->PlaybackSpeed);
+					component.AnimationData->AnimationTime = animationComponent["AnimationTime"].as<float>(component.AnimationData->AnimationTime);
+					component.EnableRootMotion = animationComponent["EnableRootMotion"].as<bool>(component.EnableRootMotion);
+					component.RootMotionEntityTarget = animationComponent["RootMotionTarget"].as<uint64_t>(component.RootMotionEntityTarget);
 				}
 			}
 			// RIGID BODY

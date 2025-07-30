@@ -3,7 +3,7 @@
 #include "Proof/Scene/Mesh.h"
 namespace Proof
 {
-    Animation::Animation(const Count<MeshSource> meshSource) : m_MeshSource(meshSource)
+    Animation::Animation(const Count<MeshSource> meshSource,uint32_t animationIndex) : m_MeshSource(meshSource),m_AnimationIndex(animationIndex)
     {
 
     }
@@ -18,7 +18,7 @@ namespace Proof
         return m_MeshSource->GetAnimationCount();
     }
 
-    const AnimationData& Animation::GetAnimation(const uint32_t animationIndex, const SkeletonData& skeleton) const
+    const InternalAnimation& Animation::GetAnimation(const uint32_t animationIndex, const SkeletonData& skeleton) const
     {
         return m_MeshSource->GetAnimation(animationIndex, skeleton);
     }

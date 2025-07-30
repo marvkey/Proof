@@ -13,6 +13,12 @@ namespace Proof
 	{
 		m_DetailsPanel = Count<DetailsPanel>::Create(std::bind(&AssetEditorDetail::RenderDetailSettings, this));
 		m_DetailsPanelName = fmt::format("Details##{}: {}",EnumReflection::EnumString( asset->GetAssetType()), asset->GetID());
+
+		m_Asset = asset;
+	}
+	Count<class Asset> AssetEditorDetail::GetAsset()
+	{
+		return m_Asset;
 	}
 	void AssetEditorDetail::OnImGuiRender()
 	{
