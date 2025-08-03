@@ -1,4 +1,4 @@
-#include "Proofprch.h"
+﻿#include "Proofprch.h"
 #include "WorldRenderer.h"
 #include "Proof/Renderer/Renderer2D.h"
 #include "Proof/Renderer/RenderPass.h"
@@ -32,6 +32,8 @@
 #include "Proof/Platform/Vulkan/VulkanTexutre.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Platform/Vulkan/VulkanComputePass.h"
+#include "Proof/Platform/Vulkan/VulkanRenderPass.h"
+#include "Proof/Platform/Vulkan/VulkanGraphicsPipeline.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Core/Core.h"
 #include "RendererSampler.h"
@@ -187,6 +189,8 @@ namespace Proof
 	WorldRenderer::~WorldRenderer() {
 		for (auto& transformBuffer : m_SubmeshTransformBuffers)
 			pdelete[] transformBuffer.Data;
+
+		pdelete[] m_BoneTransformsData;
 		//PipelineLayout = nullptr;
 	}
 	WorldRenderer::WorldRenderer()
@@ -200,6 +204,7 @@ namespace Proof
 		Init();
 	}
 	Count<VertexArray> staticVertexArray;
+	Count<VertexArray> animationVertexArray;
 	
 	void WorldRenderer::Init()
 	{
@@ -211,6 +216,10 @@ namespace Proof
 			m_SubmeshTransformBuffers[i].Buffer = VertexBuffer::Create(sizeof(TransformVertexData) * TransformBufferCount);
 			m_SubmeshTransformBuffers[i].Data = pnew TransformVertexData[TransformBufferCount];
 		}
+
+		const size_t BoneTransformBufferCount = 1 * 1024; // basically means limited to 1024 animated meshes   TODO: resizeable/flushable
+		m_BoneTransformStorageBuffersSet = StorageBufferSet::Create(static_cast<uint32_t>(sizeof(BoneTransforms) * BoneTransformBufferCount));
+		m_BoneTransformsData = pnew BoneTransforms[BoneTransformBufferCount];
 
 		m_GlobalInputs = Count<GlobalBufferSet>::Create();
 
@@ -296,6 +305,29 @@ namespace Proof
 		staticVertexArray->AddData(10, DataType::Vec4, (sizeof(glm::vec4) * 5), 1);
 		staticVertexArray->AddData(11, DataType::Vec4, (sizeof(glm::vec4) * 6), 1);
 		staticVertexArray->AddData(12, DataType::Vec4, (sizeof(glm::vec4) * 7), 1);
+
+
+		animationVertexArray = VertexArray::Create({ { sizeof(AnimationVertex)}, {sizeof(MeshInstanceVertex), VertexInputRate::Instance},{sizeof(AnimationVertex), VertexInputRate::Instance} });
+		animationVertexArray->AddData(0, DataType::Vec3, offsetof(Vertex, Vertex::Position));
+		animationVertexArray->AddData(1, DataType::Vec3, offsetof(Vertex, Vertex::Normal));
+		animationVertexArray->AddData(2, DataType::Vec2, offsetof(Vertex, Vertex::TexCoord));
+		animationVertexArray->AddData(3, DataType::Vec3, offsetof(Vertex, Vertex::Tangent));
+		animationVertexArray->AddData(4, DataType::Vec3, offsetof(Vertex, Vertex::Bitangent));
+
+
+		animationVertexArray->AddData(5, DataType::Vec4, 0, 1);
+		animationVertexArray->AddData(6, DataType::Vec4, (sizeof(glm::vec4) * 1), 1);
+		animationVertexArray->AddData(7, DataType::Vec4, (sizeof(glm::vec4) * 2), 1);
+		animationVertexArray->AddData(8, DataType::Vec4, (sizeof(glm::vec4) * 3), 1);
+
+		animationVertexArray->AddData(9, DataType::Vec4, (sizeof(glm::vec4) * 4), 1);
+		animationVertexArray->AddData(10, DataType::Vec4, (sizeof(glm::vec4) * 5), 1);
+		animationVertexArray->AddData(11, DataType::Vec4, (sizeof(glm::vec4) * 6), 1);
+		animationVertexArray->AddData(12, DataType::Vec4, (sizeof(glm::vec4) * 7), 1);
+
+		animationVertexArray->AddData(13, DataType::UVec4, offsetof(AnimationVertex, AnimationVertex::BoneIndices), 2);
+		animationVertexArray->AddData(14, DataType::Vec4, offsetof(AnimationVertex, AnimationVertex::BoneWieghts), 2);
+
 
 		Count<VertexArray> quadVertexArray = VertexArray::Create({ sizeof(QuadVertex) });
 		quadVertexArray->AddData(0, DataType::Vec3, offsetof(QuadVertex, QuadVertex::Position));
@@ -481,6 +513,24 @@ namespace Proof
 
 			m_GeometryPass = RenderPass::Create(geopassConfig);
 
+			{
+				auto animPipelineConfig = pipelinelineConfig;
+				animPipelineConfig.DebugName = "Geometry_Anim";
+				animPipelineConfig.Shader = Renderer::GetShader("ProofPBR_Anim");
+				animPipelineConfig.VertexArray =animationVertexArray;
+
+
+
+				Count<GraphicsPipeline> animPipeline = GraphicsPipeline::Create(pipelinelineConfig);
+
+				RenderPassConfig animgeopassConfig;
+				animgeopassConfig.DebugName = "AnimationGeometryPass";
+				animgeopassConfig.Pipeline = animPipeline;
+				animgeopassConfig.TargetFrameBuffer = frameBuffer;
+
+				m_GeometryAnimPass = RenderPass::Create(animgeopassConfig);
+
+			}
 			{
 				auto noDepthFrameBuffer = geoFramebufferConfig;
 				noDepthFrameBuffer.Attachments.Attachments.pop_back();
@@ -1859,6 +1909,7 @@ namespace Proof
 		{
 			//m_MeshTransformMap.clear();
 
+			m_MeshBoneTransformsMap.clear();
 			m_MeshDrawList.clear();
 			m_DynamicMeshDrawList.clear();
 			m_TransparentMeshDrawList.clear();
@@ -2019,6 +2070,24 @@ namespace Proof
 
 			}
 			m_SubmeshTransformBuffers[frameIndex].Buffer->SetData(m_SubmeshTransformBuffers[frameIndex].Data, offset * sizeof(TransformVertexData));
+
+			{
+				uint32_t index = 0;
+				for (auto& [key, boneTransformsData] : m_MeshBoneTransformsMap)
+				{
+					boneTransformsData.BoneTransformsBaseIndex = index;
+					for (const auto& boneTransforms : boneTransformsData.BoneTransformsData)
+					{
+						m_BoneTransformsData[index++] = boneTransforms;
+					}
+				}
+
+				if (index > 0)
+				{
+
+					m_BoneTransformStorageBuffersSet->GetBuffer()->SetData(Buffer(m_BoneTransformsData->data(), static_cast<uint32_t>(index * sizeof(BoneTransforms))));
+				}
+			}
 		}
 		Renderer::CopyImage(m_CommandBuffer, m_GeometryPass->GetOutput(1).As<Image2D>(), m_PrevNormalImage);
 
@@ -2545,8 +2614,18 @@ namespace Proof
 				{
 					const auto& transformData = m_CurTransformMap->at(meshKey);
 					uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
-					//transformData.Transforms
-					RenderDynamicMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, dc.MaterialTable, m_GeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+
+					if (dc.IsRigged)
+					{
+						const auto& boneTransformsData = m_MeshBoneTransformsMap.at(meshKey);
+
+						RenderDynamicMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, dc.MaterialTable, m_GeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount,
+							boneTransformsData.BoneTransformsBaseIndex, m_BoneTransformStorageBuffersSet->GetBuffer());
+					}
+					else
+					{
+						RenderDynamicMeshWithMaterialTable(m_CommandBuffer, dc.Mesh, dc.MaterialTable, m_GeometryPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+					}
 				}
 			}
 			
@@ -3863,7 +3942,7 @@ namespace Proof
 		}
 	}
 
-	void WorldRenderer::SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<MaterialTable> materialTable, uint32_t subMeshIndex, const glm::mat4& transform, bool CastShadows)
+	void WorldRenderer::SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<MaterialTable> materialTable, uint32_t subMeshIndex, const glm::mat4& transform, bool CastShadows, const std::vector<glm::mat4>& boneTransforms )
 	{
 		PF_PROFILE_FUNC();
 		//PF_PROFILE_TAG("{}", mesh->GetName().c_str());
@@ -3874,7 +3953,7 @@ namespace Proof
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
 		const auto& submeshData = meshSource->GetSubMeshes();
 		const auto& subMesh = meshSource->GetSubMeshes().at(subMeshIndex);
-		glm::mat4 subMeshTransform = transform * mesh->GetTransform() ; // dont multiply by submesh transform
+		glm::mat4 subMeshTransform = transform * mesh->GetTransform(); // dont multiply by submesh transform
 
 		uint32_t materialIndex = subMesh.MaterialIndex;
 
@@ -3888,6 +3967,11 @@ namespace Proof
 		if ((*m_PrevTransformMap).find(meshKey) == (*m_PrevTransformMap).end())
 		{
 			(*m_PrevTransformMap)[meshKey] = (*m_CurTransformMap)[meshKey];
+		}
+
+		if (subMesh.IsRigged)
+		{
+			CopyToBoneTransformStorage(meshKey, meshSource, boneTransforms);
 		}
 		// geo pass
 		{
@@ -3908,6 +3992,7 @@ namespace Proof
 			dc.OverrideMaterial = nullptr;
 		}
 	}
+
 
 	void WorldRenderer::SubmitPhysicsDebugMesh(Count<Mesh> mesh, const glm::mat4& transform)
 	{
@@ -4334,8 +4419,83 @@ namespace Proof
 		Count<RenderMaterial> renderMaterial = materialTable->HasMaterial(subMesh.MaterialIndex) ? materialTable->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial()
 			: mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();
 
-		Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
+		Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial,false);
 		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndiceCount, instanceCount, subMesh.BaseIndice, subMesh.BaseVertex);
+	}
+
+	void WorldRenderer::RenderDynamicMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount, uint32_t boneTransformsOffset, Count<StorageBuffer> boneTransformStorageBuffers)
+	{
+		PF_PROFILE_FUNC();
+#if 0
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		meshSource->GetVertexBuffer()->Bind(commandBuffer);
+		transformBuffer->Bind(commandBuffer, 1, transformOffset);
+
+		meshSource->GetIndexBuffer()->Bind(commandBuffer);
+		for (const uint32_t& index : mesh->GetSubMeshes())
+		{
+			const SubMesh& subMesh = meshSource->GetSubMeshes()[index];
+			Count<RenderMaterial> renderMaterial = materialTable->HasMaterial(subMesh.MaterialIndex) ? materialTable->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial()
+				: mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();
+
+			Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial);
+			Renderer::DrawElementIndexed(commandBuffer, subMesh.IndiceCount, instanceCount, subMesh.BaseIndex, subMesh.BaseVertex);
+		}
+#endif
+
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		meshSource->GetVertexBuffer()->Bind(commandBuffer);
+		transformBuffer->Bind(commandBuffer, 1, transformOffset);
+		meshSource->GetIndexBuffer()->Bind(commandBuffer);
+
+		auto vulkanStorageBuffer = boneTransformStorageBuffers.As<VulkanStorageBuffer>();
+		Renderer::Submit([commandBuffer, vulkanStorageBuffer]() mutable
+			{
+				VkDeviceSize instanceOffset[1] = { (VkDeviceSize)0 };
+				vkCmdBindVertexBuffers(commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(),2 , 1, &vulkanStorageBuffer->GetDescriptorInfoVulkan().buffer, instanceOffset);
+			});
+
+		const SubMesh& subMesh = meshSource->GetSubMeshes()[subMeshIndex];
+		Count<RenderMaterial> renderMaterial = materialTable->HasMaterial(subMesh.MaterialIndex) ? materialTable->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial()
+			: mesh->GetMaterialTable()->GetMaterial(subMesh.MaterialIndex)->GetRenderMaterial();
+
+		Renderer::RenderPassPushRenderMaterial(renderPass, renderMaterial, true);
+
+		Count<VulkanRenderPass> vulkanRenderpass = renderPass.As<VulkanRenderPass>();
+
+		vkCmdPushConstants(vulkanRenderpass->GetCurrentCommandBuffer().As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer(), vulkanRenderpass->GetPipeline().As<VulkanGraphicsPipeline>()->GetPipelineLayout(),
+			VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(uint32_t), &boneTransformsOffset);
+
+		Renderer::DrawElementIndexed(commandBuffer, subMesh.IndiceCount, instanceCount, subMesh.BaseIndice, subMesh.BaseVertex);
+	}
+
+	void WorldRenderer::CopyToBoneTransformStorage(const MeshKey& meshKey, Count<MeshSource> meshSource, const std::vector<glm::mat4>& boneTransforms)
+	{
+		auto& boneTransformStorage = m_MeshBoneTransformsMap[meshKey].BoneTransformsData.emplace_back();
+		if (boneTransforms.empty())
+		{
+			boneTransformStorage.fill(glm::identity<glm::mat4>());
+		}
+		else
+		{
+			// Compute the final transformation matrix for each bone.
+			// This matrix transforms vertices from bind pose to animated pose in model space.
+			for (size_t i = 0; i < meshSource->m_BoneInfo.size(); ++i)
+			{
+				// Transform to bring vertices from submesh-local to mesh-root space.
+				const auto submeshInvTransform = meshSource->m_BoneInfo[i].SubMeshInverseTransform;
+
+				// Current bone transform from animation (local → animated).
+				const auto boneTransform = boneTransforms[meshSource->m_BoneInfo[i].BoneIndex];
+
+				// Inverse bind pose: transforms from model space to bone-local bind space.
+				const auto invBindPose = meshSource->m_BoneInfo[i].InverseBindPose;
+
+				// Final matrix = Submesh correction * animated transform * inverse bind pose
+				// This brings the vertex from bind pose to current animation pose in the correct model space.
+				boneTransformStorage[i] = submeshInvTransform * boneTransform * invBindPose;
+			}
+		}
 	}
 
 	void WorldRenderer::ClearPass(Count<RenderPass> renderPass, bool explicitClear)

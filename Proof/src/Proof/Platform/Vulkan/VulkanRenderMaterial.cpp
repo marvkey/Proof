@@ -306,7 +306,7 @@ namespace Proof {
 		return nullptr;
 	}
 
-	void VulkanRenderMaterial::RT_Bind(Count<class VulkanRenderCommandBuffer> commandBuffer, Count<VulkanComputePass> computePass)
+	void VulkanRenderMaterial::RT_Bind(Count<class VulkanRenderCommandBuffer> commandBuffer, Count<VulkanComputePass> computePass, bool onlyFragpushconstant)
 	{
 		PF_PROFILE_FUNC(fmt::format("{} RT_Bind Compute", m_Config.DebugName.c_str()).c_str());
 
@@ -370,7 +370,7 @@ namespace Proof {
 		return textures;
 	}
 
-	void VulkanRenderMaterial::RT_Bind(Count<VulkanRenderCommandBuffer> commandBuffer, Count<VulkanRenderPass> renderPass)
+	void VulkanRenderMaterial::RT_Bind(Count<VulkanRenderCommandBuffer> commandBuffer, Count<VulkanRenderPass> renderPass, bool onlyFragpushconstant)
 	{
 		PF_PROFILE_FUNC(fmt::format("{} RT_Bind ", m_Config.DebugName.c_str()).c_str());
 
@@ -400,7 +400,12 @@ namespace Proof {
 
 		for (auto& [pushName, pushData] : vk_Shader->GetPushConstants())
 		{
-			//if (pushData.stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT || pushData.stageFlags | VK_SHADER_STAGE_COMPUTE_BIT || pushData.stageFlags | VK_SHADER_STAGE_VERTEX_BIT)
+			if (onlyFragpushconstant)
+			{
+				if (pushData.stageFlags | VK_SHADER_STAGE_FRAGMENT_BIT)
+					renderPass->RT_PushData(pushName, m_UniformBufferStorage.Get());
+			}
+			else
 			{
 				renderPass->RT_PushData(pushName, m_UniformBufferStorage.Get());
 			}

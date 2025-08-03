@@ -62,7 +62,7 @@ namespace Proof{
 
 		void BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> command, Viewport vieport, ViewportScissor scisscor, bool explicitClear = false);
 		void BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> command, bool explicitClear = false);
-		void RenderPassPushRenderMaterial(Count<class RenderMaterial> renderMaterial);
+		void RenderPassPushRenderMaterial(Count<class RenderMaterial> renderMaterial, bool onlyFragPushConstant = false);
 
 		void SetDynamicStates(Viewport vieport, ViewportScissor scisscor, bool explicitClear);
 	private:

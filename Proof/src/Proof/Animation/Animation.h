@@ -66,7 +66,7 @@ namespace Proof
 
 		Count<MeshSource> GetMeshSource() const;
 		uint32_t GetAnimationCount() const;
-		const InternalAnimation& GetAnimation(const uint32_t animationIndex, const SkeletonData& skeleton) const;
+		const InternalAnimation& GetAnimation(const SkeletonData& skeleton) const;
 
 		uint32_t GetAnimationIndex()
 		{

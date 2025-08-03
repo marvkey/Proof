@@ -22,6 +22,7 @@ namespace Proof
 		bone.ParentIndex = parentIndex;
 		MathResource::DecomposeTransform(transform, bone.Location, bone.Rotation, bone.Scale);
 
+		m_Bones.push_back(bone);
 		m_BonesNames.push_back(name);
 		return index;
 	}

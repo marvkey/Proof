@@ -27,7 +27,7 @@ namespace Proof
 		virtual void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, bool explicitClear = false)override;
 		virtual void BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, bool explicitClear = false)override;
 		virtual void EndRenderPass(Count<class RenderPass> renderPass)override;
-		virtual void RenderPassPushRenderMaterial(Count<class RenderPass> renderPass, Count<class RenderMaterial> renderMaterial)override;
+		virtual void RenderPassPushRenderMaterial(Count<class RenderPass> renderPass, Count<class RenderMaterial> renderMaterial, bool onlyFragPushConstant = false)override;
 
 		virtual void BeginComputePass(Count<class RenderCommandBuffer> commandBuffer, Count<class ComputePass> computPass)override;
 		virtual void BeginRenderMaterialComputePass(Count<class RenderCommandBuffer> commandBuffer, Count<class ComputePass> computPass)override;

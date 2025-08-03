@@ -461,7 +461,7 @@ namespace Proof
             }
            
         }
-
+                
         auto& shaderData = m_VulkanSPIRV;
         shaderData.clear();
         for (auto& [stage, shaderModule] : shaderModules)

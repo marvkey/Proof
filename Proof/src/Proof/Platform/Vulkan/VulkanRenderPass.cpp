@@ -615,17 +615,17 @@ namespace Proof
 
         BeginRenderPass(command, viewport, scissor, explicitClear);
     }
-    void VulkanRenderPass::RenderPassPushRenderMaterial(Count<class RenderMaterial> renderMaterial)
+    void VulkanRenderPass::RenderPassPushRenderMaterial(Count<class RenderMaterial> renderMaterial, bool onlyFragPushConstant )
     {
         Count<VulkanRenderPass> instance = this;
-        Renderer::Submit([instance, renderMaterial]()
+        Renderer::Submit([instance, renderMaterial, onlyFragPushConstant]()
         {
             PF_PROFILE_SCOPE_DYNAMIC(fmt::format("RenderPassPushRenderMaterial {} ", instance->m_Config.DebugName.c_str()).c_str());
 
             PF_CORE_ASSERT(instance->m_RenderPassEnabled == true, "cannot Push material fi render pass not enabled");
             PF_CORE_ASSERT(instance->m_MaterialRenderPass == true, "cannot Push if not a material Render Pass");
 
-            renderMaterial.As<VulkanRenderMaterial>()->RT_Bind(instance->m_CommandBuffer.As<VulkanRenderCommandBuffer>(), instance);
+            renderMaterial.As<VulkanRenderMaterial>()->RT_Bind(instance->m_CommandBuffer.As<VulkanRenderCommandBuffer>(), instance, onlyFragPushConstant);
         });
     }
     

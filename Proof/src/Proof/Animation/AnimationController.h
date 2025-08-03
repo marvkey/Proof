@@ -21,8 +21,9 @@ namespace Proof
 	// AnimationData stores a bunch of information regarding the current state of an animated character.
 	// It includes such things as the bone transforms and root motion (from most recent animation update)
 	// and other cached data used to efficiently sample animation clips.
-	struct AnimationData : public RefCounted
+	class AnimationData : public RefCounted
 	{
+	public:
 
 		std::vector<glm::vec3> LocalTranslations;
 		std::vector<glm::quat> LocalRotations;
@@ -37,6 +38,7 @@ namespace Proof
 		float AnimationTime = 0.0f;
 		float PlaybackSpeed = 1.0f;
 		bool IsAnimationPlaying = true;
+		uint32_t StateIndex = 0;
 
 		AnimationData() = default;
 
@@ -76,25 +78,45 @@ namespace Proof
 		
 	};
 
+	class AnimationState : public RefCounted
+	{
+	public:
+		AnimationState(AssetKey<AssetType::Animation> animation) : Animation(animation)
+		{
+
+		}
+
+		glm::vec3 RootTranslationMask = { 1.0f, 1.0f, 0.0f };         // default is to apply root bone transforms in X and Y only. (Z is extracted as root motion)
+		glm::vec3 RootTranslationExtractMask = { 0.0f, 0.0f, 1.0f };  // default is to extract root bone transform in forwards (Z) axis
+		float RootRotationMask = 1.0f;                                // default is to apply root bone rotation (Y-axis)
+		float RootRotationExtractMask = 0.0f;                         // default is to not extract root bone rotation
+
+		bool IsLooping = true;
+
+		AssetKey<AssetType::Animation> Animation;
+	};
 
 	class AnimationController : public Asset
 	{
 	public:
-		void SetSkeleton(Count<Skeleton> skeletonAsset);
-		void OnUpdate(float deltaTime, Count<AnimationData> data) const;
-
 		ASSET_CLASS_TYPE(AnimationController);
+
+		void SetSkeleton(Count<Skeleton> skeletonAsset);
+		void OnUpdateAnimationData(float deltaTime, Count<class AnimationData> animationData);
+
 		Count< class Skeleton> GetSkeleton();
 
+		Count<AnimationState> GetAnimationState(const size_t stateIndex) { return m_AnimationStates[stateIndex]; }
+		Count<AnimationState> GetAnimationState(const size_t stateIndex) const { return m_AnimationStates[stateIndex]; }
+
+		const std::vector< Count<AnimationState>>& GetAnimationStates() { return m_AnimationStates; };
+
+
+		Count<AnimationState> AddAnimationState(AssetKey<AssetType::Animation> animation);
+		void RemoveAnimationState(uint32_t stateIndex);
 	private:
+		std::vector< Count<AnimationState>> m_AnimationStates;
 		AssetKey<AssetType::Skeleton> m_Skeleton;
-		glm::vec3 m_RootTranslationMask = { 1.0f, 1.0f, 0.0f };         // default is to apply root bone transforms in X and Y only. (Z is extracted as root motion)
-		glm::vec3 m_RootTranslationExtractMask = { 0.0f, 0.0f, 1.0f };  // default is to extract root bone transform in forwards (Z) axis
-		float m_RootRotationMask = 1.0f;                                // default is to apply root bone rotation (Y-axis)
-		float m_RootRotationExtractMask = 0.0f;                         // default is to not extract root bone rotation
-
-		bool m_IsLooping = true;
-
 		friend class AnimationControllerSerializer;
 		friend class AnimationControllerPanel;
 	};

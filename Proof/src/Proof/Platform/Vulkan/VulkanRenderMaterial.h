@@ -67,8 +67,8 @@ namespace Proof
 		Count<class Image2D> TryGetImage2D(std::string_view name);
 		virtual const RenderMaterialConfiguration& GetConfig()const { return m_Config; };
 
-		void RT_Bind(Count < class VulkanRenderCommandBuffer > render, Count<class VulkanComputePass> pass);
-		void RT_Bind(Count < class VulkanRenderCommandBuffer > render, Count<class VulkanRenderPass> pass);
+		void RT_Bind(Count < class VulkanRenderCommandBuffer > render, Count<class VulkanComputePass> pass, bool onlyFragPushConstant= false);
+		void RT_Bind(Count < class VulkanRenderCommandBuffer > render, Count<class VulkanRenderPass> pass, bool onlyFragPushConstant = false);
 
 		std::vector < std::pair < std::string, Count<class Texture2D >>> GetAllTextures();
 	private:

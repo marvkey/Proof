@@ -27,13 +27,40 @@ namespace Proof
 		UI::BeginPropertyGrid();
 
 		UI::AttributeAssetKeyReference("Skeleton", animationController->m_Skeleton);
-
-		UI::AttributeDrag("RootRootTranslationMask", animationController->m_RootTranslationMask, 0.01f);
-		UI::AttributeDrag("RootTranslationExtractMask", animationController->m_RootTranslationExtractMask, 0.01f);
-		UI::AttributeDrag("RootRotationMask", animationController->m_RootRotationMask, 0.01f);
-		UI::AttributeDrag("m_RootRotationExtractMask", animationController->m_RootRotationExtractMask, 0.01f);
-		
-		UI::AttributeBool("IsLooping", animationController->m_IsLooping);
 		UI::EndPropertyGrid();
+
+		if (ImGui::Button("+"))
+			animationController->AddAnimationState(UUID(0));
+
+		for (uint32_t i = 0; i < animationController->m_AnimationStates.size(); i++)
+		{
+			UI::ScopedID id(fmt::format("AnimaitaControlelrState {}", i));
+
+			if(UI::AttributeTreeNode(fmt::format("AnimationStateTreeNode {}", i),true,1.0f,1.0f))
+			{
+				Count<AnimationState> state = animationController->m_AnimationStates[i];
+
+				UI::BeginPropertyGrid();
+
+				UI::AttributeAssetKeyReference("Animation", state->Animation);
+				
+				UI::AttributeDrag("RootRootTranslationMask", state->RootTranslationMask, 0.01f);
+				UI::AttributeDrag("RootTranslationExtractMask", state->RootTranslationExtractMask, 0.01f);
+				UI::AttributeDrag("RootRotationMask", state->RootRotationMask, 0.01f);
+				UI::AttributeDrag("m_RootRotationExtractMask", state->RootRotationExtractMask, 0.01f);
+
+				UI::AttributeBool("IsLooping", state->IsLooping);
+
+				UI::EndPropertyGrid();
+
+				UI::EndTreeNode();
+			}
+
+			if (ImGui::Button("Remove"))
+				animationController->m_AnimationStates.erase(animationController->m_AnimationStates.begin() + i);
+		}
+
+
+	
 	}
 }

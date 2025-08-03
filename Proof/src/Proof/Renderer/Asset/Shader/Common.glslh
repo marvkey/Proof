@@ -4,6 +4,8 @@
 const float PI = 3.14159265358979323846264338327950288f;
 const float TWO_PI = 2 * PI;
 const float Epsilon = 0.00001;
+const int MAX_BONES = 100;
+const int MAX_BONE_INFLUENCE = 4;
 #define CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_PBR 24
 layout(set = 3, binding = 0) uniform FrameData
 {

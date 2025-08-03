@@ -175,7 +175,7 @@ namespace Proof
 		void SubmitSpotLight(const SBSpotLightSceneData& spotLights);
 		void SubmitMesh(Count<Mesh> mesh, Count<RenderMaterial> renderMaterial, const glm::mat4& transform, bool CastShadowws = true);
 		void SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws = true);
-		void SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<MaterialTable> materialTable, uint32_t subMeshIndex, const glm::mat4& transform, bool CastShadowws = true);
+		void SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<MaterialTable> materialTable, uint32_t subMeshIndex, const glm::mat4& transform, bool CastShadowws = true, const std::vector<glm::mat4>& boneTransforms = {});
 
 		void SubmitPhysicsDebugMesh(Count<Mesh> mesh, const glm::mat4& transform);
 		void SubmitPhysicsDynamicDebugMesh(Count<DynamicMesh> mesh, uint32_t subMeshIndex, const glm::mat4& transform);
@@ -254,7 +254,6 @@ namespace Proof
 		Count<class GlobalBufferSet> m_GlobalInputs;
 		// mesh data
 		std::vector< TransformBuffer>  m_SubmeshTransformBuffers; // vector because of frame in flight
-
 		//Count<class RenderPass> m_ShadowDepthRenderPass;
 		std::array<Count<class RenderPass>, 4> m_ShadowMapPasses; // for cascades
 		//Count<RenderMaterial> m_ShadowPassMaterial;
@@ -280,6 +279,19 @@ namespace Proof
 		std::map<MeshKey, MeshDrawInfo> m_MeshShadowDrawList;
 		std::map<MeshKey, DynamicMeshDrawInfo> m_DynamicMeshShadowDrawList;
 
+		using BoneTransforms = std::array<glm::mat4, 100>; // Note: 100 == MAX_BONES from the shaders
+
+		struct BoneTransformsMapData
+		{
+			std::vector<BoneTransforms> BoneTransformsData;
+			uint32_t BoneTransformsBaseIndex = 0;
+		};
+
+		Count<class StorageBufferSet> m_BoneTransformStorageBuffersSet; 
+		BoneTransforms* m_BoneTransformsData = nullptr;
+
+		std::map<MeshKey, BoneTransformsMapData> m_MeshBoneTransformsMap;
+
 		//debg 
 		std::map<MeshKey, MeshDrawInfo> m_ColliderDrawList;
 		std::map<MeshKey, DynamicMeshDrawInfo> m_DynamicColliderDrawList;
@@ -293,6 +305,7 @@ namespace Proof
 		uint32_t m_ShadowMapResolution;
 		// geometry pass
 		Count<RenderPass> m_GeometryPass;
+		Count<RenderPass> m_GeometryAnimPass;
 		Count<RenderPass> m_TransparentGeometryPass;
 		Count<RenderPass> m_TransparentPassComposite;
 
@@ -506,6 +519,10 @@ namespace Proof
 
 		static void RenderMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer, Count<Mesh>& mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount);
 		static void RenderDynamicMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount);
+		static void RenderDynamicMeshWithMaterialTable(Count<RenderCommandBuffer>& commandBuffer, Count<DynamicMesh>& mesh, Count<MaterialTable>& materialTable, Count<RenderPass>& renderPass, Count<VertexBuffer>& transformBuffer, uint32_t subMeshIndex, uint32_t transformOffset, uint32_t instanceCount, uint32_t boneTransformsOffset,Count<class StorageBuffer> boneTransformStorageBuffers);
+		
+		
+		void CopyToBoneTransformStorage(const MeshKey& meshKey, Count<class MeshSource> meshSource, const std::vector<glm::mat4>& boneTransforms);
 		friend class Editore3D;
 		friend class WorldRendererPanel;
 		friend class ViewPortEditorWorkspace;

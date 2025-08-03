@@ -64,6 +64,8 @@ namespace Proof
 	class Skeleton : public Asset
 	{
 	public:
+		static inline const uint32_t NullIndex = ~0;
+	public:
 		Skeleton(Count<MeshSource> meshSource);
 
 		ASSET_CLASS_TYPE(Skeleton);

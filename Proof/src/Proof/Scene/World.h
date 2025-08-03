@@ -114,6 +114,7 @@ namespace Proof {
 
 		glm::mat4 GetWorldSpaceTransformUsingLocalRotation(Entity entity) const;
 		TransformComponent GetWorldSpaceTransformComponentUsingLocalRotation(Entity entity) const;
+		std::vector<glm::mat4> GetModelSpaceBoneTransforms(const std::vector<UUID>& boneEntityIds, Count<class DynamicMesh> mesh);
 
 		void ConvertToLocalSpace(Entity entity);
 		void ParentEntity(Entity child, Entity parent);
@@ -189,13 +190,11 @@ namespace Proof {
 		void OnScriptAdded(entt::registry& component, entt::entity entityID);
 		void OnScriptDelete(entt::registry& component, entt::entity entityID);
 
+		void OnUpdateAnimation(float deltaTime);
+
 		void OnWaterComponentCreate(entt::registry& registry, entt::entity entity);
 		//https://github.com/Ant-Play/Ant/blob/2dab7c0362f017911df9090b1608ec4b81ad1f2c/Ant/src/Ant/Scene/Scene.h
 		void BuildDynamicMeshEntityHierarchy(Entity parent, Count<class DynamicMesh> mesh, const MeshNode& node, bool generateColliders);
-		//void BuildBoneEntityIds(Entity entity);
-		//void BuildMeshBoneEntityIds(Entity entity, Entity rootEntity);
-		//void BuildAnimationBoneEntityIds(Entity entity, Entity rootEntity);
-
 
 		// same funciton just use the entity swap Ids
 		// mainly for script components

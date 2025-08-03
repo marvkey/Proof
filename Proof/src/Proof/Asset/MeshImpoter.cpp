@@ -118,9 +118,12 @@ namespace Proof
 			MathResource::DecomposeTransform(transform, translation, rotation, scale);
 			rotation = glm::degrees(rotation);
 
+			
+
 			PF_ENGINE_TRACE("{0:^{1}}translation: ({2:6.2f}, {3:6.2f}, {4:6.2f})", "", depth * 3, translation.x, translation.y, translation.z);
 			PF_ENGINE_TRACE("{0:^{1}}rotation:    ({2:6.2f}, {3:6.2f}, {4:6.2f})", "", depth * 3, rotation.x, rotation.y, rotation.z);
 			PF_ENGINE_TRACE("{0:^{1}}scale:       ({2:6.2f}, {3:6.2f}, {4:6.2f})", "", depth * 3, scale.x, scale.y, scale.z);
+			PF_ENGINE_TRACE("{0:^{1}}number meshes: {2}", "", depth * 3, node->mNumMeshes);
 			for (uint32_t i = 0; i < node->mNumChildren; ++i)
 			{
 				PrintNode(node->mChildren[i], depth);

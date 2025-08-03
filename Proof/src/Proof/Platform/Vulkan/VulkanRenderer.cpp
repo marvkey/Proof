@@ -316,9 +316,9 @@ namespace Proof
 		renderPass.As<VulkanRenderPass>()->EndRenderPass();
 	}
 
-	void VulkanRenderer::RenderPassPushRenderMaterial(Count<class RenderPass> renderPass, Count<class RenderMaterial> renderMaterial)
+	void VulkanRenderer::RenderPassPushRenderMaterial(Count<class RenderPass> renderPass, Count<class RenderMaterial> renderMaterial, bool onlyFragPushConstant )
 	{
-		renderPass.As<VulkanRenderPass>()->RenderPassPushRenderMaterial(renderMaterial);
+		renderPass.As<VulkanRenderPass>()->RenderPassPushRenderMaterial(renderMaterial, onlyFragPushConstant );
 	}
 
 	void VulkanRenderer::BeginComputePass(Count<RenderCommandBuffer> commandBuffer, Count<ComputePass> computePass)

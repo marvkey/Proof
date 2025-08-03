@@ -122,6 +122,13 @@ namespace Proof {
 		//PBR
 		ShaderLibrary->LoadShader("TerrainShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Terrain/TerrainRenderer.glsl");
 		ShaderLibrary->LoadShader("ProofPBR_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl");
+
+		{
+			std::unordered_map<std::string, std::string> macroDefintions = {
+				{ "PBR_ANIMATED", "" }
+			};
+			ShaderLibrary->LoadShader("ProofPBR_Anim", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl", macroDefintions);
+		}
 		{
 			std::unordered_map<std::string, std::string> macroDefintions = {
 				{ "PBR_USE_TRANSPARENCY", "" }
@@ -542,9 +549,9 @@ namespace Proof {
 		s_RendererAPI->EndRenderPass(renderPass);
 	}
 
-	void Renderer::RenderPassPushRenderMaterial(Count<class RenderPass> renderPass, Count<class RenderMaterial> renderMaterial)
+	void Renderer::RenderPassPushRenderMaterial(Count<class RenderPass> renderPass, Count<class RenderMaterial> renderMaterial, bool onlyFragPushConstant )
 	{
-		s_RendererAPI->RenderPassPushRenderMaterial(renderPass, renderMaterial);
+		s_RendererAPI->RenderPassPushRenderMaterial(renderPass, renderMaterial, onlyFragPushConstant );
 	}
 
 	void Renderer::BeginComputePass(Count<RenderCommandBuffer> commandBuffer, Count<ComputePass> computPass)

@@ -41,6 +41,8 @@
 #include "Proof/Scene/WaterSystem/GerstnerWave.h"
 #include "Proof/Scene/WaterSystem/FFTWave/FFTWave.h"
 #include "Proof/Scene/WaterSystem/FFTWave/FFTWaveRealistic.h"
+#include "Proof/Animation/AnimationController.h"
+#include "Proof/Animation/Animation.h"
 //include those before stdlig.h
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/ParticleSystem.h"
@@ -1177,6 +1179,7 @@ namespace Proof
 
 			AddComponentGui<MeshComponent>(entity, "Mesh");
 			AddComponentGui<DynamicMeshComponent>(entity, "DynamicMesh");
+			AddComponentGui<AnimationComponent>(entity, "AnimationComponent");
 			AddComponentGui<TerrainComponent>(entity, "Terrain");
 			AddComponentGui<SpriteComponent>(entity, "Sprite");
 			AddComponentGui<NativeScriptComponent>(entity, "Native Script");
@@ -1329,7 +1332,19 @@ namespace Proof
 					UI::AttributeDrawMaterialTable(meshComp.MaterialTable, mesh->GetMaterialTable());
 				}
 			});
+		DrawComponents<AnimationComponent>("Animation", entity, [](AnimationComponent& animComp)
+			{
+				UI::AttributeAssetKeyReference("AnimationController", animComp.AnimationController);
 
+				UI::AttributeBool("Play Animation", animComp.AnimationData->IsAnimationPlaying);
+
+				UI::AttributeDrag("Playback Speed", animComp.AnimationData->PlaybackSpeed, 0.1f, 0.0f, 100.0f); // upper limit here is kinda arbitrary, but probably better than no limit
+
+				if (animComp.AnimationData->IsAnimationPlaying)
+				{
+					UI::AttributeSlider("AnimationTime", animComp.AnimationData->AnimationTime, 0.0f,1.0f); 
+				}
+			});
 		DrawComponents<TerrainComponent>("Terrain", entity, [](TerrainComponent& meshComp)
 			{
 

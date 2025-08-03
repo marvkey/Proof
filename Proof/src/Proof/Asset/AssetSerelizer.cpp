@@ -1231,14 +1231,23 @@ namespace $NAMESPACE_NAME$
 			out << YAML::Key << "Skeleton" << YAML::Value << 0; // Null UUID or fallback
 		}
 
-		// Root Motion Masks
-		out << YAML::Key << "RootTranslationMask" << YAML::Value << animationController->m_RootTranslationMask;
-		out << YAML::Key << "RootTranslationExtractMask" << YAML::Value << animationController->m_RootTranslationExtractMask;
-		out << YAML::Key << "RootRotationMask" << YAML::Value << animationController->m_RootRotationMask;
-		out << YAML::Key << "RootRotationExtractMask" << YAML::Value << animationController->m_RootRotationExtractMask;
+		out << YAML::Key << "AnimationStates" << YAML::BeginSeq;
 
-		// Looping
-		out << YAML::Key << "IsLooping" << YAML::Value << animationController->m_IsLooping;
+		for (const auto& state : animationController->GetAnimationStates())
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "AnimationID" << YAML::Value << state->Animation.GetAssetID();
+			out << YAML::Key << "IsLooping" << YAML::Value << state->IsLooping;
+
+			out << YAML::Key << "RootTranslationMask" << YAML::Value << state->RootTranslationMask;
+			out << YAML::Key << "RootTranslationExtractMask" << YAML::Value << state->RootTranslationExtractMask;
+			out << YAML::Key << "RootRotationMask" << YAML::Value << state->RootRotationMask;
+			out << YAML::Key << "RootRotationExtractMask" << YAML::Value << state->RootRotationExtractMask;
+			out << YAML::EndMap;
+		}
+
+		out << YAML::EndSeq;
+
 
 		out << YAML::EndMap;
 
@@ -1266,14 +1275,29 @@ namespace $NAMESPACE_NAME$
 				animationController->SetSkeleton(skeletonAsset);
 		}
 
-		// Root Motion Masks
-		animationController->m_RootTranslationMask = yamlData["RootTranslationMask"].as<glm::vec3>(animationController->m_RootTranslationMask);
-		animationController->m_RootTranslationExtractMask = yamlData["RootTranslationExtractMask"].as<glm::vec3>(animationController->m_RootTranslationExtractMask);
-		animationController->m_RootRotationMask = yamlData["RootRotationMask"].as<float>(animationController->m_RootRotationMask);
-		animationController->m_RootRotationExtractMask = yamlData["RootRotationExtractMask"].as<float>(animationController->m_RootRotationExtractMask);
+		// Load animation states
+		if (yamlData["AnimationStates"])
+		{
+			for (const auto& stateNode : yamlData["AnimationStates"])
+			{
+				AssetKey<AssetType::Animation> animationKey = (UUID)stateNode["AnimationID"].as<uint64_t>(0);
+				Count<AnimationState> state = Count<AnimationState>::Create(animationKey);
 
-		// Looping flag
-		animationController->m_IsLooping = yamlData["IsLooping"].as<bool>(animationController->m_IsLooping);
+				if (stateNode["IsLooping"])
+					state->IsLooping = stateNode["IsLooping"].as<bool>();
+
+				if (stateNode["RootTranslationMask"])
+					state->RootTranslationMask = stateNode["RootTranslationMask"].as<glm::vec3>();
+				if (stateNode["RootTranslationExtractMask"])
+					state->RootTranslationExtractMask = stateNode["RootTranslationExtractMask"].as<glm::vec3>();
+				if (stateNode["RootRotationMask"])
+					state->RootRotationMask = stateNode["RootRotationMask"].as<float>();
+				if (stateNode["RootRotationExtractMask"])
+					state->RootRotationExtractMask = stateNode["RootRotationExtractMask"].as<float>();
+
+				animationController->m_AnimationStates.push_back(state);
+			}
+		}
 
 		SetID(assetData, animationController);
 		return animationController;

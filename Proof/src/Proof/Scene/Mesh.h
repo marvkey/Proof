@@ -190,6 +190,7 @@ namespace Proof
 		mutable Count<class Skeleton> m_SkeletonAsset;
         mutable std::vector<Special<InternalAnimation>> m_Animations;
 
+        friend class WorldRenderer;
         std::vector<MeshNode> m_Nodes;
         Count<class VertexBuffer> m_VertexBuffer = nullptr;
         Count<class IndexBuffer> m_IndexBuffer = nullptr;

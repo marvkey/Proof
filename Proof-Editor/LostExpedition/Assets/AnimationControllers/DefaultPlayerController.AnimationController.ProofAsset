@@ -1,8 +1,10 @@
 AssetType: AnimationController
 ID: 9157067212750059041
 Skeleton: 3037307770371720683
-RootTranslationMask: [1, 1, 0]
-RootTranslationExtractMask: [0, 0, 1]
-RootRotationMask: 1
-RootRotationExtractMask: 0
-IsLooping: true
+AnimationStates:
+  - AnimationID: 6011880739542790980
+    IsLooping: true
+    RootTranslationMask: [1, 1, 0]
+    RootTranslationExtractMask: [0, 0, 1]
+    RootRotationMask: 1
+    RootRotationExtractMask: 0

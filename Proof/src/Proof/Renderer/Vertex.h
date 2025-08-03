@@ -24,6 +24,14 @@ namespace Proof
         glm::vec3 Tangent{0,0,0};
         glm::vec3 Bitangent{0,0,0};
     }; 
+
+    struct AnimationVertex
+    {
+        glm::uvec4 BoneIndices = glm::uvec4(0);
+        glm::vec4 BoneWieghts = glm::vec4(0.0f);
+    };
+
+
     struct Index
     {
         uint32_t V1, V2, V3;

@@ -18,8 +18,8 @@ namespace Proof
         return m_MeshSource->GetAnimationCount();
     }
 
-    const InternalAnimation& Animation::GetAnimation(const uint32_t animationIndex, const SkeletonData& skeleton) const
+    const InternalAnimation& Animation::GetAnimation(const SkeletonData& skeleton) const
     {
-        return m_MeshSource->GetAnimation(animationIndex, skeleton);
+        return m_MeshSource->GetAnimation(m_AnimationIndex, skeleton);
     }
 }

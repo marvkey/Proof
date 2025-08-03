@@ -51,7 +51,7 @@ namespace Proof {
 		static void BeginRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass, bool explicitClear = false);
 		static void BeginRenderMaterialRenderPass(Count<class RenderCommandBuffer> commandBuffer, Count<class RenderPass> renderPass,bool explicitClear = false);
 		static void EndRenderPass(Count<class RenderPass> renderPass);
-		static void RenderPassPushRenderMaterial(Count<class RenderPass> renderPass, Count<class RenderMaterial> renderMaterial);
+		static void RenderPassPushRenderMaterial(Count<class RenderPass> renderPass, Count<class RenderMaterial> renderMaterial, bool onlyFragPushConstant = false);
 
 		static void BeginComputePass(Count<class RenderCommandBuffer> commandBuffer,Count<class ComputePass> computPass);
 		static void BeginRenderMaterialComputePass(Count<class RenderCommandBuffer> commandBuffer, Count<class ComputePass> computPass);

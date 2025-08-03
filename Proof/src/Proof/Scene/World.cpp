@@ -137,7 +137,8 @@ namespace Proof
 			}
 		}
 
-		
+		OnUpdateAnimation(DeltaTime);
+
 	}
 	
 	glm::vec3 GetAnyPerpendicularUnitVector(const glm::vec3& vec)
@@ -408,7 +409,7 @@ namespace Proof
 						if (BasicCollision::AABBIsOnFrustum(aabb, cameraFrustrum))
 						{
 							rendererStats.TotalMeshSentToGpu++;
-							worldRenderer->SubmitDynamicMesh(mesh, dynamicMeshComponent.MaterialTable, dynamicMeshComponent.GetSubMeshIndex(), transform, dynamicMeshComponent.CastShadow);
+							worldRenderer->SubmitDynamicMesh(mesh, dynamicMeshComponent.MaterialTable, dynamicMeshComponent.GetSubMeshIndex(), transform, dynamicMeshComponent.CastShadow, GetModelSpaceBoneTransforms(dynamicMeshComponent.BoneEntityIds, mesh));
 						}
 					}
 				}
@@ -933,6 +934,42 @@ namespace Proof
 		Entity e = { entityID, this };
 		m_ScriptWorld->DestroyEntityScript(e);
 	}
+	void World::OnUpdateAnimation(float deltaTime)
+	{
+		PF_PROFILE_FUNC();
+
+		auto view = GetAllEntitiesWith<AnimationComponent>();
+		for (auto entity : view)
+		{
+			Entity e = { entity, this };
+
+			auto& anim = e.GetComponent<AnimationComponent>();
+
+			if (!anim.AnimationController.IsValid())
+				continue;
+
+			Count<AnimationController> animationController = anim.AnimationController.GetAsset<AnimationController>();
+			Count<AnimationData> animData = anim.AnimationData;
+
+			animationController->OnUpdateAnimationData(deltaTime, animData);
+
+			// Note: assumption here is that anim.BoneEntityIds[i] <=> animationController.Transform[i]
+			// So there is no need to look up the mapping of mesh -> joint index
+			for (size_t i = 0; i < anim.BoneEntityIds.size(); ++i)
+			{
+				auto boneTransformEntity = TryGetEntityWithUUID(anim.BoneEntityIds[i]);
+				if (boneTransformEntity)
+				{
+					// Note: we're assuming there is always a transform component
+					auto& transform = boneTransformEntity.GetComponent<TransformComponent>();
+					transform.Location = animData->LocalTranslations[i];
+					transform.SetRotation(animData->LocalRotations[i]);
+					transform.Scale = animData->LocalScales[i];
+				}
+			}
+		}
+
+	}
 	void World::OnWaterComponentCreate(entt::registry& registry, entt::entity entityID)
 	{
 		Entity e = { entityID, this };
@@ -1061,6 +1098,8 @@ namespace Proof
 				player->OnUpdate(DeltaTime);
 			}
 		}
+
+		OnUpdateAnimation(DeltaTime);
 #if 0
 		{
 			PF_PROFILE_FUNC("World::OnUpdate - Audio");
@@ -1463,6 +1502,8 @@ namespace Proof
 		auto info = AssetManager::GetAssetInfo(mesh);
 		Entity root = CreateEntity(info.GetName());
 		BuildDynamicMeshEntityHierarchy(root, mesh, mesh->GetMeshSource()->GetRootNode(), generateCollider);
+
+		BuildBoneEntityIds(root);
 		return root;
 	}
 	Entity World::CreateChildEntity(Entity parent, const std::string& name)
@@ -1475,6 +1516,7 @@ namespace Proof
 			entity.GetComponent<TransformComponent>().Scale = glm::vec3{ 1.0f };
 			entity.SetParent(parent);
 		}
+
 		return entity;
 	}
 	#if 0
@@ -1557,6 +1599,9 @@ namespace Proof
 		newEntity.GetComponent<TransformComponent>() = transfom;
 
 		UnPauseRigidBodyOnConstruct();
+
+		BuildBoneEntityIds(newEntity);
+
 		return newEntity;
 	}
 	template<typename... Component>
@@ -1743,7 +1788,9 @@ namespace Proof
 
 		if (entity)
 		{
-			if (entity.GetComponent<TagComponent>().Tag == tag)
+			const std::string tagComponentTag = entity.GetComponent<TagComponent>().Tag;
+			PF_EC_INFO("World::TryGetDescendantEntityWithTag - Searching for tag: {0} in entity: {1}", tag, tagComponentTag);
+			if (tagComponentTag == tag)
 				return entity;
 
 			for (const auto childId : entity.Children())
@@ -1773,7 +1820,7 @@ namespace Proof
 			Entity e = entity;
 			while (e && e != rootParentEntity)
 			{
-				Entity boneEntity = TryGetDescendantEntityWithTag(entity, boneName);
+				Entity boneEntity = TryGetDescendantEntityWithTag(e, boneName);
 				if (boneEntity)
 				{
 					boneEntityIds.emplace_back(boneEntity.GetUUID());
@@ -1790,7 +1837,7 @@ namespace Proof
 		if (!foundAtLeastOne)
 			boneEntityIds.resize(0);
 
-		return std::vector<UUID>();
+		return boneEntityIds;
 	}
 #define  CaluclateTransformationWithStep 0
 	glm::vec3 World::GetWorldSpaceLocation(Entity entity) const 
@@ -1895,6 +1942,29 @@ namespace Proof
 		TransformComponent transformComponent;
 		transformComponent.SetTransform(transform);
 		return transformComponent;
+	}
+
+	std::vector<glm::mat4> World::GetModelSpaceBoneTransforms(const std::vector<UUID>& boneEntityIds, Count<class DynamicMesh> mesh)
+	{
+
+		std::vector<glm::mat4> boneTransforms(boneEntityIds.size());
+
+		if (mesh->HasSkeleton())
+		{
+			const auto& skeleton = mesh->GetMeshSource()->GetSkeleton();
+
+			// Can get mismatches if user changes which mesh an entity refers to after the bone entities have been set up
+			// TODO(0x): need a better way to handle the bone entities
+			//ANT_CORE_ASSERT(boneEntityIds.size() == skeleton.GetNumBones(), "Wrong number of boneEntityIds for mesh skeleton!");
+			for (uint32_t i = 0; i < std::min(skeleton.GetNumBones(), (uint32_t)boneEntityIds.size()); ++i)
+			{
+				auto boneEntity = TryGetEntityWithUUID(boneEntityIds[i]);
+				glm::mat4 localTransform = boneEntity ? boneEntity.GetComponent<TransformComponent>().GetTransform() : glm::identity<glm::mat4>();
+				auto parentIndex = skeleton.GetParentBoneIndex(i);
+				boneTransforms[i] = (parentIndex == Skeleton::NullIndex) ? localTransform : boneTransforms[parentIndex] * localTransform;
+			}
+		}
+		return boneTransforms;
 	}
 
 	void World::ConvertToLocalSpace(Entity entity)
