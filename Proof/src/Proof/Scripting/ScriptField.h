@@ -109,6 +109,7 @@ namespace Proof
 			case ScriptFieldType::Float: return sizeof(float);
 			case ScriptFieldType::Double: return sizeof(double);
 			case ScriptFieldType::Char: return sizeof(char);
+			case ScriptFieldType::String: return sizeof(char) *256;
 			case ScriptFieldType::Vector2: return sizeof(glm::vec2);
 			case ScriptFieldType::Vector3: return sizeof(glm::vec3);
 			case ScriptFieldType::Vector4: return sizeof(glm::vec4);

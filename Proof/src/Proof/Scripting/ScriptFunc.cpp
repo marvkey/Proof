@@ -389,12 +389,9 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 	}
 
-	static bool Entity_HasComponent(uint64_t entityID, MonoReflectionType* componentType) {
-		if (entityID == 0)return false;
-		Count<World> world = ScriptEngine::GetWorldContext();
-		PF_CORE_ASSERT(world,"world is nullptr");
-		Entity entity = world->GetEntity(entityID);
-		PF_CORE_ASSERT(entity,"Entity is null");
+	static bool Entity_HasComponent(uint64_t entityID, MonoReflectionType* componentType) 
+	{
+		SCRIPT_FUNC_ENTITY_CHECK(false);
 
 		MonoType* managedType = mono_reflection_type_get_type(componentType);
 		PF_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(),"mangaed type does not exist");
@@ -404,11 +401,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 	static bool Entity_AddComponent(uint64_t entityID, MonoReflectionType* componentType)
 	{
-		if (entityID == 0)return false;
-		Count<World> world = ScriptEngine::GetWorldContext();
-		PF_CORE_ASSERT(world, "world is nullptr");
-		Entity entity = world->GetEntity(entityID);
-		PF_CORE_ASSERT(entity, "Entity is null");
+		SCRIPT_FUNC_ENTITY_CHECK(false);
 
 		MonoType* managedType = mono_reflection_type_get_type(componentType);
 		PF_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "mangaed type does not exist");
@@ -423,11 +416,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 	static bool Entity_RemoveComponent(uint64_t entityID, MonoReflectionType* componentType)
 	{
-		if (entityID == 0)return false;
-		Count<World> world = ScriptEngine::GetWorldContext();
-		PF_CORE_ASSERT(world, "world is nullptr");
-		Entity entity = world->GetEntity(entityID);
-		PF_CORE_ASSERT(entity, "Entity is null");
+		SCRIPT_FUNC_ENTITY_CHECK(false);
 
 		MonoType* managedType = mono_reflection_type_get_type(componentType);
 		PF_CORE_ASSERT(s_EntityHasComponentFuncs.find(managedType) != s_EntityHasComponentFuncs.end(), "mangaed type does not exist");

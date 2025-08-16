@@ -1,4 +1,7 @@
 Assets:
+  - Asset: 10030745357571572551
+    Type: Texture
+    Path: Textures\InventoryItems\AxeInventoryItemImage.png
   - Asset: 1948765517176594391
     Type: Material
     Path: Materials\m_Black.Material.ProofAsset
@@ -242,6 +245,9 @@ Assets:
   - Asset: 812331647443226358
     Type: Texture
     Path: Models\Trees\HandPaintedPineTree\textures\PineTree_001.png
+  - Asset: 3458092080199058508
+    Type: Mesh
+    Path: Meshes\Foods\Apple\Apple.Mesh.ProofAsset
   - Asset: 2236110959667834781
     Type: MeshSourceFile
     Path: Models\Trees\LowPolyTree\source\LowPoly_Tree.fbx
@@ -263,9 +269,6 @@ Assets:
   - Asset: 7360607633324499815
     Type: Material
     Path: Meshes\Trees\m_LowPolyTwistedBranchesMaterial.Material.ProofAsset
-  - Asset: 743458885417671652
-    Type: Texture
-    Path: Projects\Facility22\tex\shotgunNormal_1.png
   - Asset: 14075414392747790104
     Type: Mesh
     Path: Meshes\Trees\LowPolyTree.Mesh.ProofAsset
@@ -314,6 +317,45 @@ Assets:
   - Asset: 9157067212750059041
     Type: AnimationController
     Path: AnimationControllers\DefaultPlayerController.AnimationController.ProofAsset
-  - Asset: 6880451187241830566
+  - Asset: 15282703157196906491
+    Type: MeshSourceFile
+    Path: Models\LowPolyAxe\scene.gltf
+  - Asset: 582766038427983149
+    Type: Mesh
+    Path: Meshes\Axe.Mesh.ProofAsset
+  - Asset: 9560166560900540495
+    Type: InputAction
+    Path: Input\PlayerMovement\IA_IsRunning.InputAction.ProofAsset
+  - Asset: 9660866001414010741
+    Type: Material
+    Path: Meshes\Foods\Apple\m_AppleMaterial.Material.ProofAsset
+  - Asset: 15708312534827418164
+    Type: MeshSourceFile
+    Path: Models\Food\Apple\source\Apple.fbx
+  - Asset: 11068716214396453032
+    Type: Texture
+    Path: Models\Food\Apple\textures\Apple_BaseColor.png
+  - Asset: 15057485417622794179
+    Type: Texture
+    Path: Models\Food\Apple\textures\Apple_Normal.png
+  - Asset: 9917438888510289189
+    Type: Texture
+    Path: Models\Food\Apple\textures\Apple_Roughtness.png
+  - Asset: 3120643860804007446
+    Type: Prefab
+    Path: Prefabs\Apple_Inventory.Prefab.ProofAsset
+  - Asset: 17312616813620753042
+    Type: Texture
+    Path: Textures\Icons\chicken-leg.png
+  - Asset: 14463897640908507128
+    Type: Texture
+    Path: Textures\Icons\Heart.png
+  - Asset: 7293509018538368519
+    Type: Texture
+    Path: Textures\InventoryItems\AppleInventoryItemImage.png
+  - Asset: 8279109864455870203
     Type: Texture
     Path: Projects\Facility22\tex\shotgunColor_1.png
+  - Asset: 5658897546765577625
+    Type: Texture
+    Path: Projects\Facility22\tex\shotgunNormal_1.png

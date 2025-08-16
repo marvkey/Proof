@@ -1,0 +1,61 @@
+AssetType: Prefab
+ID: 3120643860804007446
+EntityOwner: 8023783727301669606
+Entities:
+  - Entity: 8023783727301669606
+    TagComponent:
+      Tag: Apple
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 3458092080199058508
+      Visible: true
+      MaterialTable:
+        - Material: ""
+          AssetID: 9660866001414010741
+          Index: 0
+    ScriptComponent:
+      Scripts:
+        - Script: LostExpedition.Food
+          ScriptClassName: LostExpedition.Food
+          ScriptName: LostExpedition.Food
+          Fields:
+            - NameID: LostExpedition.Food.HungerRestore
+              Type: Float
+              Data: 25
+            - NameID: LostExpedition.Food.ItemName
+              Type: String
+              Data: ""
+            - NameID: LostExpedition.Food.MaxItemPerSlot
+              Type: Int32
+              Data: 1
+            - NameID: LostExpedition.Food.InventoryImage
+              Type: Texture2D
+              Data: 7293509018538368519
+    BoxColliderComponent:
+      IsTrigger: true
+      Center: [0, 0, 0]
+      Size: [1.60000002, 0.899999976, 1.29999995]
+      PhysicsMaterialPointerID: 0
+    SphereColliderComponent:
+      IsTrigger: false
+      Center: [0, 0, 0]
+      Radius: 0.200000003
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Continuous

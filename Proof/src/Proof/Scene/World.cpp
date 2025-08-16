@@ -1692,7 +1692,6 @@ namespace Proof
 
 		Count<World> instance = this;
 		//AudioEngine::BeginContext(instance);
-		m_ScriptWorld->BeginRuntime();
 
 		ForEachEnitityWith<TerrainComponent>([&](Entity e)
 		{
@@ -1700,6 +1699,9 @@ namespace Proof
 				e.GetComponent<TerrainComponent>().Terrain->SetWorld(this);
 
 		});
+
+		m_ScriptWorld->BeginRuntime();
+
 		///
 		///
 		//PhysicsWorldConfig config;

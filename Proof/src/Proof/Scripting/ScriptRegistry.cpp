@@ -475,7 +475,9 @@ namespace Proof
 				ScriptFieldType fieldType = ScriptUtils::GetFieldTypeFromMonoType(monoType);
 
 				if (fieldType == ScriptFieldType::Void)
+				{
 					continue;
+				}
 
 
 				//uint32_t fieldID = Hash::GenerateFNVHash(fmt::format("{0}:{1}", managedClass.FullName, name));

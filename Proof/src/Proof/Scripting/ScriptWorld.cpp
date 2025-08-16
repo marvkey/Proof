@@ -115,6 +115,8 @@ namespace Proof
 
     ScriptGCHandle ScriptWorld::GetScriptInstanceOfType(Entity entity, const std::string& classFullName)
     {
+		if (!IsEntityScriptInstantiated(entity))
+			return GetScriptInstance(entity, classFullName);
         ManagedClass* targetMonoClass = ScriptRegistry::GetManagedClassByName(classFullName);
 
         if (!targetMonoClass)
@@ -361,6 +363,7 @@ namespace Proof
                 }
             }
         }
+        PF_CORE_ASSERT(instanceHandle);
         m_CallOnCreate.insert({ instanceHandle });
         //ScriptEngine::CallMethod(instanceHandle, "OnCreate");
 
@@ -392,7 +395,7 @@ namespace Proof
 
 
         if (m_IsRuntime)
-        {
+        {   
             if (entityClassContainer->Classes.at(classFullName).IsExistOnlyRuntime == false)
                 return;
         }
@@ -600,8 +603,35 @@ namespace Proof
         {
             for (auto& [fieldName, fieldStorage] : classMetaData.Fields)
             {
-                if (fieldStorage)
+                if (!fieldStorage)
+                {
+                    PF_ENGINE_ERROR("Trying to copy field {} that does not exist in class {} Fiedl does not exist", fieldName, className);
+                    continue;
+                }
+                if (m_IsRuntime)
+                {
+                    auto& classFields = *GetEntityClassesContainer(dstEntity, true);
+                    if (classFields.GetClassesMetaData().contains(className))
+                    {
+                        if (classFields.GetClassMetaData(className)->Fields.contains(fieldName))
+                        {
+                            classFields.GetClassMetaData(className)->Fields[fieldName]->CopyFrom(fieldStorage);
+                        }
+                        else
+                        {
+                            PF_ENGINE_ERROR("Trying to copy field {} that does not exist in class {}", fieldName, className);
+                        }
+                    }
+                    else
+                    {
+                        PF_ENGINE_ERROR("Trying to copy field {} that does not exist in class {}", fieldName, className);
+                    }
+                }
+                else
+                {
                     m_EntityClassesStorage[dstEntity.GetUUID()].Classes[className].Fields[fieldName]->CopyFrom(fieldStorage);
+                }
+
             }
         }
     }
@@ -748,6 +778,8 @@ namespace Proof
         for (auto instanceHandle : m_CallOnCreate)
             ScriptEngine::CallMethod(instanceHandle, "OnCreate");
         m_CallOnCreate.clear();
+
+
         for (auto& [enityID, classes] : m_RuntimeEntityClassStorage)
         {
             if (!RuntimeIsEntityScriptInstantiated(GetWorld()->GetEntity(enityID)))continue;

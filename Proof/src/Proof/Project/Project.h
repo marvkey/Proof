@@ -87,6 +87,8 @@ namespace Proof{
 		{
 			return m_ProjectConfig.Name;
 		}
+
+		void ExportGame(std::filesystem::path outputDirectory, bool forceRebuild = true);
 	private:
 		ProjectConfig m_ProjectConfig;
 		std::filesystem::path m_ProjectDirectory;

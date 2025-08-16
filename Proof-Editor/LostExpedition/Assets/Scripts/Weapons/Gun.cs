@@ -1,4 +1,3 @@
-
 using System;
 using Proof;
 
@@ -38,13 +37,16 @@ namespace LostExpedition
 		// OnUpdate is called once every frame while this script is active in the world
 		void OnUpdate(float deltaTime)
 		{
+            base.OnUpdate(deltaTime);
             m_TimeSinceLastShot += deltaTime;
             HandleRecoil(deltaTime);
-            HandleInventorySwap(deltaTime);
         }
 
-        
-		public Entity Fire(TransformComponent playerTransform, TransformComponent cameraTransform) // player hit
+        public override void Activate(Entity player, TransformComponent playerTransform, TransformComponent cameraTransform)
+        {
+            Fire(player, playerTransform, cameraTransform);
+        }
+        public Entity Fire(Entity playerEntity,TransformComponent playerTransform, TransformComponent cameraTransform) // player hit
 		{
             if (!CanFire())
                 return null;
@@ -57,7 +59,7 @@ namespace LostExpedition
 
             if (e.GetScript<HealthComponent>() != null)
             {
-                e.GetScript<HealthComponent>().TakeDamage(Damage);
+                e.GetScript<HealthComponent>().TakeDamage(playerEntity,Damage);
             }
 
             if(MuzzleFlash != null)
@@ -93,7 +95,7 @@ namespace LostExpedition
 
         /// <summary>
         /// Returns a stability factor between 0.5 and 1 based on how long it's been since the last shot.
-        /// - If you shoot exactly at the fire rate, this returns 0.5 (maximum spread).
+        /// - I f you shoot exactly at the fire rate, this returns 0.5 (maximum spread).
         /// - If you wait twice as long as the fire rate, it returns 1 (fully stable, no spread).
         /// </summary>
         float GetShotStability()
@@ -145,52 +147,6 @@ namespace LostExpedition
                 m_RecoilCurrent = 0.0f;
             }
         }
-        float m_InventorySwapTimer = 0.0f;
-        float m_InventorySwapDuration = 0.25f;
-        bool m_SwappingIn = false;
-        bool m_IsSwapping = false;
-
-        void HandleInventorySwap(float deltaTime)
-        {
-            if (!m_IsSwapping)
-                return;
-
-            m_InventorySwapTimer += deltaTime;
-            float t = Mathf.Clamp(m_InventorySwapTimer / m_InventorySwapDuration, 0, 1);
-            float smoothed = Mathf.SmoothStep(0, 1, t);
-
-            float fromAngle = 0.0f;
-            float toAngle = 90.0f;
-
-            if (m_SwappingIn)
-            {
-                fromAngle = 90.0f;
-                toAngle = 0.0f;
-            }
-
-            float angle = Mathf.Lerp(fromAngle, toAngle, smoothed);
-            ApplyRecoilRotation(angle);
-
-            if (t >= 1.0f)
-            {
-                m_IsSwapping = false;
-            }
-        }
-        public override void SetActiveInventory()
-        {
-            m_SwappingIn = true;
-            m_IsSwapping = true;
-            m_InventorySwapTimer = 0.0f;
-            GetComponent<MeshComponent>().Visible = true;
-        }
-
-        public override void SetDeactiveInventory()
-        {
-           m_SwappingIn = false;
-           m_IsSwapping = true;
-           m_InventorySwapTimer = 0.0f;
-
-            GetComponent<MeshComponent>().Visible = false;
-        }
+      
     }
 }

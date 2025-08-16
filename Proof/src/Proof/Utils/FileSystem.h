@@ -13,6 +13,7 @@
 #include <string>
 #include <filesystem>
 #include <functional>
+#include <unordered_set>
 namespace Proof
 {
 	namespace  Utils 
@@ -125,6 +126,16 @@ namespace Proof
 		static void StartWatching();
 		static void StopWatching();
 		static void SkipNextFileSystemChange();
+
+		static void CopyFileIntoFolder(const std::filesystem::path& file, const std::filesystem::path& folder);
+		// retursn the full path of the file
+		static std::filesystem::path GetAbsolutePath(const std::filesystem::path& path)
+		{
+			return std::filesystem::absolute(path);
+		}
+
+		// u can use Copy instead but soem files may not be active (liek they  may still be in one drive and not downloaded) so do this as a safety
+		static void ResursiveCopyFolder(const std::filesystem::path& source, const std::filesystem::path& destination, const std::unordered_set<std::string>& excludedExtension = {});
 	private:
 		static std::vector<FileSystemChangedCallbackFn> s_Callbacks;
 	private:

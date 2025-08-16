@@ -9,4 +9,4 @@ CheckZeroAreaTriangles: true
 AreaTestEpsilon: 0.0599999987
 ShiftVerticesToOrigin: false
 AlwaysShareShape: false
-CollisionComplexity: Default
+CollisionComplexity: UseComplexAsSimple

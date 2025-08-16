@@ -291,6 +291,8 @@ namespace Proof {
 
 		static auto callTriggerMethod = [](const char* methodName, Entity mainEntity, Entity b)
 		{
+				if (!mainEntity.IsValid() || !b.IsValid())
+					return;
 			if (!mainEntity.HasComponent<ScriptComponent>())
 				return;
 

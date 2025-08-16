@@ -128,6 +128,7 @@ namespace Proof {
 
                     DrawElement(menu, renderer, screenWidth, screenHeight, child);
                 }
+                break;
             }
 
             case UIElementType::HorizontalBox:

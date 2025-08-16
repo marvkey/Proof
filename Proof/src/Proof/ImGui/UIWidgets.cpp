@@ -370,6 +370,8 @@ namespace Proof::UI
 
 						for (auto& assetId : assetsRegistry)
 						{
+							if (!AssetManager::HasAsset(assetId))continue;
+
 							const auto& assetInfo = AssetManager::GetAssetInfo(assetId);
 
 							if (assetInfo.RuntimeAsset && memoryAssetTypes == UIMemoryAssetTypes::None)

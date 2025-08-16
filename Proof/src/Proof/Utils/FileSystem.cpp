@@ -400,6 +400,78 @@ namespace Proof
 		s_IgnoreNextChange = true;
 	}
 
+	void FileSystem::CopyFileIntoFolder(const std::filesystem::path& file, const std::filesystem::path& folder)
+	{
+		try {
+			if (!std::filesystem::exists(file) || !std::filesystem::is_regular_file(file)) {
+				PF_ENGINE_ERROR("Source file doesn't exist: {0}", file.string());
+				return;
+			}
+
+			// Make sure destination folder exists
+			std::filesystem::create_directories(folder);
+
+			// Destination path
+			std::filesystem::path dst = folder / file.filename();
+
+			// If it already exists, generate a unique name
+			if (std::filesystem::exists(dst)) {
+				dst = GenerateUniqueFileName(dst);
+			}
+
+			std::filesystem::copy_file(file, dst);
+		}
+		catch (const std::filesystem::filesystem_error& e) {
+			std::cerr << "Copy failed: " << e.what() << "\n";
+			PF_ENGINE_ERROR("Copy failed: {0}", e.what());
+		}
+	}
+
+	void FileSystem::ResursiveCopyFolder(const std::filesystem::path& src, const std::filesystem::path& dst, const std::unordered_set<std::string>& excludedExtension)
+	{
+		namespace fs = std::filesystem;
+
+
+		if (!fs::exists(src) || !fs::is_directory(src)) {
+			PF_ENGINE_ERROR("Source folder doesn't exist: {0}", src.string());
+			return;
+		}
+
+		// include the folder name itself
+		fs::path realDst = dst / src.filename();
+		fs::create_directories(realDst);
+
+		for (auto& entry : fs::recursive_directory_iterator(src))
+		{
+			const auto& path = entry.path();
+			auto relPath = fs::relative(path, src);   // relative to the src folder
+			auto outPath = realDst / relPath;         // now nested inside "dst/src.filename()"
+
+			if (entry.is_directory()) 
+			{
+				fs::create_directories(outPath);
+			}
+
+			else if (entry.is_regular_file()) 
+			{
+				if(excludedExtension.contains(FileSystem::GetFileExtension(entry)))
+					continue;
+				if(!FileSystem::Exists(FileSystem::GetAbsolutePath(outPath.parent_path())))
+					fs::create_directories(outPath.parent_path());
+
+				try 
+				{
+					fs::copy_file(path, outPath, fs::copy_options::overwrite_existing);
+				}
+				catch (const fs::filesystem_error& e) 
+				{
+					PF_ENGINE_ERROR("Failed to copy {0} : {1}", path.string(), e.what());
+				}
+
+			}
+		}
+	}
+
 	void FileSystem::AddFileSystemChangedCallback(const FileSystemChangedCallbackFn& callback)
 	{
 		s_Callbacks.push_back(callback);

@@ -71,3 +71,5 @@ project "ProofRuntime"
         defines "PF_DIST"
         optimize "on"	
         runtime "Release"
+        kind "WindowedApp" -- disables logger
+

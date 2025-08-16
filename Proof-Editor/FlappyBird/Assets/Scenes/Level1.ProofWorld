@@ -15,6 +15,10 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 1
+        CastShadow: true
+        ShadowStrength: 0.5
+        CastSoftShadow: true
+        ShadowSoftness: 0.5
     - Entity: 9349092802385242280
       TagComponent:
         Tag: Bird
@@ -28,6 +32,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 3078368524365667147
+        Visible: true
       ScriptComponent:
         Scripts:
           - Script: FlappyBird.BirdMovement
@@ -92,6 +97,7 @@ World:
       RigidBodyComponent:
         Mass: 1
         LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Dynamic
@@ -100,19 +106,19 @@ World:
         Kinematic: false
         CollisionDetection: Discrete
       PlayerInputComponent:
-        InputPlayer: None
         InputBindings:
           - InputBindingContextHandler: ""
             InputBindingID: 17819033342336243331
             Active: true
       PlayerHUDComponent:
-        {}
-    - Entity: 12694213833621260716
+        UITable:
+          []
+    - Entity: 12917521485709972632
       TagComponent:
-        Tag: FirstPersonCamera
+        Tag: BehindCamera
         tags: []
       TransformComponent:
-        Location: [0, 6.4000001, 0]
+        Location: [12.7559996, 7.35514832, 0]
         Rotation: [0, 1.57079637, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -138,7 +144,7 @@ World:
                 Data: false
               - NameID: FlappyBird.CameraFollow.FollowOffset
                 Type: Vector3
-                Data: [-1, 0, 0]
+                Data: [8, 0, 0]
       CameraComponent:
         NearPlane: 0.300000012
         FarPlane: 1000
@@ -213,12 +219,12 @@ World:
               - NameID: FlappyBird.PlatformSpawn.Obstacle
                 Type: Prefab
                 Data: 9412958720818837739
-    - Entity: 12917521485709972632
+    - Entity: 12694213833621260716
       TagComponent:
-        Tag: BehindCamera
+        Tag: FirstPersonCamera
         tags: []
       TransformComponent:
-        Location: [12.7559996, 7.35514832, 0]
+        Location: [0, 6.4000001, 0]
         Rotation: [0, 1.57079637, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -244,7 +250,7 @@ World:
                 Data: false
               - NameID: FlappyBird.CameraFollow.FollowOffset
                 Type: Vector3
-                Data: [8, 0, 0]
+                Data: [-1, 0, 0]
       CameraComponent:
         NearPlane: 0.300000012
         FarPlane: 1000
@@ -313,6 +319,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
+        Visible: true
         MaterialTable:
           - Material: ""
             AssetID: 1279727863603567063
@@ -325,6 +332,7 @@ World:
       RigidBodyComponent:
         Mass: 1
         LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Static

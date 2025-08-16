@@ -78,3 +78,4 @@ project "Proof-Editor"
         defines "PF_DIST"
         optimize "on"	
         runtime "Release"
+        kind "WindowedApp" -- disables logger

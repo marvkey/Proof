@@ -25,7 +25,8 @@ namespace LostExpedition
         {
             if (m_PlayerHUDComponent == null)
                 return;
-            
+
+            UpdateHealth();
             if (m_Inventory == null)
             {
                 m_Inventory = GetScriptInstance<Inventory>();
@@ -46,15 +47,36 @@ namespace LostExpedition
             }
         }
 
+        void UpdateHealth()
+        {
+            if (!HasScript<HealthComponent>()) return;
+
+            HealthComponent healthComponent = GetScript<HealthComponent>();
+
+            Variable heatlhPercent = m_PlayerHUDComponent.GetRegistryVariable("HUD", PlayerDefaultHUD, "HealthPercent"); 
+            if (heatlhPercent != null)
+            {
+                heatlhPercent.SetData((float)healthComponent.GetHealth() / healthComponent.GetMaxHealth());
+            }
+            Variable hungerPercent = m_PlayerHUDComponent.GetRegistryVariable("HUD", PlayerDefaultHUD, "HungerPercent");
+
+            if(hungerPercent != null)
+            {
+                hungerPercent.SetData((float)healthComponent.GetCurrentHunger() / healthComponent.GetMaxHunger());
+
+            }
+        }
+
         void InventoryItemChange(InventoryItem currentItem, InventoryItem previousItem)
         {
             if (GunPanel == null)
                 return;
-            if (previousItem != null)
+            if (previousItem != null && previousItem is Gun)
             {
                 m_PlayerHUDComponent.RemovePanel("HUD", GunPanel);
             }
-            m_PlayerHUDComponent.PushPanel("HUD", GunPanel, true);
+            if(currentItem is Gun) 
+                m_PlayerHUDComponent.PushPanel("HUD", GunPanel, true);
 
         }
 

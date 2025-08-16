@@ -1731,7 +1731,7 @@ namespace Proof
 				{
 					Save();
 				}
-
+#if 0
 				if (ImGui::MenuItem("APply"))
 				{
 					std::string defaultnameCoin = "Coin";
@@ -1774,6 +1774,21 @@ namespace Proof
 								}
 							}
 						});
+				}
+#endif
+
+				if (ImGui::MenuItem("Export Game"))
+				{
+					std::filesystem::path director = FileSystem::OpenFolderDialog();
+					if (!director.empty())
+					{
+						Timer time;
+						Project::GetActive()->ExportGame(director);
+
+						PF_EC_INFO("Game exported to {} Time {}", director.string(), Utils::String::DurationToString(time.ElapsedMillis()));
+						if(FileSystem::Exists(director))
+							FileSystem::ShowFileInExplorer(director);
+					}
 				}
 				ImGui::EndMenu();
 			}

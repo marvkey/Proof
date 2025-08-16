@@ -635,12 +635,12 @@ namespace Proof
 
 		for (auto& laterItem : m_SpawnLater)
 		{
-			Entity e = m_World.Lock()->CreateEntity("TerrainItem",laterItem.Prefab.GetAsset<Prefab>(),TransformComponent());
-			e.GetTransformComponent().Location = laterItem.Position;
-			e.GetTransformComponent().Location *= m_Transform.Scale;
-			e.GetTransformComponent().Scale *= m_Transform.Scale;
-			//e.GetTransformComponent().SetRotation(glm::vec3(0, Random::Real(0.0f, 360.0f), 0));
-			//e.GetTransformComponent().SetScale(glm::vec3(1.0f));
+			TransformComponent comonent = TransformComponent();
+			comonent.Location = laterItem.Position;
+			comonent.Location *= m_Transform.Scale;
+			comonent.Scale *= m_Transform.Scale;
+
+			Entity e = m_World.Lock()->CreateEntity("TerrainItem",laterItem.Prefab.GetAsset<Prefab>(), comonent);
 		}
 		//m_SpawnLater.clear();
 	}
@@ -656,8 +656,6 @@ namespace Proof
 		m_TerrainRenderer = terrain.Get();
 		if (!terrain->GetPhysicsEntity().IsValid())
 			return;
-
-
 	}
 	void TerrainChunk::GeneratePhysicsCollisons()
 	{

@@ -159,6 +159,9 @@ project "Proof"
 		defines "PF_DIST"
 		optimize "on"
 		runtime "Release"
+		defines{
+			"NDEBUG",
+		}
 		links
 		{
 			"%{Library.ShaderC_Release}",

@@ -32,6 +32,33 @@ namespace Proof
 	{
 		return GetFromSystemProjectDirectory(m_ProjectConfig.ScriptModuleDirectory.string() + fmt::format("/{}.dll", m_ProjectConfig.Name));
 	}
+	void Project::ExportGame(std::filesystem::path outputDirectory, bool forceRebuild)
+	{
+		if (!FileSystem::IsDirectory(outputDirectory))
+		{
+			PF_EC_ERROR("Output directory {} is not a valid directory", outputDirectory.string());
+			return;
+		}
+		
+		outputDirectory /= GetProjectName();
+		FileSystem::ResursiveCopyFolder(GetAssetDirectory(), outputDirectory, { ".cs" });
+		FileSystem::ResursiveCopyFolder(GetFromSystemProjectDirectory(m_ProjectConfig.AssetCustomDataDirectory), outputDirectory, { ".cs" });
+
+		// scriptDlll
+		{
+			auto binary = outputDirectory / m_ProjectConfig.ScriptModuleDirectory;
+			FileSystem::CreateDirectory(binary);
+			FileSystem::CopyFileIntoFolder(GetScriptCoreDll(), binary);
+			FileSystem::CopyFileIntoFolder(GetScriptAppDll(), binary);
+		}
+
+		{
+			std::filesystem::path fonts = "Assets/Fonts";
+			FileSystem::ResursiveCopyFolder(FileSystem::GetAbsolutePath(fonts), outputDirectory/"Assets/Fonts" );
+
+		}
+
+	}
 	Project::Project()
 	{
 		m_ProjectDirectory = m_ProjectDirectory.parent_path();

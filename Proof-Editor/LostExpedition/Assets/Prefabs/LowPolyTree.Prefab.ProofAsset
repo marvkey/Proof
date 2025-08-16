@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 15638204258216792047
-EntityOwner: 12568177766344668859
+EntityOwner: 13169992876487817471
 Entities:
-  - Entity: 12568177766344668859
+  - Entity: 13169992876487817471
     TagComponent:
       Tag: LowPolyTree
       tags: []
@@ -12,21 +12,72 @@ Entities:
       Scale: [1, 1, 1]
     HierarchyComponent:
       ParentHandle: 0
-      Children: [1602992708458540368]
-  - Entity: 1602992708458540368
+      Children: [10680151083361470895]
+  - Entity: 10680151083361470895
     TagComponent:
       Tag: LowPolyTree
       tags: []
     TransformComponent:
       Location: [0, -1, 0]
       Rotation: [0, -0, 0]
-      Scale: [0.25, 0.25, 0.25]
+      Scale: [0.150000006, 0.150000006, 0.150000006]
     HierarchyComponent:
-      ParentHandle: 12568177766344668859
+      ParentHandle: 13169992876487817471
       Children: []
     MeshComponent:
       MeshAssetPointerID: 14075414392747790104
       Visible: true
+    ScriptComponent:
+      Scripts:
+        - Script: LostExpedition.HealthComponent
+          ScriptClassName: LostExpedition.HealthComponent
+          ScriptName: LostExpedition.HealthComponent
+          Fields:
+            - NameID: LostExpedition.HealthComponent.Health
+              Type: Float
+              Data: 100
+            - NameID: LostExpedition.HealthComponent.MaxHealth
+              Type: Float
+              Data: 100
+            - NameID: LostExpedition.HealthComponent.DestoryIfHealthZero
+              Type: Bool
+              Data: true
+            - NameID: LostExpedition.HealthComponent.BlockTakeDamage
+              Type: Bool
+              Data: false
+            - NameID: LostExpedition.HealthComponent.UseHunger
+              Type: Bool
+              Data: false
+            - NameID: LostExpedition.HealthComponent.HungerDecreaseHealthPerSeond
+              Type: Float
+              Data: 1
+            - NameID: LostExpedition.HealthComponent.MaxHunger
+              Type: Float
+              Data: 100
+            - NameID: LostExpedition.HealthComponent.DecreaseHungerPerSecond
+              Type: Float
+              Data: 0.5
+        - Script: LostExpedition.TrapTree
+          ScriptClassName: LostExpedition.TrapTree
+          ScriptName: LostExpedition.TrapTree
+          Fields:
+            - NameID: LostExpedition.TrapTree.SpawnOnDelete
+              Type: Prefab
+              Data: 3120643860804007446
+            - NameID: LostExpedition.TrapTree.RiseHeight
+              Type: Float
+              Data: 4
+            - NameID: LostExpedition.TrapTree.Damage
+              Type: Float
+              Data: 20
+            - NameID: LostExpedition.TrapTree.RiseDuration
+              Type: Float
+              Data: 3
+    BoxColliderComponent:
+      IsTrigger: true
+      Center: [0, 9.5, 0]
+      Size: [3.5, 26.7000008, 2.0999999]
+      PhysicsMaterialPointerID: 0
     MeshColliderComponent:
       ColliderID: 17949286409091753867
       IsTrigger: false

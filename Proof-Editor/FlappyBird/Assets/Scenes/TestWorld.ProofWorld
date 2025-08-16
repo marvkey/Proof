@@ -1,17 +1,6 @@
 World:
   ID: 15802927782469401077
   Entities:
-    - Entity: 18320901087392238441
-      TagComponent:
-        Tag: p_Platform
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: [12611173100223212822]
     - Entity: 1592908217011438749
       TagComponent:
         Tag: Directional Light
@@ -26,6 +15,21 @@ World:
       DirectionalLightComponent:
         Color: [1, 1, 1]
         Intensity: 1
+        CastShadow: true
+        ShadowStrength: 0.5
+        CastSoftShadow: true
+        ShadowSoftness: 0.5
+    - Entity: 18320901087392238441
+      TagComponent:
+        Tag: p_Platform
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [12611173100223212822]
     - Entity: 2362280823514790440
       TagComponent:
         Tag: Sky Light
@@ -60,6 +64,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
+        Visible: true
         MaterialTable:
           - Material: ""
             AssetID: 1279727863603567063
@@ -72,6 +77,7 @@ World:
       RigidBodyComponent:
         Mass: 1
         LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
         AngularDrag: 0.0500000007
         Gravity: true
         Type: Static

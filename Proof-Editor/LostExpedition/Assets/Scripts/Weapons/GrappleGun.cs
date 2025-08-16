@@ -7,7 +7,6 @@ namespace LostExpedition
         private Vector3 grapplePoint;
         public Transform gunTip, camera, player;
         private float maxDistance = 100f;
-        private SpringJoint joint;
     }
 
 }

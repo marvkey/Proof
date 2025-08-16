@@ -12,6 +12,7 @@ namespace LostExpedition
         public InputAction JumpAction;
         public InputAction ActivateWeaponAction;
         public InputAction ChangeInventorySlotAction;
+        public InputAction IsRunningAction;
 
         PlayerInputComponent m_PlayerInputComponent;
         PlayerMovement m_PlayerMovement;
@@ -48,6 +49,8 @@ namespace LostExpedition
 
 
             BindInputAction(m_PlayerInputComponent, ChangeInventorySlotAction, InteractionEvent.Triggered, ChangeInventorySlot);
+            BindInputAction(m_PlayerInputComponent, IsRunningAction, InteractionEvent.Started, EnableRunning);
+            BindInputAction(m_PlayerInputComponent, IsRunningAction, InteractionEvent.Completed, DisableRunning);
 
             m_PlayerMovement = GetScript<PlayerMovement>();
 
@@ -65,6 +68,19 @@ namespace LostExpedition
 
         }
 
+        void EnableRunning(InputActionOutput actionOutput)
+        {
+            if (m_PlayerMovement != null)
+                m_PlayerMovement.IsRunning = true; 
+
+        }
+
+        void DisableRunning(InputActionOutput actionOutput)
+        {
+            if (m_PlayerMovement != null)
+                m_PlayerMovement.IsRunning = false;
+
+        }
         void Move(InputActionOutput actionOutput)
         {
 
@@ -94,15 +110,11 @@ namespace LostExpedition
         {
             if (!HasScript<Inventory>())
                 return;
-            var currentWeapon = GetScript<Inventory>().GetCurrentItem();
-            if (currentWeapon == null)
+            var inventoryItem = GetScript<Inventory>().GetCurrentItem();
+            if (inventoryItem == null)
                 return;
 
-            if (currentWeapon.GetType() == typeof(Gun))
-            {
-                var gun = currentWeapon as Gun;
-                gun.Fire(this.Transform, m_PlayerMovement.Camera.Transform);
-            }
+            inventoryItem.Activate(this,Transform,m_PlayerMovement.Camera.Transform);
         }
 
         void ChangeInventorySlot(InputActionOutput actionOutput)

@@ -123,12 +123,69 @@ World:
         Tag: WeaponHolder
         tags: []
       TransformComponent:
-        Location: [1.09892821, 0, 0]
-        Rotation: [0, -0, 0]
+        Location: [0.532000005, 0.578999996, -1.78600001]
+        Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 10869204382231457587
         Children: []
+    - Entity: 11203137533141161830
+      TagComponent:
+        Tag: Apple
+        tags: []
+      TransformComponent:
+        Location: [0, 35.6997528, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 3458092080199058508
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 9660866001414010741
+            Index: 0
+      ScriptComponent:
+        Scripts:
+          - Script: LostExpedition.Food
+            ScriptClassName: LostExpedition.Food
+            ScriptName: LostExpedition.Food
+            Fields:
+              - NameID: LostExpedition.Food.HungerRestore
+                Type: Float
+                Data: 10
+              - NameID: LostExpedition.Food.ItemName
+                Type: String
+                Data: ""
+              - NameID: LostExpedition.Food.MaxItemPerSlot
+                Type: Int32
+                Data: 1
+              - NameID: LostExpedition.Food.InventoryImage
+                Type: Texture2D
+                Data: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1.60000002, 0.899999976, 1.29999995]
+        PhysicsMaterialPointerID: 0
+      SphereColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Radius: 0.200000003
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 3385011559091816577
       TagComponent:
         Tag: Directional Light
@@ -180,6 +237,21 @@ World:
               - NameID: LostExpedition.HealthComponent.DestoryIfHealthZero
                 Type: Bool
                 Data: true
+              - NameID: LostExpedition.HealthComponent.BlockTakeDamage
+                Type: Bool
+                Data: false
+              - NameID: LostExpedition.HealthComponent.UseHunger
+                Type: Bool
+                Data: false
+              - NameID: LostExpedition.HealthComponent.HungerDecreaseHealthPerSeond
+                Type: Float
+                Data: 1
+              - NameID: LostExpedition.HealthComponent.MaxHunger
+                Type: Float
+                Data: 100
+              - NameID: LostExpedition.HealthComponent.DecreaseHungerPerSecond
+                Type: Float
+                Data: 0.5
           - Script: LostExpedition.EnemyController
             ScriptClassName: LostExpedition.EnemyController
             ScriptName: LostExpedition.EnemyController
@@ -208,8 +280,8 @@ World:
         Tag: Camera
         tags: []
       TransformComponent:
-        Location: [0, 1.89999998, 5.4000001]
-        Rotation: [-0.0820304677, 0, 0]
+        Location: [0.000516891479, 1.03966904, -0.0262908936]
+        Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 10869204382231457587
@@ -225,7 +297,7 @@ World:
         Tag: Player
         tags: []
       TransformComponent:
-        Location: [-62.1616402, 76.2971878, -59.9037094]
+        Location: [-9.62612247, 35.3686256, 30.7435989]
         Rotation: [0, 1.40499008, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -252,7 +324,7 @@ World:
                 Data: 10
               - NameID: LostExpedition.PlayerMovement.RotationSpeed
                 Type: Float
-                Data: 10
+                Data: 20
               - NameID: LostExpedition.PlayerMovement.Camera
                 Type: Entity
                 Data: 15432167700584823006
@@ -266,6 +338,9 @@ World:
             ScriptClassName: LostExpedition.PlayerInput
             ScriptName: LostExpedition.PlayerInput
             Fields:
+              - NameID: LostExpedition.PlayerInput.IsRunningAction
+                Type: InputAction
+                Data: 9560166560900540495
               - NameID: LostExpedition.PlayerInput.ActivateWeaponAction
                 Type: InputAction
                 Data: 1490467677047270823
@@ -307,6 +382,21 @@ World:
               - NameID: LostExpedition.HealthComponent.DestoryIfHealthZero
                 Type: Bool
                 Data: false
+              - NameID: LostExpedition.HealthComponent.BlockTakeDamage
+                Type: Bool
+                Data: false
+              - NameID: LostExpedition.HealthComponent.UseHunger
+                Type: Bool
+                Data: false
+              - NameID: LostExpedition.HealthComponent.HungerDecreaseHealthPerSeond
+                Type: Float
+                Data: 1
+              - NameID: LostExpedition.HealthComponent.MaxHunger
+                Type: Float
+                Data: 100
+              - NameID: LostExpedition.HealthComponent.DecreaseHungerPerSecond
+                Type: Float
+                Data: 0.5
           - Script: LostExpedition.Inventory
             ScriptClassName: LostExpedition.Inventory
             ScriptName: LostExpedition.Inventory
@@ -334,7 +424,7 @@ World:
         FreezeLocation: [false, false, false]
         FreezeRotation: [true, false, true]
         Kinematic: false
-        CollisionDetection: Discrete
+        CollisionDetection: ContinuousSpeculative
       PlayerInputComponent:
         InputBindings:
           - InputBindingContextHandler: ""
@@ -365,12 +455,38 @@ World:
             Visible: true
             Panels:
               []
+    - Entity: 1324521523320574654
+      TagComponent:
+        Tag: TrapTreeManager
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: LostExpedition.TrapTreeManager
+            ScriptClassName: LostExpedition.TrapTreeManager
+            ScriptName: LostExpedition.TrapTreeManager
+            Fields:
+              - NameID: LostExpedition.TrapTreeManager.DamagePerTree
+                Type: Float
+                Data: 2
+              - NameID: LostExpedition.TrapTreeManager.ThresholdSeconds
+                Type: Float
+                Data: 15
+              - NameID: LostExpedition.TrapTreeManager.AmountPerKilledTree
+                Type: Float
+                Data: 5
     - Entity: 16039414171671641192
       TagComponent:
         Tag: Pistol
         tags: []
       TransformComponent:
-        Location: [-0.873287439, 16.5300903, 5.74086857]
+        Location: [-0.873287439, 28.816967, 5.74086857]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -416,6 +532,12 @@ World:
               - NameID: LostExpedition.Gun.MagazineSize
                 Type: Int32
                 Data: 12
+              - NameID: LostExpedition.Gun.ItemName
+                Type: String
+                Data: ""
+              - NameID: LostExpedition.Gun.MaxItemPerSlot
+                Type: Int32
+                Data: 1
               - NameID: LostExpedition.Gun.InventoryImage
                 Type: Texture2D
                 Data: 56963814104375806
@@ -451,7 +573,7 @@ World:
         Tag: AssaultRifle
         tags: []
       TransformComponent:
-        Location: [0, 14.6166172, 2.01169276]
+        Location: [0, 28.5414333, 2.01169276]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -493,6 +615,12 @@ World:
               - NameID: LostExpedition.Gun.MagazineSize
                 Type: Int32
                 Data: 30
+              - NameID: LostExpedition.Gun.ItemName
+                Type: String
+                Data: ""
+              - NameID: LostExpedition.Gun.MaxItemPerSlot
+                Type: Int32
+                Data: 1
               - NameID: LostExpedition.Gun.InventoryImage
                 Type: Texture2D
                 Data: 14125218988744029477
@@ -547,7 +675,7 @@ World:
         Tag: Shotgun
         tags: []
       TransformComponent:
-        Location: [2.43184471, 14.5211687, 2.50749516]
+        Location: [2.43184471, 28.4209995, 2.50749516]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -593,6 +721,12 @@ World:
               - NameID: LostExpedition.Gun.MagazineSize
                 Type: Int32
                 Data: 8
+              - NameID: LostExpedition.Gun.ItemName
+                Type: String
+                Data: ""
+              - NameID: LostExpedition.Gun.MaxItemPerSlot
+                Type: Int32
+                Data: 1
               - NameID: LostExpedition.Gun.InventoryImage
                 Type: Texture2D
                 Data: 14067022982534030916
@@ -673,3 +807,97 @@ World:
         SSSBase: -5
         SSSScale: 17.8479996
         SSSStrength: 0.463999987
+    - Entity: 2418705031283560736
+      TagComponent:
+        Tag: HitPoint
+        tags: []
+      TransformComponent:
+        Location: [0, 1, -0.200000003]
+        Rotation: [0, -0, 0]
+        Scale: [0.280000001, 0.560000002, 0.440837562]
+      HierarchyComponent:
+        ParentHandle: 4846872314627220009
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: false
+      ScriptComponent:
+        Scripts:
+          - Script: LostExpedition.MeleeWeaponHitBox
+            ScriptClassName: LostExpedition.MeleeWeaponHitBox
+            ScriptName: LostExpedition.MeleeWeaponHitBox
+            Fields:
+              []
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: false
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: true
+        CollisionDetection: Discrete
+    - Entity: 4846872314627220009
+      TagComponent:
+        Tag: Axe
+        tags: []
+      TransformComponent:
+        Location: [0, 29.8472252, 13.0056715]
+        Rotation: [0, 0, 0]
+        Scale: [1, 0.600000024, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [2418705031283560736]
+      MeshComponent:
+        MeshAssetPointerID: 582766038427983149
+        Visible: true
+      ScriptComponent:
+        Scripts:
+          - Script: LostExpedition.MeleeWeapon
+            ScriptClassName: LostExpedition.MeleeWeapon
+            ScriptName: LostExpedition.MeleeWeapon
+            Fields:
+              - NameID: LostExpedition.MeleeWeapon.SwingDamage
+                Type: Float
+                Data: 25
+              - NameID: LostExpedition.MeleeWeapon.SwingCooldown
+                Type: Float
+                Data: 0.349999994
+              - NameID: LostExpedition.MeleeWeapon.HitBox
+                Type: Entity
+                Data: 2418705031283560736
+              - NameID: LostExpedition.MeleeWeapon.HitRange
+                Type: Float
+                Data: 3
+              - NameID: LostExpedition.MeleeWeapon.ItemName
+                Type: String
+                Data: ""
+              - NameID: LostExpedition.MeleeWeapon.MaxItemPerSlot
+                Type: Int32
+                Data: 1
+              - NameID: LostExpedition.MeleeWeapon.InventoryImage
+                Type: Texture2D
+                Data: 10030745357571572551
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0.100000001, 0]
+        Size: [1, 2.4000001, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: false
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: true
+        CollisionDetection: Discrete

@@ -49,19 +49,7 @@ namespace LostExpedition
         void OnUpdate(float deltaTime)
 		{
 
-            if (rotateRate != Vector2.Zero)
-            {
-                m_RigidBody.Rotate(new Quaternion(new Vector3(0, Mathf.DegreesToRadians(-(rotateRate.x * RotationSpeed * deltaTime)), 0)));
-
-
-                verticalRotation -= rotateRate.y * RotationSpeed * deltaTime;
-                verticalRotation = Mathf.Clamp(verticalRotation, -90, 90);
-                {
-                    // disbale up down rotation
-                    //Camera.Transform.RotationQuat = Quaternion.EularToQuat(new Vector3(Mathf.DegreesToRadians(verticalRotation), 0, 0));
-                }
-                rotateRate = Vector2.Zero;
-            }
+           
 
         }
 
@@ -73,11 +61,37 @@ namespace LostExpedition
 
 			if(moveRate != Vector2.Zero)
 			{
-                m_RigidBody.Location += Transform.Forward * (IsRunning ? RunningSpeed : WalkingSpeed) * fixedPhysicsDeltaTime * moveRate.y;
-                m_RigidBody.Location += Transform.Right * (IsRunning ? RunningSpeed : WalkingSpeed) * fixedPhysicsDeltaTime * moveRate.x;
+
+                // Combine into one direction vector
+                Vector3 moveDir = (Transform.Forward * moveRate.y) + (Transform.Right * moveRate.x);
+
+                // Normalize to prevent diagonal speed boost
+                // usign length squred make sure its not lenght is not 0
+                if (moveDir.LengthSqr > 0f)
+                    moveDir = moveDir.Normalized;
+
+                // Apply movement
+                m_RigidBody.Location += moveDir * (IsRunning ? RunningSpeed : WalkingSpeed) * fixedPhysicsDeltaTime;
+
+
+               // m_RigidBody.Location += Transform.Forward * (IsRunning ? RunningSpeed : WalkingSpeed) * fixedPhysicsDeltaTime * moveRate.y;
+               // m_RigidBody.Location += Transform.Right * (IsRunning ? RunningSpeed : WalkingSpeed) * fixedPhysicsDeltaTime * moveRate.x;
                 moveRate = Vector2.Zero;
             }
 
+            if (rotateRate != Vector2.Zero)
+            {
+                m_RigidBody.Rotate(new Quaternion(new Vector3(0, Mathf.DegreesToRadians(-(rotateRate.x * RotationSpeed * fixedPhysicsDeltaTime)), 0)));
+
+
+                verticalRotation += rotateRate.y * RotationSpeed * fixedPhysicsDeltaTime;
+                verticalRotation = Mathf.Clamp(verticalRotation, -90, 90);
+                {
+                    // disbale up down rotation
+                    Camera.Transform.RotationQuat = Quaternion.EularToQuat(new Vector3(Mathf.DegreesToRadians(verticalRotation), 0, 0));
+                }
+                rotateRate = Vector2.Zero;
+            }
         }
 
 		public void Move(Vector2 axis)
@@ -94,7 +108,7 @@ namespace LostExpedition
         {
             if(IsGrounded())
             {
-                Log.Info("Jumped");
+                Log.Trace("Jumped");
 
                 m_RigidBody.AddForce(Mathf.Up * JumpForce,ForceMode.Impulse);
             }

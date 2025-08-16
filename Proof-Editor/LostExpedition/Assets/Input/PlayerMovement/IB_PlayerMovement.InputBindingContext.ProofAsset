@@ -45,3 +45,7 @@ InputBindings:
       - InputInteractionType: ClickRelease
         InteractionThreshold: 0.25
         Mode: Click
+  - InputActionID: 9560166560900540495
+    KeyBindings:
+      - InputKeyBindingType: Key
+        InputKeyName: Control

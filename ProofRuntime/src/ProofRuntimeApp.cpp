@@ -29,17 +29,6 @@ namespace Proof {
             #endif
                 m_ApplicationConfiguration.ProjectPath = newProjectPath;
             }
-            // filesyste
-            {
-
-                std::filesystem::path workingDirectory = std::filesystem::current_path();
-                const std::string stemOfdire = workingDirectory.stem().string();
-                //if (stemOfdire == "Proof-Editor")
-                workingDirectory = workingDirectory.parent_path();
-                FileSystem::SetEnvironmentVariable("PROOF_DIR", workingDirectory.string());
-                //PF_ENGINE_TRACE("     PROOF_DIR {}", (FileSystem::GetEnvironmentVariable)("PROOF_DIR"));
-
-            }
             PushLayer(new class RuntimeLayer());
         }
     };
@@ -47,7 +36,7 @@ namespace Proof {
         std::string_view projectPath = "../Proof-Editor/Proof/Proof.ProofProject";
         //projectPath = "Driftwood/Driftwood.ProofProject";
         //projectPath = "PacMan3D/PacMan3D.ProofProject";
-       // projectPath = "../Proof-Editor/FlappyBird/FlappyBird.ProofProject";
+        projectPath = "../Proof-Editor/FlappyBird/FlappyBird.ProofProject";
        // projectPath = "../Proof-Editor/PacMan/PacMan.ProofProject";
         if (argc > 1)
             projectPath = argv[1];

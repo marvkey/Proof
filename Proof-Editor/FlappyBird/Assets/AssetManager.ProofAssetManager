@@ -11,24 +11,24 @@ Assets:
   - Asset: 1727338198408425826
     Type: World
     Path: Scenes\Level1.ProofWorld
-  - Asset: 16451095300668606735
-    Type: Prefab
-    Path: Prefabs\p_FracturedBird.Prefab.ProofAsset
-  - Asset: 7429149590947314185
-    Type: PhysicsMaterial
-    Path: PhysicsMaterials\pm_Bouncy.PhysicsMaterial.ProofAsset
   - Asset: 1462782654630928778
     Type: MeshCollider
     Path: Collider\NewMeshCollider.MeshCollider.ProofAsset
-  - Asset: 14189394413535490778
-    Type: Texture
-    Path: Textures\rye_field_sunset_8k.hdr
-  - Asset: 14672714111568738449
-    Type: ScriptFile
-    Path: Scripts\BirdMovement.cs
+  - Asset: 7429149590947314185
+    Type: PhysicsMaterial
+    Path: PhysicsMaterials\pm_Bouncy.PhysicsMaterial.ProofAsset
+  - Asset: 16451095300668606735
+    Type: Prefab
+    Path: Prefabs\p_FracturedBird.Prefab.ProofAsset
   - Asset: 3078368524365667147
     Type: Mesh
     Path: Meshes\FlappyBird.Mesh.ProofAsset
+  - Asset: 14672714111568738449
+    Type: ScriptFile
+    Path: Scripts\BirdMovement.cs
+  - Asset: 14189394413535490778
+    Type: Texture
+    Path: Textures\rye_field_sunset_8k.hdr
   - Asset: 17583959974702302579
     Type: MeshSourceFile
     Path: Models\FlappyBird\scene.gltf

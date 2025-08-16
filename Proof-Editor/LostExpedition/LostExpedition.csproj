@@ -88,6 +88,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\EnemyController.cs" />
+    <Compile Include="Assets\Scripts\Items\Food.cs" />
+    <Compile Include="Assets\Scripts\Player\Character.cs" />
+    <Compile Include="Assets\Scripts\Weapons\MeleeWeapon.cs" />
+    <Compile Include="Assets\TrapTree.cs" />
     <Compile Include="Assets\Scripts\HealthComponent.cs" />
     <Compile Include="Assets\Scripts\Inventory.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerHUDManager.cs" />

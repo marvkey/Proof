@@ -16,7 +16,7 @@ namespace Proof
 			if (!mainEntity.HasComponent<ScriptComponent>())
 				return;
 
-			const auto& sc = mainEntity.GetComponent<ScriptComponent>();
+			const ScriptComponent& sc = mainEntity.GetComponent<ScriptComponent>();
 
 			Count<ScriptWorld> scriptWorld = mainEntity.GetCurrentWorld()->GetScriptWorld();
 			if (!scriptWorld)
@@ -29,6 +29,7 @@ namespace Proof
 			{
 				if (ScriptEngine::IsModuleValid(scriptMetaData.ClassName))
 				{
+					//PF_CORE_ASSERT(scriptMetaData.Instance);
 					ScriptEngine::CallMethod(scriptMetaData.Instance, methodName, b.GetUUID());
 				}
 			}
