@@ -14,8 +14,9 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 18141853162402936448
+        Visible: true
       MeshColliderComponent:
-        ColliderID: 11406703058470307677
+        ColliderID: 4358051050220094467
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0
@@ -43,6 +44,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 51
+        Visible: true
         MaterialTable:
           - Material: ""
             AssetID: 9906847331754832331
@@ -76,6 +78,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 51
+        Visible: true
         MaterialTable:
           - Material: ""
             AssetID: 14983098330679523653
@@ -93,6 +96,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 56
+        Visible: true
         MaterialTable:
           - Material: ""
             AssetID: 9906847331754832331
@@ -149,6 +153,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 51
+        Visible: true
         MaterialTable:
           - Material: ""
             AssetID: 14983098330679523653
@@ -176,6 +181,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 56
+        Visible: true
         MaterialTable:
           - Material: ""
             AssetID: 9906847331754832331
@@ -193,8 +199,9 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 18348114341737718825
+        Visible: true
       MeshColliderComponent:
-        ColliderID: 2568564140073205507
+        ColliderID: 4808900638240635616
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0
@@ -222,6 +229,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
+        Visible: true
         MaterialTable:
           - Material: ""
             AssetID: 14983098330679523653
@@ -239,6 +247,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
+        Visible: true
     - Entity: 2353274854406094246
       TagComponent:
         Tag: Cube
@@ -252,6 +261,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
+        Visible: true
         MaterialTable:
           - Material: ""
             AssetID: 14983098330679523653
@@ -290,6 +300,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 54
+        Visible: true
         MaterialTable:
           - Material: ""
             AssetID: 3416512967418026386
@@ -318,12 +329,13 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 55
+        Visible: true
         MaterialTable:
           - Material: ""
             AssetID: 13866412923197075697
             Index: 0
       MeshColliderComponent:
-        ColliderID: 13237922280155050701
+        ColliderID: 15444476195591107208
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0

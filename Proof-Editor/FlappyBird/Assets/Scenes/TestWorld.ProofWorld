@@ -1,12 +1,23 @@
 World:
   ID: 15802927782469401077
   Entities:
+    - Entity: 18320901087392238441
+      TagComponent:
+        Tag: p_Platform
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [12611173100223212822]
     - Entity: 1592908217011438749
       TagComponent:
         Tag: Directional Light
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [12.2096148, 0, -2.15288472]
         Rotation: [1.39626336, 0.17453292, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -19,23 +30,12 @@ World:
         ShadowStrength: 0.5
         CastSoftShadow: true
         ShadowSoftness: 0.5
-    - Entity: 18320901087392238441
-      TagComponent:
-        Tag: p_Platform
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: [12611173100223212822]
     - Entity: 2362280823514790440
       TagComponent:
         Tag: Sky Light
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [6.90051126, 1.97949314, -0.5904634]
         Rotation: [0.565486729, 1.72438538, -0.731292963]
         Scale: [1, 1, 1]
       HierarchyComponent:

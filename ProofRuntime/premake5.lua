@@ -72,4 +72,7 @@ project "ProofRuntime"
         optimize "on"	
         runtime "Release"
         kind "WindowedApp" -- disables logger
+        defines{
+            "NDEBUG", -- PhysX Requires This 
+            }
 

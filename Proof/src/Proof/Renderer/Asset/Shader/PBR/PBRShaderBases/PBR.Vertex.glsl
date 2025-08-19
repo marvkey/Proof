@@ -12,15 +12,15 @@ layout(location = 9) in mat4 aPrevTransform;
 layout(location = 13) in uvec4 aBoneIndices;
 layout(location = 14) in vec4 aBoneWeights;
  layout(push_constant) uniform PushConstantVertex
-    {
-        int BaseIndex;
-    } pc_BoneTransformIndex;
+{
+    int BaseIndex;
+} pc_BoneTransformIndex;
 
 
-    layout(set = 1, binding = 2) buffer BoneTransforms
-    {
-        mat4 BoneTransforms[];
-    } s_AnimationBonesTransforms;
+layout(set = 1, binding = 2) buffer BoneTransforms
+{
+    mat4 BoneTransforms[];
+} s_AnimationBonesTransforms;
 
 #endif
 

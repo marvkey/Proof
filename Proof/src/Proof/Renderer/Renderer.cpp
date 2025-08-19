@@ -246,6 +246,12 @@ namespace Proof {
 		ShaderLibrary->LoadShader("GrassGenerator", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Grass/GrassGenerator.glsl");
 		ShaderLibrary->LoadShader("PreDepthGrassRenderer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Grass/PreDepthGrassRenderer.glsl");
 
+		//particle system
+		ShaderLibrary->LoadShader("ParticleSystemSpawnCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ParticleSystem/ParticleSystemSpawnCompute.glsl");
+		ShaderLibrary->LoadShader("ParticleSystemUpdateCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ParticleSystem/ParticleSystemUpdateCompute.glsl");
+		ShaderLibrary->LoadShader("ParticleSystemRenderer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ParticleSystem/ParticleRenderer.glsl");
+
+
 		
 		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);

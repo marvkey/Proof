@@ -471,6 +471,10 @@ namespace Proof
 
 		Count<class GrassRenderer> m_GrassRenderer;
 
+		Count<ComputePass> m_ParticleSpawnComputePass;
+		Count<ComputePass> m_ParticleUpdateComputePass;
+		Count<RenderPass> m_ParticleRenderPass;
+
 	private:
 
 		// only put attach to depth when you are sure u are not changing any vertex position
@@ -508,6 +512,7 @@ namespace Proof
 		void HizSSRPass();
 		void DrawScene();
 		void ClearPass(Count<RenderPass> renderPass, bool explicitClear);
+		void RenderParticleSystem();
 		// tehse are static so basically when wer are writng code we avoid errors of 
 		// writing code to a speicif world rendere class
 

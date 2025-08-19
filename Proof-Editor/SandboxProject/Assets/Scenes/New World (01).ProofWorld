@@ -17,7 +17,7 @@ World:
         Tag: Sky Light
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [22.3999996, 0, 0]
         Rotation: [0.0349065848, 0.165806279, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -38,7 +38,7 @@ World:
         Tag: Directional Light
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [31.2999992, 0, 0]
         Rotation: [1.39626336, 0.17453292, 0.108210407]
         Scale: [1, 1, 1]
       HierarchyComponent:

@@ -34,6 +34,7 @@ namespace Proof
 	}
 	void ParticleSystemEditorPanel::OnImGuiRender()
 	{
+#if 0
 		if (!m_ParticleSystem)return;
 		if (m_SaveTimer <= 0.0f)
 		{
@@ -147,7 +148,7 @@ namespace Proof
 			UI::Image(m_WorldRenderer->GetFinalPassImage(), ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			ImGui::EndChild();
 		}
-
+#endif
 	}
 	
 	

@@ -38,6 +38,7 @@
 #include "Proof/Core/Core.h"
 #include "RendererSampler.h"
 #include "Proof/Scene/GrassRenderer/GrassRenderer.h"
+#include "Proof/Renderer/ParticleSystem/ParticleSystem2.h"
 
 #include "VertexArray.h"
 #include <glm/glm.hpp>
@@ -602,7 +603,7 @@ namespace Proof
 
 			{
 				//transperantComposite
-				{	
+				{
 					FrameBufferConfig framebufferSpec;
 					framebufferSpec.DebugName = "TransparentComposite";
 					framebufferSpec.Attachments = { ImageFormat::RGBA32F };
@@ -689,6 +690,42 @@ namespace Proof
 			imageConfig.Format = ImageFormat::RGBA16F;
 			imageConfig.Usage = ImageUsage::Attachment;
 			m_PrevNormalImage = Image2D::Create(imageConfig);
+		}
+
+		{
+			GraphicsPipelineConfiguration particlePipelineConfig = m_GeometryPass->GetPipeline()->GetConfig();
+			particlePipelineConfig.DebugName = "Particle Points";
+			particlePipelineConfig.DepthTest = true;
+			particlePipelineConfig.WriteDepth = false;
+			particlePipelineConfig.DrawMode = DrawType::TriangleStrip;  
+			particlePipelineConfig.Shader = Renderer::GetShader("ParticleSystemRenderer");
+
+
+			particlePipelineConfig.DepthCompareOperator = DepthCompareOperator::Less;
+			particlePipelineConfig.CullMode = CullMode::None;
+			particlePipelineConfig.Blend = true;
+
+			// You can reuse a dummy/empty VAO; using quad VAO is fine if your pipeline ignores vertex attrs.
+			particlePipelineConfig.VertexArray = quadVertexArray;
+
+			auto particlePipeline = GraphicsPipeline::Create(particlePipelineConfig);
+
+			RenderPassConfig particlePassCfg;
+			particlePassCfg.DebugName = "Particle Pass";
+			particlePassCfg.Pipeline = particlePipeline;
+			particlePassCfg.TargetFrameBuffer = m_GeometryPass->GetTargetFrameBuffer();
+
+			m_ParticleRenderPass = RenderPass::Create(particlePassCfg);
+
+			// Inputs
+			m_ParticleRenderPass->AddGlobalInput(m_GlobalInputs);
+
+			m_ParticleSpawnComputePass = ComputePass::Create("Particle Spawn Compute", Renderer::GetShader("ParticleSystemSpawnCompute"));
+			m_ParticleUpdateComputePass = ComputePass::Create("Partilce update compute", Renderer::GetShader("ParticleSystemUpdateCompute"));
+
+			m_ParticleSpawnComputePass->AddGlobalInput(m_GlobalInputs);
+			m_ParticleUpdateComputePass->AddGlobalInput(m_GlobalInputs);
+
 		}
 
 		// skybox
@@ -1885,6 +1922,7 @@ namespace Proof
 			//PreIntegrationPass();
 			LightFrustrumAndCullingPass();
 			GeometryPass();
+			RenderParticleSystem();
 			CompositePass();
 
 			Renderer::EndCommandBuffer(m_CommandBuffer);
@@ -4503,5 +4541,108 @@ namespace Proof
 		PF_PROFILE_FUNC();
 		Renderer::BeginRenderPass(m_CommandBuffer, renderPass, explicitClear);
 		Renderer::EndRenderPass(renderPass);
+	}
+	Count<VertexBuffer> quadVertexBuffer;
+	Count<IndexBuffer> quadIndexBuffer;
+	Count< ParticleEmitter> emiter;
+	void WorldRenderer::RenderParticleSystem()
+	{
+		if (emiter == nullptr)
+		{
+			emiter = Count<ParticleEmitter>::Create();
+		
+
+
+			QuadVertex vertices[4];
+
+			vertices[0].Position = glm::vec3(0.5f, 0.5f, 0.0f);
+			vertices[0].TexCoord = glm::vec2(1.0f, 1.0f);
+
+			vertices[1].Position = glm::vec3(0.5f, -0.5f, 0.0f);
+			vertices[1].TexCoord = glm::vec2(1.0f, 0.0);
+
+			vertices[2].Position = glm::vec3(-0.5f, -0.5f, 0.0f);
+			vertices[2].TexCoord = glm::vec2(0.0f, 0.0f);
+
+			vertices[3].Position = glm::vec3(-0.5f, 0.5f, 0.0f);
+			vertices[3].TexCoord = glm::vec2(0, 1);
+
+			//unsigned int indices[] = {
+			//	0, 1, 3, // first triangle
+			//	1, 2, 3  // second triangle
+			//};
+
+			uint32_t indices[6] = { 0, 1, 2, 2, 3, 0, };
+			quadVertexBuffer = VertexBuffer::Create(vertices,4 * sizeof(QuadVertex));
+			quadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
+		}
+		emiter->OnUpdate(FrameTime::GetWorldDeltaTime());
+
+		m_ParticleSpawnComputePass->SetInput("s_Particles", emiter->ParticleBuffer);
+		m_ParticleSpawnComputePass->SetInput("particle_index_buffer", emiter->ParticleFreeBufferIndecis);
+		m_ParticleSpawnComputePass->SetInput("FreeListCount", emiter->ParticleFreeBufferCount);
+		m_ParticleSpawnComputePass->SetInput("EmitterSettings", emiter->ParticleEmitterSettingsBuffer);
+
+		const uint32_t paticlesperThread = 4;
+
+		struct Pc
+		{
+			uint32_t ParticleToSpawn;
+			uint32_t PaticlesPerThread;
+			uint32_t NumParticles;
+		};
+
+		Pc pc;
+		pc.ParticleToSpawn = emiter->GetParticleToSpawn();
+		pc.PaticlesPerThread = paticlesperThread;
+		pc.NumParticles = emiter->maxParticles;
+		/*
+		if (emiter->GetParticleToSpawn() > 0)
+		{
+
+			Renderer::BeginComputePass(m_CommandBuffer, m_ParticleSpawnComputePass);
+
+			uint32_t workGroupSize = 128;
+			const uint32_t groups = (emiter->GetParticleToSpawn() + paticlesperThread * workGroupSize - 1) / (paticlesperThread * workGroupSize);
+
+
+			m_ParticleSpawnComputePass->PushData(Buffer(&pc, sizeof(pc)));
+			m_ParticleSpawnComputePass->Dispatch(groups, 1, 1);
+
+			Renderer::EndComputePass(m_ParticleSpawnComputePass);
+		}
+		*/
+
+		{
+
+			m_ParticleUpdateComputePass->SetInput("s_Particles", emiter->ParticleBuffer);
+			m_ParticleUpdateComputePass->SetInput("particle_index_buffer", emiter->ParticleFreeBufferIndecis);
+			m_ParticleUpdateComputePass->SetInput("FreeListCount", emiter->ParticleFreeBufferCount);
+			//m_ParticleSpawnComputePass->SetInput("EmitterSettings", emiter->ParticleEmitterSettingsBuffer);
+
+			Renderer::BeginComputePass(m_CommandBuffer, m_ParticleUpdateComputePass);
+
+
+			m_ParticleUpdateComputePass->PushData(Buffer(&pc, sizeof(pc)));
+
+			int workGroupSize = 512;
+			int numGroups = (pc.NumParticles + workGroupSize - 1) / workGroupSize;
+			m_ParticleUpdateComputePass->Dispatch(numGroups, 1, 1);
+			Renderer::EndComputePass(m_ParticleUpdateComputePass);
+
+		}
+
+		m_ParticleRenderPass->SetInput("s_Particles", emiter->ParticleBuffer);
+		Renderer::BeginRenderPass(m_CommandBuffer, m_ParticleRenderPass);
+
+		const uint32_t vertexCount = 6; // POINT_LIST
+		//const uint32_t instanceCount = m_NumParticles;
+		const uint32_t instanceCount = emiter->m_ParticlePool.size();
+
+		quadVertexBuffer->Bind(m_CommandBuffer);
+		quadIndexBuffer->Bind(m_CommandBuffer);
+		Renderer::DrawElementIndexed(m_CommandBuffer, quadIndexBuffer->GetSize() / sizeof(uint32_t), instanceCount,0,0);
+
+		Renderer::EndRenderPass(m_ParticleRenderPass);
 	}
 }

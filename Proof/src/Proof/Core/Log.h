@@ -59,11 +59,18 @@ namespace Proof
 #define  PF_TRACE(...) ::Proof::Log::AppendString(3,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__))
 #define	 PF_CRITICAL(...)::Proof::Log::AppendString(4,::Proof::Log::GetClientLogger()->GetLogString(__VA_ARGS__))
 #else
+
 #define  PF_ENGINE_ERROR(...)
 #define  PF_ENGINE_WARN(...) 
 #define  PF_ENGINE_INFO(...) 
 #define  PF_ENGINE_TRACE(...)
 #define	 PF_ENGINE_CRITICAL(...)
+
+#define  PF_EC_ERROR(...)
+#define  PF_EC_WARN(...)
+#define  PF_EC_INFO(...)  
+#define  PF_EC_TRACE(...) 
+#define	 PF_EC_CRITICAL(...)
 
 #define  PF_ERROR(...) 
 #define  PF_WARN(...)  

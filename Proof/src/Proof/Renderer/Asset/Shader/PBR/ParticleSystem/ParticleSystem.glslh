@@ -1,0 +1,14 @@
+struct Particle
+{
+	vec3 Position;
+	float Rotation;
+
+	vec3 Velocity;
+	float Life;
+
+	vec3 Size3D;
+	uint SystemID;
+	
+	vec4 Color;
+};
+

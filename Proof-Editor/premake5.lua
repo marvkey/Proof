@@ -78,4 +78,7 @@ project "Proof-Editor"
         defines "PF_DIST"
         optimize "on"	
         runtime "Release"
+        defines{
+            "NDEBUG", -- PhysX Requires This 
+            }
         kind "WindowedApp" -- disables logger

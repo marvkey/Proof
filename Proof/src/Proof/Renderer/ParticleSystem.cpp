@@ -1,6 +1,8 @@
 #include "Proofprch.h"
 #include "ParticleSystem.h"
 #include "Proof/Math/MathInclude.h"
+#include "ParticleSystem.h"
+#include "ParticleSystem.h"
 
 namespace Proof {
 	
@@ -143,4 +145,7 @@ namespace Proof {
 		particle.Color = Math::Lerp(m_ParticleSystem->ColorEnd, m_ParticleSystem->ColorBegin, life);
 		//particle.Color.a = particle.Color.a*life;
 	}
+
+	
+
 }
