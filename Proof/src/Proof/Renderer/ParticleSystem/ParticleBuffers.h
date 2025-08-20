@@ -33,7 +33,7 @@ namespace Proof
 
 	enum class ParticleEmitterShape
 	{
-		Sphere = 0
+		Cone = 0, Sphere = 1
 	};
 
 	struct alignas(16) UBParticleShape
@@ -43,16 +43,24 @@ namespace Proof
 		float SpherizeDirection = 0.0f; // min 0, max 1
 		float RandomizePosition = 0.0f;
 
-		int bEnabled = 0;
+		int bEnabled = 1;
 		int padding0;
 		int padding1;
 		int padding2;
 
-		// per shape
-		float SphereRadius = 1.0f;
+		//cone
+		float ConeRadius = 1.0f;
+		float ConeAngleDegrees = 25.0f; 
 		int padding3;
 		int padding4;
+
+		// per shape
+		float SphereRadius = 1.0f;
 		int padding5;
+		int padding6;
+		int padding7;
+
+		
 	};
 
 	struct alignas(16) UBParticleVelocityOverLifeTime

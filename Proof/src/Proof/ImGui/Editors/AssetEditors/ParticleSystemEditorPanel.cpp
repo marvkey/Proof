@@ -56,27 +56,38 @@ namespace Proof
 
 		// ───────────── Core ─────────────
 		{
-			UI::AttributeSlider("Duration", state.Duration, 0.0f, 100.0f);
+			UI::BeginPropertyGrid();
+
+			UI::AttributeDrag("Duration", state.Duration, 0.25);
 			UI::AttributeBool("Looping", (bool&)state.bLooping);
-			UI::AttributeSlider("FadeOut Speed", state.FadeOutSpeed, 0.0f, 5.0f);
-			UI::AttributeSlider("Start Lifetime", state.StartLifetime, 0.0f, 30.0f);
-			UI::AttributeSlider("Start Speed", state.StartSpeed, 0.0f, 100.0f);
-			UI::AttributeSlider("Gravity Modifier", state.GravityModifier, -10.0f, 10.0f);
+			UI::AttributeDrag("FadeOut Speed", state.FadeOutSpeed, 0.01);
+			UI::AttributeDrag("Start Lifetime", state.StartLifetime, 0.01);
+			UI::AttributeDrag("Start Speed", state.StartSpeed,0.01);
+			UI::AttributeDrag("Gravity Modifier", state.GravityModifier,0.01f);
 			UI::AttributeColor("Start Color", state.StartColor);
 			UI::AttributeDrag("Start Size", state.StartSize,0.1);
+
+			UI::EndPropertyGrid();
 		}
 
 		// ───────────── Emission ─────────────
 		if (UI::AttributeTreeNode("Emission",1,1))
 		{
+			UI::BeginPropertyGrid();
+			
 			UI::AttributeSlider("Particles Per Second", settings.Emission.ParticlesPerSecond, 0.0f, 5000.0f);
 			UI::AttributeSlider("Particles Per Distance", settings.Emission.ParticlesPerDistance, 0.0f, 100.0f);
+
+			UI::EndPropertyGrid();
+
 			UI::EndTreeNode();
 		}
 
 		// ───────────── Shape ─────────────
 		if (UI::AttributeTreeNode("Shape",1,1))
 		{
+			UI::BeginPropertyGrid();
+
 			UI::EnumCombo("Shape", (ParticleEmitterShape&)settings.Shape.Shape);
 
 			bool enabled = settings.Shape.bEnabled == 1;
@@ -90,13 +101,33 @@ namespace Proof
 			UI::AttributeSlider("Randomize Direction", settings.Shape.RandomizeDirection, 0.0f, 1.0f);
 			UI::AttributeSlider("Spherize Direction", settings.Shape.SpherizeDirection, 0.0f, 1.0f);
 			UI::AttributeSlider("Randomize Position", settings.Shape.RandomizePosition, 0.0f, 10.0f);
-			UI::AttributeSlider("Sphere Radius", settings.Shape.SphereRadius, 0.0f, 50.0f);
+
+			switch (ParticleEmitterShape (settings.Shape.Shape))
+			{
+			case Proof::ParticleEmitterShape::Cone:
+				{
+				UI::AttributeSlider("Cone Radius", settings.Shape.ConeRadius, 0.0f, 50.0f);
+				UI::AttributeSlider("Cone Angle", settings.Shape.ConeAngleDegrees, 0.0f, 360.0f);
+				break;
+				}
+			case Proof::ParticleEmitterShape::Sphere:
+				{
+					UI::AttributeSlider("Sphere Radius", settings.Shape.SphereRadius, 0.0f, 50.0f);
+				}
+					break;
+			default:
+				break;
+			}
+
+			UI::EndPropertyGrid();
+
 			UI::EndTreeNode();
 		}
 
 		// ───────────── Velocity Over Lifetime ─────────────
 		if (UI::AttributeTreeNode("Velocity Over LifeTime",false,1,1))
 		{
+			UI::BeginPropertyGrid();
 
 			bool enabled = settings.VelocityOverLifeTime.bEnabled == 1;
 			if (UI::AttributeBool("Enabled", enabled))
@@ -112,12 +143,17 @@ namespace Proof
 			UI::AttributeDrag("Orbital", settings.VelocityOverLifeTime.Orbital,0.01);
 			UI::AttributeSlider("Radial", settings.VelocityOverLifeTime.Radial, 0.0f, 10.0f);
 			UI::AttributeDrag("Offset", settings.VelocityOverLifeTime.Offset,0.01);
+
+			UI::EndPropertyGrid();
+
 			UI::EndTreeNode();
 		}
 
 		// ───────────── Color Over Lifetime ─────────────
 		if (UI::AttributeTreeNode("Color Over LifeTime", false, 1, 1))
 		{
+			UI::BeginPropertyGrid();
+
 			bool enabled = settings.ColorOverLifeTime.bEnabled == 1;
 			if (UI::AttributeBool("Enabled", enabled))
 			{
@@ -128,12 +164,17 @@ namespace Proof
 			}
 
 			UI::AttributeColor("Final Color", settings.ColorOverLifeTime.FinalColor);
+
+			UI::EndPropertyGrid();
+
 			UI::EndTreeNode();
 		}
 
 		// ───────────── Size Over Lifetime ─────────────
 		if (UI::AttributeTreeNode("Size Over LifeTime", false, 1, 1))
 		{
+			UI::BeginPropertyGrid();
+
 			bool enabled = settings.SizeOverlifeTime.bEnabled == 1;
 			if (UI::AttributeBool("Enabled", enabled))
 			{
@@ -144,6 +185,9 @@ namespace Proof
 			}
 
 			UI::AttributeDrag("Final Size", settings.SizeOverlifeTime.FinalSize);
+
+			UI::EndPropertyGrid();
+
 			UI::EndTreeNode();
 		}
 		ImGui::EndChild();

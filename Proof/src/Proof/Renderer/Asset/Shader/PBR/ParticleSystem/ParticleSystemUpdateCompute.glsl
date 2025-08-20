@@ -52,19 +52,61 @@ float randRNG(uint seed, float salt)
 {
     return fract(sin(float(seed) * salt) * 43758.5453);
 }
+vec3 randomUnitVector(uint gid, float saltA, float saltB) {
+    float u = randRNG(gid, saltA);
+    float v = randRNG(gid, saltB);
+    float az = u * 6.2831853;               // 2π
+    float cz = 2.0 * v - 1.0;               // cos(phi) in [-1,1]
+    float sz = sqrt(max(0.0, 1.0 - cz*cz));
+    return vec3(sz * cos(az), cz, sz * sin(az));
+}
+
+// Sample a random direction within a cone around +Y with half-angle `alphaRad`
+vec3 sampleConeDirection(uint gid, float alphaRad) {
+    float cosMin = cos(alphaRad);
+    float t      = randRNG(gid, 17.31);              // pick band in [cosMin, 1]
+    float cosTh  = mix(1.0, cosMin, t);
+    float sinTh  = sqrt(max(0.0, 1.0 - cosTh*cosTh));
+    float az     = randRNG(gid, 61.99) * 6.2831853;  // 2π
+    return vec3(sinTh * cos(az), cosTh, sinTh * sin(az)); // +Y is axis
+}
+
+void RespawnParticleCone(inout Particle particle, uint gid,uint lid)
+{
+    vec3  center   = s_InitialState.EmitterPosition;
+    float R        = s_EmitterSettings.Shape.ConeRadius;
+    float angleRad = radians(s_EmitterSettings.Shape.ConeAngleDegrees);
+
+    // --- Spawn position: on a disk in XZ at the emitter (Unity "Base" disk)
+    // RandomizePosition: 0 = ring at R, 1 = uniform fill
+    float a0   = randRNG(gid, 11.11) * 6.2831853; // azimuth
+    float rU   = randRNG(gid, 22.22);             // for radius
+    float r    = mix(R, R * sqrt(rU), clamp(s_EmitterSettings.Shape.RandomizePosition, 0.0, 1.0));
+    vec3  spawnPos = center + vec3(r * cos(a0), 0.0, r * sin(a0));
+
+    // --- Direction: inside cone around +Y
+    vec3 dirCone = sampleConeDirection(gid, angleRad);
+
+    // RandomizeDirection: blend with a totally random direction (wider spread)
+    float rndAmt = clamp(s_EmitterSettings.Shape.RandomizeDirection, 0.0, 1.0);
+    vec3  dirRnd = randomUnitVector(gid, 33.33, 44.44);
+    vec3  dir    = normalize(mix(dirCone, dirRnd, rndAmt));
+    //dir = u_EmitterRotation * dir;
+
+    // SpherizeDirection: pull direction back toward the cone axis (+Y)
+    float sphAmt = clamp(s_EmitterSettings.Shape.SpherizeDirection, 0.0, 1.0);
+    dir = normalize(mix(dir, vec3(0.0, 1.0, 0.0), sphAmt));
+
+    // --- Final write
+    particle.Position = spawnPos;
+    particle.Velocity = dir * s_InitialState.StartSpeed;
+    particle.Size3D   = s_InitialState.StartSize;
+    particle.Color    = s_InitialState.StartColor;
+    particle.Life     = s_InitialState.StartLifetime;
+}
 
 void RespawnParticleSphere(inout Particle particle,uint gid, uint lid)
 {
-      if (s_EmitterSettings.Shape.bEnabled == 0) {
-        // Fallback: simple upward spawn
-        particle.Position = s_InitialState.EmitterPosition;
-        particle.Velocity = vec3(0.0, s_InitialState.StartSpeed, 0.0);
-        particle.Size3D   = s_InitialState.StartSize;
-        particle.Color    = s_InitialState.StartColor;
-        particle.Life     = s_InitialState.StartLifetime;
-        return;
-    }
-
     // -------- Sample point on/inside sphere (Unity-like "radius thickness")
     float R   = s_EmitterSettings.Shape.SphereRadius;
     float u   = randRNG(gid, 11.13);     // dir azimuth
@@ -116,7 +158,24 @@ void RespawnParticleSphere(inout Particle particle,uint gid, uint lid)
 }
 void RespawnParticle(inout Particle particle,uint gid, uint lid)
 {
-    RespawnParticleSphere(particle,gid,lid);
+    if (s_EmitterSettings.Shape.bEnabled == 0) 
+    {
+        // Fallback: simple upward spawn
+        particle.Position = s_InitialState.EmitterPosition;
+        particle.Velocity = vec3(0.0, s_InitialState.StartSpeed, 0.0);
+        particle.Size3D   = s_InitialState.StartSize;
+        particle.Color    = s_InitialState.StartColor;
+        particle.Life     = s_InitialState.StartLifetime;
+        return;
+    }
+    if(s_EmitterSettings.Shape.Shape == PARTICLE_SHAPE_CONE)
+    {
+        RespawnParticleCone(particle,gid,lid);
+    }
+    else if(s_EmitterSettings.Shape.Shape == PARTICLE_SHAPE_SPHERE)
+    {
+        RespawnParticleSphere(particle,gid,lid);
+    }
 }
 
 
@@ -155,11 +214,10 @@ void UpdateColorOverLifetime(inout Particle particle,uint gid, uint lid,Particle
     if (colorOverLifetime.bEnabled == 0)
         return;
 
-    float lifePercent = 1.0 - (particle.Life / s_InitialState.StartLifetime);
+    float lifePercent = (particle.Life / s_InitialState.StartLifetime);
     lifePercent = clamp(lifePercent, 0.0, 1.0);
 
-    // Simple linear fade toward final color over lifetime
-    particle.Color = mix(particle.Color, colorOverLifetime.FinalColor, lifePercent);
+    particle.Color = mix(colorOverLifetime.FinalColor, s_InitialState.StartColor, lifePercent);
 }
 
 void UpdateSizeOverLifetime(inout Particle particle,uint gid, uint lid,ParticleSizeOverLifetime sizeOverLifeTime)
@@ -167,11 +225,10 @@ void UpdateSizeOverLifetime(inout Particle particle,uint gid, uint lid,ParticleS
     if (sizeOverLifeTime.bEnabled == 0)
             return;
 
-    float lifePercent = 1.0 - (particle.Life / s_InitialState.StartLifetime);
+    float lifePercent = (particle.Life / s_InitialState.StartLifetime);
     lifePercent = clamp(lifePercent, 0.0, 1.0);
 
-    // Simple linear fade toward final color over lifetime
-    particle.Size3D = mix(particle.Size3D, sizeOverLifeTime.FinalSize, lifePercent);
+    particle.Size3D = mix(sizeOverLifeTime.FinalSize, s_InitialState.StartSize , lifePercent);
 }
 
 void UpdateParticle(inout Particle particle,uint gid, uint lid)

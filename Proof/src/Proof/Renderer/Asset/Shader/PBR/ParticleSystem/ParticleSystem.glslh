@@ -19,6 +19,8 @@ struct ParticleEmission {
     int padding1;
 };
 
+#define PARTICLE_SHAPE_CONE 0
+#define PARTICLE_SHAPE_SPHERE 1
 struct ParticleShape {
     int Shape;
     float RandomizeDirection;
@@ -30,10 +32,17 @@ struct ParticleShape {
     int padding1;
     int padding2;
 
+    //cone
+	float ConeRadius;
+	float ConeAngleDegrees; 
+	int padding3;
+	int padding4;
+
+    // sphere
     float SphereRadius;
-    int padding3;
-    int padding4;
     int padding5;
+    int padding6;
+    int padding7;
 };
 
 struct ParticleVelocityOverLifetime {
