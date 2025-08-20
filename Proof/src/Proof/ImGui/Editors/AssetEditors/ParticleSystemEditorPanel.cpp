@@ -4,7 +4,7 @@
 #include "../Panels/SceneHierachyPanel.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Renderer/WorldRenderer.h"
-#include "Proof/Renderer/ParticleSystem.h"
+#include "Proof/Renderer/ParticleSystem/ParticleSystem.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Core/FrameTime.h"
 #include "Proof/Core/Application.h"
@@ -162,9 +162,9 @@ namespace Proof
 		m_ParticleSystem = asset.As<ParticleSystem>();
 		m_World = Count<World>::Create();
 		Entity entity = m_World->CreateEntity("particle");
-		m_ParticleHandler = Count<ParticleHandler>::Create(m_ParticleSystem);
-		entity.AddComponent<ParticleSystemComponent>().ParticleHandlerTable->SetHandler(0, m_ParticleHandler);
-		entity.GetComponent<TransformComponent>().Location.z -= 20.0f;
+		//m_ParticleHandler = Count<ParticleHandler>::Create(m_ParticleSystem);
+		//entity.AddComponent<ParticleSystemComponent>().ParticleHandlerTable->SetHandler(0, m_ParticleHandler);
+		//entity.GetComponent<TransformComponent>().Location.z -= 20.0f;
 		m_WorldRenderer = Count<WorldRenderer>::Create();
 	}
 }

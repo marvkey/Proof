@@ -1,6 +1,6 @@
 #include "Proofprch.h"
 
-#include "ParticleSystem2.h"
+#include "ParticleSystem.h"
 #include "Proof/Scene/World.h"
 #include "Proof/Renderer/UniformBuffer.h"
 #include <glm/gtx/quaternion.hpp>
@@ -84,14 +84,14 @@ namespace Proof
         {
             // when resize basically reeintialing whoel thing
 
-            std::vector<Particle2> pool; pool.resize(m_MaxParticles);
-            m_SBParticlesBuffer->Resize(Buffer(pool.data(), m_MaxParticles * sizeof(Particle2)));
+            std::vector<Particle> pool; pool.resize(m_MaxParticles);
+            m_SBParticlesBuffer->Resize(Buffer(pool.data(), m_MaxParticles * sizeof(Particle)));
             m_SBTrackableData->SetData(Buffer(&trackableData, sizeof(SBParticleTrackableData)));
             return;
         }
 
-        std::vector<Particle2> pool; pool.resize(m_MaxParticles);
-        m_SBParticlesBuffer = StorageBuffer::Create(Buffer(pool.data(),m_MaxParticles * sizeof(Particle2)));
+        std::vector<Particle> pool; pool.resize(m_MaxParticles);
+        m_SBParticlesBuffer = StorageBuffer::Create(Buffer(pool.data(),m_MaxParticles * sizeof(Particle)));
         m_SBParticleParticleInitalStateBuffer = StorageBuffer::Create(Buffer(&ParticleInitialState, sizeof(SBParticleInitalState)));
         m_SBParticleEmitterSettingsBuffer = StorageBuffer::Create(Buffer(&ParticleEmitterSettings, sizeof(SBParticleEmitterSettings)));
         m_SBTrackableData = StorageBuffer::Create(Buffer(&trackableData, sizeof(SBParticleTrackableData)));
@@ -108,4 +108,8 @@ namespace Proof
         return data;
     }
   
+    void ParticleSystem::OnUpdate(float ts)
+    {
+    }
+
 }

@@ -45,7 +45,7 @@
 #include "Proof/Animation/Animation.h"
 //include those before stdlig.h
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
-#include "Proof/Renderer/ParticleSystem.h"
+#include "Proof/Renderer/ParticleSystem/ParticleSystem.h"
 #include "Proof/Scene/TerrainRenderer/TerrainRenderer.h"
 #include <ImCurveEdit.h>
 //#include "misc/cpp/imgui_stdlib.h"
@@ -1824,8 +1824,9 @@ namespace Proof
 			}
 			UI::EndPropertyGrid();
 			});
-
+		/*
 		DrawComponents<ParticleSystemComponent>("Particle System", entity, [&](ParticleSystemComponent& particleSystem) {
+
 			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
 			bool open = ImGui::TreeNodeEx("PartcileTable", treeNodeFlags, "Particle Table");
@@ -1847,6 +1848,7 @@ namespace Proof
 				{
 					name = "null";
 				}
+
 				UI::AttributeTextBar(fmt::format("Index {}", index), name);
 				if (particleHandler != nullptr)
 				{
@@ -1870,6 +1872,7 @@ namespace Proof
 			}
 			ImGui::TreePop();
 			});
+			*/
 		DrawComponents<ScriptComponent>("Scripts", entity, [&](ScriptComponent& scriptComp) {
 			auto scriptWorld = m_ActiveWorld->GetScriptWorld();
 			if (UI::AttributeButton("", "Add Script"))

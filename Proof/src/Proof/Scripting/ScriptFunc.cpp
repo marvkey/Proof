@@ -29,7 +29,7 @@
 #include "Proof/Renderer/Font.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/UIRenderer/UIMenu.h"
-#include "Proof/Renderer/ParticleSystem.h"
+#include "Proof/Renderer/ParticleSystem/ParticleSystem.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Proof/Utils/PersistentDataManager.h"
 #include "Proof/Renderer/DebugRenderer.h"
@@ -3341,10 +3341,10 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			return false;
 		}
 		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
-		if (comp.ParticleHandlerTable!= nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex))
-		{
-			return true;
-		}
+		//if (comp.ParticleHandlerTable!= nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex))
+		//{
+		//	return true;
+		//}
 		return false;
 	}
 	static bool ParticleSystemComponent_ParticleIndexHasParticle(uint64_t entityID, uint32_t tableIndex)
@@ -3364,10 +3364,10 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			return false;
 		}
 		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
-		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex)!=nullptr)
-		{
-			return true;
-		}
+		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex)!=nullptr)
+		//{
+		//	return true;
+		//}
 		return false;
 	}
 	static bool ParticleSystemComponent_GetVisible(uint64_t entityID, uint32_t tableIndex) 
@@ -3387,10 +3387,10 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			return {};
 		}
 		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
-		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
-		{
-			return comp.ParticleHandlerTable->GetHandler(tableIndex)->Visible;
-		}
+		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
+		//{
+		//	return comp.ParticleHandlerTable->GetHandler(tableIndex)->Visible;
+		//}
 		PF_ERROR("PlayerHUDComponent.GetVisible entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
 		return false;
 	}
@@ -3411,11 +3411,11 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			return;
 		}
 		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
-		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
-		{
-			comp.ParticleHandlerTable->GetHandler(tableIndex)->Visible = *visible;
-			return;
-		}
+		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
+		//{
+		//	comp.ParticleHandlerTable->GetHandler(tableIndex)->Visible = *visible;
+		//	return;
+		//}
 		PF_ERROR("ParticleSystemComponent.SetVisible entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
 	}
 
@@ -3435,12 +3435,12 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ERROR("ParticleSystemComponent.Play() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
 			return;
 		}
-		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
-		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
-		{
-			comp.ParticleHandlerTable->GetHandler(tableIndex)->Play();
-			return;
-		}
+		//ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
+		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
+		//{
+		//	comp.ParticleHandlerTable->GetHandler(tableIndex)->Play();
+		//	return;
+		//}
 		PF_ERROR("ParticleSystemComponent.Play() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
 	}
 	static void ParticleSystemComponent_Pause(uint64_t entityID, uint32_t tableIndex)
@@ -3460,12 +3460,12 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ERROR("ParticleSystemComponent.Pause() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
 			return;
 		}
-		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
-		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
-		{
-			comp.ParticleHandlerTable->GetHandler(tableIndex)->Pause();
-			return;
-		}
+		//ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
+		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
+		//{
+		//	comp.ParticleHandlerTable->GetHandler(tableIndex)->Pause();
+		//	return;
+		//}
 		PF_ERROR("ParticleSystemComponent.Pause() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
 	}
 	static void ParticleSystemComponent_End(uint64_t entityID, uint32_t tableIndex)
@@ -3485,11 +3485,11 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			return;
 		}
 		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
-		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
-		{
-			comp.ParticleHandlerTable->GetHandler(tableIndex)->End();
-			return;
-		}
+		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
+		//{
+		//	comp.ParticleHandlerTable->GetHandler(tableIndex)->End();
+		//	return;
+		//}
 		PF_ERROR("ParticleSystemComponent.End() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
 	}
 	static void ParticleSystemComponent_Restart(uint64_t entityID, uint32_t tableIndex)
@@ -3508,12 +3508,12 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ERROR("ParticleSystemComponent.Restart() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
 			return;
 		}
-		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
-		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
-		{
-			comp.ParticleHandlerTable->GetHandler(tableIndex)->Restart();
-			return;
-		}
+		//ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
+		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
+		//{
+		//	comp.ParticleHandlerTable->GetHandler(tableIndex)->Restart();
+		//	return;
+		//}
 		PF_ERROR("ParticleSystemComponent.Restart() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
 	}
 	static int ParticleSystemComponent_GetState(uint64_t entityID, uint32_t tableIndex)
@@ -3533,10 +3533,10 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			return 0;
 		}
 		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
-		if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
-		{
-			return (int)comp.ParticleHandlerTable->GetHandler(tableIndex)->GetState();
-		}
+		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
+		//{
+		//	return (int)comp.ParticleHandlerTable->GetHandler(tableIndex)->GetState();
+		//}
 		PF_ERROR("ParticleSystemComponent.GetState entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
 	}
 
@@ -3559,10 +3559,10 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		std::vector<uint32_t> objects;
 		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
 
-		for (auto& part : comp.ParticleHandlerTable->GetHandlers())
-		{
-			objects.emplace_back(part.first);
-		}
+		//for (auto& part : comp.ParticleHandlerTable->GetHandlers())
+		//{
+		//	objects.emplace_back(part.first);
+		//}
 		#if 0
 		if (objects.size() == 0)
 			return;

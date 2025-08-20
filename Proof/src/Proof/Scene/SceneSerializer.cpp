@@ -29,7 +29,7 @@
 #include "Proof/Scene/WaterSystem/FFTWave/FFTWaveRealistic.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Utils/VariableSystem/Variable.h"
-#include "Proof/Renderer/ParticleSystem.h"
+#include "Proof/Renderer/ParticleSystem/ParticleSystem.h"
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 #include "Proof/Animation/AnimationController.h"
@@ -735,6 +735,7 @@ namespace Proof
 				out << YAML::BeginSeq;//ParticleHandlerTable
 				if (particleSystemComponent.ParticleHandlerTable != nullptr)
 				{
+#if 0
 					for (auto& [index, particleHandler] : particleSystemComponent.ParticleHandlerTable->GetHandlers())
 					{
 						out << YAML::BeginMap;// particleHandler
@@ -753,6 +754,7 @@ namespace Proof
 						out << YAML::EndMap;// particleHandler
 
 					}
+#endif
 				}
 				out << YAML::EndSeq; // ParticleHandlerTable
 				out << YAML::EndMap; // ParticleSystemComponent
@@ -1921,6 +1923,8 @@ namespace Proof
 				auto particleSystemComponent = entity["ParticleSystemComponent"];
 				if (particleSystemComponent)
 				{
+#if 0
+
 					auto& psc = NewEntity.AddComponent<ParticleSystemComponent>();
 					Count<ParticleHandlerTable> table = Count<ParticleHandlerTable>::Create();
 					for (auto  particleHandler : particleSystemComponent["ParticleHandlerTable"])
@@ -1943,6 +1947,7 @@ namespace Proof
 						}
 					}
 					psc.ParticleHandlerTable = table;
+#endif
 				}
 			}
 			//Script Component

@@ -1,0 +1,144 @@
+#pragma once
+#include "Proof/Core/Core.h"
+#include "Proof/Asset/Asset.h"
+#include "Proof/Math/Math.h"
+#include <glm/glm.hpp>
+#include "ParticleBuffers.h"
+//https://evanvoodoo.github.io/2025-01-24-gpu-particles/
+
+namespace Proof
+{
+	struct alignas(16) Particle
+	{
+		glm::vec3 Position;
+		float Rotation;
+
+		glm::vec3 Velocity;
+		float Life = 1.0f;
+
+		glm::vec4 Color = glm::vec4{ 1 };
+
+		glm::vec3 Size3D{ 1 };
+		uint32_t SystemID;
+	};
+
+
+	class ParticleWorld : public RefCounted
+	{
+	public:
+		ParticleWorld(Count<class World> world);
+		void OnUpdate(float update);
+		Count<class World> GetWorld();
+
+	private:
+
+		//WeakCount<class World> m_World;
+	};
+	
+	class ParticleEmitter : public RefCounted
+	{
+	public:
+		ParticleEmitter(uint32_t maxParticles = 100);
+		void OnUpdate(float dt);
+
+		SBParticleInitalState ParticleInitialState;
+		SBParticleEmitterSettings ParticleEmitterSettings;
+
+		uint32_t GetParticleCount();
+		void ResetMaxParticles(uint32_t size);
+
+		SBParticleTrackableData GetTrackableData();
+		AssetKey<AssetType::Texture> Texture;
+	private:
+		uint32_t m_MaxParticles = 0;
+		glm::vec3 m_CurrentPos, m_PrevPos;
+		Count<class StorageBuffer> m_SBParticlesBuffer;
+		Count<class StorageBuffer> m_SBParticleParticleInitalStateBuffer; // storage cause of aling
+		Count<class StorageBuffer> m_SBParticleEmitterSettingsBuffer; // storage cause of align 
+		Count<class StorageBuffer> m_SBTrackableData; // storage cause of align comptue shader will edit this
+		friend class WorldRenderer;
+	};
+
+	enum class ParticleSystemState
+	{
+		None,
+		Play,
+		Pause,
+		End
+	};
+
+	class ParticleSystem : public Asset
+	{
+	public:
+		ParticleSystem() {};
+		ASSET_CLASS_TYPE(ParticleSystem);
+
+
+		void OnUpdate(float ts);
+		// Create a new emitter and return a reference to it
+		Count<ParticleEmitter> CreateEmitter()
+		{
+			auto emitter = Count<ParticleEmitter>::Create(); // assuming Count<T>::New() or equivalent constructor
+			m_Emmiters.push_back(emitter);
+			return emitter;
+		}
+
+		// Get emitter by index
+		Count<ParticleEmitter> GetEmitter(size_t index) const
+		{
+			if (index < m_Emmiters.size())
+				return m_Emmiters[index];
+			return nullptr;
+		}
+
+		// Remove emitter by index
+		void RemoveEmitter(size_t index)
+		{
+			if (index < m_Emmiters.size())
+				m_Emmiters.erase(m_Emmiters.begin() + index);
+		}
+
+		// Get number of emitters
+		size_t GetEmitterCount() const
+		{
+			return m_Emmiters.size();
+		}
+		// State control
+		void Play()
+		{
+			m_State = ParticleSystemState::Play;
+		}
+
+		void Pause()
+		{
+			m_State = ParticleSystemState::Pause;
+		}
+
+		void Stop()
+		{
+			m_State = ParticleSystemState::End;
+		}
+
+		ParticleSystemState GetState() const
+		{
+			return m_State;
+		}
+
+	private:
+		std::vector<Count<ParticleEmitter>> m_Emmiters;
+		ParticleSystemState m_State;
+	};
+
+	class ParticleSystemInstance : public RefCounted
+	{
+	public:
+		ParticleSystemInstance(Count<ParticleSystem> system)
+			: m_System(system)
+		{
+		}
+
+		Count<ParticleSystem> GetSystem() const { return m_System; }
+	private:
+		Count<ParticleSystem> m_System;
+	};
+}

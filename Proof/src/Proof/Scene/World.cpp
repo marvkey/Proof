@@ -34,7 +34,7 @@
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/UIRenderer/UIRenderer.h"
 #include "Proof/Renderer/CommandBuffer.h"
-#include "Proof/Renderer/ParticleSystem.h"
+#include "Proof/Renderer/ParticleSystem/ParticleSystem.h"
 #include "Proof/Math/BasicCollision.h"
 #include "WaterSystem/WaterSystem.h"
 #include "WaterSystem/Water.h"
@@ -97,7 +97,7 @@ namespace Proof
 		DeleteEntitiesfromQeue();
 		{
 			PF_PROFILE_FUNC("World::OnUpdateEditor - Particle OnUpdate");
-
+			/*
 			const auto& particleView = m_Registry.view<ParticleSystemComponent>();
 			for (auto entity : particleView)
 			{
@@ -113,6 +113,7 @@ namespace Proof
 					}
 				}
 			}
+			*/
 		}
 
 		{
@@ -1060,6 +1061,7 @@ namespace Proof
 			const auto& particleView = m_Registry.view<ParticleSystemComponent>();
 			for (auto entity : particleView)
 			{
+				/*
 				auto& particleSystem = particleView.get<ParticleSystemComponent>(entity);
 				if (particleSystem.ParticleHandlerTable == nullptr)continue;
 				Entity wfadfas{ entity,this };
@@ -1071,6 +1073,7 @@ namespace Proof
 							handler->Update(DeltaTime, GlmVecToProof( GetWorldSpaceLocation(wfadfas)));
 					}
 				}
+				*/
 			}
 		}
 

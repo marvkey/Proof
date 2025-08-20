@@ -8,7 +8,7 @@
 #include "Proof/Scene/Prefab.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/World.h"
-#include "Proof/Renderer/ParticleSystem.h"
+#include "Proof/Renderer/ParticleSystem/ParticleSystem.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/RenderMaterial.h"
 #include "Proof/Renderer/Shader.h"
@@ -399,6 +399,8 @@ namespace Proof {
 		out << YAML::BeginMap;
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(particleSystem->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << particleSystem->GetID();
+#if 0
+
 		out << YAML::Key << "Velocity" << YAML::Value << particleSystem->Velocity;
 		out << YAML::Key << "VelocityVariation" << YAML::Value << particleSystem->VelocityVariation;
 		out << YAML::Key << "PlayOnAwake" << YAML::Value << particleSystem->PlayOnAwake;
@@ -426,6 +428,7 @@ namespace Proof {
 			out << YAML::Key << "ParticleEmissionSpawnRateDistance" << YAML::Value << particleSystem->Emision.SpawnRateDistance;
 
 		}
+#endif
 		out << YAML::EndMap;
 		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
 		stream << out.c_str();
@@ -438,6 +441,7 @@ namespace Proof {
 			return nullptr;
 		Count<ParticleSystem> particleSystem = Count<ParticleSystem>::Create();
 
+#if 0
 		particleSystem->Velocity = data["Velocity"].as<Vector>();
 		particleSystem->VelocityVariation = data["VelocityVariation"].as<Vector>();
 		particleSystem->ColorBegin = data["ColorBegin"].as<glm::vec4>();
@@ -472,6 +476,7 @@ namespace Proof {
 			particleSystem->Emision.SpawnRateDistance = data["ParticleEmissionSpawnRateDistance"].as<float>();
 
 		}
+#endif
 		SetID(assetData, particleSystem);
 		return particleSystem;
 	}
