@@ -4577,67 +4577,27 @@ namespace Proof
 			quadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 		}
 		emiter->OnUpdate(FrameTime::GetWorldDeltaTime());
-
-		m_ParticleSpawnComputePass->SetInput("s_Particles", emiter->ParticleBuffer);
-		m_ParticleSpawnComputePass->SetInput("particle_index_buffer", emiter->ParticleFreeBufferIndecis);
-		m_ParticleSpawnComputePass->SetInput("FreeListCount", emiter->ParticleFreeBufferCount);
-		m_ParticleSpawnComputePass->SetInput("EmitterSettings", emiter->ParticleEmitterSettingsBuffer);
-
-		const uint32_t paticlesperThread = 4;
-
-		struct Pc
-		{
-			uint32_t ParticleToSpawn;
-			uint32_t PaticlesPerThread;
-			uint32_t NumParticles;
-		};
-
-		Pc pc;
-		pc.ParticleToSpawn = emiter->GetParticleToSpawn();
-		pc.PaticlesPerThread = paticlesperThread;
-		pc.NumParticles = emiter->maxParticles;
-		/*
-		if (emiter->GetParticleToSpawn() > 0)
 		{
 
-			Renderer::BeginComputePass(m_CommandBuffer, m_ParticleSpawnComputePass);
-
-			uint32_t workGroupSize = 128;
-			const uint32_t groups = (emiter->GetParticleToSpawn() + paticlesperThread * workGroupSize - 1) / (paticlesperThread * workGroupSize);
-
-
-			m_ParticleSpawnComputePass->PushData(Buffer(&pc, sizeof(pc)));
-			m_ParticleSpawnComputePass->Dispatch(groups, 1, 1);
-
-			Renderer::EndComputePass(m_ParticleSpawnComputePass);
-		}
-		*/
-
-		{
-
-			m_ParticleUpdateComputePass->SetInput("s_Particles", emiter->ParticleBuffer);
-			m_ParticleUpdateComputePass->SetInput("particle_index_buffer", emiter->ParticleFreeBufferIndecis);
-			m_ParticleUpdateComputePass->SetInput("FreeListCount", emiter->ParticleFreeBufferCount);
-			//m_ParticleSpawnComputePass->SetInput("EmitterSettings", emiter->ParticleEmitterSettingsBuffer);
+			m_ParticleUpdateComputePass->SetInput("s_Particles", emiter->m_SBParticlesBuffer);
+			m_ParticleUpdateComputePass->SetInput("ParticleInitialState", emiter->m_SBParticleParticleInitalStateBuffer);
+			m_ParticleUpdateComputePass->SetInput("EmitterSettings", emiter->m_SBParticleEmitterSettingsBuffer);
+			m_ParticleUpdateComputePass->SetInput("TrackableData", emiter->m_SBTrackableData);
 
 			Renderer::BeginComputePass(m_CommandBuffer, m_ParticleUpdateComputePass);
-
-
-			m_ParticleUpdateComputePass->PushData(Buffer(&pc, sizeof(pc)));
-
 			int workGroupSize = 512;
-			int numGroups = (pc.NumParticles + workGroupSize - 1) / workGroupSize;
+			int numGroups = (emiter->GetParticleCount() + workGroupSize - 1) / workGroupSize;
 			m_ParticleUpdateComputePass->Dispatch(numGroups, 1, 1);
 			Renderer::EndComputePass(m_ParticleUpdateComputePass);
 
 		}
 
-		m_ParticleRenderPass->SetInput("s_Particles", emiter->ParticleBuffer);
+		m_ParticleRenderPass->SetInput("s_Particles", emiter->m_SBParticlesBuffer);
 		Renderer::BeginRenderPass(m_CommandBuffer, m_ParticleRenderPass);
 
 		const uint32_t vertexCount = 6; // POINT_LIST
 		//const uint32_t instanceCount = m_NumParticles;
-		const uint32_t instanceCount = emiter->m_ParticlePool.size();
+		const uint32_t instanceCount = emiter->GetParticleCount();
 
 		quadVertexBuffer->Bind(m_CommandBuffer);
 		quadIndexBuffer->Bind(m_CommandBuffer);
@@ -4645,4 +4605,5 @@ namespace Proof
 
 		Renderer::EndRenderPass(m_ParticleRenderPass);
 	}
+
 }

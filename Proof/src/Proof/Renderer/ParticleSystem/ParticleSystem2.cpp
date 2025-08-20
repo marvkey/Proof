@@ -54,49 +54,58 @@ namespace Proof
     
 	ParticleEmitter::ParticleEmitter(uint32_t maxParticles)
 	{
-		m_ParticlePool.resize(maxParticles);
-        ParticleBuffer = StorageBuffer::Create(Buffer(m_ParticlePool.data(), m_ParticlePool.size() * sizeof(Particle2)));
-
-        ParticleFreeBufferIndecis = StorageBuffer::Create(Buffer(m_ParticlePool.size() * sizeof(uint32_t)));
-        ParticleFreeBufferCount = StorageBuffer::Create(Buffer(sizeof(uint32_t)));
-
-        UBEmitterSettings  settings;
-        settings.minColor = minColor;
-        settings.maxColor = maxColor;
-
-        settings.minOffset = minPosition;
-        settings.maxOffset = maxPosition;
-
-        settings.minVelocity = minVelocity;
-
-        settings.maxVelocity = maxVelocity;
-
-        settings.minAccel = minAccel;
-        settings.maxAccel = maxAccel;
-
-        settings.minLife = minLife;
-        settings.maxLife = maxLife;
-
-        settings.modelMatrix = glm::mat4(1.0f);
-        settings.rotationMatrix = glm::toMat4(glm::quat(1.0f, 0.0f, 0.0f, 0.0f));
-
-        ParticleEmitterSettingsBuffer = UniformBuffer::Create(Buffer(&settings, sizeof(settings)));
+        ResetMaxParticles(maxParticles);
 	}
     void ParticleEmitter::OnUpdate(float dt)
     {
-        timer += (1.0f /60.0f);
-        spawnInterval = glm::max(spawnInterval, std::numeric_limits<float>::epsilon());
-
-        // Consume time here
-        uint32_t toSpawn = static_cast<uint32_t>(timer / spawnInterval);
-        timer -= toSpawn * spawnInterval;
-        timer = glm::max(timer, 0.0f);
-
-        // Store how many to spawn this frame
-        m_ParticlesToSpawn = toSpawn;
+        m_SBParticleEmitterSettingsBuffer->SetData(Buffer(&ParticleEmitterSettings, sizeof(SBParticleEmitterSettings)));
+        m_SBParticleParticleInitalStateBuffer->SetData(Buffer(&ParticleInitialState, sizeof(SBParticleInitalState)));
     }
-    uint32_t ParticleEmitter::GetParticleToSpawn()
+
+    uint32_t ParticleEmitter::GetParticleCount()
     {
-        return m_ParticlesToSpawn;
+        return m_MaxParticles;
     }
+
+    void ParticleEmitter::ResetMaxParticles(uint32_t size)
+    {
+        m_MaxParticles = size;
+
+        // inital setigns for trackable data
+        SBParticleTrackableData trackableData;
+
+        trackableData.TimeElapsed = 0.0f;
+        trackableData.ActiveParticles = 0;
+        trackableData.DeadParticles = 0;
+        trackableData.MaxParticles = m_MaxParticles;
+
+
+        if (m_SBParticlesBuffer != nullptr) // already initailized 
+        {
+            // when resize basically reeintialing whoel thing
+
+            std::vector<Particle2> pool; pool.resize(m_MaxParticles);
+            m_SBParticlesBuffer->Resize(Buffer(pool.data(), m_MaxParticles * sizeof(Particle2)));
+            m_SBTrackableData->SetData(Buffer(&trackableData, sizeof(SBParticleTrackableData)));
+            return;
+        }
+
+        std::vector<Particle2> pool; pool.resize(m_MaxParticles);
+        m_SBParticlesBuffer = StorageBuffer::Create(Buffer(pool.data(),m_MaxParticles * sizeof(Particle2)));
+        m_SBParticleParticleInitalStateBuffer = StorageBuffer::Create(Buffer(&ParticleInitialState, sizeof(SBParticleInitalState)));
+        m_SBParticleEmitterSettingsBuffer = StorageBuffer::Create(Buffer(&ParticleEmitterSettings, sizeof(SBParticleEmitterSettings)));
+        m_SBTrackableData = StorageBuffer::Create(Buffer(&trackableData, sizeof(SBParticleTrackableData)));
+    }
+
+    SBParticleTrackableData ParticleEmitter::GetTrackableData()
+    {
+        PF_PROFILE_FUNC();
+        Buffer buffer = m_SBTrackableData->GetDataRaw();
+        SBParticleTrackableData data = *buffer.As< SBParticleTrackableData>();
+
+        buffer.Release();
+
+        return data;
+    }
+  
 }

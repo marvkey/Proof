@@ -12,3 +12,51 @@ struct Particle
 	vec4 Color;
 };
 
+struct ParticleEmission 
+{
+    float ParticlesPerSecond;
+    float ParticlesPerDistance;
+    vec2 _PaddingEmission;
+};
+
+struct ParticleVelocityShape 
+{
+    int Shape;
+    float RandomizeDirection;
+    float SpherizeDirection;
+    float RandomizePosition;
+
+    int Enabled;
+    vec3 _Padding0;
+
+    float SphereRadius;
+    vec3 _Padding1;
+};
+
+struct ParticleVelocityOverLifetime 
+{
+    vec3 Linear;
+    float SpeedModifier;
+
+    vec3 Orbital;
+    float Radial;
+
+    vec3 Offset;
+    int Enabled;
+};
+
+struct ColorOverLifetime 
+{
+    int Enabled;
+    ivec3 _Padding0;
+    vec4 FinalColor;
+};
+
+// Main packed struct per emitter
+struct ParticleEmitterSettings 
+{
+    ParticleEmission Emission;
+    ParticleVelocityShape VelocityShape;
+    ParticleVelocityOverLifetime VelocityOverLifetime;
+    ColorOverLifetime ColorOverLife;
+};

@@ -2,7 +2,7 @@
 #include "Proof/Core/Core.h"
 #include "Proof/Math/Math.h"
 #include <glm/glm.hpp>
-
+#include "ParticleBuffers.h"
 //https://evanvoodoo.github.io/2025-01-24-gpu-particles/
 
 namespace Proof
@@ -20,6 +20,8 @@ namespace Proof
 		glm::vec3 Size3D{ 1 };
 		uint32_t SystemID;
 	};
+
+
 
 	class ParticleWorld : public RefCounted
 	{
@@ -39,23 +41,19 @@ namespace Proof
 		ParticleEmitter(uint32_t maxParticles = 100);
 		void OnUpdate(float dt);
 
-		glm::vec4 minColor = glm::vec4(0, 0, 0, 1), maxColor = glm::vec4(1);
-		glm::vec3 minPosition = glm::vec3(0), maxPosition = glm::vec3(20);
-		glm::vec3 minVelocity = glm::vec3(-1), maxVelocity = glm::vec3(1);
-		glm::vec3 minAccel = glm::vec3(0), maxAccel = glm::vec3(0, 0, -0.5f);
-		float minLife = 1, maxLife = 10;
-		float spawnInterval = 0.1f, timer = 0;
-		uint32_t maxParticles = 100;
-		uint32_t drawnParticleCount = 0;
-		Count<class StorageBuffer> ParticleBuffer;
-		Count<class StorageBuffer> ParticleFreeBufferIndecis;
-		Count<class StorageBuffer> ParticleFreeBufferCount;
-		Count<class UniformBuffer> ParticleEmitterSettingsBuffer;
+		SBParticleInitalState ParticleInitialState;
+		SBParticleEmitterSettings ParticleEmitterSettings;
 
-		uint32_t GetParticleToSpawn();
+		uint32_t GetParticleCount();
+		void ResetMaxParticles(uint32_t size);
+
+		SBParticleTrackableData GetTrackableData();
 	private:
-		std::vector<Particle2> m_ParticlePool;
-		uint32_t m_ParticlesToSpawn = 0;
+		uint32_t m_MaxParticles = 0;
+		Count<class StorageBuffer> m_SBParticlesBuffer;
+		Count<class StorageBuffer> m_SBParticleParticleInitalStateBuffer; // storage cause of aling
+		Count<class StorageBuffer> m_SBParticleEmitterSettingsBuffer; // storage cause of align 
+		Count<class StorageBuffer> m_SBTrackableData; // storage cause of align comptue shader will edit this
 		friend class WorldRenderer;
 	};
 

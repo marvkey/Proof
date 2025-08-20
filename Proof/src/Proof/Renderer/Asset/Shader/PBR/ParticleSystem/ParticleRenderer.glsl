@@ -13,7 +13,8 @@ layout(location = 0) in vec3 aPosition;
 layout(location = 1) in vec2 aTexCoords;
 
 
-layout(std430, binding = 0) readonly restrict buffer s_Particles {
+layout(std430, binding = 0) readonly restrict buffer s_Particles 
+{
     Particle particles[];
 };
 
@@ -41,7 +42,7 @@ vec3 camUp    = normalize(vec3(u_Camera.InverseView[1].xyz)); // +Y
         camRight * aPosition.x * particlescale.x +
         camUp * aPosition.y * particlescale.y;
 
-    Output.Color = particle.Color;
+    Output.Color = vec4(1.0f);
     // transform with camera’s view-projection
     gl_Position = u_Camera.ViewProjectionMatrix * vec4(vertexPosition, 1.0);
 }
