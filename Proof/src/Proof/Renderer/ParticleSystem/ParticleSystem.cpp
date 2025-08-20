@@ -59,7 +59,7 @@ namespace Proof
     void ParticleEmitter::OnUpdate(float dt)
     {
         m_SBParticleEmitterSettingsBuffer->SetData(Buffer(&ParticleEmitterSettings, sizeof(SBParticleEmitterSettings)));
-        m_SBParticleParticleInitalStateBuffer->SetData(Buffer(&ParticleInitialState, sizeof(SBParticleInitalState)));
+        m_SBParticleParticleInitalState->SetData(Buffer(&ParticleInitialState, sizeof(SBParticleInitalState)));
     }
 
     uint32_t ParticleEmitter::GetParticleCount()
@@ -92,8 +92,8 @@ namespace Proof
 
         std::vector<Particle> pool; pool.resize(m_MaxParticles);
         m_SBParticlesBuffer = StorageBuffer::Create(Buffer(pool.data(),m_MaxParticles * sizeof(Particle)));
-        m_SBParticleParticleInitalStateBuffer = StorageBuffer::Create(Buffer(&ParticleInitialState, sizeof(SBParticleInitalState)));
         m_SBParticleEmitterSettingsBuffer = StorageBuffer::Create(Buffer(&ParticleEmitterSettings, sizeof(SBParticleEmitterSettings)));
+        m_SBParticleParticleInitalState = StorageBuffer::Create(Buffer(&ParticleInitialState, sizeof(SBParticleInitalState)));
         m_SBTrackableData = StorageBuffer::Create(Buffer(&trackableData, sizeof(SBParticleTrackableData)));
     }
 

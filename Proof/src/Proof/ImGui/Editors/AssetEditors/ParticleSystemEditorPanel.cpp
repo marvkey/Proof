@@ -1,4 +1,4 @@
-#include "Proofprch.h"
+﻿#include "Proofprch.h"
 #include "ParticleSystemEditorPanel.h"
 #include "Proof/Renderer/Renderer.h"
 #include "../Panels/SceneHierachyPanel.h"
@@ -31,9 +31,146 @@ namespace Proof
 		m_World->OnUpdateEditor(deltaTime);
 		m_World->OnRenderEditor(m_WorldRenderer, deltaTime, m_Camera);
 		m_SaveTimer -= deltaTime;
+
+		
 	}
+	
 	void ParticleSystemEditorPanel::OnImGuiRender()
 	{
+		UI::ScopedStyleVar padding(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
+
+		ImGui::Begin("Main Winodw");
+
+
+		static Count<ParticleEmitter> emitter = Count<ParticleEmitter>::Create();
+
+
+
+		Entity entity = m_World->TryGetEntityByTag("particle");
+
+		entity.GetComponent<ParticleSystemComponent>().emitter = emitter;
+
+		SBParticleInitalState& state = emitter->ParticleInitialState;
+		SBParticleEmitterSettings& settings = emitter->ParticleEmitterSettings;
+		ImGui::BeginChild("Particle Data", { ImGui::GetContentRegionAvail().x / 3, ImGui::GetContentRegionAvail().y });
+
+		// ───────────── Core ─────────────
+		{
+			UI::AttributeSlider("Duration", state.Duration, 0.0f, 100.0f);
+			UI::AttributeBool("Looping", (bool&)state.bLooping);
+			UI::AttributeSlider("FadeOut Speed", state.FadeOutSpeed, 0.0f, 5.0f);
+			UI::AttributeSlider("Start Lifetime", state.StartLifetime, 0.0f, 30.0f);
+			UI::AttributeSlider("Start Speed", state.StartSpeed, 0.0f, 100.0f);
+			UI::AttributeSlider("Gravity Modifier", state.GravityModifier, -10.0f, 10.0f);
+			UI::AttributeColor("Start Color", state.StartColor);
+			UI::AttributeDrag("Start Size", state.StartSize,0.1);
+		}
+
+		// ───────────── Emission ─────────────
+		if (UI::AttributeTreeNode("Emission",1,1))
+		{
+			UI::AttributeSlider("Particles Per Second", settings.Emission.ParticlesPerSecond, 0.0f, 5000.0f);
+			UI::AttributeSlider("Particles Per Distance", settings.Emission.ParticlesPerDistance, 0.0f, 100.0f);
+			UI::EndTreeNode();
+		}
+
+		// ───────────── Shape ─────────────
+		if (UI::AttributeTreeNode("Shape",1,1))
+		{
+			UI::EnumCombo("Shape", (ParticleEmitterShape&)settings.Shape.Shape);
+
+			bool enabled = settings.Shape.bEnabled == 1;
+			if (UI::AttributeBool("Enable Shape", enabled))
+			{
+				if (enabled)
+					settings.Shape.bEnabled = 1;
+				else
+					settings.Shape.bEnabled = 0;
+			}
+			UI::AttributeSlider("Randomize Direction", settings.Shape.RandomizeDirection, 0.0f, 1.0f);
+			UI::AttributeSlider("Spherize Direction", settings.Shape.SpherizeDirection, 0.0f, 1.0f);
+			UI::AttributeSlider("Randomize Position", settings.Shape.RandomizePosition, 0.0f, 10.0f);
+			UI::AttributeSlider("Sphere Radius", settings.Shape.SphereRadius, 0.0f, 50.0f);
+			UI::EndTreeNode();
+		}
+
+		// ───────────── Velocity Over Lifetime ─────────────
+		if (UI::AttributeTreeNode("Velocity Over LifeTime",false,1,1))
+		{
+
+			bool enabled = settings.VelocityOverLifeTime.bEnabled == 1;
+			if (UI::AttributeBool("Enabled", enabled))
+			{
+				if (enabled)
+					settings.VelocityOverLifeTime.bEnabled = 1;
+				else
+					settings.VelocityOverLifeTime.bEnabled = 0;
+			}
+
+			UI::AttributeDrag("Linear", settings.VelocityOverLifeTime.Linear,0.01);
+			UI::AttributeDrag("Speed Modifier", settings.VelocityOverLifeTime.SpeedModifier,0.1);
+			UI::AttributeDrag("Orbital", settings.VelocityOverLifeTime.Orbital,0.01);
+			UI::AttributeSlider("Radial", settings.VelocityOverLifeTime.Radial, 0.0f, 10.0f);
+			UI::AttributeDrag("Offset", settings.VelocityOverLifeTime.Offset,0.01);
+			UI::EndTreeNode();
+		}
+
+		// ───────────── Color Over Lifetime ─────────────
+		if (UI::AttributeTreeNode("Color Over LifeTime", false, 1, 1))
+		{
+			bool enabled = settings.ColorOverLifeTime.bEnabled == 1;
+			if (UI::AttributeBool("Enabled", enabled))
+			{
+				if (enabled)
+					settings.ColorOverLifeTime.bEnabled = 1;
+				else
+					settings.ColorOverLifeTime.bEnabled = 0;
+			}
+
+			UI::AttributeColor("Final Color", settings.ColorOverLifeTime.FinalColor);
+			UI::EndTreeNode();
+		}
+
+		// ───────────── Size Over Lifetime ─────────────
+		if (UI::AttributeTreeNode("Size Over LifeTime", false, 1, 1))
+		{
+			bool enabled = settings.SizeOverlifeTime.bEnabled == 1;
+			if (UI::AttributeBool("Enabled", enabled))
+			{
+				if (enabled)
+					settings.SizeOverlifeTime.bEnabled = 1;
+				else
+					settings.SizeOverlifeTime.bEnabled = 0;
+			}
+
+			UI::AttributeDrag("Final Size", settings.SizeOverlifeTime.FinalSize);
+			UI::EndTreeNode();
+		}
+		ImGui::EndChild();
+
+		ImGui::SameLine();
+		{
+
+			UI::ScopedStyleColor bgColor(ImGuiCol_ChildBg, { 0,0,0,1 });
+			ImGui::BeginChild("Window", ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y });
+
+			m_WorldRenderer->SetViewportSize(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
+
+			if (ImGui::IsWindowFocused())
+			{
+				m_IsViewportFocused = true;
+			}
+			else
+			{
+				m_IsViewportFocused = false;
+			}
+
+			UI::Image(m_WorldRenderer->GetFinalPassImage(), ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+			ImGui::EndChild();
+		}
+		ImGui::End();
+
+
 #if 0
 		if (!m_ParticleSystem)return;
 		if (m_SaveTimer <= 0.0f)
@@ -165,6 +302,20 @@ namespace Proof
 		//m_ParticleHandler = Count<ParticleHandler>::Create(m_ParticleSystem);
 		//entity.AddComponent<ParticleSystemComponent>().ParticleHandlerTable->SetHandler(0, m_ParticleHandler);
 		//entity.GetComponent<TransformComponent>().Location.z -= 20.0f;
+
+		entity.AddComponent<ParticleSystemComponent>();
+
+		Entity light = m_World->CreateEntity("light");
+		light.AddComponent<SkyLightComponent>();
+		light.AddComponent<DirectionalLightComponent>();
+		light.GetComponent<TransformComponent>().SetRotationEuler(glm::vec3(80, 10, 0));
+
+		m_Camera.SetPosition(glm::vec3(0, 2.5, 13.5));
+		//m_Camera.SetDirection(glm::vec3(-0.9, -0.3, -0.7));
+		// -0.9,-0.3,-0.07
 		m_WorldRenderer = Count<WorldRenderer>::Create();
+	}
+	void ParticleSystemEditorPanel::Save()
+	{
 	}
 }

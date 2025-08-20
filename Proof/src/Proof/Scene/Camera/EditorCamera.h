@@ -124,6 +124,16 @@ namespace Proof
 			return m_Position;
 		}
 
+		void SetDirection(glm::vec3 direction)
+		{
+			m_Direction = direction;
+		}
+
+		glm::vec3 GetDirection()const
+		{
+			return m_Direction;
+		}
+
 		float GetNearPlane()const { return m_NearPlane; }
 		float GetFarPlane()const { return m_FarPlane; }
 		bool IsActive() const { return m_IsActive; }

@@ -7,10 +7,10 @@ namespace Proof
 {
 	struct alignas(16) SBParticleInitalState
 	{
-		float Duration;
-		int bLooping;
-		float StartLifetime;
-		float StartSpeed;
+		float Duration = 5;
+		int bLooping = 1;
+		float StartLifetime = 5.0f;
+		float StartSpeed = 5.0f;
 
 		glm::vec3 StartSize = glm::vec3(1.0f);
 		float GravityModifier =0.0f;
@@ -23,8 +23,7 @@ namespace Proof
 		glm::vec3 EmitterPrevPosition = glm::vec3(0.0f);
 	};
 
-	// ----------DONT USE ALGIN AS FOR THIS ONES AS THEY GET PACKED LATER INOT ONE BIG STRUCT THEY EACH MUST COVER 1 FULL PACK (SO 4 BYTES OFFSET //
-	struct UBParticleEmission
+	struct alignas(16) UBParticleEmission
 	{
 		float ParticlesPerSecond = 10; // particle emit per second
 		float ParticlesPerDistance = 0.0f; // particle emit per distance
@@ -37,14 +36,14 @@ namespace Proof
 		Sphere = 0
 	};
 
-	struct UBParticleShape
+	struct alignas(16) UBParticleShape
 	{
 		int Shape = 0; //ParticleEmitterShape
 		float RandomizeDirection = 0.0f; // min 0, max 1
 		float SpherizeDirection = 0.0f; // min 0, max 1
 		float RandomizePosition = 0.0f;
 
-		int bEnabled = false;
+		int bEnabled = 0;
 		int padding0;
 		int padding1;
 		int padding2;
@@ -56,35 +55,41 @@ namespace Proof
 		int padding5;
 	};
 
-	struct UBParticleVelocityOverLifeTime
+	struct alignas(16) UBParticleVelocityOverLifeTime
 	{
-		glm::vec3 Linear = { 1,1,1 };
-		float SpeedModifier;
+		glm::vec3 Linear = { 0,0.5,0 };
+		float SpeedModifier = 1.0f;
 
 		glm::vec3 Orbital = glm::vec3(0.0f);
 		float Radial;
 
 		glm::vec3 Offset = glm::vec3(0.0f);
-		int bEnabled = false;
+		int bEnabled = 0;
 	};
 
-	struct UBColorOverLifeTime
+	struct alignas(16)  UBColorOverLifeTime
 	{
-		int bEnabled = false;
+		int bEnabled = 0;
 		int padding0;
 		int padding1;
 		int padding2;
 
 		glm::vec4 FinalColor = glm::vec4(1.0f);
 	};
-	// ----------DONT USE ALGIN AS FOR THIS ONES AS THEY GET PACKED LATER INOT ONE BIG STRUCT //
-	
-	struct alignas(16) SBParticleEmitterSettings
+
+	struct alignas(16) UBSizeOverLifeTime
 	{
-		UBParticleEmission Emission;
-		UBParticleShape Shape;
-		UBParticleVelocityOverLifeTime VelocityOverLifeTime;
-		UBColorOverLifeTime ColorOverLifeTime;
+		glm::vec3 FinalSize = glm::vec3(1.0f);
+		int bEnabled = 0;
+	};
+
+	struct SBParticleEmitterSettings
+	{
+		UBParticleEmission Emission = {};
+		UBParticleShape Shape = {};
+		UBParticleVelocityOverLifeTime VelocityOverLifeTime = {};
+		UBColorOverLifeTime ColorOverLifeTime = {};
+		UBSizeOverLifeTime SizeOverlifeTime = {};
 	};
 
 	struct alignas(16) SBParticleTrackableData

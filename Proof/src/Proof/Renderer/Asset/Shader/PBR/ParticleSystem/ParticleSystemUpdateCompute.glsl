@@ -27,9 +27,13 @@ layout(std430, binding=1) coherent restrict buffer ParticleInitialState
 
 } s_InitialState;
 
-layout(std430, binding = 2) coherent restrict buffer EmitterSettings
+layout(std430, binding = 2) buffer EmitterSettings
 {
-	ParticleEmitterSettings Settings;
+    ParticleEmission Emission;
+    ParticleShape Shape;
+    ParticleVelocityOverLifetime VelocityOverLifetime;
+    ParticleColorOverLifetime ColorOverLife;
+    ParticleSizeOverLifetime SizeOverLifeTime;
 } s_EmitterSettings;
 
 layout(std430, binding = 3) coherent restrict buffer TrackableData
@@ -51,73 +55,148 @@ float randRNG(uint seed, float salt)
 
 void RespawnParticleSphere(inout Particle particle,uint gid, uint lid)
 {
-    // Random values for spherical coords
-    float u = randRNG(gid, 12.9898);
-    float v = randRNG(gid, 78.233);
+      if (s_EmitterSettings.Shape.bEnabled == 0) {
+        // Fallback: simple upward spawn
+        particle.Position = s_InitialState.EmitterPosition;
+        particle.Velocity = vec3(0.0, s_InitialState.StartSpeed, 0.0);
+        particle.Size3D   = s_InitialState.StartSize;
+        particle.Color    = s_InitialState.StartColor;
+        particle.Life     = s_InitialState.StartLifetime;
+        return;
+    }
 
-    float sphereRadius = 5;
+    // -------- Sample point on/inside sphere (Unity-like "radius thickness")
+    float R   = s_EmitterSettings.Shape.SphereRadius;
+    float u   = randRNG(gid, 11.13);     // dir azimuth
+    float v   = randRNG(gid, 71.77);     // dir polar
+    float u2  = randRNG(gid, 29.91);     // for radius/volume
+    float twoPi = 6.2831853;
 
-    float theta = u * 6.2831853;          // 2π
-    float phi   = acos(2.0 * v - 1.0);
-    float r     = sphereRadius * pow(randRNG(gid, 34.567), 1.0/3.0);
+    // Unit direction on sphere
+    float theta = u * twoPi;
+    float z     = 2.0 * v - 1.0;                   // cos(phi) in [-1,1]
+    float xy    = sqrt(max(0.0, 1.0 - z*z));
+    vec3 unitOnSphere = vec3(xy * cos(theta), xy * sin(theta), z);
 
-    particle.Position = vec3(
-        s_InitialState.EmitterPosition.x + r * sin(phi) * cos(theta),
-        s_InitialState.EmitterPosition.y + r * sin(phi) * sin(theta),
-        s_InitialState.EmitterPosition.z + r * cos(phi)
-    );
+    // RandomizePosition acts like Unity's radius thickness (0 = surface, 1 = full volume)
+    // Uniform volume radius uses cbrt(rand). Blend between surface and volume.
+    float rSurface = R;
+    float rVolume  = R * pow(u2, 1.0/3.0);
+    float r        = mix(rSurface, rVolume, clamp(s_EmitterSettings.Shape.RandomizePosition, 0.0, 1.0));
 
-    particle.Size3D = s_InitialState.StartSize;
-    particle.Color = vec4(1.0f);
-    //particle.Color = s_InitialState.StartColor;
+    vec3 center   = s_InitialState.EmitterPosition;
+    vec3 spawnPos = center + unitOnSphere * r;
 
-    particle.Velocity = vec3(
-        mix(-0.2, 0.2, randRNG(gid, 32.8)),
-        0.5 + 0.5 * randRNG(gid, 94.2),
-        mix(-0.2, 0.2, randRNG(gid, 70.3))
-    );
+    // -------- Direction (Unity-like: randomize, then spherize toward surface normal)
+    // Start with the perfect radial direction (sphere normal)
+    vec3 radialDir = unitOnSphere;
 
-    particle.Velocity *= s_InitialState.StartSpeed;
-    particle.Life = s_InitialState.StartLifetime;
+    // Make a truly random unit direction
+    float u3 = randRNG(gid, 93.31);
+    float v3 = randRNG(gid, 37.42);
+    float th3 = u3 * twoPi;
+    float z3  = 2.0 * v3 - 1.0;
+    float xy3 = sqrt(max(0.0, 1.0 - z3*z3));
+    vec3 randomDir = vec3(xy3 * cos(th3), xy3 * sin(th3), z3);
+
+    // Apply RandomizeDirection: blend radial with random to add spread
+    float rndDirAmt = clamp(s_EmitterSettings.Shape.RandomizeDirection, 0.0, 1.0);
+    vec3 dir = normalize(mix(radialDir, randomDir, rndDirAmt));
+
+    // Apply SpherizeDirection: pull direction back toward the surface normal
+    float spherizeAmt = clamp(s_EmitterSettings.Shape.SpherizeDirection, 0.0, 1.0);
+    dir = normalize(mix(dir, radialDir, spherizeAmt));
+
+    // -------- Write particle state
+    particle.Position = spawnPos;
+    particle.Velocity = dir * s_InitialState.StartSpeed;
+    particle.Size3D   = s_InitialState.StartSize;
+    particle.Color    = s_InitialState.StartColor;
+    particle.Life     = s_InitialState.StartLifetime;
 }
 void RespawnParticle(inout Particle particle,uint gid, uint lid)
 {
     RespawnParticleSphere(particle,gid,lid);
 }
 
-void UpdateParticle(inout Particle particle,uint gid, uint lid)
+
+
+void UpdateVelocityOverLifeTime(inout Particle particle,uint gid, uint lid,ParticleVelocityOverLifetime velocityOverLifeTime)
 {
+    if (velocityOverLifeTime.bEnabled == 0)
+        return;
+
     float deltaTime = u_FrameData.DeltaTime;
 
- // integrate motion
+    // Radial velocity from emitter center
+    vec3 radialDir = normalize(particle.Position - s_InitialState.EmitterPosition);
+    vec3 radialVelocity = radialDir * velocityOverLifeTime.Radial;
+
+    // Orbital (perpendicular) velocity (around Y axis for simplicity)
+    vec3 orbitalDir = vec3(-radialDir.z, 0.0, radialDir.x); // 90 deg rotate on XZ plane
+    vec3 orbitalVelocity = orbitalDir * velocityOverLifeTime.Orbital;
+
+    // Apply linear velocity
+    particle.Velocity += velocityOverLifeTime.Linear * velocityOverLifeTime.SpeedModifier * deltaTime;
+
+    // Apply orbital and radial components
+    particle.Velocity += (radialVelocity + orbitalVelocity) * deltaTime;
+
+    // Apply constant offset directly to position
+    particle.Position += velocityOverLifeTime.Offset * deltaTime;
+}
+
+void UpdateColorOverLifetime(inout Particle particle,uint gid, uint lid,ParticleColorOverLifetime colorOverLifetime)
+{
+    if (colorOverLifetime.bEnabled != 0 && colorOverLifetime.bEnabled != 1)
+    {
+        particle.Color = vec4(1, 0, 1, 1); // bright magenta: shows invalid data
+    }
+    if (colorOverLifetime.bEnabled == 0)
+        return;
+
+    float lifePercent = 1.0 - (particle.Life / s_InitialState.StartLifetime);
+    lifePercent = clamp(lifePercent, 0.0, 1.0);
+
+    // Simple linear fade toward final color over lifetime
+    particle.Color = mix(particle.Color, colorOverLifetime.FinalColor, lifePercent);
+}
+
+void UpdateSizeOverLifetime(inout Particle particle,uint gid, uint lid,ParticleSizeOverLifetime sizeOverLifeTime)
+{
+    if (sizeOverLifeTime.bEnabled == 0)
+            return;
+
+    float lifePercent = 1.0 - (particle.Life / s_InitialState.StartLifetime);
+    lifePercent = clamp(lifePercent, 0.0, 1.0);
+
+    // Simple linear fade toward final color over lifetime
+    particle.Size3D = mix(particle.Size3D, sizeOverLifeTime.FinalSize, lifePercent);
+}
+
+void UpdateParticle(inout Particle particle,uint gid, uint lid)
+{
+    UpdateVelocityOverLifeTime(particle,gid,lid,s_EmitterSettings.VelocityOverLifetime);
+    UpdateColorOverLifetime(particle,gid,lid,s_EmitterSettings.ColorOverLife);
+    UpdateSizeOverLifetime(particle,gid,lid,s_EmitterSettings.SizeOverLifeTime);
+
+    float deltaTime = u_FrameData.DeltaTime;
+
+    // integrate motion
     particle.Position += particle.Velocity * deltaTime;
 
     // base delta (follow emitter)
     vec3 baseDelta = s_InitialState.EmitterPosition - s_InitialState.EmitterPrevPosition;
     particle.Position += baseDelta;
 
-    // wind
-    //p.Velocity.x += 0.05 * deltaTime *
-    //    sin(p.Position.y * 0.5 + deltaTime * 0.2);
-
-    // lifetime % for scaling + fade
-    float lifePercent = 1.0 - (particle.Life / s_InitialState.StartLifetime);
-
-    //float minSize = 0.8;
-    //float maxSize = 2.0;
-    //float sizeScale = mix(minSize, maxSize, lifePercent);
-    //p.Size3D = p.Size3D * sizeScale;
-
-   // particle.Color.a = (1.0 - lifePercent) * 0.7;
 
     // turbulence
-    float turbulenceX = sin(particle.Position.y * 8.0 + deltaTime) * 0.3;
-    float turbulenceZ = cos(particle.Position.y * 5.0 + deltaTime * 1.5) * 0.1;
-    particle.Position.x += turbulenceX * deltaTime;
-    particle.Position.z += turbulenceZ * deltaTime;
+    //float turbulenceX = sin(particle.Position.y * 8.0 + deltaTime) * 0.3;
+    //float turbulenceZ = cos(particle.Position.y * 5.0 + deltaTime * 1.5) * 0.1;
+    //
+    //particle.Position.x += turbulenceX * deltaTime;
+    //particle.Position.z += turbulenceZ * deltaTime;
 
-    // slow rise
-    //p.Velocity.y *= (1.0 - 0.1 * deltaTime);
 }
 void main() 
 {
@@ -142,7 +221,7 @@ void main()
     barrier();
 
     float deltaTime = u_FrameData.DeltaTime;
-
+    /*
     if(s_InitialState.Duration < s_TrackableData.TimeElapsed)
     {
         if(s_InitialState.bLooping == int(false))
@@ -151,25 +230,26 @@ void main()
            // float fadeOutSpeed = 1.0;
            // localParticles[lid].Color.a -= s_InitialState.FadeOutSpeed * deltaTime;
            // localParticles[lid].Color.a = max(localParticles[lid].Color.a, 0.0);
-            return;
+            //return;
         }
     }
+    */
         
-    Particle currentParticle = localParticles[lid];
-    currentParticle.Life -= u_FrameData.DeltaTime;
+   // Particle currentParticle = localParticles[lid];
+    localParticles[lid].Life -= u_FrameData.DeltaTime;
 
     // If the particle is dead, respawn it
     if (localParticles[lid].Life <= 0.0)
     {
-        RespawnParticle(currentParticle,gid,lid);
+        RespawnParticle(localParticles[lid],gid,lid);
     }
     else
     {
-        UpdateParticle(currentParticle,gid,lid);
+        UpdateParticle(localParticles[lid],gid,lid);
     }
 
     // Classify as alive or dead AFTER update
-    if (currentParticle.Life > 0.0)
+    if (localParticles[lid].Life > 0.0)
         atomicAdd(s_TrackableData.ActiveParticles, 1);
     else
         atomicAdd(s_TrackableData.DeadParticles, 1);

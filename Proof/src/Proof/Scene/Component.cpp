@@ -22,7 +22,7 @@
 #include "Proof/Scene/WaterSystem/Water.h"
 #include "Proof/Renderer/Font.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
-#include "Proof/Renderer/ParticleSystem.h"
+#include "Proof/Renderer/ParticleSystem/ParticleSystem.h"
 #include "Proof/Physics/MeshCollider.h"
 #include "Proof/Scene/TerrainRenderer/TerrainRenderer.h"
 #include "Proof/Animation/Animation.h"
@@ -190,8 +190,8 @@ namespace Proof
 	ParticleSystemComponent::ParticleSystemComponent(const ParticleSystemComponent& other)
 	{
 
-		if (other.ParticleHandlerTable)
-			ParticleHandlerTable = Count<class ParticleHandlerTable>::CreateFrom(other.ParticleHandlerTable);
+		//if (other.ParticleHandlerTable)
+		//	ParticleHandlerTable = Count<class ParticleHandlerTable>::CreateFrom(other.ParticleHandlerTable);
 	}
 
 	PlayerHUDComponent::PlayerHUDComponent(const PlayerHUDComponent& other)

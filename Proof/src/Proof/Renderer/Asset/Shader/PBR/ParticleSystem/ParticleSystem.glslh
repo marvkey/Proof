@@ -6,35 +6,37 @@ struct Particle
 	vec3 Velocity;
 	float Life;
 
-	vec3 Size3D;
-	uint SystemID;
-	
 	vec4 Color;
+	
+	vec3 Size3D;
+	int padding0;
 };
 
-struct ParticleEmission 
-{
+struct ParticleEmission {
     float ParticlesPerSecond;
     float ParticlesPerDistance;
-    vec2 _PaddingEmission;
+    int padding0;
+    int padding1;
 };
 
-struct ParticleVelocityShape 
-{
+struct ParticleShape {
     int Shape;
     float RandomizeDirection;
     float SpherizeDirection;
     float RandomizePosition;
 
-    int Enabled;
-    vec3 _Padding0;
+    int bEnabled;
+    int padding0;
+    int padding1;
+    int padding2;
 
     float SphereRadius;
-    vec3 _Padding1;
+    int padding3;
+    int padding4;
+    int padding5;
 };
 
-struct ParticleVelocityOverLifetime 
-{
+struct ParticleVelocityOverLifetime {
     vec3 Linear;
     float SpeedModifier;
 
@@ -42,21 +44,30 @@ struct ParticleVelocityOverLifetime
     float Radial;
 
     vec3 Offset;
-    int Enabled;
+    int bEnabled;
 };
 
-struct ColorOverLifetime 
-{
-    int Enabled;
-    ivec3 _Padding0;
+struct ParticleColorOverLifetime {
+    int bEnabled;
+    int padding0;
+    int padding1;
+    int padding2;
+
     vec4 FinalColor;
 };
 
+struct ParticleSizeOverLifetime {
+    vec3 FinalSize;
+    int bEnabled;
+};
 // Main packed struct per emitter
 struct ParticleEmitterSettings 
 {
     ParticleEmission Emission;
-    ParticleVelocityShape VelocityShape;
+    ParticleShape Shape;
     ParticleVelocityOverLifetime VelocityOverLifetime;
-    ColorOverLifetime ColorOverLife;
+    ParticleColorOverLifetime ColorOverLife;
+    ParticleSizeOverLifetime SizeOverLifeTime;
 };
+
+

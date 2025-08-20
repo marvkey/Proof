@@ -20,6 +20,7 @@
 #include "Proof/Events/KeyEvent.h"
 #include "Proof/Events/MouseEvent.h"
 #include "Proof/Animation/AnimationController.h"
+#include "Proof/Renderer/ParticleSystem/ParticleSystem.h"
 #include "../../EditorResources.h"
 
 #include "../ApplicationSettings.h"
@@ -293,6 +294,9 @@ namespace Proof
 
 								if(ImGui::MenuItem("AnimationController"))
 									CreateAsset<AnimationController>("New AnimationController");
+
+								if (ImGui::MenuItem("ParticleSystem"))
+									CreateAsset<ParticleSystem>("New ParticleSystem");
 
 								ImGui::EndMenu();
 							}

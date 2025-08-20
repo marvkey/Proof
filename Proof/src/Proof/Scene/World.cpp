@@ -114,6 +114,8 @@ namespace Proof
 				}
 			}
 			*/
+
+		
 		}
 
 		{
@@ -427,6 +429,15 @@ namespace Proof
 					if(terrainComponent.Terrain)
 						terrainComponent.Terrain->Render(worldRenderer);
 				}
+			}
+
+			const auto& particleView = m_Registry.view<ParticleSystemComponent>();
+			for (auto entity : particleView)
+			{
+				auto& particleSystem = particleView.get<ParticleSystemComponent>(entity);
+				if (particleSystem.emitter == nullptr)continue;
+				worldRenderer->SubmitParticleEmitter(particleSystem.emitter);
+
 			}
 		}
 

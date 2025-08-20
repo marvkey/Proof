@@ -210,6 +210,7 @@ namespace Proof
 
 		Count <RenderPass> GetPreDepthRenderPass() { return m_PreDepthPass; }
 
+		void SubmitParticleEmitter(Count<class ParticleEmitter> emiter);
 	public:
 		// preProcess
 		WorldRendererDebugOptions DebugOptions;
@@ -475,6 +476,7 @@ namespace Proof
 		Count<ComputePass> m_ParticleUpdateComputePass;
 		Count<RenderPass> m_ParticleRenderPass;
 
+		std::unordered_set<Count<class ParticleEmitter>> m_Emitters;
 	private:
 
 		// only put attach to depth when you are sure u are not changing any vertex position

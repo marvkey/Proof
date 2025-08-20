@@ -4,22 +4,22 @@
 #include "Proof/Math/Math.h"
 #include <glm/glm.hpp>
 #include "ParticleBuffers.h"
-//https://evanvoodoo.github.io/2025-01-24-gpu-particles/
-
+//https://github.com/unrealsid/OpenGL-GPU-Particles-2
+//https://www.reddit.com/r/GraphicsProgramming/comments/1jn7w3v/i_finally_got_around_to_building_a_gpu/
 namespace Proof
 {
 	struct alignas(16) Particle
 	{
-		glm::vec3 Position;
-		float Rotation;
+		glm::vec3 Position = glm::vec3(0,0,0);
+		float Rotation = 0.0f;
 
-		glm::vec3 Velocity;
+		glm::vec3 Velocity = glm::vec3(0,0,0);
 		float Life = 1.0f;
 
 		glm::vec4 Color = glm::vec4{ 1 };
 
 		glm::vec3 Size3D{ 1 };
-		uint32_t SystemID;
+		int padding0;
 	};
 
 
@@ -51,9 +51,9 @@ namespace Proof
 		AssetKey<AssetType::Texture> Texture;
 	private:
 		uint32_t m_MaxParticles = 0;
-		glm::vec3 m_CurrentPos, m_PrevPos;
+		glm::vec3 m_CurrentPos = glm::vec3(0.0f), m_PrevPos = glm::vec3(0.0f);
 		Count<class StorageBuffer> m_SBParticlesBuffer;
-		Count<class StorageBuffer> m_SBParticleParticleInitalStateBuffer; // storage cause of aling
+		Count<class StorageBuffer> m_SBParticleParticleInitalState; // storage cause of aling
 		Count<class StorageBuffer> m_SBParticleEmitterSettingsBuffer; // storage cause of align 
 		Count<class StorageBuffer> m_SBTrackableData; // storage cause of align comptue shader will edit this
 		friend class WorldRenderer;

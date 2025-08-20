@@ -733,7 +733,7 @@ namespace Proof
 
 				out << YAML::Key << "ParticleHandlerTable";
 				out << YAML::BeginSeq;//ParticleHandlerTable
-				if (particleSystemComponent.ParticleHandlerTable != nullptr)
+				//if (particleSystemComponent.ParticleHandlerTable != nullptr)
 				{
 #if 0
 					for (auto& [index, particleHandler] : particleSystemComponent.ParticleHandlerTable->GetHandlers())

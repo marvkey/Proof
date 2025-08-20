@@ -296,7 +296,7 @@ namespace Proof
 					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<GuiEditorPanel>::Create();
 					break;
 				case Proof::AssetType::ParticleSystem:
-					//s_Editors[asset->GetAssetType()][asset->GetID()] = Count<ParticleSystemEditorPanel>::Create();
+					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<ParticleSystemEditorPanel>::Create();
 					break;
 				case Proof::AssetType::MeshCollider:
 					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<MeshColliderEditorPanel>::Create();

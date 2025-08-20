@@ -18,7 +18,6 @@
 #include "Proof/Physics/PhysicsMeshCooker.h"
 #include "DebugMeshRenderer.h"
 #include "Font.h"
-#include "ParticleSystem.h"
 #include "ComputePipeline.h"
 #include "RenderMaterial.h"
 #include "ComputePass.h"
@@ -38,7 +37,7 @@
 #include "Proof/Core/Core.h"
 #include "RendererSampler.h"
 #include "Proof/Scene/GrassRenderer/GrassRenderer.h"
-#include "Proof/Renderer/ParticleSystem/ParticleSystem2.h"
+#include "Proof/Renderer/ParticleSystem/ParticleSystem.h"
 
 #include "VertexArray.h"
 #include <glm/glm.hpp>
@@ -210,7 +209,8 @@ namespace Proof
 	void WorldRenderer::Init()
 	{
 		//AmbientOcclusion.Enabled = true;
-		const size_t TransformBufferCount = 60000; // 60000 transforms
+		//const size_t TransformBufferCount = 60000; // 60000 transforms
+		const size_t TransformBufferCount = 1024; 
 		m_SubmeshTransformBuffers.resize(Renderer::GetConfig().FramesFlight);
 		for (uint32_t i = 0; i < Renderer::GetConfig().FramesFlight; i++)
 		{
@@ -1994,6 +1994,14 @@ namespace Proof
 	Count<Image2D> WorldRenderer::GetShadowPassDebugImage()
 	{
 		return m_ShadowDebugPass->GetTargetFrameBuffer()->GetOutput(0).As<Image2D>();
+	}
+
+	void WorldRenderer::SubmitParticleEmitter(Count<class ParticleEmitter> emiter)
+	{
+		if (m_Emitters.contains(emiter))
+			return;
+
+		m_Emitters.insert(emiter);
 	}
 
 	void WorldRenderer::SubmitGrassPlane(Count<class GrassBladePlane> plane, const glm::mat4& transform)
@@ -4544,15 +4552,15 @@ namespace Proof
 	}
 	Count<VertexBuffer> quadVertexBuffer;
 	Count<IndexBuffer> quadIndexBuffer;
-	Count< ParticleEmitter> emiter;
 	void WorldRenderer::RenderParticleSystem()
 	{
-		if (emiter == nullptr)
+		if (quadVertexBuffer == nullptr)
 		{
-			emiter = Count<ParticleEmitter>::Create();
 		
 
-
+			//emiter->ParticleEmitterSettings.VelocityOverLifeTime.bEnabled = ;
+			//emiter->ParticleInitialState.StartColor = glm::vec4(1, 0, 0, 1);
+			//emiter->ParticleEmitterSettings.VelocityOverLifeTime.Linear = glm::vec3(0,0.5,0);
 			QuadVertex vertices[4];
 
 			vertices[0].Position = glm::vec3(0.5f, 0.5f, 0.0f);
@@ -4576,34 +4584,40 @@ namespace Proof
 			quadVertexBuffer = VertexBuffer::Create(vertices,4 * sizeof(QuadVertex));
 			quadIndexBuffer = IndexBuffer::Create(indices, 6 * sizeof(uint32_t));
 		}
-		emiter->OnUpdate(FrameTime::GetWorldDeltaTime());
+
+
+		for (auto emiter : m_Emitters)
 		{
 
-			m_ParticleUpdateComputePass->SetInput("s_Particles", emiter->m_SBParticlesBuffer);
-			m_ParticleUpdateComputePass->SetInput("ParticleInitialState", emiter->m_SBParticleParticleInitalStateBuffer);
-			m_ParticleUpdateComputePass->SetInput("EmitterSettings", emiter->m_SBParticleEmitterSettingsBuffer);
-			m_ParticleUpdateComputePass->SetInput("TrackableData", emiter->m_SBTrackableData);
+			emiter->OnUpdate(FrameTime::GetWorldDeltaTime());
+			{
 
-			Renderer::BeginComputePass(m_CommandBuffer, m_ParticleUpdateComputePass);
-			int workGroupSize = 512;
-			int numGroups = (emiter->GetParticleCount() + workGroupSize - 1) / workGroupSize;
-			m_ParticleUpdateComputePass->Dispatch(numGroups, 1, 1);
-			Renderer::EndComputePass(m_ParticleUpdateComputePass);
+				m_ParticleUpdateComputePass->SetInput("s_Particles", emiter->m_SBParticlesBuffer);
+				m_ParticleUpdateComputePass->SetInput("ParticleInitialState", emiter->m_SBParticleParticleInitalState);
+				m_ParticleUpdateComputePass->SetInput("EmitterSettings", emiter->m_SBParticleEmitterSettingsBuffer);
+				m_ParticleUpdateComputePass->SetInput("TrackableData", emiter->m_SBTrackableData);
 
+				Renderer::BeginComputePass(m_CommandBuffer, m_ParticleUpdateComputePass);
+				int workGroupSize = 512;
+				int numGroups = (emiter->GetParticleCount() + workGroupSize - 1) / workGroupSize;
+				m_ParticleUpdateComputePass->Dispatch(numGroups, 1, 1);
+				Renderer::EndComputePass(m_ParticleUpdateComputePass);
+
+			}
+
+			m_ParticleRenderPass->SetInput("s_Particles", emiter->m_SBParticlesBuffer);
+			Renderer::BeginRenderPass(m_CommandBuffer, m_ParticleRenderPass);
+
+			const uint32_t vertexCount = 6; // POINT_LIST
+			//const uint32_t instanceCount = m_NumParticles;
+			const uint32_t instanceCount = emiter->GetParticleCount();
+
+			quadVertexBuffer->Bind(m_CommandBuffer);
+			quadIndexBuffer->Bind(m_CommandBuffer);
+			Renderer::DrawElementIndexed(m_CommandBuffer, quadIndexBuffer->GetSize() / sizeof(uint32_t), instanceCount, 0, 0);
+
+			Renderer::EndRenderPass(m_ParticleRenderPass);
 		}
-
-		m_ParticleRenderPass->SetInput("s_Particles", emiter->m_SBParticlesBuffer);
-		Renderer::BeginRenderPass(m_CommandBuffer, m_ParticleRenderPass);
-
-		const uint32_t vertexCount = 6; // POINT_LIST
-		//const uint32_t instanceCount = m_NumParticles;
-		const uint32_t instanceCount = emiter->GetParticleCount();
-
-		quadVertexBuffer->Bind(m_CommandBuffer);
-		quadIndexBuffer->Bind(m_CommandBuffer);
-		Renderer::DrawElementIndexed(m_CommandBuffer, quadIndexBuffer->GetSize() / sizeof(uint32_t), instanceCount,0,0);
-
-		Renderer::EndRenderPass(m_ParticleRenderPass);
 	}
 
 }

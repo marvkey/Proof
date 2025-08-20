@@ -35,14 +35,14 @@ vec3 camUp    = normalize(vec3(u_Camera.InverseView[1].xyz)); // +Y
     Particle particle = particles[index];
     // override particle pos to (0,0,0)
 
-    vec2 particlescale = vec2(3.0);
+    vec2 particlescale = particle.Size3D.xy;
 
     vec3 vertexPosition =
         particle.Position.xyz + 
         camRight * aPosition.x * particlescale.x +
         camUp * aPosition.y * particlescale.y;
 
-    Output.Color = vec4(1.0f);
+    Output.Color = particle.Color;
     // transform with camera’s view-projection
     gl_Position = u_Camera.ViewProjectionMatrix * vec4(vertexPosition, 1.0);
 }
