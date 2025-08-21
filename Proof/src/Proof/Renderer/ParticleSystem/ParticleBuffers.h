@@ -25,8 +25,8 @@ namespace Proof
 
 	struct alignas(16) UBParticleEmission
 	{
-		float ParticlesPerSecond = 10; // particle emit per second
-		float ParticlesPerDistance = 0.0f; // particle emit per distance
+		uint32_t ParticlesPerSecond = 10; // particle emit per second
+		uint32_t ParticlesPerDistance = 0; // particle emit per distance
 		int padding0;
 		int padding1;
 	};
@@ -107,4 +107,11 @@ namespace Proof
 		int DeadParticles = 0;
 		int MaxParticles = 0; // not edited in teh shader
 	};
+
+	struct alignas(16) SBParticlePerDrawState
+	{
+		int SpawnNewParticles = 0; // leave as int because of it going to -1 in shader causign problems
+		int AvailableToDraw = 0;// leave as int because of it going to -1 in shader causign problems CONTROLLED AND INITLIZED BY SHADER
+	};
+
 }

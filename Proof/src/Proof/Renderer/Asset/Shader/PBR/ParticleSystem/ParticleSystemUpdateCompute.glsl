@@ -42,7 +42,17 @@ layout(std430, binding = 3) coherent restrict buffer TrackableData
 	int ActiveParticles;
 	int DeadParticles;
     int MaxParticles; // max particles not edited
+
+    int CurrentNumParticles;
+	int ParticlePoolIndex; // its initaim Maxparitlces -1
 }s_TrackableData;
+
+
+layout(std430, binding = 4) coherent restrict buffer PerDrawData
+{
+    int SpawnNewParticles; // leave as an int because if uint and goes -1 cause problems
+    int AvailableToDraw;
+} ;
 
 // Shared memory for particles within a workgroup
 shared Particle localParticles[512];
@@ -103,6 +113,7 @@ void RespawnParticleCone(inout Particle particle, uint gid,uint lid)
     particle.Size3D   = s_InitialState.StartSize;
     particle.Color    = s_InitialState.StartColor;
     particle.Life     = s_InitialState.StartLifetime;
+    particle.bActive = 1;
 }
 
 void RespawnParticleSphere(inout Particle particle,uint gid, uint lid)
@@ -155,6 +166,7 @@ void RespawnParticleSphere(inout Particle particle,uint gid, uint lid)
     particle.Size3D   = s_InitialState.StartSize;
     particle.Color    = s_InitialState.StartColor;
     particle.Life     = s_InitialState.StartLifetime;
+    particle.bActive = 1;
 }
 void RespawnParticle(inout Particle particle,uint gid, uint lid)
 {
@@ -166,6 +178,7 @@ void RespawnParticle(inout Particle particle,uint gid, uint lid)
         particle.Size3D   = s_InitialState.StartSize;
         particle.Color    = s_InitialState.StartColor;
         particle.Life     = s_InitialState.StartLifetime;
+        particle.bActive = 0;
         return;
     }
     if(s_EmitterSettings.Shape.Shape == PARTICLE_SHAPE_CONE)
@@ -177,8 +190,6 @@ void RespawnParticle(inout Particle particle,uint gid, uint lid)
         RespawnParticleSphere(particle,gid,lid);
     }
 }
-
-
 
 void UpdateVelocityOverLifeTime(inout Particle particle,uint gid, uint lid,ParticleVelocityOverLifetime velocityOverLifeTime)
 {
@@ -255,6 +266,7 @@ void UpdateParticle(inout Particle particle,uint gid, uint lid)
     //particle.Position.z += turbulenceZ * deltaTime;
 
 }
+
 void main() 
 {
 	uint gid = gl_GlobalInvocationID.x;
@@ -267,7 +279,14 @@ void main()
          s_TrackableData.DeadParticles = 0;
         // Update elapsed time ONCE
         s_TrackableData.TimeElapsed += u_FrameData.DeltaTime;
+
+        AvailableToDraw = SpawnNewParticles;
     }
+
+    // Wait for spawn counter to be initialized
+    memoryBarrierBuffer();
+    barrier();
+
 
     if (gid >= s_TrackableData.MaxParticles)
         return;
@@ -275,7 +294,6 @@ void main()
     // Load particle into shared memory
     localParticles[lid] = Particles[gid];
 
-    barrier();
 
     float deltaTime = u_FrameData.DeltaTime;
     /*
@@ -296,11 +314,14 @@ void main()
     localParticles[lid].Life -= u_FrameData.DeltaTime;
 
     // If the particle is dead, respawn it
-    if (localParticles[lid].Life <= 0.0)
+    if (localParticles[lid].Life <= 0.0) 
     {
-        RespawnParticle(localParticles[lid],gid,lid);
+        int ticket = atomicAdd(AvailableToDraw, int(-1));
+        if (ticket > 0) {
+            RespawnParticle(localParticles[lid], gid, lid);
+        }
     }
-    else
+    else if(localParticles[lid].Life > 0.0)
     {
         UpdateParticle(localParticles[lid],gid,lid);
     }

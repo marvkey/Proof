@@ -19,7 +19,7 @@ namespace Proof
 		glm::vec4 Color = glm::vec4{ 1 };
 
 		glm::vec3 Size3D{ 1 };
-		int padding0;
+		int bActive = 0; // if its spawned already
 	};
 
 
@@ -50,12 +50,14 @@ namespace Proof
 		SBParticleTrackableData GetTrackableData();
 		AssetKey<AssetType::Texture> Texture;
 	private:
+		float m_ParticleAccumulator = 0.0f;
 		uint32_t m_MaxParticles = 0;
 		glm::vec3 m_CurrentPos = glm::vec3(0.0f), m_PrevPos = glm::vec3(0.0f);
 		Count<class StorageBuffer> m_SBParticlesBuffer;
 		Count<class StorageBuffer> m_SBParticleParticleInitalState; // storage cause of aling
 		Count<class StorageBuffer> m_SBParticleEmitterSettingsBuffer; // storage cause of align 
 		Count<class StorageBuffer> m_SBTrackableData; // storage cause of align comptue shader will edit this
+		Count<class StorageBuffer> m_SBPerDrawData; // storage cause of align comptue shader will edit this
 		friend class WorldRenderer;
 	};
 

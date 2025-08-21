@@ -9,12 +9,12 @@ struct Particle
 	vec4 Color;
 	
 	vec3 Size3D;
-	int padding0;
+	int bActive;
 };
 
 struct ParticleEmission {
-    float ParticlesPerSecond;
-    float ParticlesPerDistance;
+    uint ParticlesPerSecond;
+    uint ParticlesPerDistance;
     int padding0;
     int padding1;
 };

@@ -75,8 +75,8 @@ namespace Proof
 		{
 			UI::BeginPropertyGrid();
 			
-			UI::AttributeSlider("Particles Per Second", settings.Emission.ParticlesPerSecond, 0.0f, 5000.0f);
-			UI::AttributeSlider("Particles Per Distance", settings.Emission.ParticlesPerDistance, 0.0f, 100.0f);
+			UI::AttributeDrag("Particles Per Second", settings.Emission.ParticlesPerSecond,2);
+			UI::AttributeDrag("Particles Per Distance", settings.Emission.ParticlesPerDistance,1);
 
 			UI::EndPropertyGrid();
 

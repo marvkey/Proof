@@ -60,6 +60,18 @@ namespace Proof
     {
         m_SBParticleEmitterSettingsBuffer->SetData(Buffer(&ParticleEmitterSettings, sizeof(SBParticleEmitterSettings)));
         m_SBParticleParticleInitalState->SetData(Buffer(&ParticleInitialState, sizeof(SBParticleInitalState)));
+
+        m_ParticleAccumulator +=float(ParticleEmitterSettings.Emission.ParticlesPerSecond) * dt;
+
+        int toSpawn = static_cast<int>(floor(m_ParticleAccumulator));
+        m_ParticleAccumulator -= toSpawn;
+
+
+        SBParticlePerDrawState drawState;
+        drawState.SpawnNewParticles = toSpawn; // 
+
+        m_SBPerDrawData->SetData(Buffer(&drawState, sizeof(SBParticlePerDrawState)));
+
     }
 
     uint32_t ParticleEmitter::GetParticleCount()
@@ -95,6 +107,7 @@ namespace Proof
         m_SBParticleEmitterSettingsBuffer = StorageBuffer::Create(Buffer(&ParticleEmitterSettings, sizeof(SBParticleEmitterSettings)));
         m_SBParticleParticleInitalState = StorageBuffer::Create(Buffer(&ParticleInitialState, sizeof(SBParticleInitalState)));
         m_SBTrackableData = StorageBuffer::Create(Buffer(&trackableData, sizeof(SBParticleTrackableData)));
+        m_SBPerDrawData = StorageBuffer::Create(sizeof(SBParticlePerDrawState));
     }
 
     SBParticleTrackableData ParticleEmitter::GetTrackableData()

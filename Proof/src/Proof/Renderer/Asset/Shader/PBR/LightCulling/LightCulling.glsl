@@ -256,7 +256,7 @@ void main()
 		}
 
 		for (uint i = 0; i < visibleSpotLightCount; i++) 
-		{
+		{	
 			s_SpotLightIndexList.Indices[offset + i] = visibleSpotLightIndices[i];
 		}
 

@@ -43,6 +43,9 @@ vec3 camUp    = normalize(vec3(u_Camera.InverseView[1].xyz)); // +Y
         camUp * aPosition.y * particlescale.y;
 
     Output.Color = particle.Color;
+
+    if(particle.bActive == 0)
+        Output.Color.a = 0.0;
     // transform with camera’s view-projection
     gl_Position = u_Camera.ViewProjectionMatrix * vec4(vertexPosition, 1.0);
 }
@@ -59,5 +62,7 @@ layout(location = 0) in VertexOutput Input;
 
 void main()
 {
+    if(Input.Color.a < 0.01)
+        discard;
     outColor = Input.Color; // white points
 }

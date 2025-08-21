@@ -4596,6 +4596,7 @@ namespace Proof
 				m_ParticleUpdateComputePass->SetInput("ParticleInitialState", emiter->m_SBParticleParticleInitalState);
 				m_ParticleUpdateComputePass->SetInput("EmitterSettings", emiter->m_SBParticleEmitterSettingsBuffer);
 				m_ParticleUpdateComputePass->SetInput("TrackableData", emiter->m_SBTrackableData);
+				m_ParticleUpdateComputePass->SetInput("PerDrawData", emiter->m_SBPerDrawData);
 
 				Renderer::BeginComputePass(m_CommandBuffer, m_ParticleUpdateComputePass);
 				int workGroupSize = 512;
