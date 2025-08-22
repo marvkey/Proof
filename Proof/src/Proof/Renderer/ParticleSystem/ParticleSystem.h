@@ -85,6 +85,10 @@ namespace Proof
 			return emitter;
 		}
 
+		void AddEmitter(Count<ParticleEmitter> emitter)
+		{
+			m_Emmiters.push_back(emitter);
+		}
 		// Get emitter by index
 		Count<ParticleEmitter> GetEmitter(size_t index) const
 		{

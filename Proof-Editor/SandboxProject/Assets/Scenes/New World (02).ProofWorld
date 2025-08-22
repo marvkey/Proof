@@ -14,6 +14,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
+        Visible: true
       BoxColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]

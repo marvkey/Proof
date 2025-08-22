@@ -274,6 +274,8 @@ namespace Proof
 		std::map<MeshKey, TransformMapData>* m_CurTransformMap;
 		std::map<MeshKey, TransformMapData>* m_PrevTransformMap;
 
+		uint32_t m_TotalSubmeshesContext = 0;
+
 		std::map<MeshKey, MeshDrawInfo> m_MeshDrawList;
 		std::map<MeshKey, DynamicMeshDrawInfo> m_DynamicMeshDrawList;
 

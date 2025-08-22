@@ -51,3 +51,37 @@ World:
         ShadowStrength: 0.5
         CastSoftShadow: true
         ShadowSoftness: 0.5
+    - Entity: 1923039401147272542
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 17573016932066549848
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete

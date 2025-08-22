@@ -296,7 +296,6 @@ void main()
 
 
     float deltaTime = u_FrameData.DeltaTime;
-    /*
     if(s_InitialState.Duration < s_TrackableData.TimeElapsed)
     {
         if(s_InitialState.bLooping == int(false))
@@ -307,8 +306,15 @@ void main()
            // localParticles[lid].Color.a = max(localParticles[lid].Color.a, 0.0);
             //return;
         }
+        else
+        {
+            localParticles[lid].Color.a -= s_InitialState.FadeOutSpeed * deltaTime;
+            localParticles[lid].Color.a = max(localParticles[lid].Color.a, 0.0);
+
+            if(localParticles[lid].Color.a <=0.0)
+                localParticles[lid].bActive = 0;
+        }
     }
-    */
         
    // Particle currentParticle = localParticles[lid];
     localParticles[lid].Life -= u_FrameData.DeltaTime;

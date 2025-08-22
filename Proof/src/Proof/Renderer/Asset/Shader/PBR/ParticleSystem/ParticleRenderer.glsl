@@ -21,13 +21,15 @@ layout(std430, binding = 0) readonly restrict buffer s_Particles
 struct VertexOutput
 {
     vec4 Color;
+    vec2 TexCoords;
 };
 layout(location = 0) out VertexOutput Output;
 
 void main()
 {
-vec3 camRight = normalize(vec3(u_Camera.InverseView[0].xyz)); // +X
-vec3 camUp    = normalize(vec3(u_Camera.InverseView[1].xyz)); // +Y
+
+  vec3 camRight = vec3(u_Camera.View[0][0], u_Camera.View[1][0], u_Camera.View[2][0]);
+    vec3 camUp = vec3(u_Camera.View[0][1], u_Camera.View[1][1], u_Camera.View[2][1]);
 // vec3 camForward = normalize(-vec3(u_Camera.InverseView[2].xyz)); // +Z (if needed)
 
     uint index = gl_InstanceIndex;
@@ -43,11 +45,12 @@ vec3 camUp    = normalize(vec3(u_Camera.InverseView[1].xyz)); // +Y
         camUp * aPosition.y * particlescale.y;
 
     Output.Color = particle.Color;
+    Output.TexCoords = aTexCoords;
 
     if(particle.bActive == 0)
         Output.Color.a = 0.0;
     // transform with camera’s view-projection
-    gl_Position = u_Camera.ViewProjectionMatrix * vec4(vertexPosition, 1.0);
+    gl_Position = u_Camera.Projection * u_Camera.View * vec4(vertexPosition, 1.0);
 }
 
 #Fragment Shader
@@ -57,12 +60,18 @@ layout(location=0) out vec4 outColor;
 struct VertexOutput
 {
     vec4 Color;
+    vec2 TexCoords;
 };
 layout(location = 0) in VertexOutput Input;
+layout(set = 0, binding = 1) uniform sampler2D u_Texture;
 
 void main()
 {
-    if(Input.Color.a < 0.01)
+vec4 texColor = texture(u_Texture, -Input.TexCoords);
+    if (texColor.a < 0.1)
         discard;
-    outColor = Input.Color; // white points
+
+    if(Input.Color.a <=0.1)
+        discard;
+    outColor = texColor * Input.Color;
 }

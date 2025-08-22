@@ -697,7 +697,7 @@ namespace Proof
 			particlePipelineConfig.DebugName = "Particle Points";
 			particlePipelineConfig.DepthTest = true;
 			particlePipelineConfig.WriteDepth = false;
-			particlePipelineConfig.DrawMode = DrawType::TriangleStrip;  
+			particlePipelineConfig.DrawMode = DrawType::Triangle;  
 			particlePipelineConfig.Shader = Renderer::GetShader("ParticleSystemRenderer");
 
 
@@ -1960,6 +1960,10 @@ namespace Proof
 			m_GeometryPassInstancesDrawList.clear();
 
 			m_GrassPlanes.Get().clear();
+
+			m_TotalSubmeshesContext = 0;
+
+			m_Emitters.clear();
 		}
 
 		m_Timers.TotalDrawScene = drawSceneTimer.ElapsedMillis();
@@ -2022,6 +2026,35 @@ namespace Proof
 			return Renderer::GetBlackTexture()->GetImage();
 
 		return image;
+	}
+	static inline void ResizeTransformBuffer(TransformBuffer& TB, size_t neededSubmeshesCount)
+	{
+		if (neededSubmeshesCount == 0)
+			return;
+
+		// Work out current capacity from GPU buffer size
+		size_t curCap = 0;
+		if (TB.Buffer)
+			curCap = TB.Buffer->GetVertexSize() / sizeof(TransformVertexData);
+
+		if (curCap >= neededSubmeshesCount && TB.Data)
+			return; // already big enough, do nothing
+
+		// Nuke CPU array
+		if (TB.Data)
+		{
+			pdelete[] TB.Data;
+			TB.Data = nullptr;
+		}
+
+		// Allocate new CPU side array
+		TB.Data = pnew TransformVertexData[neededSubmeshesCount];
+
+		// Allocate new GPU buffer
+		const size_t newBytes = neededSubmeshesCount * sizeof(TransformVertexData);
+		TB.Buffer = VertexBuffer::Create(newBytes);
+
+		PF_ENGINE_TRACE("Resized world renderer buffer to {} bytes or {} SubmeshTransfomrs", newBytes, neededSubmeshesCount);
 	}
 
 	void WorldRenderer::SetPasses()
@@ -2089,7 +2122,10 @@ namespace Proof
 		// set up mesh passes
 		{
 			uint32_t offset = 0;
+
+			ResizeTransformBuffer(m_SubmeshTransformBuffers[frameIndex], m_TotalSubmeshesContext * 2ull); // *2 previous transform
 			uint64_t submeshTransformSize = m_SubmeshTransformBuffers[frameIndex].Buffer->GetVertexSize() / sizeof(TransformVertexData);
+
 			for (auto& [key, transformData] : *m_CurTransformMap)
 			{
 				transformData.TransformOffset = offset * sizeof(TransformVertexData);
@@ -2098,13 +2134,13 @@ namespace Proof
 				uint32_t transformIndex = 0;
 				for (const auto& transform : transformData.Transforms)
 				{
-					PF_CORE_ASSERT(offset <= submeshTransformSize, "Need to resize SubMeshTransforms to small");
+					PF_CORE_ASSERT(offset < submeshTransformSize, "Need to resize SubMeshTransforms to small");
 					m_SubmeshTransformBuffers[frameIndex].Data[offset] = transform;
 					offset++;
 
 					//prev model matrix
 
-					PF_CORE_ASSERT(offset <= submeshTransformSize, "Need to resize SubMeshTransforms to small");
+					PF_CORE_ASSERT(offset < submeshTransformSize, "Need to resize SubMeshTransforms to small");
 					if (prevTransformData.Transforms.size() > transformIndex)
 						m_SubmeshTransformBuffers[frameIndex].Data[offset] = prevTransformData.Transforms[transformIndex];
 					else
@@ -3907,6 +3943,8 @@ namespace Proof
 
 			MeshKey meshKey = { meshID, materialHandle, submeshIndex, false };
 			auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
+			m_TotalSubmeshesContext++;
+
 			transformStorage.Transform = subMeshTransform;
 
 			if ((*m_PrevTransformMap).find(meshKey) == (*m_PrevTransformMap).end())
@@ -3960,6 +3998,8 @@ namespace Proof
 
 			MeshKey meshKey = { meshID, materialHandle, submeshIndex, false };
 			auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
+			m_TotalSubmeshesContext++;
+
 			transformStorage.Transform = subMeshTransform;
 
 			if ((*m_PrevTransformMap).find(meshKey) == (*m_PrevTransformMap).end())
@@ -4008,6 +4048,8 @@ namespace Proof
 
 		MeshKey meshKey = { meshID, materialHandle, subMeshIndex, false };
 		auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
+		m_TotalSubmeshesContext++;
+
 		transformStorage.Transform = subMeshTransform;
 
 		if ((*m_PrevTransformMap).find(meshKey) == (*m_PrevTransformMap).end())
@@ -4064,6 +4106,8 @@ namespace Proof
 
 			MeshKey meshKey = { meshID, materialHandle, submeshIndex, false };
 			auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
+			m_TotalSubmeshesContext++;
+
 			transformStorage.Transform = subMeshTransform;
 
 			if ((*m_PrevTransformMap).find(meshKey) == (*m_PrevTransformMap).end())
@@ -4102,6 +4146,8 @@ namespace Proof
 
 		MeshKey meshKey = { meshID, materialHandle, subMeshIndex, false };
 		auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
+		m_TotalSubmeshesContext++;
+
 		transformStorage.Transform = subMeshTransform;
 
 		if ((*m_PrevTransformMap).find(meshKey) == (*m_PrevTransformMap).end())
@@ -4607,6 +4653,7 @@ namespace Proof
 			}
 
 			m_ParticleRenderPass->SetInput("s_Particles", emiter->m_SBParticlesBuffer);
+			m_ParticleRenderPass->SetInput("u_Texture", emiter->Texture.IsValid() ? emiter->Texture.GetAsset<Texture2D>() : Renderer::GetWhiteTexture());
 			Renderer::BeginRenderPass(m_CommandBuffer, m_ParticleRenderPass);
 
 			const uint32_t vertexCount = 6; // POINT_LIST

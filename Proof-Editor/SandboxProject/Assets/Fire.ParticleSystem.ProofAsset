@@ -1,5 +1,5 @@
 AssetType: ParticleSystem
-ID: 18199791468404885871
+ID: 8495416013435214826
 Emitters:
   - MaxParticles: 1000
     InitialState:
@@ -7,7 +7,7 @@ Emitters:
       bLooping: 1
       StartLifetime: 3
       StartSpeed: 2
-      StartSize: [3.65578198, 3.65578198, 3.65578198]
+      StartSize: [1, 1, 1]
       GravityModifier: 0
       StartColor: [1, 0, 0, 1]
       EmitterPosition: [0, 0, 0]
@@ -22,19 +22,19 @@ Emitters:
       SpherizeDirection: 0
       RandomizePosition: 0
       bEnabled: 1
-      ConeRadius: 1.81200004
+      ConeRadius: 0.75
       ConeAngleDegrees: 0
       SphereRadius: 1
     VelocityOverLifeTime:
-      Linear: [0, 2, 0]
-      SpeedModifier: 1
+      Linear: [0, 0.5, 0]
+      SpeedModifier: 2
       Orbital: [0, 0, 0]
       Radial: 0
       Offset: [0, 0, 0]
       bEnabled: 1
     ColorOverLifeTime:
       bEnabled: 1
-      FinalColor: [0.992592573, 0.582811117, 0.0220576115, 1]
+      FinalColor: [1, 0.577777743, 0, 1]
     SizeOverLifeTime:
       FinalSize: [0.100000001, 0, 0]
       bEnabled: 1

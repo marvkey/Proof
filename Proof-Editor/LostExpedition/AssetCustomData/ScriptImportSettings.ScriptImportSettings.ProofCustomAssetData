@@ -1,75 +1,12 @@
 ScriptImportSettings:
   Scripts:
-    - Script: LostExpedition.EnemyController
-      ScriptName: LostExpedition.EnemyController
-      Fields:
-        []
-    - Script: LostExpedition.PlayerMovement
-      ScriptName: LostExpedition.PlayerMovement
-      Fields:
-        []
-    - Script: LostExpedition.Food
-      ScriptName: LostExpedition.Food
-      Fields:
-        - NameID: LostExpedition.Food.InventoryImage
-          Type: Texture2D
-          Data: 0
-    - Script: LostExpedition.MeleeWeapon
-      ScriptName: LostExpedition.MeleeWeapon
-      Fields:
-        - NameID: LostExpedition.MeleeWeapon.InventoryImage
-          Type: Texture2D
-          Data: 0
-    - Script: LostExpedition.InventoryItem
-      ScriptName: LostExpedition.InventoryItem
-      Fields:
-        - NameID: LostExpedition.InventoryItem.InventoryImage
-          Type: Texture2D
-          Data: 0
-    - Script: LostExpedition.Character
-      ScriptName: LostExpedition.Character
-      Fields:
-        []
-    - Script: LostExpedition.MeleeWeaponHitBox
-      ScriptName: LostExpedition.MeleeWeaponHitBox
-      Fields:
-        []
-    - Script: LostExpedition.TrapTreeManager
-      ScriptName: LostExpedition.TrapTreeManager
-      Fields:
-        []
-    - Script: LostExpedition.TrapTree
-      ScriptName: LostExpedition.TrapTree
-      Fields:
-        - NameID: LostExpedition.TrapTree.SpawnOnDelete
-          Type: Prefab
-          Data: 0
     - Script: LostExpedition.HealthComponent
       ScriptName: LostExpedition.HealthComponent
       Fields:
         []
-    - Script: LostExpedition.Inventory
-      ScriptName: LostExpedition.Inventory
-      Fields:
-        []
-    - Script: LostExpedition.PlayerHUDManager
-      ScriptName: LostExpedition.PlayerHUDManager
-      Fields:
-        - NameID: LostExpedition.PlayerHUDManager.GunPanel
-          Type: UIPanel
-          Data: 0
-        - NameID: LostExpedition.PlayerHUDManager.EmptyInventory
-          Type: Texture2D
-          Data: 0
-        - NameID: LostExpedition.PlayerHUDManager.PlayerDefaultHUD
-          Type: UIPanel
-          Data: 0
     - Script: LostExpedition.PlayerInput
       ScriptName: LostExpedition.PlayerInput
       Fields:
-        - NameID: LostExpedition.PlayerInput.IsRunningAction
-          Type: InputAction
-          Data: 0
         - NameID: LostExpedition.PlayerInput.ActivateWeaponAction
           Type: InputAction
           Data: 0
@@ -82,30 +19,21 @@ ScriptImportSettings:
         - NameID: LostExpedition.PlayerInput.JumpAction
           Type: InputAction
           Data: 0
-        - NameID: LostExpedition.PlayerInput.ChangeInventorySlotAction
-          Type: InputAction
-          Data: 0
-    - Script: LostExpedition.GrappleGun
-      ScriptName: LostExpedition.GrappleGun
+    - Script: LostExpedition.WeaponManager
+      ScriptName: LostExpedition.WeaponManager
       Fields:
-        - NameID: LostExpedition.GrappleGun.MuzzleFlash
-          Type: Prefab
-          Data: 0
-        - NameID: LostExpedition.GrappleGun.InventoryImage
-          Type: Texture2D
-          Data: 0
+        []
+    - Script: LostExpedition.PlayerMovement
+      ScriptName: LostExpedition.PlayerMovement
+      Fields:
+        []
+    - Script: LostExpedition.Weapon
+      ScriptName: LostExpedition.Weapon
+      Fields:
+        []
     - Script: LostExpedition.Gun
       ScriptName: LostExpedition.Gun
       Fields:
         - NameID: LostExpedition.Gun.MuzzleFlash
           Type: Prefab
-          Data: 0
-        - NameID: LostExpedition.Gun.InventoryImage
-          Type: Texture2D
-          Data: 0
-    - Script: LostExpedition.Weapon
-      ScriptName: LostExpedition.Weapon
-      Fields:
-        - NameID: LostExpedition.Weapon.InventoryImage
-          Type: Texture2D
           Data: 0
