@@ -660,7 +660,6 @@ namespace Proof
 
 		renderer2D->SetTargetFrameBuffer(renderer->GetExternalCompositePassFrameBuffer());
 		//box colliders
-
 		
 		{
 

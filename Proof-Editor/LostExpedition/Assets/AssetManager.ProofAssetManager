@@ -167,6 +167,9 @@ Assets:
   - Asset: 471701952801843012
     Type: Texture
     Path: Models\ShotGun\textures\shotgunMetallic.png
+  - Asset: 10396798115870623754
+    Type: Texture
+    Path: Projects\Facility22\tex\shotgunNormal_1.png
   - Asset: 1068309125696199349
     Type: Texture
     Path: Models\ShotGun\textures\shotgunRoughness.png
@@ -353,9 +356,9 @@ Assets:
   - Asset: 7293509018538368519
     Type: Texture
     Path: Textures\InventoryItems\AppleInventoryItemImage.png
-  - Asset: 10534391011357288835
+  - Asset: 1857876407237503017
     Type: Texture
     Path: Projects\Facility22\tex\shotgunColor_1.png
-  - Asset: 11830778955810408457
-    Type: Texture
-    Path: Projects\Facility22\tex\shotgunNormal_1.png
+  - Asset: 9080895879113284252
+    Type: ParticleSystem
+    Path: ParticleSystem\New ParticleSystem.ParticleSystem.ProofAsset

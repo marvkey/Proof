@@ -694,6 +694,18 @@ namespace Proof
 
 		{
 			GraphicsPipelineConfiguration particlePipelineConfig = m_GeometryPass->GetPipeline()->GetConfig();
+			// default emit glwo
+			particlePipelineConfig.Attachments.Attachments[0].Blend = true;
+			particlePipelineConfig.Attachments.Attachments[0].BlendState = BlendAttachmentState(
+				BlendFactor::SrcAlpha,    // source RGB
+				BlendFactor::One,         // dest RGB
+				BlendOperation::Add,      // RGB op
+
+				BlendFactor::SrcAlpha,    // source Alpha
+				BlendFactor::One,         // dest Alpha
+				BlendOperation::Add       // Alpha op
+			);
+			particlePipelineConfig.Attachments.Attachments[0].OverrideBaseBlend = true;
 			particlePipelineConfig.DebugName = "Particle Points";
 			particlePipelineConfig.DepthTest = true;
 			particlePipelineConfig.WriteDepth = false;
