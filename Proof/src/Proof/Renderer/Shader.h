@@ -7,7 +7,7 @@
 #include <filesystem>
 namespace Proof
 {
-    enum class ShaderStage 
+    enum class ShaderStage : uint8_t
     {
         Vertex,
         TessellationControl,

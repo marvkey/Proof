@@ -7,6 +7,7 @@
 #include "VulkanGraphicsContext.h"
 #include "VulkanRenderer.h"
 #include "VulkanDevice.h"
+#include "Proof/Core/Hash.h"
 
 #include <shaderc/shaderc.hpp>
 #include <spirv_cross/spirv_cross.hpp>
@@ -175,11 +176,7 @@ namespace Proof
 
     
 
-    const VkWriteDescriptorSet* VulkanShader::GetDescriptorSet(uint32_t set) const
-    {
-        return nullptr;
-    }
-
+    
     void VulkanShader::Release()
     {
         for (auto& [data, shaderModule] : m_ShaderModule)
@@ -207,6 +204,7 @@ namespace Proof
     }
 
     VulkanShader::VulkanShader(const std::string& name, const std::filesystem::path& filePath, const std::unordered_map<std::string, std::string>& macroDefintions) 
+        :m_Hash(Hash::GenerateFNVHash32(filePath.string()))
     {
         m_Name = name;
         m_ConstructorSamePaths = true;
@@ -226,6 +224,7 @@ namespace Proof
 
     VulkanShader::VulkanShader(const std::string& name, const std::unordered_map<ShaderStage, std::string> shaders, const std::unordered_map<std::string, std::string>& macroDefintions)
     {
+        PF_CORE_ASSERT(false,"Dont support this because it cannot use hash until we find one");
         m_Name = name;
 		m_MacroDefinitions = macroDefintions;
         for (auto& [stage, path] : shaders) {
@@ -251,6 +250,19 @@ namespace Proof
         CreateShader();
         m_InitialCompile = false;
 
+    }
+    VulkanShader::VulkanShader(const std::string& name, const std::unordered_map<ShaderStage, std::vector<uint32_t>>& vulkanSPIRV)
+    {
+        m_Name = name;
+        m_VulkanSPIRV = vulkanSPIRV;
+        for (auto&& [stage, data] : m_VulkanSPIRV)
+            Reflect(stage);
+
+        CreateShader();
+        PF_EC_INFO("Succesfully Compiled {} Shader", m_Name);
+
+        for (auto& [index, callback] : m_ShaderReloads)
+            callback();
     }
     VulkanShader::~VulkanShader() {
         Release();
@@ -618,6 +630,8 @@ namespace Proof
         }
     }
 
+
+
     void VulkanShader::CreateShaderModule(const std::vector<uint32_t>& code, VkShaderModule* shaderModule) {
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
@@ -633,7 +647,7 @@ namespace Proof
             return;
         }
         auto& data = m_VulkanSPIRV.at(stage);
-        auto& shaderSrc = m_SourceCode.at(stage);
+        auto& shaderSrc = m_SourceCode[stage];
 
         spirv_cross::Compiler compiler(data);
 

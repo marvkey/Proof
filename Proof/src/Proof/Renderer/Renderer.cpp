@@ -32,6 +32,7 @@
 #include "HosekDataRGB.h"
 #include "Proof/Asset/AssetManager.h"
 #include "RendererSampler.h"
+#include "Proof/Serialization/ShaderPack.h"
 namespace Proof {
 
 	/*
@@ -62,6 +63,7 @@ namespace Proof {
 	static class RendererAPI* s_RendererAPI;
 
 	static Count<class ShaderLibrary> ShaderLibrary;
+	static Count<class ShaderPack> ShaderPack;
 	static Count<ComputePass> PrethamSkyPass;
 	static Count<ComputePass> BRDFPass;
 	static BaseTextures* s_BaseTextures;
@@ -104,6 +106,21 @@ namespace Proof {
 		"PBR_DRAW_DEPTH", //0 (no), 1(yes use pre depth), 2(but draw over dont use pre depth things liek water where it cannot be replicated in depth bfufer)
 
 	};
+
+	static void RendererLoadShader(const std::string& name, const std::filesystem::path& path, const std::unordered_map<std::string, std::string>& macro= {})
+	{
+		if (ShaderPack != nullptr)
+		{
+			if (ShaderPack->IsLoaded())
+			{
+				ShaderLibrary->AddShader(ShaderPack->LoadShader(name));
+				return;
+			}
+		}
+
+
+		ShaderLibrary->LoadShader(name, path, macro);
+	}
 	void Renderer::Init()
 	{
 		Timer time;
@@ -118,141 +135,142 @@ namespace Proof {
 		s_RendererAPI->Init();
 
 		ShaderLibrary = Count<class ShaderLibrary>::Create();
+		//ShaderPack = Count<class ShaderPack>::Create("ShaderPack.pfsp");
+
 
 		//PBR
-		ShaderLibrary->LoadShader("TerrainShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Terrain/TerrainRenderer.glsl");
-		ShaderLibrary->LoadShader("ProofPBR_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl");
+		RendererLoadShader("TerrainShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Terrain/TerrainRenderer.glsl");
+		RendererLoadShader("ProofPBR_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl");
 
 		{
 			std::unordered_map<std::string, std::string> macroDefintions = {
 				{ "PBR_ANIMATED", "" }
 			};
-			ShaderLibrary->LoadShader("ProofPBR_Anim", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl", macroDefintions);
+			RendererLoadShader("ProofPBR_Anim", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl", macroDefintions);
 		}
 		{
 			std::unordered_map<std::string, std::string> macroDefintions = {
 				{ "PBR_USE_TRANSPARENCY", "" }
 			};
-			ShaderLibrary->LoadShader("ProofPBRTransparent_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl", macroDefintions);
+			RendererLoadShader("ProofPBRTransparent_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl", macroDefintions);
 		}
 		
 
-		//ShaderLibrary->LoadShader("ProofPBRTransparent_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBRTransparent_Static.glsl");
-		ShaderLibrary->LoadShader("ProofPBRTransparent_Composite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBRTransparent_Composite.glsl");
+		RendererLoadShader("ProofPBRTransparent_Composite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBRTransparent_Composite.glsl");
 		
 		// predepth
-		ShaderLibrary->LoadShader("PreDepth_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PreDepth/PreDepth_Static.glsl");
+		RendererLoadShader("PreDepth_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PreDepth/PreDepth_Static.glsl");
 
 		// lightculling
-		ShaderLibrary->LoadShader("FrustrumGrid", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/LightCulling/FrustrumGrid.glsl");
-		ShaderLibrary->LoadShader("LightCulling", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/LightCulling/LightCulling.glsl");
+		RendererLoadShader("FrustrumGrid", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/LightCulling/FrustrumGrid.glsl");
+		RendererLoadShader("LightCulling", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/LightCulling/LightCulling.glsl");
 
 		//Shadows
-		ShaderLibrary->LoadShader("DebugShadowMap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Shadow/DebugShadowMap.glsl");
-		ShaderLibrary->LoadShader("ShadowDepthPass", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Shadow/ShadowDepthPass.glsl");
+		RendererLoadShader("DebugShadowMap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Shadow/DebugShadowMap.glsl");
+		RendererLoadShader("ShadowDepthPass", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Shadow/ShadowDepthPass.glsl");
 		
-		ShaderLibrary->LoadShader("TextPass", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/TextPass.glsl");
-		ShaderLibrary->LoadShader("TextPassMultiPlayer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/TextPassMultiPlayer.glsl");
+		RendererLoadShader("TextPass", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/TextPass.glsl");
+		RendererLoadShader("TextPassMultiPlayer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/TextPassMultiPlayer.glsl");
 
 		//IBL
-		ShaderLibrary->LoadShader("CubeMapToEquirectangular", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/CubeMapToEquirectangular.glsl");
-		ShaderLibrary->LoadShader("BRDFLUT", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/BRDFLut.glsl");
-		ShaderLibrary->LoadShader("EquirectangularToCubemap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EquirectangularToCubemap.glsl");
-		ShaderLibrary->LoadShader("SkyBox", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/SkyBox.glsl");
-		ShaderLibrary->LoadShader("EnvironmentIrradiance", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentIrradiance.glsl");
-		ShaderLibrary->LoadShader("EnvironmentIrradianceNonCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentIrradianceNonCompute.glsl");
-		ShaderLibrary->LoadShader("EnvironmentPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentPrefilter.glsl");
-		ShaderLibrary->LoadShader("PreethamSky", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/PreethamSky.glsl");
-		ShaderLibrary->LoadShader("HosekWilkieSky", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/HosekWilkieSky.glsl");
+		RendererLoadShader("CubeMapToEquirectangular", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/CubeMapToEquirectangular.glsl");
+		RendererLoadShader("BRDFLUT", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/BRDFLut.glsl");
+		RendererLoadShader("EquirectangularToCubemap", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EquirectangularToCubemap.glsl");
+		RendererLoadShader("SkyBox", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/SkyBox.glsl");
+		RendererLoadShader("EnvironmentIrradiance", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentIrradiance.glsl");
+		RendererLoadShader("EnvironmentIrradianceNonCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentIrradianceNonCompute.glsl");
+		RendererLoadShader("EnvironmentPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentPrefilter.glsl");
+		RendererLoadShader("PreethamSky", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/PreethamSky.glsl");
+		RendererLoadShader("HosekWilkieSky", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/HosekWilkieSky.glsl");
 
 		// postprocess
 
-		ShaderLibrary->LoadShader("WorldComposite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/WorldComposite.glsl");
-		ShaderLibrary->LoadShader("Wireframe", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/Wireframe.glsl");
-		ShaderLibrary->LoadShader("Bloom", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/Bloom.glsl");
-		ShaderLibrary->LoadShader("DOF", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/DOF.glsl");
+		RendererLoadShader("WorldComposite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/WorldComposite.glsl");
+		RendererLoadShader("Wireframe", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/Wireframe.glsl");
+		RendererLoadShader("Bloom", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/Bloom.glsl");
+		RendererLoadShader("DOF", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/DOF.glsl");
 		// ao
-		ShaderLibrary->LoadShader("AO-Composite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/AO-Composite.glsl");
-		ShaderLibrary->LoadShader("SSAO", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/SSAO.glsl");
-		ShaderLibrary->LoadShader("SSAOBlur", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/SSAOBlur.glsl");
+		RendererLoadShader("AO-Composite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/AO-Composite.glsl");
+		RendererLoadShader("SSAO", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/SSAO.glsl");
+		RendererLoadShader("SSAOBlur", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/SSAOBlur.glsl");
 
-		ShaderLibrary->LoadShader("Deinterleaving", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/HBAO_Deinterleave.glsl");
-		ShaderLibrary->LoadShader("Reinterleaving", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/HBAO_Reinterleave.glsl");
-		ShaderLibrary->LoadShader("HBAOBlur", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/HBAO_Blur.glsl");
-		ShaderLibrary->LoadShader("HBAO", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/HBAO.glsl");
+		RendererLoadShader("Deinterleaving", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/HBAO_Deinterleave.glsl");
+		RendererLoadShader("Reinterleaving", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/HBAO_Reinterleave.glsl");
+		RendererLoadShader("HBAOBlur", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/HBAO_Blur.glsl");
+		RendererLoadShader("HBAO", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/AmbientOcclusion/HBAO.glsl");
 
 		//SSR
-		ShaderLibrary->LoadShader("HZB", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/HZB.glsl");
-		ShaderLibrary->LoadShader("PreConvoulution", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/PreConvoulution.glsl");
-		ShaderLibrary->LoadShader("PreIntegration", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/PreIntegration.glsl");
-		ShaderLibrary->LoadShader("SSRComposite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/SSRComposite.glsl");
-		ShaderLibrary->LoadShader("SSR", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/SSR.glsl");
+		RendererLoadShader("HZB", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/HZB.glsl");
+		RendererLoadShader("PreConvoulution", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/PreConvoulution.glsl");
+		RendererLoadShader("PreIntegration", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/PreIntegration.glsl");
+		RendererLoadShader("SSRComposite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/SSRComposite.glsl");
+		RendererLoadShader("SSR", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenSpaceReflection/SSR.glsl");
 		
 		
-		ShaderLibrary->LoadShader("SSSRHZB", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRHZB.glsl");
-		//ShaderLibrary->LoadShader("SSSRTileClassification", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRTileClassification.glsl");
-		ShaderLibrary->LoadShader("SSSRTileClassification", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRTileClassification.glsl");
-		ShaderLibrary->LoadShader("SSSRBlueNoiseTextureGeneration", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRBlueNoiseTextureGeneration.glsl");
-		//ShaderLibrary->LoadShader("SSSRIntersectArgs", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRIntersectArgs.glsl");
-		ShaderLibrary->LoadShader("SSSRIntersectArgs", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRIntersectArgs.glsl");
-		//ShaderLibrary->LoadShader("SSSRIntersect", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRIntersect.glsl");
-		ShaderLibrary->LoadShader("SSSRIntersect", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRIntersect.glsl");
-		//ShaderLibrary->LoadShader("SSRReproject", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSRReproject.glsl");
-		ShaderLibrary->LoadShader("SSRReproject", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRReproject.glsl");
-		//ShaderLibrary->LoadShader("SSSRPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRPrefilter.glsl");
-		ShaderLibrary->LoadShader("SSSRPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRPrefilter.glsl");
-		//ShaderLibrary->LoadShader("SSSRTemporal", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRTemporal.glsl");
-		ShaderLibrary->LoadShader("SSSRTemporal", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRTemporal.glsl");
-		//ShaderLibrary->LoadShader("SSSRApply", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRApply.glsl");
-		ShaderLibrary->LoadShader("SSSRApply", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRApply.glsl");
+		RendererLoadShader("SSSRHZB", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRHZB.glsl");
+		//RendererLoadShader("SSSRTileClassification", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRTileClassification.glsl");
+		RendererLoadShader("SSSRTileClassification", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRTileClassification.glsl");
+		RendererLoadShader("SSSRBlueNoiseTextureGeneration", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRBlueNoiseTextureGeneration.glsl");
+		//RendererLoadShader("SSSRIntersectArgs", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRIntersectArgs.glsl");
+		RendererLoadShader("SSSRIntersectArgs", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRIntersectArgs.glsl");
+		//RendererLoadShader("SSSRIntersect", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRIntersect.glsl");
+		RendererLoadShader("SSSRIntersect", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRIntersect.glsl");
+		//RendererLoadShader("SSRReproject", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSRReproject.glsl");
+		RendererLoadShader("SSRReproject", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRReproject.glsl");
+		//RendererLoadShader("SSSRPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRPrefilter.glsl");
+		RendererLoadShader("SSSRPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRPrefilter.glsl");
+		//RendererLoadShader("SSSRTemporal", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRTemporal.glsl");
+		RendererLoadShader("SSSRTemporal", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRTemporal.glsl");
+		//RendererLoadShader("SSSRApply", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/NewScreenSpaceReflection/SSSRApply.glsl");
+		RendererLoadShader("SSSRApply", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/FidelityScreenSpaceReflection/FSSSRApply.glsl");
 
-		ShaderLibrary->LoadShader("HizSSR", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/HIZScreenSpaceRefelction/HIZSSR.glsl");
+		RendererLoadShader("HizSSR", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/HIZScreenSpaceRefelction/HIZSSR.glsl");
 
 		//2D 
-		ShaderLibrary->LoadShader("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Base2D.glsl");
-		ShaderLibrary->LoadShader("Text2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Text2D.glsl");
-		ShaderLibrary->LoadShader("Line2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Line2D.glsl");
-		ShaderLibrary->LoadShader("Circle2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Circle2D.glsl");
-		ShaderLibrary->LoadShader("Point2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Point2D.glsl");
+		RendererLoadShader("Base2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Base2D.glsl");
+		RendererLoadShader("Text2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Text2D.glsl");
+		RendererLoadShader("Line2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Line2D.glsl");
+		RendererLoadShader("Circle2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Circle2D.glsl");
+		RendererLoadShader("Point2D", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/2D/Point2D.glsl");
 
 
 		// water
-		ShaderLibrary->LoadShader("GerstnerWave", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/GerstnerWave.glsl");
+		RendererLoadShader("GerstnerWave", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/GerstnerWave.glsl");
 
 		// FFT Waves
-		ShaderLibrary->LoadShader("FFTOceanSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanSpectrum.glsl");
-		ShaderLibrary->LoadShader("FFTOceanButterfly", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanButterfly.glsl");
-		ShaderLibrary->LoadShader("FFTOceanModulateSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanModulateSpectrum.glsl");
-		ShaderLibrary->LoadShader("FFTOceanCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanCompute.glsl");
-		ShaderLibrary->LoadShader("FFTOceanTranspose", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanTranspose.glsl");
-		ShaderLibrary->LoadShader("FFTOceanUnpack", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanUnpack.glsl");
-		ShaderLibrary->LoadShader("FFTWater", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTWater.glsl");
-		ShaderLibrary->LoadShader("FFTSampleWaveHeight", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTSampleWaveheight.glsl");
+		RendererLoadShader("FFTOceanSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanSpectrum.glsl");
+		RendererLoadShader("FFTOceanButterfly", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanButterfly.glsl");
+		RendererLoadShader("FFTOceanModulateSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanModulateSpectrum.glsl");
+		RendererLoadShader("FFTOceanCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanCompute.glsl");
+		RendererLoadShader("FFTOceanTranspose", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanTranspose.glsl");
+		RendererLoadShader("FFTOceanUnpack", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTOceanUnpack.glsl");
+		RendererLoadShader("FFTWater", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTWater.glsl");
+		RendererLoadShader("FFTSampleWaveHeight", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFT/FFTSampleWaveheight.glsl");
 
 
 		//FFT Waves Realistic
-		ShaderLibrary->LoadShader("FFTInitialSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTInitialSpectrum.glsl");
-		ShaderLibrary->LoadShader("FFTConjugatedSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTConjugatedSpectrum.glsl");
-		ShaderLibrary->LoadShader("FFTHorizontalStepinverse", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTHorizontalStepinverse.glsl");
-		ShaderLibrary->LoadShader("FFTPermute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTPermute.glsl");
-		ShaderLibrary->LoadShader("FFTPrecomputeTwiddleFactorsAndInputIndices", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTPrecomputeTwiddleFactorsAndInputIndices.glsl");
-		ShaderLibrary->LoadShader("FFTTextureMerger", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTTextureMerger.glsl");
-		ShaderLibrary->LoadShader("FFTTimeDependentSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTTimeDependentSpectrum.glsl");
-		ShaderLibrary->LoadShader("FFTVerticalStepInverse", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTVerticalStepInverse.glsl");
-		ShaderLibrary->LoadShader("FFTRealisticWater", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTRealisticWater.glsl");
+		RendererLoadShader("FFTInitialSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTInitialSpectrum.glsl");
+		RendererLoadShader("FFTConjugatedSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTConjugatedSpectrum.glsl");
+		RendererLoadShader("FFTHorizontalStepinverse", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTHorizontalStepinverse.glsl");
+		RendererLoadShader("FFTPermute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTPermute.glsl");
+		RendererLoadShader("FFTPrecomputeTwiddleFactorsAndInputIndices", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTPrecomputeTwiddleFactorsAndInputIndices.glsl");
+		RendererLoadShader("FFTTextureMerger", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTTextureMerger.glsl");
+		RendererLoadShader("FFTTimeDependentSpectrum", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTTimeDependentSpectrum.glsl");
+		RendererLoadShader("FFTVerticalStepInverse", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTVerticalStepInverse.glsl");
+		RendererLoadShader("FFTRealisticWater", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Water/FFTWaves/FFTWavesRealistic/FFTRealisticWater.glsl");
 
 		//Grass
-		ShaderLibrary->LoadShader("GrassRenderer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Grass/GrassRenderer.glsl");
-		ShaderLibrary->LoadShader("GrassGenerator", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Grass/GrassGenerator.glsl");
-		ShaderLibrary->LoadShader("PreDepthGrassRenderer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Grass/PreDepthGrassRenderer.glsl");
+		RendererLoadShader("GrassRenderer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Grass/GrassRenderer.glsl");
+		RendererLoadShader("GrassGenerator", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Grass/GrassGenerator.glsl");
+		RendererLoadShader("PreDepthGrassRenderer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Grass/PreDepthGrassRenderer.glsl");
 
 		//particle system
-		ShaderLibrary->LoadShader("ParticleSystemSpawnCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ParticleSystem/ParticleSystemSpawnCompute.glsl");
-		ShaderLibrary->LoadShader("ParticleSystemUpdateCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ParticleSystem/ParticleSystemUpdateCompute.glsl");
-		ShaderLibrary->LoadShader("ParticleSystemRenderer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ParticleSystem/ParticleRenderer.glsl");
+		RendererLoadShader("ParticleSystemSpawnCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ParticleSystem/ParticleSystemSpawnCompute.glsl");
+		RendererLoadShader("ParticleSystemUpdateCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ParticleSystem/ParticleSystemUpdateCompute.glsl");
+		RendererLoadShader("ParticleSystemRenderer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ParticleSystem/ParticleRenderer.glsl");
 
 
-		
+
 		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
 		SamplerFactory::Init();
@@ -366,7 +384,9 @@ namespace Proof {
 
 			}
 		}
-		
+
+		//ShaderPack = ShaderPack::CreateFromLibrary(ShaderLibrary, "ShaderPack.pfsp");
+
 		PF_ENGINE_INFO("Renderer Initialized {}m/s",time.ElapsedMillis());
 	}
 
@@ -385,6 +405,7 @@ namespace Proof {
 		pdelete s_BaseTextures;
 		s_BaseTextures = nullptr;
 		ShaderLibrary = nullptr;
+		ShaderPack = nullptr;
 		pdelete s_Data;
 		s_Data = nullptr;
 		SamplerFactory::ShutDown();

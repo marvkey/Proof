@@ -53,7 +53,7 @@ namespace Proof {
         //projectPath = "Driftwood/Driftwood.ProofProject";
         //projectPath = "PacMan3D/PacMan3D.ProofProject";
         //projectPath = "PacMan/PacMan.ProofProject";
-        //projectPath = "FlappyBird/FlappyBird.ProofProject";
+        projectPath = "FlappyBird/FlappyBird.ProofProject";
         //projectPath = "LostExpedition/LostExpedition.ProofProject";
         if (argc > 1)
             projectPath = argv[1];

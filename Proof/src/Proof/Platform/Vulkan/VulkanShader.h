@@ -26,10 +26,13 @@ namespace Proof
         uint32_t Set;
         uint32_t Binding;
     };
-    class VulkanShader : public Shader {
+    class VulkanShader : public Shader 
+    {
     public:
+      
         VulkanShader(const std::string& name, const std::filesystem::path& filePath, const std::unordered_map<std::string, std::string>& macroDefintions = {});
         VulkanShader(const std::string& name, const std::unordered_map<ShaderStage, std::string> shaders, const std::unordered_map<std::string, std::string>& macroDefintions = {});
+        VulkanShader(const std::string& name,const std::unordered_map<ShaderStage, std::vector<uint32_t>>& vulkanSPIRV);
         ~VulkanShader();
         virtual const std::unordered_map<ShaderStage, std::string>& GetPath()const { return m_Paths; }
         virtual const std::string& GetName()const { return m_Name; }
@@ -61,6 +64,8 @@ namespace Proof
         virtual void RemoveShaderReloadCallback(uint32_t index);
         virtual const std::unordered_map<std::string, std::string>& GetAllShaderMacroDefines() const { return m_AllShaderMacroDefines; };
         virtual const std::unordered_map<std::string, std::string>& GetAllShaderMacroDefines() { return m_AllShaderMacroDefines; };
+
+        uint32_t GetHash() { return m_Hash; }
     private:
 
         std::map<uint32_t,ShaderReloadCallback> m_ShaderReloads;
@@ -76,11 +81,12 @@ namespace Proof
         std::string m_Name;
         std::unordered_map<ShaderStage,VkPipelineShaderStageCreateInfo> m_ShaderStages;
         std::unordered_map < ShaderStage, VkShaderModule>m_ShaderModule;
-        std::unordered_map<ShaderStage, std::string> m_Paths;
-        std::unordered_map<ShaderStage, std::vector<uint32_t>> m_VulkanSPIRV;
-        std::unordered_map<ShaderStage, std::string> m_SourceCode;
         std::map<uint32_t, std::vector<VkDescriptorPoolSize>> m_TypeCounts;
         std::unordered_map<std::string, VkPushConstantRange> m_PushConstants;
+
+        std::unordered_map<ShaderStage, std::string> m_Paths;
+        std::unordered_map<ShaderStage, std::string> m_SourceCode;
+        std::unordered_map<ShaderStage, std::vector<uint32_t>> m_VulkanSPIRV;
         //(set, data)
         std::map < uint32_t, ShaderDescriptorSet> m_ShaderDescriptorSet;
 
@@ -93,7 +99,6 @@ namespace Proof
 
         // storageBufferName, (totalSizeofBuffer)(name, data)
         std::unordered_map<std::string, std::pair<uint32_t,std::unordered_map<std::string, ShaderResourceBufferInfo>>> m_PushConstantResourceInfo;
-        const VkWriteDescriptorSet* GetDescriptorSet(uint32_t set = 0)const ;
         bool m_ConstructorSamePaths = false;
 
         // the first compile of the shader
@@ -103,5 +108,12 @@ namespace Proof
 
 		std::unordered_map<std::string, std::string> m_AllShaderMacroDefines;// all defiens in the shader, from the paremeter
 
+        friend class ShaderPack;
+        //bool TryReadReflectionData(StreamReader* serializer);
+
+        ///void SerializeReflectionData(StreamWriter* serializer);
+
+       // void SetReflectionData(const ReflectionData& reflectionData);
+        uint32_t m_Hash;
     };
 }
