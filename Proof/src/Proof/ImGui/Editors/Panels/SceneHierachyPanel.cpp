@@ -1824,9 +1824,25 @@ namespace Proof
 			}
 			UI::EndPropertyGrid();
 			});
-		/*
 		DrawComponents<ParticleSystemComponent>("Particle System", entity, [&](ParticleSystemComponent& particleSystem) {
 
+			UI::BeginPropertyGrid();
+
+			auto instance = particleSystem.ParticleSytemInstance;
+			AssetKey<AssetType::ParticleSystem> key;
+			if(instance->GetParticleSystem() != nullptr)
+				key = instance->GetParticleSystem()->GetID();
+
+			if (UI::AttributeAssetKeyReference("Particle System", key))
+			{
+				if (key.IsValid())
+					particleSystem.ParticleSytemInstance = Count<ParticleSystemInstance>::Create(key.GetAsset<ParticleSystem>());
+				else
+					particleSystem.ParticleSytemInstance = Count<ParticleSystemInstance>::Create();
+			}
+
+			UI::EndPropertyGrid();
+#if 0
 			const ImGuiTreeNodeFlags treeNodeFlags = ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_AllowItemOverlap | ImGuiTreeNodeFlags_FramePadding;
 			UI::ScopedStyleVar(ImGuiStyleVar_FramePadding, ImVec2{ 0,1.5 });
 			bool open = ImGui::TreeNodeEx("PartcileTable", treeNodeFlags, "Particle Table");
@@ -1871,8 +1887,8 @@ namespace Proof
 				}
 			}
 			ImGui::TreePop();
+#endif
 			});
-			*/
 		DrawComponents<ScriptComponent>("Scripts", entity, [&](ScriptComponent& scriptComp) {
 			auto scriptWorld = m_ActiveWorld->GetScriptWorld();
 			if (UI::AttributeButton("", "Add Script"))

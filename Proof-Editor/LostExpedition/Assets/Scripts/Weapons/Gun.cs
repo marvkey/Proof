@@ -51,7 +51,7 @@ namespace LostExpedition
             if (!CanFire())
                 return null;
 
-            Entity e = Shoot(playerTransform, cameraTransform);
+            Entity e = Shoot(playerEntity,playerTransform, cameraTransform);
             m_TimeSinceLastShot = 0.0f;
             Ammo--;
             m_RecoilTimer = FireRate; // reset recoil timer
@@ -71,7 +71,7 @@ namespace LostExpedition
 
         }
 
-		Entity Shoot(TransformComponent playerTransform, TransformComponent cameraTransform)
+		protected Entity Shoot(Entity playerEntity,TransformComponent playerTransform, TransformComponent cameraTransform)
 		{
             RaycastData data = new RaycastData();
             data.Origin = playerTransform.Location;

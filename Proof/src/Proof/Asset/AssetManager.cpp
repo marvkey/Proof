@@ -362,6 +362,18 @@ namespace Proof
 			InternalAddAsset(assetInfo, nullptr);
 			return;
 		}
+
+		if (type == AssetType::Audio && Utils::AudioHasFormat(extension))
+		{
+			AssetInfo assetInfo;
+			assetInfo.Path = AssetManager::GetAssetFileSystemPathRelative(path);
+			assetInfo.State = AssetState::Unloaded;
+			assetInfo.ID = AssetManager::CreateID();
+			assetInfo.Type = AssetType::Audio;
+
+			InternalAddAsset(assetInfo, nullptr);
+			return;
+		}
 	}
 	bool AssetManager::IsAssetLoaded(AssetID ID)
 	{

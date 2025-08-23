@@ -1,0 +1,41 @@
+AssetType: ParticleSystem
+ID: 9080895879113284252
+Emitters:
+  - MaxParticles: 100
+    InitialState:
+      Duration: 3
+      bLooping: 1
+      StartLifetime: 2.5
+      StartSpeed: 1
+      StartSize: [2.67428637, 2.67428637, 2.67428637]
+      GravityModifier: 0
+      StartColor: [1, 0.329411775, 0.0274509806, 0.478431374]
+      EmitterPosition: [1, 1, 1]
+      FadeOutSpeed: 0.5
+      EmitterPrevPosition: [1, 1, 1]
+    Emission:
+      ParticlesPerSecond: 100
+      ParticlesPerDistance: 0
+    Shape:
+      Shape: 1
+      RandomizeDirection: 0
+      SpherizeDirection: 0
+      RandomizePosition: 0
+      bEnabled: 1
+      ConeRadius: 1
+      ConeAngleDegrees: 25
+      SphereRadius: 1
+    VelocityOverLifeTime:
+      Linear: [0, 0.5, 0]
+      SpeedModifier: 1
+      Orbital: [0, 0, 0]
+      Radial: 0
+      Offset: [0, 0, 0]
+      bEnabled: 0
+    ColorOverLifeTime:
+      bEnabled: 1
+      FinalColor: [1, 0.956862748, 0, 0.600000024]
+    SizeOverLifeTime:
+      FinalSize: [0.0577350259, 0.0577350259, 0.0577350259]
+      bEnabled: 1
+    TextureID: 10497186683380986035

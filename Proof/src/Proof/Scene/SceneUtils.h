@@ -11,6 +11,8 @@ namespace Proof
 		glm::vec3 Rotation = glm::vec3(0);
 		glm::vec3 Scale = glm::vec3(1);
 
+        Transform() {};
+        Transform(const glm::mat4& transform) { SetTransform(transform); };
 		void SetTransform(const glm::mat4& transform)
 		{
 			glm::quat rotationQuat;

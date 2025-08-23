@@ -94,8 +94,8 @@ namespace Proof
 
 				//metadata.Handle = Project::GetEditorAssetManager()->ImportAsset(entry.path());
 			}
-			else if (Utils::IsAssetSource( Utils::GetAssetTypeFromPath(entry.path())))
-			{ 
+			else if (Utils::IsAssetSource(Utils::GetAssetTypeFromPath(entry.path())))
+			{
 				AssetManager::NewAssetSource(entry.path(), Utils::GetAssetTypeFromPath(entry.path()));
 
 				if (AssetManager::HasAsset(entry.path()))
@@ -139,7 +139,7 @@ namespace Proof
 				{
 					AssetInfo metadata = AssetManager::GetAssetInfo(assetHandle);
 					m_CurrentItems.Items.push_back(Count<ContentBrowserAsset>::Create(metadata, m_AssetIconMap.find(FileSystem::GetFullFileExtension(metadata.Path)) != m_AssetIconMap.end() ? m_AssetIconMap[FileSystem::GetFullFileExtension(metadata.Path)] : EditorResources::FileIcon));
-
+					
 				}
 			}
 		}

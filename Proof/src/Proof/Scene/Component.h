@@ -682,9 +682,9 @@ namespace Proof
 	{
 	public:
 		ParticleSystemComponent(const ParticleSystemComponent& other);
-		ParticleSystemComponent() = default;
+		ParticleSystemComponent();
 		//Count< class ParticleHandlerTable> ParticleHandlerTable;
-		Count<class ParticleEmitter> emitter;//tempporary
+		Count<class ParticleSystemInstance> ParticleSytemInstance ;
 	};
 
 	struct PlayerHUDComponent 

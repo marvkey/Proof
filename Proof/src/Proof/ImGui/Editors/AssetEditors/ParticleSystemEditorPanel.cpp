@@ -31,7 +31,11 @@ namespace Proof
 		m_Camera.SetActive(m_IsViewportFocused);
 		m_Camera.OnUpdate(deltaTime);
 		m_World->OnUpdateEditor(deltaTime);
-		m_World->OnRenderEditor(m_WorldRenderer, deltaTime, m_Camera);
+		m_World->OnRenderEditor(m_WorldRenderer, deltaTime, m_Camera, [&](Count<WorldRenderer> renderer) {
+			renderer->SubmitParticleEmitter(m_ParticleSystem->GetEmitter(0));
+			});
+
+		m_ParticleSystem->GetEmitter(0)->OnUpdate((float)deltaTime, Transform());
 		m_SaveTimer -= deltaTime;
 
 		
@@ -49,7 +53,7 @@ namespace Proof
 			if (UI::AttributeDrag(label, magnitude, speed, 0.0f))
 			{
 				// Avoid division by zero
-				glm::vec3 direction = vecSize == glm::vec3(0.0f) ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::normalize(vecSize);
+				glm::vec3 direction = vecSize == glm::vec3(0.0f) ? glm::vec3(1.0f, 1.0f, 1.0f) : glm::normalize(vecSize);
 				vecSize = direction * magnitude;
 			}
 		}
@@ -71,7 +75,7 @@ namespace Proof
 
 		Entity entity = m_World->TryGetEntityByTag("particle");
 
-		entity.GetComponent<ParticleSystemComponent>().emitter = emitter;
+		//entity.GetComponent<ParticleSystemComponent>().emitter = emitter;
 
 		SBParticleInitalState& state = emitter->ParticleInitialState;
 		SBParticleEmitterSettings& settings = emitter->ParticleEmitterSettings;
@@ -282,19 +286,29 @@ namespace Proof
 	}
 	void ParticleSystemEditorPanel::Save()
 	{
-		if (m_ParticleSystem != nullptr)
+		if (m_ParticleSystem == nullptr)
+			return;
+	
+		m_NeedsSaving = false;
+		AssetManager::SaveAsset(m_ParticleSystem->GetID());
+		//Compile();
+		for (auto worldWeak : World::GetAllActiveWorlds())
 		{
-			if (m_ParticleSystem == NULL || m_World->GetState() != WorldState::Edit)
-			{
-				PF_EC_ERROR("Cannot compile and save when world is play or simulate");
-			}
-			else
-			{
-				m_NeedsSaving = false;
-				AssetManager::SaveAsset(m_ParticleSystem->GetID());
-				//Compile();
+			if (!worldWeak.IsValid())
+				continue;
 
-			}
+			auto world = worldWeak.Lock();
+
+			if (world->GetState() != WorldState::Edit)
+				continue;
+
+			world->ForEachEnitityWith<ParticleSystemComponent>([&](Entity e)
+			{
+				if(e.GetComponent<ParticleSystemComponent>().ParticleSytemInstance->GetParticleSystem() == m_ParticleSystem)
+					e.GetComponent<ParticleSystemComponent>().ParticleSytemInstance->SyncWithParicleSystem();
+			});
+
 		}
+		
 	}
 }

@@ -22,6 +22,7 @@ struct VertexOutput
 {
     vec4 Color;
     vec2 TexCoords;
+    vec2 dontShowColor;
 };
 layout(location = 0) out VertexOutput Output;
 
@@ -34,8 +35,7 @@ void main()
 
     uint index = gl_InstanceIndex;
 
-    Particle particle = particles[index];
-    // override particle pos to (0,0,0)
+    Particle particle = particles[index]; 
 
     vec2 particlescale = particle.Size3D.xy;
 
@@ -48,7 +48,14 @@ void main()
     Output.TexCoords = aTexCoords;
 
     if(particle.bActive == 0)
+    {
+        Output.dontShowColor = vec2(1.0);
         Output.Color.a = 0.0;
+    }else
+    {
+        Output.dontShowColor = vec2(0.0);
+
+    }
     // transform with camera’s view-projection
     gl_Position = u_Camera.Projection * u_Camera.View * vec4(vertexPosition, 1.0);
 }
@@ -61,6 +68,7 @@ struct VertexOutput
 {
     vec4 Color;
     vec2 TexCoords;
+    vec2 dontShowColor;
 };
 layout(location = 0) in VertexOutput Input;
 layout(set = 0, binding = 1) uniform sampler2D u_Texture;
@@ -71,7 +79,10 @@ vec4 texColor = texture(u_Texture, -Input.TexCoords);
     if (texColor.a < 0.1)
         discard;
 
-    if(Input.Color.a <=0.1)
+    if(Input.Color.a < 0.1)
         discard;
+    if(Input.dontShowColor == vec2(1.0))
+        discard;
+
     outColor = texColor * Input.Color;
 }

@@ -5,38 +5,30 @@
 
 #include <memory>
 #include <unordered_map>
+#include <utility>
 namespace Proof
 {
 	class Log : public RefCounted {
 	public:
 		static void Init();
-		static const std::shared_ptr<Logger::Log>& GetEngineLogger() {
-			return EngineLogger;
-		}
-		static const std::shared_ptr<Logger::Log>& GetClientLogger() {
-			return ClientLogger;
-		}
-		static enum LogType {
+		static const std::shared_ptr<Logger::Log>& GetEngineLogger();
+		static const std::shared_ptr<Logger::Log>& GetClientLogger();
+		enum class LogType 
+		{
 			ERROR,
 			WARN,
 			INFO,
 			TRACE,
 			CRITICAL
 		};
-		static void AppendString(uint32_t type,const std::string& temp) {
-			if(m_PauseLog)return; 
-			Logs.insert({Inputposition(),{(LogType)type,temp}});
-			NewLog = true;
-		}
-		static std::unordered_map<uint32_t,std::pair<LogType,std::string>> Logs;
-		static bool NewLog;
-		static bool m_PauseLog;
+		static void AppendString(uint32_t type, const std::string& temp);
+		static inline std::unordered_map<uint32_t,std::pair<LogType,std::string>> Logs;
+		static inline bool NewLog = false;
+		static inline bool m_PauseLog = false;
 	private:
-		static std::shared_ptr<Logger::Log>EngineLogger;
-		static std::shared_ptr<Logger::Log>ClientLogger;
-		static uint32_t Inputposition() {
-			return Logs.size() + 1;
-		}
+		static inline std::shared_ptr<Logger::Log>EngineLogger;
+		static inline std::shared_ptr<Logger::Log>ClientLogger;
+		static uint32_t Inputposition();
 	};
 }
 
@@ -76,7 +68,7 @@ namespace Proof
 #define  PF_WARN(...)  
 #define  PF_INFO(...)  
 #define  PF_TRACE(...) 
-#define	 PF_ENGINE_CRITICAL(...)
+#define	 PF_CRITICAL(...)
 #endif // USING_PROOF_LOGGER
 
 /*

@@ -160,7 +160,11 @@ namespace Proof
 
 	void Font::Init()
 	{
+#if PF_DIST
+		s_DefaultFont = Count<Font>::Create("Resources/Fonts/Fonts/Poppins/Poppins-Regular.ttf");
+#else
 		s_DefaultFont = Count<Font>::Create("Assets/Fonts/Poppins/Poppins-Regular.ttf");
+#endif
 		//s_DefaultFont = Count<Font>::Create("Assets/Fonts/opensans/OpenSans-Regular.ttf");
 	}
 

@@ -1191,7 +1191,7 @@ namespace Proof
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 1);
 			for (auto& it : Log::Logs)
 			{
-				if (it.second.first == 0)
+				if (it.second.first == Log::LogType::ERROR)
 				{// ERROR
 					ImGui::PushID(pos);
 					if (pos % 2 == 0)
@@ -1211,7 +1211,7 @@ namespace Proof
 					ImGui::PopID();
 
 				}
-				else if (it.second.first == 1)
+				else if (it.second.first == Log::LogType::WARN)
 				{// warn
 					ImGui::PushID(pos);
 					if (pos % 2 == 0)
@@ -1230,7 +1230,7 @@ namespace Proof
 
 					ImGui::PopID();
 				}
-				else if (it.second.first == 2)
+				else if (it.second.first == Log::LogType::INFO)
 				{// INFO
 					ImGui::PushID(pos);
 					if (pos % 2 == 0)
@@ -1249,7 +1249,7 @@ namespace Proof
 
 					ImGui::PopID();
 				}
-				else if (it.second.first == 3)
+				else if (it.second.first == Log::LogType::TRACE)
 				{ // trace
 					ImGui::PushID(pos);
 					if (pos % 2 == 0)

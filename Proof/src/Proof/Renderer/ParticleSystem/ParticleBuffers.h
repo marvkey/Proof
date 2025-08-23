@@ -106,6 +106,8 @@ namespace Proof
 		int ActiveParticles = 0;
 		int DeadParticles = 0;
 		int MaxParticles = 0; // not edited in teh shader
+
+		int Sate = 0; // 0 none, 1 playing 2 Done 
 	};
 
 	struct alignas(16) SBParticlePerDrawState

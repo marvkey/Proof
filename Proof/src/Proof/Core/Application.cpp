@@ -60,6 +60,7 @@ namespace Proof {
     {
         srand(time(NULL));
         Timer buildTimer;
+
         Proof::Log::Init();
         
         s_Instance = this;

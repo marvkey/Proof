@@ -4646,8 +4646,6 @@ namespace Proof
 
 		for (auto emiter : m_Emitters)
 		{
-
-			emiter->OnUpdate(FrameTime::GetWorldDeltaTime());
 			{
 
 				m_ParticleUpdateComputePass->SetInput("s_Particles", emiter->m_SBParticlesBuffer);

@@ -22,7 +22,8 @@ namespace Proof
 		bool InvokeStep(const ElevatedInputKeyParams& params)
 		{
 			if (OnEventDelegate.IsBound())
-				OnEventDelegate.Invoke(params);
+				return OnEventDelegate.Invoke(params);
+			return false;
 		}
 
 		const std::vector<Count<ElevatedInputDevice>>& GetInputDevices() { return m_InputDevices; }

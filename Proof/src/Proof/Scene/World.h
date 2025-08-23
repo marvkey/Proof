@@ -18,6 +18,7 @@ namespace Proof {
 	struct MeshNode;
 	struct ElevatedInputKeyParams;
 
+	class Renderer2D;
 
 
 	enum class WorldState
@@ -76,9 +77,15 @@ namespace Proof {
 		bool HasWorldCamera();
 		class Entity GetWorldCameraEntity();
 
-		virtual void OnRenderEditor(Count<class WorldRenderer> renderer, FrameTime time, const class EditorCamera& camera);
-		virtual void OnRenderRuntime(Count<class WorldRenderer> renderer, FrameTime time);
-		void OnRender(Count<class WorldRenderer> renderer, FrameTime timestep, const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane, float Fov);
+		virtual void OnRenderEditor(Count<class WorldRenderer> renderer, FrameTime time, const class EditorCamera& camera, 
+			std::function<void(Count<class WorldRenderer>)> injectRendererCode = nullptr,
+			std::function<void(Count<class Renderer2D>)> inject2DRenderer = nullptr);
+
+		virtual void OnRenderRuntime(Count<class WorldRenderer> renderer, FrameTime time, std::function<void(Count<class WorldRenderer>)> injectRendererCode = nullptr,
+			std::function<void(Count<class Renderer2D>)> inject2DRenderer = nullptr);
+		void OnRender(Count<class WorldRenderer> renderer, FrameTime timestep, const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane, float Fov,
+			std::function<void(Count<class WorldRenderer>)> injectRendererCode = nullptr,
+			std::function<void(Count<class Renderer2D>)> inject2DRenderer = nullptr);
 
 		// using scripts
 		virtual void StartRuntime(RuntimeConfiguration runtimeConfig = RuntimeConfiguration());

@@ -3,6 +3,9 @@
 #include <fstream>
 #include "ProjectSerilizer.h" 
 #include "Proof/Core/Application.h"
+#include "Proof/Serialization/ShaderPack.h"
+#include "Proof/Renderer/Shader.h"
+#include "Proof/Renderer/Renderer.h"
 namespace Proof
 {
 		
@@ -41,8 +44,15 @@ namespace Proof
 		}
 		
 		outputDirectory /= GetProjectName();
+
+
 		FileSystem::ResursiveCopyFolder(GetAssetDirectory(), outputDirectory, { ".cs" });
 		FileSystem::ResursiveCopyFolder(GetFromSystemProjectDirectory(m_ProjectConfig.AssetCustomDataDirectory), outputDirectory, { ".cs" });
+		auto resourcesFolder = outputDirectory / "Resources";
+
+		if (!FileSystem::Exists(resourcesFolder))
+			FileSystem::CreateDirectory(resourcesFolder);
+
 
 		// scriptDlll
 		{
@@ -54,10 +64,15 @@ namespace Proof
 
 		{
 			std::filesystem::path fonts = "Assets/Fonts";
-			FileSystem::ResursiveCopyFolder(FileSystem::GetAbsolutePath(fonts), outputDirectory/"Assets/Fonts" );
-
+			FileSystem::ResursiveCopyFolder(FileSystem::GetAbsolutePath(fonts), resourcesFolder/"Fonts" );
 		}
 
+		{
+			Count<ShaderPack> pack = ShaderPack::CreateFromLibrary(Renderer::GetShaderLibrary(), resourcesFolder.string() + "/ShaderPack.pfsp");
+		}
+
+		ProjectSerilizer projecctSerelizer(this);
+		projecctSerelizer.SerilizeText(outputDirectory.string() + fmt::format("/{}.ProofProject", m_ProjectConfig.Name));
 	}
 	Project::Project()
 	{

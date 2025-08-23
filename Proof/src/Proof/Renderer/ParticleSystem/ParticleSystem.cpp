@@ -1,6 +1,8 @@
 #include "Proofprch.h"
 
 #include "ParticleSystem.h"
+#include "Proof/Scene/Component.h"
+#include "Proof/Scene/Entity.h"
 #include "Proof/Scene/World.h"
 #include "Proof/Renderer/UniformBuffer.h"
 #include <glm/gtx/quaternion.hpp>
@@ -34,30 +36,66 @@ namespace Proof
         glm::mat4 rotationMatrix;
         float minLife, maxLife;
     };
-
+#if 0
     ParticleWorld::ParticleWorld(Count<World> world)
-      //  :m_World(world.Get())
+        :m_World(world.Get())
     {
     }
 
     void ParticleWorld::OnUpdate(float update)
     {
+        Count<World> world = m_World.Lock();
+
+        if (world == nullptr)
+            return;
+
+
+        world->ForEachEnitityWith<ParticleSystemComponent>([&](Entity entity)
+        {
+                auto instance = entity.GetComponent<ParticleSystemComponent>().ParticleSytemInstance;
+                if (instance == nullptr)
+                    return;
+				instance->OnUpdate(update,Transform(world->GetWorldSpaceTransform(entity)));
+        });
+
     }
 
     Count<World> ParticleWorld::GetWorld()
     {
-       // if (m_World.IsValid())
-      //      return m_World.Lock();
+        if (m_World.IsValid())
+            return m_World.Lock();
         return nullptr;
     }
-
+#endif
     
-	ParticleEmitter::ParticleEmitter(uint32_t maxParticles)
+	ParticleEmitter::ParticleEmitter(uint32_t maxParticles) :
+        m_ParticleAccumulator(0)
 	{
         ResetMaxParticles(maxParticles);
 	}
-    void ParticleEmitter::OnUpdate(float dt)
+    ParticleEmitter::ParticleEmitter(Count<ParticleEmitter> otherEmitter)
+        :
+        m_ParticleAccumulator(0)
     {
+        ParticleInitialState = otherEmitter->ParticleInitialState;
+        ParticleEmitterSettings = otherEmitter->ParticleEmitterSettings;
+        Texture = otherEmitter->Texture;
+
+        ResetMaxParticles(otherEmitter->m_MaxParticles);
+    }
+    void ParticleEmitter::OnUpdate(float dt, const Transform& transform)
+    {
+        if (m_CurrentPos == glm::vec3(0.0f) && m_PrevPos == glm::vec3(0.0f))
+        {
+            m_CurrentPos = transform.Location;
+            m_PrevPos = transform.Location;
+            ParticleInitialState.EmitterPosition = transform.Location;
+            ParticleInitialState.EmitterPrevPosition = transform.Location;
+        }
+
+        m_CurrentPos = transform.Location;
+        ParticleInitialState.EmitterPosition = transform.Location;
+
         m_SBParticleEmitterSettingsBuffer->SetData(Buffer(&ParticleEmitterSettings, sizeof(SBParticleEmitterSettings)));
         m_SBParticleParticleInitalState->SetData(Buffer(&ParticleInitialState, sizeof(SBParticleInitalState)));
 
@@ -72,6 +110,8 @@ namespace Proof
 
         m_SBPerDrawData->SetData(Buffer(&drawState, sizeof(SBParticlePerDrawState)));
 
+        m_PrevPos = transform.Location;
+        ParticleInitialState.EmitterPrevPosition = transform.Location;
     }
 
     uint32_t ParticleEmitter::GetParticleCount()
@@ -120,9 +160,56 @@ namespace Proof
 
         return data;
     }
-  
-    void ParticleSystem::OnUpdate(float ts)
+
+    bool ParticleEmitter::ShouldRender()
     {
+        return true;
+    }
+  
+
+    ParticleSystemInstance::ParticleSystemInstance()
+    {
+    }
+
+    ParticleSystemInstance::ParticleSystemInstance(Count< ParticleSystemInstance> instnace)
+    {
+        m_ParticleSystem = instnace->m_ParticleSystem;
+
+		SyncWithParicleSystem();
+    }
+
+    void ParticleSystemInstance::SyncWithParicleSystem()
+    {
+        if (m_ParticleSystem == nullptr)
+            return;
+
+        m_Emmiters.clear();
+        m_State = ParticleSystemState::None;
+
+        for (int i = 0; i < m_ParticleSystem->GetEmitterCount(); i++)
+        {
+			m_Emmiters.push_back(Count<ParticleEmitter>::Create(m_ParticleSystem->GetEmitter(i)));
+        }
+    }
+
+    void ParticleSystemInstance::OnUpdate(float dt, const Transform& transform)
+    {
+        for(auto e : m_Emmiters)
+			e->OnUpdate(dt, transform);
+    }
+
+    void ParticleSystemInstance::SetParticleSystem(Count<ParticleSystem> system)
+    {
+        if (system == nullptr)
+        {
+            m_ParticleSystem = nullptr;
+            m_Emmiters.clear();
+			m_State = ParticleSystemState::None;
+        }
+
+        m_ParticleSystem = system;
+
+		SyncWithParicleSystem();
     }
 
 }

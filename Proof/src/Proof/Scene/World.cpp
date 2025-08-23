@@ -140,6 +140,19 @@ namespace Proof
 			}
 		}
 
+		{
+
+			auto view = m_Registry.view<ParticleSystemComponent>();
+			for (auto entity : view)
+			{
+				Entity e = { entity, this };
+				auto instance = e.GetComponent<ParticleSystemComponent>().ParticleSytemInstance;
+				if (instance == nullptr)
+					return;
+				instance->OnUpdate(DeltaTime, Transform(GetWorldSpaceTransform(e)));
+			}
+		}
+
 		OnUpdateAnimation(DeltaTime);
 
 	}
@@ -200,7 +213,9 @@ namespace Proof
 
 		return screenSpacePos;
 	}
-	void World::OnRender(Count<class WorldRenderer> worldRenderer, FrameTime timestep, const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane, float fov)
+	void World::OnRender(Count<class WorldRenderer> worldRenderer, FrameTime timestep, const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane, float fov,
+		std::function<void(Count<class WorldRenderer>)> injectRendererCode,
+		std::function<void(Count<class Renderer2D>)> inject2DRenderer )
 	{
 		PF_PROFILE_FUNC();
 
@@ -435,8 +450,12 @@ namespace Proof
 			for (auto entity : particleView)
 			{
 				auto& particleSystem = particleView.get<ParticleSystemComponent>(entity);
-				if (particleSystem.emitter == nullptr)continue;
-				worldRenderer->SubmitParticleEmitter(particleSystem.emitter);
+				if (particleSystem.ParticleSytemInstance == nullptr)continue;
+				for (auto emitter : particleSystem.ParticleSytemInstance->GetEmitters())
+				{
+					if(emitter->ShouldRender())
+						worldRenderer->SubmitParticleEmitter(emitter);
+				}
 
 			}
 		}
@@ -449,6 +468,11 @@ namespace Proof
 				});
 			
 		}
+
+		if(injectRendererCode)
+			injectRendererCode(worldRenderer);
+
+
 		RenderPhysicsDebug(worldRenderer, false);
 
 		worldRenderer->EndScene();
@@ -1113,7 +1137,7 @@ namespace Proof
 		}
 
 		OnUpdateAnimation(DeltaTime);
-#if 0
+#if 1
 		{
 			PF_PROFILE_FUNC("World::OnUpdate - Audio");
 			{
@@ -1218,6 +1242,16 @@ namespace Proof
 		m_PhysicsWorld->Simulate(DeltaTime);
 
 		{
+			ForEachEnitityWith<ParticleSystemComponent>([&](Entity entity)
+				{
+					auto instance = entity.GetComponent<ParticleSystemComponent>().ParticleSytemInstance;
+					if (instance == nullptr)
+						return;
+					instance->OnUpdate(DeltaTime, Transform(GetWorldSpaceTransform(entity)));
+				});
+		}
+
+		{
 			PF_PROFILE_FUNC("World::OnUpdate - C# OnPostUpdate");
 			m_ScriptWorld->OnPostUpdate(DeltaTime);
 		}
@@ -1261,13 +1295,17 @@ namespace Proof
 		return {};
 	}
 
-	void World::OnRenderEditor(Count<class WorldRenderer> renderer, FrameTime time, const EditorCamera& camera)
+	void World::OnRenderEditor(Count<class WorldRenderer> renderer, FrameTime time, const EditorCamera& camera,
+		std::function<void(Count<class WorldRenderer>)> injectRendererCode,
+		std::function<void(Count<class Renderer2D>)> inject2DRenderer )
 	{
 		
-		OnRender(renderer, time, camera,camera.GetPosition(), camera.GetNearPlane(), camera.GetFarPlane(),camera.GetFOV());
+		OnRender(renderer, time, camera,camera.GetPosition(), camera.GetNearPlane(), camera.GetFarPlane(),camera.GetFOV(), injectRendererCode, inject2DRenderer);
 	}
 
-	void World::OnRenderRuntime(Count<class WorldRenderer> renderer, FrameTime time)
+	void World::OnRenderRuntime(Count<class WorldRenderer> renderer, FrameTime time,
+		std::function<void(Count<class WorldRenderer>)> injectRendererCode,
+		std::function<void(Count<class Renderer2D>)> inject2DRenderer )
 	{
 		m_GameMode->RenderRuntime(renderer, time);
 	}
@@ -1704,7 +1742,7 @@ namespace Proof
 
 
 		Count<World> instance = this;
-		//AudioEngine::BeginContext(instance);
+		AudioEngine::BeginContext(instance);
 
 		ForEachEnitityWith<TerrainComponent>([&](Entity e)
 		{
@@ -1733,7 +1771,7 @@ namespace Proof
 		m_Registry.on_construct<ScriptComponent>().disconnect(this);
 		m_Registry.on_destroy<ScriptComponent>().disconnect(this);
 		
-		//AudioEngine::EndContext();
+		AudioEngine::EndContext();
 		m_PhysicsWorld->EndWorld();
 		m_PhysicsWorld = nullptr;
 		m_GameMode->End();

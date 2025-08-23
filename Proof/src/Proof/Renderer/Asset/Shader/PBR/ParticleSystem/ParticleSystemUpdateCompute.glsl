@@ -43,8 +43,7 @@ layout(std430, binding = 3) coherent restrict buffer TrackableData
 	int DeadParticles;
     int MaxParticles; // max particles not edited
 
-    int CurrentNumParticles;
-	int ParticlePoolIndex; // its initaim Maxparitlces -1
+    int State; //0 none, 1 playing, 2 done
 }s_TrackableData;
 
 
@@ -294,25 +293,23 @@ void main()
     // Load particle into shared memory
     localParticles[lid] = Particles[gid];
 
-
+    bool stopEmitting = false;
     float deltaTime = u_FrameData.DeltaTime;
     if(s_InitialState.Duration < s_TrackableData.TimeElapsed)
     {
-        if(s_InitialState.bLooping == int(false))
+        if(s_InitialState.bLooping == int(true))
         {
-            // fade out if emitter is gone
-           // float fadeOutSpeed = 1.0;
-           // localParticles[lid].Color.a -= s_InitialState.FadeOutSpeed * deltaTime;
-           // localParticles[lid].Color.a = max(localParticles[lid].Color.a, 0.0);
-            //return;
-        }
-        else
-        {
+            
             localParticles[lid].Color.a -= s_InitialState.FadeOutSpeed * deltaTime;
+            localParticles[lid].Size3D -= vec3(1,1,1) * s_InitialState.FadeOutSpeed * deltaTime;
             localParticles[lid].Color.a = max(localParticles[lid].Color.a, 0.0);
 
             if(localParticles[lid].Color.a <=0.0)
                 localParticles[lid].bActive = 0;
+        }
+        else
+        {
+            stopEmitting = true; // duration done and not looping
         }
     }
         
@@ -322,9 +319,13 @@ void main()
     // If the particle is dead, respawn it
     if (localParticles[lid].Life <= 0.0) 
     {
-        int ticket = atomicAdd(AvailableToDraw, int(-1));
-        if (ticket > 0) {
-            RespawnParticle(localParticles[lid], gid, lid);
+        if(stopEmitting == false)
+        {
+            int ticket = atomicAdd(AvailableToDraw, int(-1));
+            if (ticket > 0) 
+            {
+                RespawnParticle(localParticles[lid], gid, lid);
+            }
         }
     }
     else if(localParticles[lid].Life > 0.0)

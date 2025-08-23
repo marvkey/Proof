@@ -189,9 +189,14 @@ namespace Proof
 
 	ParticleSystemComponent::ParticleSystemComponent(const ParticleSystemComponent& other)
 	{
-
+		ParticleSytemInstance = Count<class ParticleSystemInstance>::Create(other.ParticleSytemInstance);
 		//if (other.ParticleHandlerTable)
 		//	ParticleHandlerTable = Count<class ParticleHandlerTable>::CreateFrom(other.ParticleHandlerTable);
+	}
+
+	ParticleSystemComponent::ParticleSystemComponent()
+	{
+		ParticleSytemInstance = Count<class ParticleSystemInstance>::Create();
 	}
 
 	PlayerHUDComponent::PlayerHUDComponent(const PlayerHUDComponent& other)

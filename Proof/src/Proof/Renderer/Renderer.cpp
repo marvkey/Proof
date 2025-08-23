@@ -135,8 +135,9 @@ namespace Proof {
 		s_RendererAPI->Init();
 
 		ShaderLibrary = Count<class ShaderLibrary>::Create();
-		//ShaderPack = Count<class ShaderPack>::Create("ShaderPack.pfsp");
-
+	#ifdef PF_DIST
+			ShaderPack = Count<class ShaderPack>::Create("Resources/ShaderPack.pfsp");
+	#endif
 
 		//PBR
 		RendererLoadShader("TerrainShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Terrain/TerrainRenderer.glsl");
@@ -384,8 +385,6 @@ namespace Proof {
 
 			}
 		}
-
-		//ShaderPack = ShaderPack::CreateFromLibrary(ShaderLibrary, "ShaderPack.pfsp");
 
 		PF_ENGINE_INFO("Renderer Initialized {}m/s",time.ElapsedMillis());
 	}

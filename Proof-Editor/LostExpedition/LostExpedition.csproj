@@ -88,18 +88,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\EnemyController.cs" />
-    <Compile Include="Assets\Scripts\Items\Food.cs" />
-    <Compile Include="Assets\Scripts\Player\Character.cs" />
-    <Compile Include="Assets\Scripts\Weapons\MeleeWeapon.cs" />
-    <Compile Include="Assets\TrapTree.cs" />
     <Compile Include="Assets\Scripts\HealthComponent.cs" />
     <Compile Include="Assets\Scripts\Inventory.cs" />
+    <Compile Include="Assets\Scripts\Items\Food.cs" />
+    <Compile Include="Assets\Scripts\Player\Character.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerHUDManager.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerInput.cs" />
     <Compile Include="Assets\Scripts\Player\PlayerMovement.cs" />
     <Compile Include="Assets\Scripts\Weapons\GrappleGun.cs" />
     <Compile Include="Assets\Scripts\Weapons\Gun.cs" />
+    <Compile Include="Assets\Scripts\Weapons\MeleeWeapon.cs" />
+    <Compile Include="Assets\Scripts\Weapons\SpecialGuns\CrossBow.cs" />
     <Compile Include="Assets\Scripts\Weapons\Weapon.cs" />
+    <Compile Include="Assets\TrapTree.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ProofScriptCore\ProofScriptCore.csproj">

@@ -4,6 +4,7 @@
 #include "Proof/Math/Math.h"
 #include <glm/glm.hpp>
 #include "ParticleBuffers.h"
+#include "Proof/Scene/SceneUtils.h"
 //https://github.com/unrealsid/OpenGL-GPU-Particles-2
 //https://www.reddit.com/r/GraphicsProgramming/comments/1jn7w3v/i_finally_got_around_to_building_a_gpu/
 namespace Proof
@@ -21,7 +22,7 @@ namespace Proof
 		glm::vec3 Size3D{ 1 };
 		int bActive = 0; // if its spawned already
 	};
-
+#if 0
 
 	class ParticleWorld : public RefCounted
 	{
@@ -29,17 +30,16 @@ namespace Proof
 		ParticleWorld(Count<class World> world);
 		void OnUpdate(float update);
 		Count<class World> GetWorld();
-
 	private:
-
-		//WeakCount<class World> m_World;
+		WeakCount<class World> m_World;
 	};
-	
+#endif
 	class ParticleEmitter : public RefCounted
 	{
 	public:
 		ParticleEmitter(uint32_t maxParticles = 100);
-		void OnUpdate(float dt);
+		ParticleEmitter(Count<ParticleEmitter> emitter);
+		void OnUpdate(float dt, const Transform& transform);
 
 		SBParticleInitalState ParticleInitialState;
 		SBParticleEmitterSettings ParticleEmitterSettings;
@@ -49,6 +49,8 @@ namespace Proof
 
 		SBParticleTrackableData GetTrackableData();
 		AssetKey<AssetType::Texture> Texture;
+
+		bool ShouldRender();
 	private:
 		float m_ParticleAccumulator = 0.0f;
 		uint32_t m_MaxParticles = 0;
@@ -74,9 +76,6 @@ namespace Proof
 	public:
 		ParticleSystem() {};
 		ASSET_CLASS_TYPE(ParticleSystem);
-
-
-		void OnUpdate(float ts);
 		// Create a new emitter and return a reference to it
 		Count<ParticleEmitter> CreateEmitter()
 		{
@@ -139,12 +138,27 @@ namespace Proof
 	{
 	public:
 		ParticleSystemInstance(Count<ParticleSystem> system)
-			: m_System(system)
+			: m_ParticleSystem(system)
 		{
+			SyncWithParicleSystem();
 		}
+		ParticleSystemInstance();
+		ParticleSystemInstance(Count< ParticleSystemInstance> instnace);
 
-		Count<ParticleSystem> GetSystem() const { return m_System; }
+		Count<ParticleSystem> GetParticleSystem() const { return m_ParticleSystem; }
+		void SyncWithParicleSystem();
+
+		void OnUpdate(float dt, const Transform& transform);
+
+		const std::vector<Count<ParticleEmitter>>& GetEmitters()
+		{
+			return m_Emmiters;
+		};
+
+		void SetParticleSystem(Count<ParticleSystem> system);
 	private:
-		Count<ParticleSystem> m_System;
+		Count<ParticleSystem> m_ParticleSystem;
+		std::vector<Count<ParticleEmitter>> m_Emmiters;
+		ParticleSystemState m_State;
 	};
 }
