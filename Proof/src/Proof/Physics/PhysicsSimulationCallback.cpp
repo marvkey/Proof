@@ -9,31 +9,32 @@
 #include "PhysicsActor.h"
 namespace Proof
 {
+	static void CallOnTriggerMeathod(const std::string& methodName, Entity mainEntity, Entity b)
+	{
+		if (!mainEntity.HasComponent<ScriptComponent>())
+			return;
+
+		const ScriptComponent& sc = mainEntity.GetComponent<ScriptComponent>();
+
+		Count<ScriptWorld> scriptWorld = mainEntity.GetCurrentWorld()->GetScriptWorld();
+		if (!scriptWorld)
+			return;
+
+		if (!scriptWorld->IsEntityScriptInstantiated(mainEntity))
+			return;
+
+		for (const ScriptComponentsClassesData& scriptMetaData : sc.GetScriptMetadates())
+		{
+			if (ScriptEngine::IsModuleValid(scriptMetaData.ClassName))
+			{
+				PF_CORE_ASSERT(scriptMetaData.GetInstance());
+				ScriptEngine::CallMethod(scriptMetaData.GetInstance(), methodName, b.GetUUID());
+			}
+		}
+	}
 	void PhysicsSimulationCallback::onTrigger(physx::PxTriggerPair* pairs, physx::PxU32 count)
 	{
-		static auto callTriggerMethod = [](const char* methodName, Entity mainEntity, Entity b)
-		{
-			if (!mainEntity.HasComponent<ScriptComponent>())
-				return;
-
-			const ScriptComponent& sc = mainEntity.GetComponent<ScriptComponent>();
-
-			Count<ScriptWorld> scriptWorld = mainEntity.GetCurrentWorld()->GetScriptWorld();
-			if (!scriptWorld)
-				return;
-
-			if (!scriptWorld->IsEntityScriptInstantiated(mainEntity))
-				return;
-
-			for (const auto& scriptMetaData : sc.GetScriptMetadates())
-			{
-				if (ScriptEngine::IsModuleValid(scriptMetaData.ClassName))
-				{
-					//PF_CORE_ASSERT(scriptMetaData.Instance);
-					ScriptEngine::CallMethod(scriptMetaData.Instance, methodName, b.GetUUID());
-				}
-			}
-		};
+		
 		for (uint32_t actorIndex = 0; actorIndex < count; actorIndex++)
 		{
 			if (pairs[actorIndex].flags & (physx::PxTriggerPairFlag::eREMOVED_SHAPE_TRIGGER | physx::PxTriggerPairFlag::eREMOVED_SHAPE_OTHER))
@@ -45,20 +46,20 @@ namespace Proof
 			Entity overlapTriggerEnttity = overlappTrigger->GetEntity();
 			if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_FOUND)
 			{
-				TriggersActors[triggerEntity.GetUUID()][overlapTriggerEnttity.GetUUID()] = { triggerActor,overlappTrigger,false };
+				//TriggersActors[triggerEntity.GetUUID()][overlapTriggerEnttity.GetUUID()] = { triggerActor,overlappTrigger,false };
 
-				callTriggerMethod("OnTriggerEnterInternal", triggerEntity, overlapTriggerEnttity);
-				callTriggerMethod("OnTriggerEnterInternal", overlapTriggerEnttity, triggerEntity);
+				CallOnTriggerMeathod("OnTriggerEnterInternal", triggerEntity, overlapTriggerEnttity);
+				CallOnTriggerMeathod("OnTriggerEnterInternal", overlapTriggerEnttity, triggerEntity);
 			}
 			if (pairs[actorIndex].status & physx::PxPairFlag::eNOTIFY_TOUCH_LOST)
 			{
-				TriggersActors.at(triggerEntity.GetUUID()).erase(overlapTriggerEnttity.GetUUID());
-				if (TriggersActors.at(triggerEntity.GetUUID()).size() == 0)
-					TriggersActors.erase(triggerEntity.GetUUID());
+				//TriggersActors.at(triggerEntity.GetUUID()).erase(overlapTriggerEnttity.GetUUID());
+				//if (TriggersActors.at(triggerEntity.GetUUID()).size() == 0)
+				//	TriggersActors.erase(triggerEntity.GetUUID());
 
 
-				callTriggerMethod("OnTriggerLeaveInternal", triggerEntity, overlapTriggerEnttity);
-				callTriggerMethod("OnTriggerLeaveInternal", overlapTriggerEnttity, triggerEntity);
+				CallOnTriggerMeathod("OnTriggerLeaveInternal", triggerEntity, overlapTriggerEnttity);
+				CallOnTriggerMeathod("OnTriggerLeaveInternal", overlapTriggerEnttity, triggerEntity);
 			}
 		}
 	}
@@ -95,7 +96,7 @@ namespace Proof
 			{
 				if (ScriptEngine::IsModuleValid(scriptMetaData.ClassName))
 				{
-					ScriptEngine::CallMethod(scriptMetaData.Instance, methodName, b.GetUUID().Get());
+					ScriptEngine::CallMethod(scriptMetaData.GetInstance(), methodName, b.GetUUID().Get());
 				}
 			}
 		};

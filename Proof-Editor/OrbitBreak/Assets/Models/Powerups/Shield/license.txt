@@ -1,0 +1,11 @@
+Model Information:
+* title:	Unknown Object in Space
+* source:	https://sketchfab.com/3d-models/unknown-object-in-space-dd2b505ec642481fac1b4c9b17362c1f
+* author:	Bartosz2005T (https://sketchfab.com/Bartosz2005T)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Unknown Object in Space" (https://sketchfab.com/3d-models/unknown-object-in-space-dd2b505ec642481fac1b4c9b17362c1f) by Bartosz2005T (https://sketchfab.com/Bartosz2005T) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

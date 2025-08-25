@@ -21,7 +21,10 @@ namespace Proof
 
 		static void UpdateAudio(UUID soundId, const SoundConfiguration& soundCOnfiguration);
 		static void UpdateAudioTransform(UUID soundId, const AudioTransform& transform);
-		static void UpdateAudioVelocity(UUID soundId,const glm::vec3& velocity);
+		static void UpdateAudioVelocity(UUID soundId, const glm::vec3& velocity);
+		static bool HasSoundID(UUID hasSoundId);
+
+		static void AddNewSounds();
 	private:
 		static void Init();
 		static void ShutDown();

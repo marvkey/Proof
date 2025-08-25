@@ -1,0 +1,34 @@
+AssetType: Prefab
+ID: 3846872847249935031
+EntityOwner: 3784155548504007231
+Entities:
+  - Entity: 3784155548504007231
+    TagComponent:
+      Tag: Rock
+      tags: [Enemy]
+    TransformComponent:
+      Location: [-5.43982697, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 9570717932808628361
+      Visible: true
+    BoxColliderComponent:
+      IsTrigger: true
+      Center: [0, 0, 0]
+      Size: [1, 1, 1]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete

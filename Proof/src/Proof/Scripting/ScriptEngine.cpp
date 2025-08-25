@@ -557,6 +557,10 @@ namespace Proof
     }
     bool ScriptEngine::IsModuleValid(const std::string& classFullName)
     {
+        if (classFullName.empty())
+            return false;
+
+        if (classFullName.find('\0') != std::string::npos) { return false; } // unexpected embedded null
         return GetEntityScripts().contains(classFullName);
     }
     

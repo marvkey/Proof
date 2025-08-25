@@ -113,6 +113,7 @@ namespace Proof {
 	AABB ColliderShape::GetBoundingBox()
 	{
 		PF_CORE_ASSERT(false, "Does not suport shape");
+		return AABB();
 	}
 	glm::mat4 ColliderShape::GetInitalShapeLocalTransform()
 	{

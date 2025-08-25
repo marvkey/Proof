@@ -4647,7 +4647,7 @@ namespace Proof
 		for (auto emiter : m_Emitters)
 		{
 			{
-
+				/*
 				m_ParticleUpdateComputePass->SetInput("s_Particles", emiter->m_SBParticlesBuffer);
 				m_ParticleUpdateComputePass->SetInput("ParticleInitialState", emiter->m_SBParticleParticleInitalState);
 				m_ParticleUpdateComputePass->SetInput("EmitterSettings", emiter->m_SBParticleEmitterSettingsBuffer);
@@ -4659,7 +4659,7 @@ namespace Proof
 				int numGroups = (emiter->GetParticleCount() + workGroupSize - 1) / workGroupSize;
 				m_ParticleUpdateComputePass->Dispatch(numGroups, 1, 1);
 				Renderer::EndComputePass(m_ParticleUpdateComputePass);
-
+				*/
 			}
 
 			m_ParticleRenderPass->SetInput("s_Particles", emiter->m_SBParticlesBuffer);

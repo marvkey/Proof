@@ -1166,13 +1166,13 @@ namespace Proof
 			{
 				if (ImGui::BeginMenu("Settings"))
 				{
-					ImGui::Checkbox("pause logging", &Log::m_PauseLog);
+					ImGui::Checkbox("pause logging", &LogManager::m_PauseLog);
 					ImGui::SameLine();
 					ImGui::Checkbox("Clear On Play", &s_EditorData->ClearLogOnPlay);
 					ImGui::SameLine();
 					if (ImGui::Button("Clear log"))
 					{
-						Log::Logs.clear();
+						LogManager::Logs.clear();
 						ImGui::SetScrollHereY();
 					}
 					ImGui::SameLine();
@@ -1189,9 +1189,9 @@ namespace Proof
 			
 			int pos = 0;
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 1);
-			for (auto& it : Log::Logs)
+			for (auto& it : LogManager::Logs)
 			{
-				if (it.second.first == Log::LogType::ERROR)
+				if (it.second.first == LogManager::LogType::ERROR)
 				{// ERROR
 					ImGui::PushID(pos);
 					if (pos % 2 == 0)
@@ -1211,7 +1211,7 @@ namespace Proof
 					ImGui::PopID();
 
 				}
-				else if (it.second.first == Log::LogType::WARN)
+				else if (it.second.first == LogManager::LogType::WARN)
 				{// warn
 					ImGui::PushID(pos);
 					if (pos % 2 == 0)
@@ -1230,7 +1230,7 @@ namespace Proof
 
 					ImGui::PopID();
 				}
-				else if (it.second.first == Log::LogType::INFO)
+				else if (it.second.first == LogManager::LogType::INFO)
 				{// INFO
 					ImGui::PushID(pos);
 					if (pos % 2 == 0)
@@ -1249,7 +1249,7 @@ namespace Proof
 
 					ImGui::PopID();
 				}
-				else if (it.second.first == Log::LogType::TRACE)
+				else if (it.second.first == LogManager::LogType::TRACE)
 				{ // trace
 					ImGui::PushID(pos);
 					if (pos % 2 == 0)
@@ -1289,10 +1289,10 @@ namespace Proof
 				pos += 1;
 			}
 			ImGui::PopStyleVar();
-			if (Log::NewLog == true && ImGui::IsWindowFocused() == false)
+			if (LogManager::NewLog == true && ImGui::IsWindowFocused() == false)
 			{
 				ImGui::SetScrollHereY();
-				Log::NewLog = false;
+				LogManager::NewLog = false;
 			}
 
 		}
@@ -2402,7 +2402,7 @@ namespace Proof
 
 		m_ActiveWorld->m_CurrentState = WorldState::Play;
 		if (s_EditorData->ClearLogOnPlay)
-			Log::Logs.clear();
+			LogManager::Logs.clear();
 		m_ActiveWorld->StartRuntime();
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);

@@ -12,7 +12,7 @@
 #include "script.h"
 #include "Proof/Renderer/MeshWorkShop.h"
 #include "Proof/Asset/AssetManager.h"
-#include "Proof/Physics/PhysicsEngine.h"
+#include "Proof/Physics/PhysicsEngine.h" 
 #include "Proof/Scripting/ScriptEngine.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Physics/PhysicsMaterial.h"
@@ -267,5 +267,47 @@ namespace Proof
 		, RootMotionEntityTarget(other.RootMotionEntityTarget)
 		, EnableRootMotion(other.EnableRootMotion)
 	{
+	}
+	ScriptComponentsClassesData::ScriptComponentsClassesData()
+		: ClassName(), m_Instance(nullptr) {
+	}
+
+	ScriptComponentsClassesData::ScriptComponentsClassesData(const ScriptComponentsClassesData& other)
+		: ClassName(std::move(other.ClassName)), m_Instance(other.m_Instance) 
+	{
+
+	}
+
+	ScriptComponentsClassesData&
+		ScriptComponentsClassesData::operator=(const ScriptComponentsClassesData& other) {
+		if (this != &other) {
+			ClassName = other.ClassName;
+			m_Instance = other.m_Instance;   // requires ScriptGCHandle to be copy-assignable
+		}
+		return *this;
+	}
+
+	ScriptComponentsClassesData::ScriptComponentsClassesData(std::string className,
+		ScriptGCHandle instance)
+		: ClassName(std::move(className)), m_Instance(instance) {
+	}
+
+	ScriptComponentsClassesData::ScriptComponentsClassesData(ScriptComponentsClassesData&& o) noexcept
+		: ClassName(std::move(o.ClassName)), m_Instance(o.m_Instance) {
+		//o.m_Instance = nullptr;
+	}
+
+	ScriptComponentsClassesData&
+		ScriptComponentsClassesData::operator=(ScriptComponentsClassesData&& o) noexcept {
+		if (this != &o) {
+			ClassName = std::move(o.ClassName);
+			m_Instance = o.m_Instance;
+			//o.m_Instance = nullptr;
+		}
+		return *this;
+	}
+	ScriptComponent::ScriptComponent(const ScriptComponent& other)
+	{
+		ScriptMetadates = other.ScriptMetadates;
 	}
 }

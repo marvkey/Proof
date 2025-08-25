@@ -1,0 +1,28 @@
+Project:
+  Name: OrbitBreak
+  AssetDirectory: Assets
+  AssetManager: Assets/AssetManager.ProofAssetManager
+  StartWorld: 0
+  ScriptModuleDirectory: Binaries/ScriptApp
+  OnCloseStartWorldEditLastOpen: true
+  StartWorldEdit: 10632697519985270255
+  Input:
+    ActionMapping:
+      []
+    MotionMapping:
+      []
+  Physics:
+    Gravity: [0, -9.81000042, 0]
+    BroadPhaseType: AutomaticBoxPrune
+    FrictionModel: 0
+    SolverPositionIterations: 8
+    SolverVelocityIterations: 2
+    PhysicsLayers:
+      - Name: Default
+        CollidesWith:
+          - Name: Default
+          - Name: GridPos
+      - Name: GridPos
+        CollidesWith:
+          - Name: Default
+          - Name: GridPos

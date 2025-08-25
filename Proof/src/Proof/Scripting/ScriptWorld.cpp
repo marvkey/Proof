@@ -340,11 +340,16 @@ namespace Proof
         }
 
         if (!scriptComponent.HasScript(classFullName))
-            scriptComponent.ScriptMetadates.emplace_back(ScriptComponentsClassesData{ classFullName,instanceHandle });
+        {
+            ScriptComponentsClassesData data;
+            data.ClassName = classFullName;
+            data.m_Instance = instanceHandle;
+            scriptComponent.ScriptMetadates.emplace_back(data);
+        }
         else
         {
             auto index = scriptComponent.GetScriptIndex(classFullName);
-            scriptComponent.ScriptMetadates[index].Instance = instanceHandle;
+            scriptComponent.ScriptMetadates[index].m_Instance = instanceHandle;
         }
 
         if (!alreadyExist)

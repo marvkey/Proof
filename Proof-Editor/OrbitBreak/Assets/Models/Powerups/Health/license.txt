@@ -1,0 +1,11 @@
+Model Information:
+* title:	Pizza Box -Domino's
+* source:	https://sketchfab.com/3d-models/pizza-box-dominos-af85c1c516fb4ca48300ce1058dd2777
+* author:	jason.lp.davis (https://sketchfab.com/jason.lp.davis)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Pizza Box -Domino's" (https://sketchfab.com/3d-models/pizza-box-dominos-af85c1c516fb4ca48300ce1058dd2777) by jason.lp.davis (https://sketchfab.com/jason.lp.davis) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -1,0 +1,229 @@
+Assets:
+  - Asset: 10632697519985270255
+    Type: World
+    Path: Scenes\GameScene.ProofWorld
+  - Asset: 13814846262730331416
+    Type: Material
+    Path: Materials\m_lazerMaterial.Material.ProofAsset
+  - Asset: 2282448494548784863
+    Type: Texture
+    Path: Models\Powerups\Health\textures\pizza_baseColor.jpeg
+  - Asset: 9455471226988519622
+    Type: Texture
+    Path: Models\Player\textures\Material.013_baseColor.png
+  - Asset: 2970425636296847577
+    Type: Mesh
+    Path: Meshes\Cow.Mesh.ProofAsset
+  - Asset: 3499955483175828245
+    Type: Mesh
+    Path: Meshes\Meteiorite.Mesh.ProofAsset
+  - Asset: 18259379361146293314
+    Type: MeshSourceFile
+    Path: Models\Powerups\speedboost\speedBoost.gltf
+  - Asset: 3621914969230492532
+    Type: MeshSourceFile
+    Path: Models\Player\scene.gltf
+  - Asset: 10307019201724280246
+    Type: Mesh
+    Path: Meshes\PlayerRocket.Mesh.ProofAsset
+  - Asset: 906094230909434426
+    Type: UIPanel
+    Path: New UI.UIPanel.ProofAsset
+  - Asset: 10132725407472204374
+    Type: MeshSourceFile
+    Path: Models\Cow\scene.gltf
+  - Asset: 3569368591521447434
+    Type: MeshSourceFile
+    Path: Models\Meteiorite\scene.gltf
+  - Asset: 9926004485470743711
+    Type: Texture
+    Path: Models\Comet\textures\material0_emissive.jpeg
+  - Asset: 6179950657020112927
+    Type: Texture
+    Path: Models\Comet\textures\material0_normal.jpeg
+  - Asset: 4075626475772650183
+    Type: Texture
+    Path: Models\Comet\textures\material0_albedo.jpeg
+  - Asset: 11974798769359360218
+    Type: Mesh
+    Path: Meshes\PowerUps\ShieldSymbol.Mesh.ProofAsset
+  - Asset: 17613667197121450500
+    Type: Texture
+    Path: Models\FlyingSoucer\textures\UFO_BLACK_Metallic.png
+  - Asset: 18027200184327294106
+    Type: Texture
+    Path: Models\FlyingSoucer\textures\Ventanilla_Emission.png
+  - Asset: 14752628630186065182
+    Type: Texture
+    Path: Models\FlyingSoucer\textures\UFO Metal_Normal.png
+  - Asset: 13334231304220953561
+    Type: Texture
+    Path: Models\Comet\textures\material0_metallic.jpeg
+  - Asset: 9393685326589221741
+    Type: Texture
+    Path: Models\Comet\textures\material0_roughness.jpeg
+  - Asset: 15653455977786251988
+    Type: Texture
+    Path: Models\Meteiorite\textures\material_1_baseColor.jpeg
+  - Asset: 11414946358727936711
+    Type: MeshSourceFile
+    Path: Models\FlyingSoucer\source\UFO.fbx
+  - Asset: 13585429735555022031
+    Type: Texture
+    Path: Models\FlyingSoucer\textures\UFO Metal_BaseColor.png
+  - Asset: 14025944834351709524
+    Type: Texture
+    Path: Models\FlyingSoucer\textures\UFO_BLACK_BaseColor.png
+  - Asset: 6044484306869350692
+    Type: Texture
+    Path: Models\FlyingSoucer\textures\UFO_BLACK_Normal.png
+  - Asset: 9443961207879427853
+    Type: Texture
+    Path: Textures\Explosion2.png
+  - Asset: 2213488005979897502
+    Type: MeshSourceFile
+    Path: Models\Powerups\Health\scene.gltf
+  - Asset: 493132770714123249
+    Type: Texture
+    Path: Models\Powerups\Health\textures\cardboard_baseColor.png
+  - Asset: 8630246235739269922
+    Type: Material
+    Path: Meshes\PowerUps\m_ShieldHex.Material.ProofAsset
+  - Asset: 8123636437073149205
+    Type: Texture
+    Path: Models\Powerups\Health\textures\crust_baseColor.jpeg
+  - Asset: 7427722873551396383
+    Type: Mesh
+    Path: Meshes\PowerUps\Lazer.Mesh.ProofAsset
+  - Asset: 2372134698619935981
+    Type: Texture
+    Path: Models\Powerups\Health\textures\pizza_metallicRoughness.png
+  - Asset: 14142926814679009331
+    Type: MeshSourceFile
+    Path: Models\Powerups\Shield\scene.gltf
+  - Asset: 2008003530691279354
+    Type: MeshSourceFile
+    Path: Models\SateliteDish\source\Satelite Dish for moon scene.fbx
+  - Asset: 3131986541826303298
+    Type: MeshSourceFile
+    Path: Models\Rock2\scene.gltf
+  - Asset: 5553265196404009509
+    Type: Texture
+    Path: Models\Rock2\textures\material_1_baseColor.jpeg
+  - Asset: 1717487148639046157
+    Type: World
+    Path: Scenes\AssetsScene.ProofWorld
+  - Asset: 574788929793166141
+    Type: Texture
+    Path: Models\SateliteDish\textures\Satelite_Dish_for_moon_scene_DefaultMateri.png
+  - Asset: 7157609265446026111
+    Type: Material
+    Path: Meshes\PowerUps\m_ShieldSymbolMaterial.Material.ProofAsset
+  - Asset: 13737475672290113025
+    Type: Mesh
+    Path: Meshes\SateliteDish\SateliteDish.Mesh.ProofAsset
+  - Asset: 3477253028313975655
+    Type: Texture
+    Path: Textures\ExplosionTexture.png
+  - Asset: 6744582529806630813
+    Type: Texture
+    Path: Textures\HDR_ringed_brown_dwarf.hdr
+  - Asset: 7103400457226319647
+    Type: Mesh
+    Path: Meshes\UFO.Mesh.ProofAsset
+  - Asset: 15675399994359833980
+    Type: MeshSourceFile
+    Path: Models\Powerups\SphereicaHexForce\source\Hex.fbx
+  - Asset: 17261709044131531470
+    Type: Material
+    Path: Meshes\SateliteDish\m_SateliteDish.Material.ProofAsset
+  - Asset: 16410191482603395686
+    Type: Audio
+    Path: Sounds\explosion.wav
+  - Asset: 17788182098629569369
+    Type: Texture
+    Path: Textures\Heart.png
+  - Asset: 7375823681748515890
+    Type: Prefab
+    Path: Enemies\UFO.Prefab.ProofAsset
+  - Asset: 17930824706056415433
+    Type: Material
+    Path: Meshes\PowerUps\m_Lazer.Material.ProofAsset
+  - Asset: 4686870951544176460
+    Type: Prefab
+    Path: Enemies\Meteiorite.Prefab.ProofAsset
+  - Asset: 9570717932808628361
+    Type: Mesh
+    Path: Meshes\Rock.Mesh.ProofAsset
+  - Asset: 14674996858829611757
+    Type: Texture
+    Path: Models\Powerups\Lazer\textures\TEX_RayGun_DIF.png
+  - Asset: 1349368886052899675
+    Type: Prefab
+    Path: Enemies\SateliteDish.Prefab.ProofAsset
+  - Asset: 8596804362759316911
+    Type: Mesh
+    Path: Meshes\PowerUps\HealthPowerUp.Mesh.ProofAsset
+  - Asset: 3846872847249935031
+    Type: Prefab
+    Path: Enemies\Rock.Prefab.ProofAsset
+  - Asset: 6176158363095871149
+    Type: Prefab
+    Path: PowerUps\ShieldSymbol.Prefab.ProofAsset
+  - Asset: 1826158668765589707
+    Type: Mesh
+    Path: Meshes\PowerUps\SpeedBoost.Mesh.ProofAsset
+  - Asset: 3466576992119307829
+    Type: Mesh
+    Path: Meshes\WarningSign.Mesh.ProofAsset
+  - Asset: 1728070389824333785
+    Type: Material
+    Path: Meshes\PowerUps\m_SpeedBoost.Material.ProofAsset
+  - Asset: 11362598227502354197
+    Type: Mesh
+    Path: Meshes\PowerUps\ShieldHex.Mesh.ProofAsset
+  - Asset: 12885918439602832423
+    Type: Prefab
+    Path: PowerUps\SpeedBoost.Prefab.ProofAsset
+  - Asset: 16812585532893240168
+    Type: MeshSourceFile
+    Path: Models\Powerups\Lazer\source\RayGun\RayGun\source\PlantCouch.fbx
+  - Asset: 3956802775359540082
+    Type: Material
+    Path: Meshes\m_WarningSign.Material.ProofAsset
+  - Asset: 17089432189492659896
+    Type: MeshSourceFile
+    Path: Models\WarnSign\scene.gltf
+  - Asset: 6148734052836374459
+    Type: ScriptFile
+    Path: Scripts\Player.cs
+  - Asset: 10429969476332889933
+    Type: ScriptFile
+    Path: Scripts\SpawnManager.cs
+  - Asset: 5727083160495038956
+    Type: Prefab
+    Path: Scripts\spphereEnemy.Prefab.ProofAsset
+  - Asset: 15707547901708157460
+    Type: Prefab
+    Path: Enemies\Cow.Prefab.ProofAsset
+  - Asset: 4663055247541764842
+    Type: Prefab
+    Path: PowerUps\ShieldHex.Prefab.ProofAsset
+  - Asset: 4054704403660622408
+    Type: Prefab
+    Path: PowerUps\Lazer.Prefab.ProofAsset
+  - Asset: 10446895897543064672
+    Type: Prefab
+    Path: PowerUps\Lazer Bullet.Prefab.ProofAsset
+  - Asset: 14612664903756280426
+    Type: Audio
+    Path: Sounds\laserShoot.wav
+  - Asset: 18001527684231002052
+    Type: Audio
+    Path: Sounds\powerUp.wav
+  - Asset: 6821588461860843122
+    Type: ParticleSystem
+    Path: Particles\ps_Explosion.ParticleSystem.ProofAsset
+  - Asset: 16461051175706760248
+    Type: Prefab
+    Path: Particles\Explosion.Prefab.ProofAsset

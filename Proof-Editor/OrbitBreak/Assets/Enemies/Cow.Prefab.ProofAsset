@@ -1,0 +1,34 @@
+AssetType: Prefab
+ID: 15707547901708157460
+EntityOwner: 15384515274683406203
+Entities:
+  - Entity: 15384515274683406203
+    TagComponent:
+      Tag: Cow
+      tags: [Enemy]
+    TransformComponent:
+      Location: [0.0146295801, -0.885842204, -5.71000004]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 2970425636296847577
+      Visible: true
+    BoxColliderComponent:
+      IsTrigger: true
+      Center: [0, 0.100000001, -0.100000001]
+      Size: [0.200000003, 0.200000003, 1.5]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.100000001
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: false
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete

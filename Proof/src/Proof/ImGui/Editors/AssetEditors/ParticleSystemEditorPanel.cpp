@@ -26,7 +26,14 @@ namespace Proof
 	{
 		if (!m_World)return;
 
-
+		Entity particleEntity = m_World->TryGetEntityByTag("Particle");
+		if(particleEntity.IsValid())
+		{
+			if(particleEntity.GetComponent<ParticleSystemComponent>().ParticleSytemInstance->m_Emmiters.empty())
+				particleEntity.GetComponent<ParticleSystemComponent>().ParticleSytemInstance->m_Emmiters.push_back(m_ParticleSystem->GetEmitter(0));
+			else
+				particleEntity.GetComponent<ParticleSystemComponent>().ParticleSytemInstance->m_Emmiters[0] = m_ParticleSystem->GetEmitter(0);
+		}
 		m_Camera.SetViewportSize(GetWindowSize().x, GetWindowSize().y);
 		m_Camera.SetActive(m_IsViewportFocused);
 		m_Camera.OnUpdate(deltaTime);
@@ -35,7 +42,7 @@ namespace Proof
 			renderer->SubmitParticleEmitter(m_ParticleSystem->GetEmitter(0));
 			});
 
-		m_ParticleSystem->GetEmitter(0)->OnUpdate((float)deltaTime, Transform());
+		//m_ParticleSystem->GetEmitter(0)->OnUpdate((float)deltaTime, Transform());
 		m_SaveTimer -= deltaTime;
 
 		
@@ -100,10 +107,10 @@ namespace Proof
 			DrawSizeControl("Start Size", state.StartSize,0.1f);
 
 			uint32_t particles = emitter->GetParticleCount();
-			if(UI::AttributeDrag("MaxParticles", particles, 10,1))
-			{
+			if (UI::AttributeDrag("MaxParticles", particles, 10, 1));
+
+			if(particles != emitter->GetParticleCount())
 				emitter->ResetMaxParticles(particles);
-			}
 
 			UI::EndPropertyGrid();
 		}
@@ -115,8 +122,30 @@ namespace Proof
 			
 			UI::AttributeDrag("Particles Per Second", settings.Emission.ParticlesPerSecond,2);
 			UI::AttributeDrag("Particles Per Distance", settings.Emission.ParticlesPerDistance,1);
-
 			UI::EndPropertyGrid();
+
+			if(UI::AttributeButton("Add Burst"))
+				emitter->Bursts.emplace_back(ParticleBurst());
+
+			for (uint32_t i = 0; i < emitter->Bursts.size(); i++)
+			{
+				UI::ScopedID burstID(fmt::format("Burtst index {}, particle id{}", i, m_ParticleSystem->GetID()).c_str());
+				if (UI::AttributeTreeNode(fmt::format("Burst {}", i), true, 0.25f, 0.25f))
+				{
+					ParticleBurst& burst = emitter->Bursts[i];
+					UI::BeginPropertyGrid();
+
+					UI::AttributeDrag("StartTime", burst.StartTime, 0.01);
+					UI::AttributeDrag("Count", burst.Count, 5);
+					UI::AttributeDrag("Cycles", burst.Cycles, 1);
+					UI::AttributeDrag("Interval", burst.Interval, 0.01);
+					UI::AttributeDrag("Probability", burst.Probability, 0.01, 0, 1);
+
+					UI::EndPropertyGrid();
+
+					UI::EndTreeNode();
+				}
+			}
 
 			UI::EndTreeNode();
 		}
@@ -265,7 +294,7 @@ namespace Proof
 		}
 		m_ParticleSystem = asset.As<ParticleSystem>();
 		m_World = Count<World>::Create();
-		Entity entity = m_World->CreateEntity("particle");
+		Entity entity = m_World->CreateEntity("Particle");
 		//m_ParticleHandler = Count<ParticleHandler>::Create(m_ParticleSystem);
 		//entity.AddComponent<ParticleSystemComponent>().ParticleHandlerTable->SetHandler(0, m_ParticleHandler);
 		//entity.GetComponent<TransformComponent>().Location.z -= 20.0f;

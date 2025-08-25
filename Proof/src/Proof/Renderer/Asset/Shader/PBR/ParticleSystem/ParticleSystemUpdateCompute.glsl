@@ -2,7 +2,6 @@
 #Compute Shader
 #version 460
 #include <PBR/ParticleSystem/ParticleSystem.glslh>
-#include <Common.glslh>
 
 layout(local_size_x = 512, local_size_y = 1, local_size_z = 1) in;
 
@@ -51,6 +50,8 @@ layout(std430, binding = 4) coherent restrict buffer PerDrawData
 {
     int SpawnNewParticles; // leave as an int because if uint and goes -1 cause problems
     int AvailableToDraw;
+    float DeltaTime;    
+	int padding0;
 } ;
 
 // Shared memory for particles within a workgroup
@@ -195,7 +196,7 @@ void UpdateVelocityOverLifeTime(inout Particle particle,uint gid, uint lid,Parti
     if (velocityOverLifeTime.bEnabled == 0)
         return;
 
-    float deltaTime = u_FrameData.DeltaTime;
+    float deltaTime = DeltaTime;
 
     // Radial velocity from emitter center
     vec3 radialDir = normalize(particle.Position - s_InitialState.EmitterPosition);
@@ -247,7 +248,7 @@ void UpdateParticle(inout Particle particle,uint gid, uint lid)
     UpdateColorOverLifetime(particle,gid,lid,s_EmitterSettings.ColorOverLife);
     UpdateSizeOverLifetime(particle,gid,lid,s_EmitterSettings.SizeOverLifeTime);
 
-    float deltaTime = u_FrameData.DeltaTime;
+    float deltaTime = DeltaTime;
 
     // integrate motion
     particle.Position += particle.Velocity * deltaTime;
@@ -277,7 +278,7 @@ void main()
          s_TrackableData.ActiveParticles = 0;
          s_TrackableData.DeadParticles = 0;
         // Update elapsed time ONCE
-        s_TrackableData.TimeElapsed += u_FrameData.DeltaTime;
+        s_TrackableData.TimeElapsed += DeltaTime;
 
         AvailableToDraw = SpawnNewParticles;
     }
@@ -294,10 +295,10 @@ void main()
     localParticles[lid] = Particles[gid];
 
     bool stopEmitting = false;
-    float deltaTime = u_FrameData.DeltaTime;
+    float deltaTime = DeltaTime;
     if(s_InitialState.Duration < s_TrackableData.TimeElapsed)
     {
-        if(s_InitialState.bLooping == int(true))
+        if(s_InitialState.bLooping == 1)
         {
             
             localParticles[lid].Color.a -= s_InitialState.FadeOutSpeed * deltaTime;
@@ -314,7 +315,7 @@ void main()
     }
         
    // Particle currentParticle = localParticles[lid];
-    localParticles[lid].Life -= u_FrameData.DeltaTime;
+    localParticles[lid].Life -= DeltaTime;
 
     // If the particle is dead, respawn it
     if (localParticles[lid].Life <= 0.0) 

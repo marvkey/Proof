@@ -19,7 +19,7 @@ namespace Proof {
 	struct ElevatedInputKeyParams;
 
 	class Renderer2D;
-
+	class ParticleWorld;
 
 	enum class WorldState
 	{
@@ -226,6 +226,7 @@ namespace Proof {
 		std::unordered_set< UUID> m_EntityDeleteQueue;
 		std::unordered_map<UUID,float> m_EnttiesDeletAfterTime;
 		Count<class ScriptWorld> m_ScriptWorld;
+		Count<class ParticleWorld> m_ParticleWorld;
 		entt::registry m_Registry;
 		Count<class PhysicsWorld> m_PhysicsWorld = nullptr;
 		WorldState m_CurrentState = WorldState::Edit;

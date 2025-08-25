@@ -1,0 +1,8 @@
+Model Information:
+* title:	Apollo Lunar Sample 70175,0
+* source:	https://sketchfab.com/3d-models/apollo-lunar-sample-701750-9fe0833c2b3a4dd3b26844c1dd09f441
+* author:	NASA Astromaterials 3D (https://sketchfab.com/Astromaterials3D)
+
+Model License:
+* license type:	CC0-1.0 (http://creativecommons.org/publicdomain/zero/1.0/)
+* requirements:	Credit is not mandatory. Commercial use is allowed.

@@ -73,6 +73,7 @@ namespace Proof
 		m_ScriptWorld = Count<ScriptWorld>::Create(this);
 		Init();
 		m_DebugRenderer = Count<DebugRenderer>::Create();
+		m_ParticleWorld = Count<ParticleWorld>::Create(this);
 		//m_Registry.on_destroy<ChildComponent>().connect<&World::OnChildComponentDestroy>(this);
 	}
 	World::~World()
@@ -139,7 +140,7 @@ namespace Proof
 				terrainComponent.Terrain->Update(DeltaTime, transform);
 			}
 		}
-
+#if 0
 		{
 
 			auto view = m_Registry.view<ParticleSystemComponent>();
@@ -152,7 +153,8 @@ namespace Proof
 				instance->OnUpdate(DeltaTime, Transform(GetWorldSpaceTransform(e)));
 			}
 		}
-
+#endif
+		m_ParticleWorld->OnUpdate(DeltaTime);
 		OnUpdateAnimation(DeltaTime);
 
 	}
@@ -895,22 +897,23 @@ namespace Proof
 
 	void World::DeleteEntitiesfromQeue()
 	{
-
-		for (auto it = m_EnttiesDeletAfterTime.begin(); it != m_EnttiesDeletAfterTime.end(); ) 
+		if (!m_EnttiesDeletAfterTime.empty())
 		{
-			it->second -= FrameTime::GetWorldDeltaTime();
-			if (it->second <= 0.0f)
+			for (auto it = m_EnttiesDeletAfterTime.begin(); it != m_EnttiesDeletAfterTime.end(); )
 			{
-				m_EntityDeleteQueue.insert(it->first);
-				
-				it = m_EnttiesDeletAfterTime.erase(it);
-			}
-			else
-			{
-				++it;
+				it->second -= FrameTime::GetWorldDeltaTime();
+				if (it->second <= 0.0f)
+				{
+					m_EntityDeleteQueue.insert(it->first);
+
+					it = m_EnttiesDeletAfterTime.erase(it);
+				}
+				else
+				{
+					++it;
+				}
 			}
 		}
-
 		
 		// job to remove entites does not care if has child or not
 		for (auto& ID : m_EntityDeleteQueue)
@@ -1194,10 +1197,12 @@ namespace Proof
 				PF_PROFILE_FUNC("World::OnUpdate - Audio");
 				auto view = m_Registry.view<AudioComponent>();
 
+				AudioEngine::AddNewSounds();
 				for (auto e : view)
 				{
 
 					Entity audioEntity = { e,this };
+					
 					auto& audioComponent = audioEntity.GetComponent<AudioComponent>();
 					auto transform = Utils::TransformToAudioTransform(GetWorldSpaceTransformComponent(audioEntity));
 
@@ -1240,7 +1245,7 @@ namespace Proof
 			}
 		}
 		m_PhysicsWorld->Simulate(DeltaTime);
-
+#if 0
 		{
 			ForEachEnitityWith<ParticleSystemComponent>([&](Entity entity)
 				{
@@ -1250,6 +1255,9 @@ namespace Proof
 					instance->OnUpdate(DeltaTime, Transform(GetWorldSpaceTransform(entity)));
 				});
 		}
+#endif
+
+		m_ParticleWorld->OnUpdate(DeltaTime);
 
 		{
 			PF_PROFILE_FUNC("World::OnUpdate - C# OnPostUpdate");

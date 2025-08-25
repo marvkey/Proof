@@ -110,7 +110,7 @@ namespace Proof
 		{
 			if (instance == nullptr)
 			{
-				//PF_ENGINE_WARN("ScriptEngine Attempting to call method {0} on an invalid instance!", methodName);
+				PF_ENGINE_WARN("ScriptEngine Attempting to call method {0} on an invalid instance!", methodName);
 				return;
 			}
 

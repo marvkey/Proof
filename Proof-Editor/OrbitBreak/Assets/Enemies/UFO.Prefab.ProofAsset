@@ -1,0 +1,34 @@
+AssetType: Prefab
+ID: 7375823681748515890
+EntityOwner: 11954157485166449632
+Entities:
+  - Entity: 11954157485166449632
+    TagComponent:
+      Tag: UFO
+      tags: [Enemy]
+    TransformComponent:
+      Location: [0, -1.34434366, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 7103400457226319647
+      Visible: true
+    BoxColliderComponent:
+      IsTrigger: true
+      Center: [0, 0, 0]
+      Size: [1.79999995, 0.699999988, 1.60000002]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete

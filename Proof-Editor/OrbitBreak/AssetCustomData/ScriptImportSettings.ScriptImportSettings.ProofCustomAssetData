@@ -1,0 +1,36 @@
+ScriptImportSettings:
+  Scripts:
+    - Script: Proof.GameManager
+      ScriptName: Proof.GameManager
+      Fields:
+        []
+    - Script: OrbitBreak.DeleteEntityScript
+      ScriptName: OrbitBreak.DeleteEntityScript
+      Fields:
+        []
+    - Script: OrbitBreak.Player
+      ScriptName: OrbitBreak.Player
+      Fields:
+        - NameID: OrbitBreak.Player.Bullet
+          Type: Prefab
+          Data: 0
+        - NameID: OrbitBreak.Player.OnHitParticle
+          Type: Prefab
+          Data: 0
+    - Script: OrbitBreak.PowerUp
+      ScriptName: OrbitBreak.PowerUp
+      Fields:
+        []
+    - Script: OrbitBreak.SpawnManager
+      ScriptName: OrbitBreak.SpawnManager
+      Fields:
+        - NameID: OrbitBreak.SpawnManager.Enemies
+          Type: Prefab
+          Length: 0
+          Data:
+            []
+        - NameID: OrbitBreak.SpawnManager.Powerups
+          Type: Prefab
+          Length: 0
+          Data:
+            []

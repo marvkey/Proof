@@ -1207,6 +1207,7 @@ namespace Proof
 			AddComponentGui<PlayerInputComponent>(entity, "Player Input");
 			AddComponentGui<PlayerStartComponent>(entity, "Player start");
 			AddComponentGui<PlayerHUDComponent>(entity, "Player HUD");
+			AddComponentGui<WorldHUDComponent>(entity, "World HUD");
 
 			AddComponentGui<ParticleSystemComponent>(entity, "Particle System");
 
@@ -2117,6 +2118,11 @@ namespace Proof
 			});
 	#if 1
 		DrawComponents<PlayerHUDComponent>("Player HUD", entity, [](PlayerHUDComponent& playerHud)
+			{
+				UI::AttributeDrawUITable(playerHud.HudTable);
+			});
+
+		DrawComponents<WorldHUDComponent>("World HUD", entity, [](WorldHUDComponent& playerHud)
 			{
 				UI::AttributeDrawUITable(playerHud.HudTable);
 			});

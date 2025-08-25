@@ -91,7 +91,7 @@ namespace Proof
     void AudioEngine::OnUpdate(float deltaTime)
     {
         PF_PROFILE_FUNC();
-
+      
         if (s_Data->WorldContext)
         {
 
@@ -193,6 +193,25 @@ namespace Proof
         }
         auto sound = s_Data->WorldSounds[soundId];
         sound->SetVelocity(velocity);
+    }
+    bool AudioEngine::HasSoundID(UUID hasSoundId)
+    {
+        PF_CORE_ASSERT(s_Data->WorldContext);
+
+        return s_Data->WorldSounds.contains(hasSoundId);
+    }
+    void AudioEngine::AddNewSounds()
+    {
+        PF_CORE_ASSERT(s_Data->WorldContext);
+
+        auto view = s_Data->WorldContext->GetAllEntitiesWith<AudioComponent>();
+
+        for (auto e : view)
+        {
+            Entity entity{ e,s_Data->WorldContext.Get() };
+
+            AddAudio(entity)->m_UUID = entity.GetUUID();
+        }
     }
 }
 

@@ -225,8 +225,8 @@ namespace Proof
 			m_Camera.SetViewportSize((uint32_t)m_ViewPortSize.x, (uint32_t)m_ViewPortSize.y);
 			m_Camera.SetActive(IsFocused() || IsHovered());
 			m_Camera.OnUpdate(ts);
-			m_WorldContext->OnRenderEditor(m_WorldRenderer, ts, m_Camera);
 			m_WorldContext->OnUpdateEditor(ts);
+			m_WorldContext->OnRenderEditor(m_WorldRenderer, ts, m_Camera);
 
 			OnRender2D();
 
@@ -242,8 +242,8 @@ namespace Proof
 
 				
 				m_Camera.SetActive(false);
-				m_WorldContext->OnRenderRuntime(m_WorldRenderer, ts);
 				m_WorldContext->OnUpdateRuntime(ts);
+				m_WorldContext->OnRenderRuntime(m_WorldRenderer, ts);
 				//OnRender2D();
 				Application::Get()->GetWindow()->SetWindowInputEvent(inputEvent);
 			}

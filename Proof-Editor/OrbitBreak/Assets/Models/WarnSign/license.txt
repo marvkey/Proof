@@ -1,0 +1,11 @@
+Model Information:
+* title:	I- Warn
+* source:	https://sketchfab.com/3d-models/i-warn-538cbc8a9fb6477394d39c0b10ea900d
+* author:	kaimifly (https://sketchfab.com/kaimifly)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "I- Warn" (https://sketchfab.com/3d-models/i-warn-538cbc8a9fb6477394d39c0b10ea900d) by kaimifly (https://sketchfab.com/kaimifly) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

@@ -127,6 +127,10 @@ namespace Proof
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void TagComponent_SetTag(ulong entityID, ref string message);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool TagComponent_HasSubTag(ulong entityID, out string message);
+
         #endregion
 
         #region TransformComponent

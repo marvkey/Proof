@@ -725,6 +725,50 @@ namespace Proof
 		}
 
 		{
+#if 1
+			if (entity.HasComponent<WorldHUDComponent>())
+			{
+
+				WorldHUDComponent& hud = entity.GetComponent<WorldHUDComponent>();
+				out << YAML::Key << "WorldHUDComponent";
+				out << YAML::BeginMap; // WorldHUDComponent
+
+				out << YAML::Key << "UITable";
+
+				out << YAML::BeginSeq;//hudTable
+				if (hud.HudTable != nullptr)
+				{
+					for (const auto& layer : hud.HudTable->GetLayers())
+					{
+						out << YAML::BeginMap;// Layer
+						out << YAML::Key << "Layer" << YAML::Key << layer.Name;
+						out << YAML::Key << "Visible" << YAML::Key << layer.Visible;
+
+						out << YAML::Key << "Panels";
+						out << YAML::BeginSeq;//Panels
+
+						for (auto& panel : layer.GetUIPanels())
+						{
+							out << YAML::BeginMap;// panel
+
+							AssetID assetID = panel->GetUIPanel() == nullptr ? (AssetID)0 : panel->GetUIPanel()->GetID();
+							out << YAML::Key << "PanelID" << YAML::Value << assetID;
+							out << YAML::Key << "Visible" << YAML::Value << panel->Visible;
+
+							if (assetID != 0)
+								SerializeCommon::SaveVariableRegistryInstance(out, panel->GetVariableRegistryInstance());
+							out << YAML::EndMap;// panel
+						}
+						out << YAML::EndSeq;//Panels
+						out << YAML::EndMap;// laayer
+					}
+				}
+				out << YAML::EndSeq; // UITableTable
+				out << YAML::EndMap; // WorldHUDComponent
+			}
+#endif
+		}
+		{
 			if (entity.HasComponent<ParticleSystemComponent>())
 			{
 				ParticleSystemComponent& particleSystemComponent = entity.GetComponent<ParticleSystemComponent>();
@@ -1074,8 +1118,8 @@ namespace Proof
 
 		m_World->m_ID = worldData["ID"].as<uint64_t>();
 
-		for(auto [id, entity] :m_World->GetEntities())
-			m_World->DeleteEntity(entity);
+		//for(auto [id, entity] :m_World->GetEntities())
+		//	m_World->DeleteEntity(entity);
 
 		m_World->DeleteEntitiesfromQeue();
 
@@ -1662,9 +1706,9 @@ namespace Proof
 					psc.Player = playerStartComponent["PlayerPrefab"].as<AssetID>();
 				}
 			}
-			// PlayerHudComppoent
+
+			// HudComponent
 			{
-			#if 1
 				auto playerHudComponent = entity["PlayerHUDComponent"];
 				if (playerHudComponent)
 				{
@@ -1688,6 +1732,41 @@ namespace Proof
 								newPanelInstance->SetPanelInstance(uiAsset.GetAsset<UIPanel>());
 							newPanelInstance->Visible = panel["Visible"].as<bool>(true);
 
+							if (uiAsset.IsValid())
+								SerializeCommon::LoadVariableRegistryInstance(panel, newPanelInstance->GetVariableRegistryInstance());
+						}
+
+					}
+
+					phc.HudTable = table;
+				}
+			}
+
+			// PlayerHudComppoent
+			{
+				auto worldHudComponent = entity["WorldHUDComponent"];
+				if (worldHudComponent)
+				{
+					auto& phc = NewEntity.AddComponent<WorldHUDComponent>();
+
+					Count<UITable> table = Count<UITable>::Create();
+					table->ClearLayers();
+					for (auto layer : worldHudComponent["UITable"])
+					{
+						auto& newLayer = table->AddLayer(layer["Layer"].as<std::string>("Unnamed"));
+						newLayer.Visible = layer["Visible"].as<bool>(true);
+
+						auto panels = layer["Panels"];
+
+						for (auto panel : panels)
+						{
+							Count<UIPanelInstance> newPanelInstance = newLayer.PushUI();
+							AssetKey<AssetType::UIPanel> uiAsset = panel["PanelID"].as<AssetID>();
+
+							if (uiAsset.IsValid())
+								newPanelInstance->SetPanelInstance(uiAsset.GetAsset<UIPanel>());
+							newPanelInstance->Visible = panel["Visible"].as<bool>(true);
+
 							if(uiAsset.IsValid())
 								SerializeCommon::LoadVariableRegistryInstance(panel, newPanelInstance->GetVariableRegistryInstance());
 						}
@@ -1696,8 +1775,9 @@ namespace Proof
 
 					phc.HudTable = table;
 				}
-			#endif
 			}
+
+
 			// audio compoennt
 			{
 				auto audioComponent = entity["AudioComponent"];

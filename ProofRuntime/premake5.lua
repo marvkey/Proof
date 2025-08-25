@@ -74,5 +74,6 @@ project "ProofRuntime"
         kind "WindowedApp" -- disables logger
         defines{
             "NDEBUG", -- PhysX Requires This 
+            "NOMINMAX",
             }
 

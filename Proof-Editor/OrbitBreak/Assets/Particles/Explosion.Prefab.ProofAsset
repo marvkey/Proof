@@ -1,0 +1,39 @@
+AssetType: Prefab
+ID: 16461051175706760248
+EntityOwner: 10475395993431845073
+Entities:
+  - Entity: 10475395993431845073
+    TagComponent:
+      Tag: Explosion
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []
+    ScriptComponent:
+      Scripts:
+        - Script: OrbitBreak.DeleteEntityScript
+          ScriptClassName: OrbitBreak.DeleteEntityScript
+          ScriptName: OrbitBreak.DeleteEntityScript
+          Fields:
+            - NameID: OrbitBreak.DeleteEntityScript.Lifetime
+              Type: Float
+              Data: 3
+            - NameID: OrbitBreak.DeleteEntityScript.TargetEntity
+              Type: Entity
+              Data: 0
+    ParticleSystemComponent:
+      AssetID: 6821588461860843122
+    AudioComponent:
+      VolumeMultiplier: 0.0930000022
+      PitchMultiplier: 1
+      Looping: false
+      PlayOnAwake: true
+      MasterReverbSend: 0
+      LowPassFilter: 1
+      HighPassFilter: 0
+      SpatializationEnabled: false
+      AudioAsset: 16410191482603395686

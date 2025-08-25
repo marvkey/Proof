@@ -171,7 +171,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 	static void Log_Message(int logType, MonoString* message) {
 		std::wstring ws = mono_string_chars(message);
 		std::string str(ws.begin(), ws.end());
-		Log::AppendString(logType, Proof::Log::GetClientLogger()->GetLogString(str));
+		LogManager::AppendString(logType, Proof::LogManager::GetClientLogger()->GetLogString(str));
 	}
 #pragma endregion 
 
@@ -460,7 +460,8 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 	static void Entity_GetParent(uint64_t entityID, uint64_t* owenerId)
 	{
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
+
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
@@ -523,154 +524,92 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		std::string newTag = ScriptUtils::MonoStringToUTF8(*tag);
 		entity.GetComponent<TagComponent>().Tag  = newTag;
 	}
-#pragma endregion 
-	
-	#pragma region TransformComponent
-	static void TransformComponent_GetLocation(uint64_t entityID, glm::vec3* outLocation ) {
+
+
+	static bool TagComponent_HasSubTag(uint64_t entityID, MonoString** tag)
+	{
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
 		#if PF_ENABLE_DEBUG
 			if (!entity)
 			{
-				PF_EC_ERROR("TransformComponent.GetLocation - entity is invalid");
-				return;
+				PF_EC_ERROR("TagComponent.HasSubTag - entity is invalid");
+				return false;
 			}
-		#endif
+			#endif
+
+		std::string newTag = ScriptUtils::MonoStringToUTF8(*tag);
+		return entity.GetComponent<TagComponent>().HasTag(newTag);
+	}
+#pragma endregion 
+	
+	#pragma region TransformComponent
+	static void TransformComponent_GetLocation(uint64_t entityID, glm::vec3* outLocation ) 
+	{
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 		*outLocation = entity.GetComponent<TransformComponent>().Location;
 	};
-	static void TransformComponent_SetLocation(UUID entityID, glm::vec3* location) {
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_EC_ERROR("TransformComponent.SetLocation - entity is invalid");
-			return;
-		}
-		#endif
+	static void TransformComponent_SetLocation(UUID entityID, glm::vec3* location) 
+	{
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 		entity.GetComponent<TransformComponent>().Location = *location;
 	};
 
-	static void TransformComponent_GetRotation(uint64_t entityID, glm::vec3* outRoation) {
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_EC_ERROR("TransformComponent.Rotation - entity is invalid");
-			return;
-		}
-		#endif
+	static void TransformComponent_GetRotation(uint64_t entityID, glm::vec3* outRoation) 
+	{
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 		* outRoation = glm::degrees( entity.GetComponent<TransformComponent>().GetRotationEuler());
 	};
 
-	static void TransformComponent_SetRotation(UUID entityID, glm::vec3* rotation) {
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_EC_ERROR("TransformComponent.SetRotation - entity is invalid");
-			return;
-		}
-		#endif
+	static void TransformComponent_SetRotation(UUID entityID, glm::vec3* rotation) 
+	{
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 		entity.GetComponent<TransformComponent>().SetRotationEuler(glm::radians(*rotation));
 	};
 
 	static void TransformComponent_GetRotationQuat(UUID entityID, QuaternionProper* quaternion) 
 	{
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-	#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_EC_ERROR("TransformComponent.SetRotation - entity is invalid");
-			return;
-		}
-	#endif
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 		*quaternion = Utils::GlmToQuaternionProper(entity.GetComponent< TransformComponent>().GetRotation());
 	};
 
 	static void TransformComponent_SetRotationQuat(UUID entityID, QuaternionProper* quaternion) 
 	{
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-	#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_EC_ERROR("TransformComponent.SetRotation - entity is invalid");
-			return;
-		}
-	#endif
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 		entity.GetComponent<TransformComponent>().SetRotation(Utils::QuaternionProperToGlm(*quaternion));
 	};
 
-	static void TransformComponent_GetScale(uint64_t entityID, glm::vec3* outScale) {
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_EC_ERROR("TransformComponent.Scale - entity is invalid");
-			return;
-		}
-		#endif
+	static void TransformComponent_GetScale(uint64_t entityID, glm::vec3* outScale) 
+	{
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 		* outScale = entity.GetComponent<TransformComponent>().Scale;
 	};
-	static void TransformComponent_SetScale(UUID entityID, glm::vec3* scale) {
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_EC_ERROR("TransformComponent.SetScale - entity is invalid");
-			return;
-		}
-		#endif
+	static void TransformComponent_SetScale(UUID entityID, glm::vec3* scale) 
+	{
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 		entity.GetComponent<TransformComponent>().Scale = *scale;
 	};
 	static void TransformComponent_GetForwardVector(uint64_t entityID, glm::vec3* vec)
 	{
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-		#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_EC_ERROR("TransformComponent.GetForwardVector - entity is invalid");
-			return;
-		}
-		#endif
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 		*vec = entity.GetComponent<TransformComponent>().GetFowardVector();
 	}
 
 
 	static void TransformComponent_GetRightVector(uint64_t entityID, glm::vec3* vec)
 	{
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-	#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_EC_ERROR("TransformComponent.GetRightVector - entity is invalid");
-			return;
-		}
-	#endif
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 		* vec = entity.GetComponent<TransformComponent>().GetRightVector();
 	}
 
 	static void TransformComponent_GetUpVector(uint64_t entityID, glm::vec3* vec)
 	{
-		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
-	#if PF_ENABLE_DEBUG
-		if (!entity)
-		{
-			PF_EC_ERROR("TransformComponent.GetUpVector - entity is invalid");
-			return;
-		}
-	#endif
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 		* vec = entity.GetComponent<TransformComponent>().GetUpVector();
 	}
 
 	static void TransformComponent_GetTransform(uint64_t entityID, Transform* outTransform)
 	{
-		auto entity = GetEntity(entityID);
-		if (!entity)
-		{
-			PF_EC_ERROR("TransformComponent.GetTransform - entity is Invalid");
-			*outTransform = Transform();
-			return;
-		}
-
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 		const auto& tc = entity.GetComponent<TransformComponent>();
 		outTransform->Location = tc.Location;
 		outTransform->Rotation = glm::degrees(tc.GetRotationEuler());
@@ -679,12 +618,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 	void TransformComponent_SetTransform(uint64_t entityID, Transform* inTransform)
 	{
-		auto entity = GetEntity(entityID);
-		if (!entity)
-		{
-			PF_EC_ERROR("TransformComponent.SetTransform - Invalid entity!");
-			return;
-		}
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 
 		if (inTransform == nullptr)
 		{
@@ -700,14 +634,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 	void TransformComponent_GetWorldSpaceTransform(uint64_t entityID, Transform* outTransform)
 	{
-		auto entity = GetEntity(entityID);
-		if (!entity)
-		{
-			PF_EC_ERROR("TransformComponent.GetWorldSpaceTransform - Invalid entity!");
-			*outTransform = Transform();
-			return;
-		}
-
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 		Count<World> scene = ScriptEngine::GetWorldContext();
 		const auto& wt = scene->GetWorldSpaceTransformComponent(entity);
 		outTransform->Location = wt.Location;
@@ -757,7 +684,10 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			return false;
 		}
 		#endif
-		return entity.GetComponent<RigidBodyComponent>().Gravity;
+
+		auto actor = GetPhysicsActor(entity);
+
+		return actor->IsGravityEnabled();
 	}
 
 	static void RigidBody_SetGravity(UUID entityID, bool* gravity) {
@@ -769,7 +699,8 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			return ;
 		}
 		#endif
-		entity.GetComponent<RigidBodyComponent>().Gravity = *gravity;
+		auto actor = GetPhysicsActor(entity);
+		actor->SetGravityEnabled(*gravity);
 	}
 	static void RigidBody_GetMass(UUID entityID, float* outMass) {
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
@@ -780,10 +711,13 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			return;
 		}
 		#endif
-		*outMass = entity.GetComponent<RigidBodyComponent>().Mass;
+
+		auto actor = GetPhysicsActor(entity);
+		*outMass = actor->GetMass();
 	}
 	static void RigidBody_SetMass(UUID entityID, float* mass) {
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
+
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
@@ -4257,6 +4191,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		{
 			PF_ADD_INTERNAL_CALL(TagComponent_GetTag);
 			PF_ADD_INTERNAL_CALL(TagComponent_SetTag);
+			PF_ADD_INTERNAL_CALL(TagComponent_HasSubTag);
 		}
 		//Transform Component
 		{

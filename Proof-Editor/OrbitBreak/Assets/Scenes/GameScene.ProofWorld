@@ -1,0 +1,241 @@
+World:
+  ID: 10632697519985270255
+  Entities:
+    - Entity: 6400732132835178303
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [2.15373635, 1.32470489, 2.07694173]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+        CastShadow: true
+        ShadowStrength: 0.5
+        CastSoftShadow: true
+        ShadowSoftness: 0.5
+    - Entity: 1088938535286390309
+      TagComponent:
+        Tag: SpawnManager
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: OrbitBreak.SpawnManager
+            ScriptClassName: OrbitBreak.SpawnManager
+            ScriptName: OrbitBreak.SpawnManager
+            Fields:
+              - NameID: OrbitBreak.SpawnManager.SpawnInterval
+                Type: Float
+                Data: 2
+              - NameID: OrbitBreak.SpawnManager.Enemies
+                Type: Prefab
+                Length: 4
+                Data:
+                  - 4686870951544176460
+                  - 3846872847249935031
+                  - 1349368886052899675
+                  - 7375823681748515890
+              - NameID: OrbitBreak.SpawnManager.SpawnHeight
+                Type: Float
+                Data: 5
+              - NameID: OrbitBreak.SpawnManager.SpawnPowerUpInterval
+                Type: Float
+                Data: 4
+              - NameID: OrbitBreak.SpawnManager.SpawnRangeX
+                Type: Float
+                Data: 3.70000005
+              - NameID: OrbitBreak.SpawnManager.Powerups
+                Type: Prefab
+                Length: 3
+                Data:
+                  - 4054704403660622408
+                  - 4663055247541764842
+                  - 12885918439602832423
+    - Entity: 5723336504877931583
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.185004905, 0.0174532924]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 2141683991883366455
+      TagComponent:
+        Tag: SpawnLazerPos
+        tags: []
+      TransformComponent:
+        Location: [0, 1.12801158, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 1530953258790621239
+        Children: []
+    - Entity: 1530953258790621239
+      TagComponent:
+        Tag: Player
+        tags: []
+      TransformComponent:
+        Location: [0, -1.72877169, -5.5999999]
+        Rotation: [0, 0, 0]
+        Scale: [0.560036361, 0.560036361, 0.560036361]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [9873446959168710912, 2141683991883366455]
+      MeshComponent:
+        MeshAssetPointerID: 10307019201724280246
+        Visible: true
+      ScriptComponent:
+        Scripts:
+          - Script: OrbitBreak.Player
+            ScriptClassName: OrbitBreak.Player
+            ScriptName: OrbitBreak.Player
+            Fields:
+              - NameID: OrbitBreak.Player.Bullet
+                Type: Prefab
+                Data: 10446895897543064672
+              - NameID: OrbitBreak.Player.SideSpeed
+                Type: Float
+                Data: 3.5
+              - NameID: OrbitBreak.Player.OnHitParticle
+                Type: Prefab
+                Data: 16461051175706760248
+              - NameID: OrbitBreak.Player.ChildEnityShield
+                Type: Entity
+                Data: 9873446959168710912
+              - NameID: OrbitBreak.Player.Health
+                Type: Float
+                Data: 100
+              - NameID: OrbitBreak.Player.FireRate
+                Type: Float
+                Data: 0.5
+              - NameID: OrbitBreak.Player.SpawBullet
+                Type: Entity
+                Data: 2141683991883366455
+          - Script: OrbitBreak.PowerUp
+            ScriptClassName: OrbitBreak.PowerUp
+            ScriptName: OrbitBreak.PowerUp
+            Fields:
+              - NameID: OrbitBreak.PowerUp.StartDuration
+                Type: Float
+                Data: 5
+              - NameID: OrbitBreak.PowerUp.SpeedScale
+                Type: Float
+                Data: 2
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [0.5, 0.600000024, 0.200000003]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: false
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 3586159779000038146
+      TagComponent:
+        Tag: CameraAndScenmanager
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: Proof.GameManager
+            ScriptClassName: Proof.GameManager
+            ScriptName: Proof.GameManager
+            Fields:
+              - NameID: Proof.GameManager.Player
+                Type: Entity
+                Data: 1530953258790621239
+      CameraComponent:
+        NearPlane: 0.300000012
+        FarPlane: 1000
+        FOV: 45
+        UseLocalRotation: false
+        ActiveForRendering: true
+      PlayerStartComponent:
+        InputPlayer: Player0
+        PlayerPrefab: 0
+        DontSpawn: true
+      PlayerHUDComponent:
+        UITable:
+          - Layer: Menu
+            Visible: true
+            Panels:
+              []
+          - Layer: Modal
+            Visible: true
+            Panels:
+              []
+          - Layer: Content
+            Visible: true
+            Panels:
+              []
+          - Layer: HUD
+            Visible: true
+            Panels:
+              - PanelID: 906094230909434426
+                Visible: true
+                VariableRegistry:
+                  VariableRegistryID: 9012242798001869154
+                  Variables:
+                    - Name: Health
+                      Type: Float
+                      UUID: 13737011022023473833
+                      Data: 100
+    - Entity: 9873446959168710912
+      TagComponent:
+        Tag: ChildShieldHex
+        tags: [Shield]
+      TransformComponent:
+        Location: [-6.65187194e-09, 2.38418579e-07, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 1530953258790621239
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 11362598227502354197
+        Visible: false
+        MaterialTable:
+          - Material: ""
+            AssetID: 8630246235739269922
+            Index: 0
+          - Material: ""
+            AssetID: 8630246235739269922
+            Index: 1

@@ -61,7 +61,7 @@ namespace Proof {
         srand(time(NULL));
         Timer buildTimer;
 
-        Proof::Log::Init();
+        Proof::LogManager::Init();
         
         s_Instance = this;
         m_RenderThread.Run();

@@ -1,0 +1,27 @@
+AssetType: Prefab
+ID: 6176158363095871149
+EntityOwner: 6583076825578469368
+Entities:
+  - Entity: 6583076825578469368
+    TagComponent:
+      Tag: Shield
+      tags: [""]
+    TransformComponent:
+      Location: [6.72639227, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 11974798769359360218
+      Visible: true
+      MaterialTable:
+        - Material: ""
+          AssetID: 7157609265446026111
+          Index: 1
+    SphereColliderComponent:
+      IsTrigger: false
+      Center: [0, 0, 0]
+      Radius: 0.5
+      PhysicsMaterialPointerID: 0

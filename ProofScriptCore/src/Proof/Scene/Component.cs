@@ -32,7 +32,12 @@ namespace Proof
 				InternalCalls.TagComponent_SetTag(Entity.ID, ref value);
 			}
 		}
-	}
+
+		public bool HasSubTag(string tag)
+		{
+			return InternalCalls.TagComponent_HasSubTag(Entity.ID, out tag);
+        }
+    }
 
     [RegisterCoreClassStruct]
     public class TransformComponent : Component

@@ -54,7 +54,9 @@ namespace Proof {
         //projectPath = "PacMan3D/PacMan3D.ProofProject";
         //projectPath = "PacMan/PacMan.ProofProject";
         //projectPath = "FlappyBird/FlappyBird.ProofProject";
-        projectPath = "LostExpedition/LostExpedition.ProofProject";
+        //projectPath = "LostExpedition/LostExpedition.ProofProject";
+        projectPath = "../Proof-Editor/OrbitBreak/OrbitBreak.ProofProject";
+
         if (argc > 1)
             projectPath = argv[1];
         ApplicationConfiguration configuration;

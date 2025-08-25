@@ -1,0 +1,11 @@
+Model Information:
+* title:	Cow
+* source:	https://sketchfab.com/3d-models/cow-0c23f971c1a84923996b7d0ecf166af8
+* author:	DibArts (https://sketchfab.com/youssefe22)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Cow" (https://sketchfab.com/3d-models/cow-0c23f971c1a84923996b7d0ecf166af8) by DibArts (https://sketchfab.com/youssefe22) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

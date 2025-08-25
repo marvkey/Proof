@@ -1,0 +1,41 @@
+AssetType: Prefab
+ID: 4663055247541764842
+EntityOwner: 3864150139344649448
+Entities:
+  - Entity: 3864150139344649448
+    TagComponent:
+      Tag: ShieldHex
+      tags: [Shield]
+    TransformComponent:
+      Location: [0, -1.67692506, -5.5999999]
+      Rotation: [0, -0, 0]
+      Scale: [0.560036361, 0.560036361, 0.560036361]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 11362598227502354197
+      Visible: true
+      MaterialTable:
+        - Material: ""
+          AssetID: 8630246235739269922
+          Index: 0
+        - Material: ""
+          AssetID: 8630246235739269922
+          Index: 1
+    SphereColliderComponent:
+      IsTrigger: true
+      Center: [0, 0, 0]
+      Radius: 1.10000002
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: false
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete

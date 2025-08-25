@@ -309,7 +309,7 @@ namespace Proof {
 			{
 				if (ScriptEngine::IsModuleValid(scriptMetaData.ClassName))
 				{
-					ScriptEngine::CallMethod(scriptMetaData.Instance, methodName, b.GetUUID());
+					ScriptEngine::CallMethod(scriptMetaData.GetInstance(), methodName, b.GetUUID());
 				}
 			}
 		};

@@ -819,7 +819,7 @@ namespace Proof
 		{
 			if (IsScriptFieldAssetType(arrayStorage->GetFieldInfo()->Type))
 			{
-				arrayStorage->SetValue(i, static_cast<uint64_t>(dataNode[i].as<int16_t>()));
+				arrayStorage->SetValue(i, static_cast<uint64_t>(dataNode[i].as<uint64_t>()));
 				continue;
 			}
 

@@ -114,6 +114,8 @@ namespace Proof
 	{
 		int SpawnNewParticles = 0; // leave as int because of it going to -1 in shader causign problems
 		int AvailableToDraw = 0;// leave as int because of it going to -1 in shader causign problems CONTROLLED AND INITLIZED BY SHADER
+		float DeltaTime;
+		int padding0;
 	};
 
 }

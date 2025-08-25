@@ -572,23 +572,30 @@ namespace Proof
 	};
 
 
-	struct ScriptComponentsClassesData
-	{
+	struct ScriptComponentsClassesData {
+		ScriptComponentsClassesData();
+		ScriptComponentsClassesData(const ScriptComponentsClassesData& other);
+		ScriptComponentsClassesData& operator=(const ScriptComponentsClassesData& other); // <-- add
+
+		ScriptComponentsClassesData(std::string className,
+			ScriptGCHandle instance = nullptr);
+
+		ScriptComponentsClassesData(ScriptComponentsClassesData&& o) noexcept;
+		ScriptComponentsClassesData& operator=(ScriptComponentsClassesData&& o) noexcept; // <-- add
+
 		std::string ClassName;
-		ScriptGCHandle Instance =nullptr;
-		//std::vector<uint32_t> FieldID;
-		//std::vector<std::string> FieldNames;
+		ScriptGCHandle GetInstance() const { return m_Instance; }
+
+	private:
+		ScriptGCHandle m_Instance = nullptr;
+
+		friend class ScriptWorld;
+		friend class ScriptComponent;
 	};
 	struct ScriptComponent 
 	{
 	public:
-		ScriptComponent(const ScriptComponent& other)
-		{
-			ScriptMetadates = other.ScriptMetadates;
-			//cannot copy the same instnace
-			for (auto& data : ScriptMetadates)
-				data.Instance = nullptr;
-		}
+		ScriptComponent(const ScriptComponent& other);
 		ScriptComponent() = default;
 		friend class ScriptEngine;
 		friend class SceneSerializer;
@@ -800,7 +807,7 @@ namespace Proof
 		MeshComponent,DynamicMeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent, CharacterControllerComponent,
 		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent, RigidBodyComponent, // rigid body should be here due to if we spawn entity we want to check if it has any collider then we add rigidbody on it
 		ScriptComponent, TextComponent,PlayerStartComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent, AudioListenerComponent,
-		WaterComponent, BuoyancyComponent, TerrainComponent>;
+		WaterComponent, BuoyancyComponent, TerrainComponent, WorldHUDComponent>;
 	
 
 	using LightComponnet = ComponentGroup<SkyLightComponent, DirectionalLightComponent, PointLightComponent, SpotLightComponent>;

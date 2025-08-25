@@ -34,10 +34,12 @@ namespace Proof {
     };
     Application* CreateApplication(int argc, char** argv) {
         std::string_view projectPath = "../Proof-Editor/Proof/Proof.ProofProject";
-        //projectPath = "Driftwood/Driftwood.ProofProject";
+        projectPath = "Driftwood/Driftwood.ProofProject";
         //projectPath = "PacMan3D/PacMan3D.ProofProject";
-        projectPath = "../Proof-Editor/FlappyBird/FlappyBird.ProofProject";
+        //projectPath = "../Proof-Editor/FlappyBird/FlappyBird.ProofProject";
        // projectPath = "../Proof-Editor/PacMan/PacMan.ProofProject";
+        //projectPath = "../Proof-Editor/OrbitBreak/OrbitBreak.ProofProject";
+
         if (argc > 1)
             projectPath = argv[1];
 

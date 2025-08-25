@@ -1,0 +1,45 @@
+AssetType: UIPanel
+ID: 906094230909434426
+VariableRegistry:
+  VariableRegistryID: 9012242798001869154
+  Variables:
+    - Name: Health
+      Type: Float
+      UUID: 13737011022023473833
+      Data: 100
+UIElements:
+  - UIElement: 8345808350609036517
+    UICoreComponent:
+      ElementID: 8345808350609036517
+      Name: ProgressBar
+      UIElementType: ProgressBar
+      Position: [0.600000024, -3]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      ParentHandle: 17105620133737296177
+      Children: []
+    UIProggresBarComponent:
+      Proggress:
+        Value: 100
+        BindedVariableID: 13737011022023473833
+      FillColor: [1, 0, 0, 1]
+      BackgroundColor: [1, 1, 1, 1]
+  - UIElement: 17105620133737296177
+    UICoreComponent:
+      ElementID: 17105620133737296177
+      Name: HorizontalBox
+      UIElementType: HorizontalBox
+      Position: [0.600000024, -3]
+      Rotation: [0, 0]
+      Size: [118.25, 23]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      ParentHandle: 0
+      Children: [8345808350609036517]
+    UIHorizontalBoxComponent:
+      Spacing: 10
+      DrawBorders: false
+      BorderColor: [1, 1, 1, 1]
+      BorderThickness: 1

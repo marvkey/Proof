@@ -1,0 +1,38 @@
+AssetType: Prefab
+ID: 12885918439602832423
+EntityOwner: 5032291947280691950
+Entities:
+  - Entity: 5032291947280691950
+    TagComponent:
+      Tag: SpeedBoost
+      tags: [SpeedBoost]
+    TransformComponent:
+      Location: [8.82903004, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 1826158668765589707
+      Visible: true
+      MaterialTable:
+        - Material: ""
+          AssetID: 1728070389824333785
+          Index: 0
+    BoxColliderComponent:
+      IsTrigger: true
+      Center: [0, 0, 0]
+      Size: [1, 1, 1]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: false
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete

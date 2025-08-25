@@ -1,0 +1,393 @@
+World:
+  ID: 1717487148639046157
+  Entities:
+    - Entity: 14357762429020912442
+      TagComponent:
+        Tag: UFO
+        tags: []
+      TransformComponent:
+        Location: [-12.7143211, 0.048276186, -1.49011612e-08]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 7103400457226319647
+        Visible: true
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1.79999995, 0.699999988, 1.60000002]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 17702008563551126365
+      TagComponent:
+        Tag: SateliteDish
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 13737475672290113025
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 17261709044131531470
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0.699999988, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 15001006580714848152
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [1.39626336, 0.17453292, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+        CastShadow: true
+        ShadowStrength: 0.5
+        CastSoftShadow: true
+        ShadowSoftness: 0.5
+    - Entity: 16665630639100284232
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.0174532924, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 9102775229780937306
+      TagComponent:
+        Tag: Cow
+        tags: []
+      TransformComponent:
+        Location: [2.88076162, 0.547999978, -0.0126789808]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 2970425636296847577
+        Visible: true
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, -0.100000001]
+        Size: [1.10000002, 1, 2.5]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 3
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 11191167651660260333
+      TagComponent:
+        Tag: PowerUps
+        tags: []
+      TransformComponent:
+        Location: [4.67138481, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 8596804362759316911
+        Visible: true
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 6647586201971414641
+      TagComponent:
+        Tag: Meteiorite
+        tags: []
+      TransformComponent:
+        Location: [-3.62797356, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 3499955483175828245
+        Visible: true
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: false
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 16516292092196669675
+      TagComponent:
+        Tag: Rock
+        tags: []
+      TransformComponent:
+        Location: [-5.43982697, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 9570717932808628361
+        Visible: true
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 1260484115939198833
+      TagComponent:
+        Tag: Shield
+        tags: []
+      TransformComponent:
+        Location: [6.72639227, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 11974798769359360218
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 7157609265446026111
+            Index: 1
+      SphereColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Radius: 0.5
+        PhysicsMaterialPointerID: 0
+    - Entity: 13920962328130921571
+      TagComponent:
+        Tag: SpeedBoost
+        tags: []
+      TransformComponent:
+        Location: [8.82903004, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 1826158668765589707
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 1728070389824333785
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: false
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 12646604382920001247
+      TagComponent:
+        Tag: ShieldHex
+        tags: []
+      TransformComponent:
+        Location: [11.0191097, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 11362598227502354197
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 8630246235739269922
+            Index: 0
+          - Material: ""
+            AssetID: 8630246235739269922
+            Index: 1
+    - Entity: 17917701118474829297
+      TagComponent:
+        Tag: Lazer
+        tags: []
+      TransformComponent:
+        Location: [-9.16451168, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 7427722873551396383
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 17930824706056415433
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 6721057470710515470
+      TagComponent:
+        Tag: Empty Entity
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      WorldHUDComponent:
+        UITable:
+          - Layer: Menu
+            Visible: true
+            Panels:
+              []
+          - Layer: Modal
+            Visible: true
+            Panels:
+              []
+          - Layer: Content
+            Visible: true
+            Panels:
+              []
+          - Layer: HUD
+            Visible: true
+            Panels:
+              - PanelID: 906094230909434426
+                Visible: true
+                VariableRegistry:
+                  VariableRegistryID: 9012242798001869154
+                  Variables:
+                    - Name: Health
+                      Type: Float
+                      UUID: 13737011022023473833
+                      Data: 100
+    - Entity: 4763461932721132478
+      TagComponent:
+        Tag: WarningSign
+        tags: []
+      TransformComponent:
+        Location: [-17.7984219, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 3466576992119307829
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 3956802775359540082
+            Index: 0

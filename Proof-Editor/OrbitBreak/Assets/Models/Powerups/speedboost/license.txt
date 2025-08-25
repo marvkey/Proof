@@ -1,0 +1,11 @@
+Model Information:
+* title:	Speed Power
+* source:	https://sketchfab.com/3d-models/speed-power-9d6f72e9cba6458d8b7efce17828e3ae
+* author:	tismusolezzo (https://sketchfab.com/tismusolezzo)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Speed Power" (https://sketchfab.com/3d-models/speed-power-9d6f72e9cba6458d8b7efce17828e3ae) by tismusolezzo (https://sketchfab.com/tismusolezzo) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
