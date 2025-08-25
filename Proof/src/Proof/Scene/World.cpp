@@ -1143,6 +1143,8 @@ namespace Proof
 #if 1
 		{
 			PF_PROFILE_FUNC("World::OnUpdate - Audio");
+
+			AudioEngine::OnUpdate(DeltaTime);
 			{
 				PF_PROFILE_FUNC("World::OnUpdate - AudioListener");
 				//m_Camera
@@ -1194,10 +1196,10 @@ namespace Proof
 
 
 			{
+				AudioEngine::AddNewSounds();
 				PF_PROFILE_FUNC("World::OnUpdate - Audio");
 				auto view = m_Registry.view<AudioComponent>();
 
-				AudioEngine::AddNewSounds();
 				for (auto e : view)
 				{
 

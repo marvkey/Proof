@@ -424,6 +424,20 @@ namespace Proof {
 			out << YAML::Key << "EmitterPrevPosition" << YAML::Value << init.EmitterPrevPosition;
 			out << YAML::EndMap; // initial state
 
+			const auto& bursts = emitter->Bursts; // or emitter->GetBursts()
+			out << YAML::Key << "Bursts" << YAML::Value << YAML::BeginSeq;
+			for (const auto& b : bursts)
+			{
+				out << YAML::BeginMap;
+				out << YAML::Key << "StartTime" << YAML::Value << b.StartTime;
+				out << YAML::Key << "Count" << YAML::Value << b.Count;
+				out << YAML::Key << "Cycles" << YAML::Value << b.Cycles;
+				out << YAML::Key << "Interval" << YAML::Value << b.Interval;
+				out << YAML::Key << "Probability" << YAML::Value << b.Probability;
+				out << YAML::EndMap;
+			}
+			out << YAML::EndSeq;
+
 			// Serialize Emitter Settings
 			const auto& settings = emitter->ParticleEmitterSettings;
 
@@ -523,6 +537,25 @@ namespace Proof {
 				init.EmitterPosition = node["EmitterPosition"].as<glm::vec3>(init.EmitterPosition);
 				init.FadeOutSpeed = node["FadeOutSpeed"].as<float>(init.FadeOutSpeed);
 				init.EmitterPrevPosition = node["EmitterPrevPosition"].as<glm::vec3>(init.EmitterPrevPosition);
+			}
+
+			// Bursts
+			if (auto burstsNode = emitterNode["Bursts"])
+			{
+				emitter->Bursts.clear();
+				if (burstsNode.IsSequence())
+				{
+					for (const auto& n : burstsNode)
+					{
+						ParticleBurst b{};
+						b.StartTime = n["StartTime"] ? n["StartTime"].as<float>() : 0.0f;
+						b.Count = n["Count"] ? n["Count"].as<uint32_t>() : 50;
+						b.Cycles = n["Cycles"] ? n["Cycles"].as<uint32_t>() : b.Cycles;
+						b.Interval = n["Interval"] ? n["Interval"].as<float>() : b.Interval;
+						b.Probability = n["Probability"] ? n["Probability"].as<float>() : b.Probability;
+						emitter->Bursts.push_back(b);
+					}
+				}
 			}
 
 			// Emitter Settings

@@ -79,6 +79,7 @@ namespace Proof
 		}
 		PF_CORE_ASSERT(result == MA_SUCCESS);
 		return result == MA_SUCCESS;
+
 	}
 	bool Sound::Stop()
 	{
@@ -120,7 +121,6 @@ namespace Proof
 	}
 	bool Sound::Pause()
 	{
-
 		bool result = true;
 
 		switch (m_State)
@@ -214,16 +214,20 @@ namespace Proof
 
 	void Sound::UpdateDataSource(const SoundConfiguration& config)
 	{
-		
-
 		if (m_Config.Aduio != config.Aduio )
 		{
 			if (m_Initialized)
 				Release();
 			ma_result result;
-			std::filesystem::path path = config.Aduio->GetPath();
+
+			AssetInfo info = AssetManager::GetAssetInfo(config.Aduio->GetID());
+			std::filesystem::path path = AssetManager::GetAssetFileSystemPath(info.Path);
+
 			//PF_ENGINE_INFO("{}", path.string());
-			result = ma_sound_init_from_file(&AudioEngine::GetEngine(), path.string().c_str(), 0, NULL, NULL, &m_Sound);
+			
+			bool streaming = false;
+			ma_uint32 flags = MA_SOUND_FLAG_DECODE | MA_SOUND_FLAG_NO_SPATIALIZATION | (streaming ? MA_SOUND_FLAG_STREAM : 0);
+			result = ma_sound_init_from_file(&AudioEngine::GetEngine(), path.string().c_str(), flags, NULL, NULL, &m_Sound);
 			PF_CORE_ASSERT(result == MA_SUCCESS, "Failed to load sound from filepath");
 
 
@@ -264,7 +268,6 @@ namespace Proof
 		ma_sound_set_doppler_factor(&m_Sound, config.DopplerFactor);
 
 		ma_sound_set_rolloff(&m_Sound, config.Rolloff);
-
 
 	}
 	float Sound::GetPlaybackPercentage()

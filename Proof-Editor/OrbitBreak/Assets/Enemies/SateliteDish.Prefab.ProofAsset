@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 1349368886052899675
-EntityOwner: 4693645535962690167
+EntityOwner: 17653888882390294274
 Entities:
-  - Entity: 4693645535962690167
+  - Entity: 17653888882390294274
     TagComponent:
       Tag: SateliteDish
       tags: [Enemy]

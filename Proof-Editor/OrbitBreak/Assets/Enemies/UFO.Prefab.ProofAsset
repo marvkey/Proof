@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 7375823681748515890
-EntityOwner: 11954157485166449632
+EntityOwner: 16513358626238956317
 Entities:
-  - Entity: 11954157485166449632
+  - Entity: 16513358626238956317
     TagComponent:
       Tag: UFO
       tags: [Enemy]

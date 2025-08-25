@@ -1212,6 +1212,7 @@ namespace Proof
 			AddComponentGui<ParticleSystemComponent>(entity, "Particle System");
 
 			AddComponentGui<AudioComponent>(entity, "Audio");
+			AddComponentGui<AudioListenerComponent>(entity, "AudioListener");
 			AddComponentGui<WaterComponent>(entity, "Water");
 			AddComponentGui<BuoyancyComponent>(entity, "Buoyancy");
 			ImGui::EndPopup();
@@ -2445,6 +2446,15 @@ namespace Proof
 					UI::AttributeSlider("RollOff", audio.Rolloff, 0, 1);
 				}
 
+				UI::EndPropertyGrid();
+			});
+
+		DrawComponents<AudioListenerComponent>("AudioListner", entity, [](AudioListenerComponent& audio)
+			{
+				UI::BeginPropertyGrid();
+
+				UI::AttributeBool("Active", audio.Active);
+				UI::AttributeDrag("ConeOuterGain", audio.ConeOuterGain, 0.25f);
 				UI::EndPropertyGrid();
 			});
 	}

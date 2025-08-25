@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 4663055247541764842
-EntityOwner: 3864150139344649448
+EntityOwner: 8155809446702374557
 Entities:
-  - Entity: 3864150139344649448
+  - Entity: 8155809446702374557
     TagComponent:
       Tag: ShieldHex
       tags: [Shield]

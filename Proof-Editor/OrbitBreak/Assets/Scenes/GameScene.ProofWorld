@@ -19,6 +19,38 @@ World:
         ShadowStrength: 0.5
         CastSoftShadow: true
         ShadowSoftness: 0.5
+    - Entity: 2141683991883366455
+      TagComponent:
+        Tag: SpawnLazerPos
+        tags: []
+      TransformComponent:
+        Location: [0, 1.12801158, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 1530953258790621239
+        Children: []
+    - Entity: 5723336504877931583
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.185004905, 0.0174532924]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
     - Entity: 1088938535286390309
       TagComponent:
         Tag: SpawnManager
@@ -63,38 +95,6 @@ World:
                   - 4054704403660622408
                   - 4663055247541764842
                   - 12885918439602832423
-    - Entity: 5723336504877931583
-      TagComponent:
-        Tag: Sky Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0.0349065848, 0.185004905, 0.0174532924]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      SkyLightComponent:
-        TintColor: [1, 1, 1]
-        SkyBoxLod: 0
-        MapRotation: 0
-        Intensity: 1
-        EnvironmentState: PreethamSky
-        TextureDataImage: 0
-        HosekWilkieTurbidity: 4
-        HosekWilkieGroundReflectance: 0.100000001
-        PreethamTurbidity: 4
-    - Entity: 2141683991883366455
-      TagComponent:
-        Tag: SpawnLazerPos
-        tags: []
-      TransformComponent:
-        Location: [0, 1.12801158, 0]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 1530953258790621239
-        Children: []
     - Entity: 1530953258790621239
       TagComponent:
         Tag: Player
@@ -162,6 +162,27 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 9873446959168710912
+      TagComponent:
+        Tag: ChildShieldHex
+        tags: [Shield]
+      TransformComponent:
+        Location: [-6.65187194e-09, 2.38418579e-07, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 1530953258790621239
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 11362598227502354197
+        Visible: false
+        MaterialTable:
+          - Material: ""
+            AssetID: 8630246235739269922
+            Index: 0
+          - Material: ""
+            AssetID: 8630246235739269922
+            Index: 1
     - Entity: 3586159779000038146
       TagComponent:
         Tag: CameraAndScenmanager
@@ -218,24 +239,24 @@ World:
                       Type: Float
                       UUID: 13737011022023473833
                       Data: 100
-    - Entity: 9873446959168710912
+    - Entity: 14951433101629169201
       TagComponent:
-        Tag: ChildShieldHex
-        tags: [Shield]
+        Tag: Empty Entity
+        tags: []
       TransformComponent:
-        Location: [-6.65187194e-09, 2.38418579e-07, 0]
-        Rotation: [0, -0, 0]
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
-        ParentHandle: 1530953258790621239
+        ParentHandle: 0
         Children: []
-      MeshComponent:
-        MeshAssetPointerID: 11362598227502354197
-        Visible: false
-        MaterialTable:
-          - Material: ""
-            AssetID: 8630246235739269922
-            Index: 0
-          - Material: ""
-            AssetID: 8630246235739269922
-            Index: 1
+      AudioComponent:
+        VolumeMultiplier: 0.527999997
+        PitchMultiplier: 1
+        Looping: false
+        PlayOnAwake: true
+        MasterReverbSend: 0
+        LowPassFilter: 1
+        HighPassFilter: 0
+        SpatializationEnabled: false
+        AudioAsset: 16410191482603395686

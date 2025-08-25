@@ -29,6 +29,9 @@ Assets:
   - Asset: 906094230909434426
     Type: UIPanel
     Path: New UI.UIPanel.ProofAsset
+  - Asset: 5255558927847597215
+    Type: Audio
+    Path: Sounds\roblox-death-sound_1.mp3
   - Asset: 10132725407472204374
     Type: MeshSourceFile
     Path: Models\Cow\scene.gltf

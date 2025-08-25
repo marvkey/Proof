@@ -22,6 +22,7 @@
 #include "Proof/Animation/AnimationController.h"
 #include "Proof/Renderer/ParticleSystem/ParticleSystem.h"
 #include "../../EditorResources.h"
+#include "Proof/Audio/AudioEngine.h"""
 
 #include "../ApplicationSettings.h"
 #include "Proof/ImGui/Editors/AssetEditors/AssetEditor.h"
@@ -1023,6 +1024,10 @@ namespace Proof
 					}
 					else
 					{
+						if (assetMetadata.Type == AssetType::Audio)
+						{
+							AudioEngine::PlaySoundByPath(AssetManager::GetAssetFileSystemPath(assetMetadata.Path));
+						}
 						AssetEditorPanel::OpenEditor(AssetManager::GetAsset<Asset>(assetMetadata.ID));
 					}
 				}

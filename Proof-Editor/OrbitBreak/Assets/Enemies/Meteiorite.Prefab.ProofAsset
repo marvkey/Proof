@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 4686870951544176460
-EntityOwner: 4156395273281078043
+EntityOwner: 3251559015836989679
 Entities:
-  - Entity: 4156395273281078043
+  - Entity: 3251559015836989679
     TagComponent:
       Tag: Meteiorite
       tags: [Enemy]

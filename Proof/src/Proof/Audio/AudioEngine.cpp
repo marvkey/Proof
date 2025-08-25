@@ -46,6 +46,11 @@ namespace Proof
     {
         ma_engine_play_sound(&s_Data->Engine, path.string().c_str(), NULL);
     }
+    void AudioEngine::PlaySoundByPath(Count<Sound> sound)
+    {
+		AssetInfo info = AssetManager::GetAssetInfo(sound->m_Config.Aduio);
+        PlaySoundByPath(AssetManager::GetAssetFileSystemPath(info.Path));
+    }
     ma_engine& AudioEngine::GetEngine() 
     {
         return s_Data->Engine;
@@ -85,7 +90,7 @@ namespace Proof
         }
         s_Data->AudioListeners[0] = Count<AudioListenerActor>::Create();
         s_Data->AudioListeners[0]->m_IndexPosition = 0;
-
+      
         s_Data->AudioListenersCount++;
     }
     void AudioEngine::OnUpdate(float deltaTime)
@@ -209,6 +214,8 @@ namespace Proof
         for (auto e : view)
         {
             Entity entity{ e,s_Data->WorldContext.Get() };
+            if(s_Data->WorldSounds.contains(entity.GetUUID()))
+                continue;
 
             AddAudio(entity)->m_UUID = entity.GetUUID();
         }
