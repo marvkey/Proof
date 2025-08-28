@@ -1,0 +1,74 @@
+AssetType: UIPanel
+ID: 7310086667196599228
+VariableRegistry:
+  VariableRegistryID: 1105244220037462715
+  Variables:
+    - Name: Icon
+      Type: AssetKey
+      UUID: 3490074956121475724
+      Data: 4935365910962578932
+      AssetType: Texture
+    - Name: Time
+      Type: Float
+      UUID: 14794176646867708127
+      Data: 1
+UIElements:
+  - UIElement: 8017431845796354098
+    UICoreComponent:
+      ElementID: 8017431845796354098
+      Name: HorizontalBox
+      UIElementType: HorizontalBox
+      Position: [0.600000024, 0.25]
+      Rotation: [0, 0]
+      Size: [240.75, 216.5]
+      AnchorMinimum: [0, 1]
+      AnchorMaximum: [0, 1]
+      ParentHandle: 0
+      Children: [252603997310117199]
+    UIHorizontalBoxComponent:
+      Spacing: 0.25
+      DrawBorders: false
+      BorderColor: [1, 1, 1, 1]
+      BorderThickness: 1
+  - UIElement: 6258330987858771653
+    UICoreComponent:
+      ElementID: 6258330987858771653
+      Name: Image
+      UIElementType: Image
+      Position: [28, 54]
+      Rotation: [0, 0]
+      Size: [60.75, 63.5]
+      AnchorMinimum: [0, 1]
+      AnchorMaximum: [0, 1]
+      ParentHandle: 0
+      Children: []
+    UIImageComponent:
+      TintColor:
+        Value: [1, 1, 1, 1]
+        BindedVariableID: 0
+      Texture:
+        AssetID: 4935365910962578932
+        AssetType: Texture
+        BindedVariableID: 3490074956121475724
+  - UIElement: 252603997310117199
+    UICoreComponent:
+      ElementID: 252603997310117199
+      Name: ProgressBar
+      UIElementType: ProgressBar
+      Position: [0.600000024, 0.25]
+      Rotation: [0, 0]
+      Size: [0.75, 0.150000006]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      ParentHandle: 8017431845796354098
+      Children: []
+    UIProggresBarComponent:
+      Proggress:
+        Value: 1
+        BindedVariableID: 14794176646867708127
+      FillColor:
+        Value: [0, 0.133333683, 1, 1]
+        BindedVariableID: 0
+      BackgroundColor:
+        Value: [0.281481504, 0.744526982, 1, 1]
+        BindedVariableID: 0

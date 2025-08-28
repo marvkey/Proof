@@ -35,6 +35,10 @@ namespace OrbitBreak
             get { return m_State; }
         }
 
+        public float PercentLeft
+        {
+            get { return m_DurationTimer / StartDuration; }
+        }
 
 
         public float SpeedScale = 2.0f;
@@ -53,7 +57,18 @@ namespace OrbitBreak
         // OnUpdate is called once every frame while this script is active in the world
         void OnUpdate(float deltaTime)
         {
-          
+            if (m_State == State.None)
+                return;
+
+            m_DurationTimer -= deltaTime;
+
+            if (m_DurationTimer <= 0.0f)
+            {
+                m_State = State.None;
+                m_DurationTimer = 0.0f;
+
+                Log.Info("Power-up expired. Resetting to None.");
+            }
         }
 
         // OnPhysicsUpdate is called at a fixed timestep for physics-related logic

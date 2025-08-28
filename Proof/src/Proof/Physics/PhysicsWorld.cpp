@@ -117,10 +117,9 @@ namespace Proof {
 	{
 	}
 	bool lastAdvance = true;
-	void PhysicsWorld::Simulate(float deltaTime)
+	void PhysicsWorld::Simulate(float dt)
 	{
 		PF_PROFILE_FUNC();
-
 		if (m_World->IsPlaying() && lastAdvance)
 		{
 			for (auto& [Id, actor] : m_Actors)
@@ -129,7 +128,7 @@ namespace Proof {
 
 	
 
-		bool advance = Advance(deltaTime);
+		bool advance = Advance(dt);
 
 		lastAdvance = advance;
 		if (advance)
@@ -314,8 +313,8 @@ namespace Proof {
 			}
 		};
 
-		//SubStepStrategy(deltaTime);
-
+		SubStepStrategy(deltaTime);
+#if 0
 		if (m_Accumulator > m_SubStepSize)
 			m_Accumulator = 0.0f;
 
@@ -331,7 +330,7 @@ namespace Proof {
 
 
 		}
-
+#endif
 
 		for (uint32_t i = 0; i < m_NumSubSteps; i++)
 		{

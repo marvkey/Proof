@@ -1033,12 +1033,16 @@ namespace Proof {
 					break;
 
 #endif
-				auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(environment->m_EnvironmentTexture.Image).Path);
-				//auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(AssetManager::GetAsset<Texture2D>(environment->m_EnvironmentTexture.Image)->GetPath()).Path);
-				auto [irradiance, prefilter] = Renderer::CreateEnvironmentMap(path);
-				environment->m_PrefilterMap = prefilter;
-				environment->m_IrradianceMap = irradiance;
-				AssetManager::CreateRuntimeAsset(environment,fmt::format("environment {}",FileSystem::GetFileName(path)));
+				if (AssetManager::HasAsset(environment->m_EnvironmentTexture.Image))
+				{
+
+					auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(environment->m_EnvironmentTexture.Image).Path);
+					//auto path = AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(AssetManager::GetAsset<Texture2D>(environment->m_EnvironmentTexture.Image)->GetPath()).Path);
+					auto [irradiance, prefilter] = Renderer::CreateEnvironmentMap(path);
+					environment->m_PrefilterMap = prefilter;
+					environment->m_IrradianceMap = irradiance;
+					AssetManager::CreateRuntimeAsset(environment, fmt::format("environment {}", FileSystem::GetFileName(path)));
+				}
 			}
 			break;
 			default:

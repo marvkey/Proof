@@ -136,8 +136,8 @@ World:
         CollisionDetection: Discrete
     - Entity: 11191167651660260333
       TagComponent:
-        Tag: PowerUps
-        tags: []
+        Tag: Health
+        tags: [Health]
       TransformComponent:
         Location: [4.67138481, 0, 0]
         Rotation: [0, 0, 0]
@@ -149,7 +149,7 @@ World:
         MeshAssetPointerID: 8596804362759316911
         Visible: true
       BoxColliderComponent:
-        IsTrigger: false
+        IsTrigger: true
         Center: [0, 0, 0]
         Size: [1, 1, 1]
         PhysicsMaterialPointerID: 0
@@ -158,12 +158,35 @@ World:
         LinearDrag: 0.00999999978
         PhysicsLayerID: 0
         AngularDrag: 0.0500000007
-        Gravity: true
+        Gravity: false
         Type: Dynamic
         FreezeLocation: [false, false, false]
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 16136226826198028531
+      TagComponent:
+        Tag: Fuel
+        tags: []
+      TransformComponent:
+        Location: [0, 0.706438184, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 9382069011108320965
+        Children: []
+      ParticleSystemComponent:
+        AssetID: 18438284058195418736
+      AudioComponent:
+        VolumeMultiplier: 0.349999994
+        PitchMultiplier: 1
+        Looping: true
+        PlayOnAwake: true
+        MasterReverbSend: 0
+        LowPassFilter: 1
+        HighPassFilter: 0
+        SpatializationEnabled: false
+        AudioAsset: 14599433401933040682
     - Entity: 6647586201971414641
       TagComponent:
         Tag: Meteiorite
@@ -373,6 +396,10 @@ World:
                       Type: Float
                       UUID: 13737011022023473833
                       Data: 100
+                    - Name: Score
+                      Type: String
+                      UUID: 4123078492241589822
+                      Data: "10\n\n"
     - Entity: 4763461932721132478
       TagComponent:
         Tag: WarningSign
@@ -391,3 +418,37 @@ World:
           - Material: ""
             AssetID: 3956802775359540082
             Index: 0
+    - Entity: 9382069011108320965
+      TagComponent:
+        Tag: EnemyRocket
+        tags: [Enemy, EnemyRocket]
+      TransformComponent:
+        Location: [-20.6030083, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [16136226826198028531]
+      MeshComponent:
+        MeshAssetPointerID: 13153016259216677068
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 270703545459700685
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete

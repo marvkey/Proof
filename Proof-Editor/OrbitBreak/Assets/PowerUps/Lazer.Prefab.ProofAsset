@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 4054704403660622408
-EntityOwner: 95401326877963622
+EntityOwner: 8130000767916668386
 Entities:
-  - Entity: 95401326877963622
+  - Entity: 8130000767916668386
     TagComponent:
       Tag: Lazer
       tags: [Lazer]

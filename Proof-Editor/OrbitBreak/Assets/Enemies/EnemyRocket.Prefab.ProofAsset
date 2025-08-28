@@ -1,0 +1,61 @@
+AssetType: Prefab
+ID: 17266496585004732240
+EntityOwner: 6468456462943508997
+Entities:
+  - Entity: 6468456462943508997
+    TagComponent:
+      Tag: EnemyRocket
+      tags: [Enemy, EnemyRocket]
+    TransformComponent:
+      Location: [-20.6030083, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: [32141679622707396]
+    MeshComponent:
+      MeshAssetPointerID: 13153016259216677068
+      Visible: true
+      MaterialTable:
+        - Material: ""
+          AssetID: 270703545459700685
+          Index: 0
+    BoxColliderComponent:
+      IsTrigger: true
+      Center: [0, 0, 0]
+      Size: [1, 1, 1]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 32141679622707396
+    TagComponent:
+      Tag: Fuel
+      tags: []
+    TransformComponent:
+      Location: [0, 0.706438184, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 6468456462943508997
+      Children: []
+    ParticleSystemComponent:
+      AssetID: 18438284058195418736
+    AudioComponent:
+      VolumeMultiplier: 0.349999994
+      PitchMultiplier: 1
+      Looping: false
+      PlayOnAwake: true
+      MasterReverbSend: 0
+      LowPassFilter: 1
+      HighPassFilter: 0
+      SpatializationEnabled: false
+      AudioAsset: 14599433401933040682

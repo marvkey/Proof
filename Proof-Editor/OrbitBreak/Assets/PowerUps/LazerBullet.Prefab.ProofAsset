@@ -1,22 +1,29 @@
 AssetType: Prefab
-ID: 10446895897543064672
-EntityOwner: 8780256973291154921
+ID: 2649271813571317641
+EntityOwner: 13232477849549494055
 Entities:
-  - Entity: 8780256973291154921
+  - Entity: 13232477849549494055
     TagComponent:
-      Tag: Lazer Bullet
+      Tag: LazerBullet
       tags: []
     TransformComponent:
-      Location: [-0.400000006, -1.73083496, -5.67654467]
+      Location: [0, 0, 0]
       Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
+      Scale: [0.5, 1, 1]
     HierarchyComponent:
       ParentHandle: 0
-      Children: [5671107502210292714]
+      Children: [2377537415912690131]
+    ScriptComponent:
+      Scripts:
+        - Script: OrbitBreak.LazerBullet
+          ScriptClassName: OrbitBreak.LazerBullet
+          ScriptName: OrbitBreak.LazerBullet
+          Fields:
+            []
     BoxColliderComponent:
-      IsTrigger: true
+      IsTrigger: false
       Center: [0, 0, 0]
-      Size: [0.100000001, 0.5, 0.100000001]
+      Size: [0.25, 0.200000003, 0.25]
       PhysicsMaterialPointerID: 0
     RigidBodyComponent:
       Mass: 1
@@ -28,20 +35,20 @@ Entities:
       FreezeLocation: [false, false, false]
       FreezeRotation: [false, false, false]
       Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 5671107502210292714
+      CollisionDetection: ContinuousSpeculative
+  - Entity: 2377537415912690131
     TagComponent:
-      Tag: Empty Entity
+      Tag: LazerBullet
       tags: []
     TransformComponent:
       Location: [0, 0, 0]
       Rotation: [0, -0, 0]
-      Scale: [0.100000001, 0.400000006, 0.100000001]
+      Scale: [0.25, 0.200000003, 0.25]
     HierarchyComponent:
-      ParentHandle: 8780256973291154921
+      ParentHandle: 13232477849549494055
       Children: []
     MeshComponent:
-      MeshAssetPointerID: 50
+      MeshAssetPointerID: 54
       Visible: true
       MaterialTable:
         - Material: ""

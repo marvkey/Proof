@@ -361,6 +361,7 @@ namespace Proof
                 for (auto& [fieldName, field] : classMetaData.Fields)
                 {
                     auto field = classMetaData.Fields.at(fieldName);
+
                     // we do a check because we dont want to have to create script fields
                     // for the object
                     // since we are in runtime save as much memory as possible

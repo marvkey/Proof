@@ -2,7 +2,7 @@ Project:
   Name: OrbitBreak
   AssetDirectory: Assets
   AssetManager: Assets/AssetManager.ProofAssetManager
-  StartWorld: 0
+  StartWorld: 10632697519985270255
   ScriptModuleDirectory: Binaries/ScriptApp
   OnCloseStartWorldEditLastOpen: true
   StartWorldEdit: 10632697519985270255

@@ -21,6 +21,7 @@ namespace Proof
 		friend class AssetSerializer;
 		friend class AssetManager;
 		friend class SceneSerializer;
+		friend class World;
 	};
 }
 

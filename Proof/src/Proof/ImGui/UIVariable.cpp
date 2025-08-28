@@ -3,6 +3,7 @@
 #include "UI.h"
 #include "UiUtilities.h"
 #include "UIWidgets.h"
+#include "glm/glm.hpp"
 #include "UIHandlers.h"
 
 namespace Proof::UI
@@ -384,6 +385,7 @@ namespace Proof::UI
 				val.UnBind();
 			}
 		}
+		else 
 		{
 			T currentvalue = val.GetValue<T>();
 			if (UI::AttributeDrag(label, currentvalue, speed))
@@ -430,6 +432,88 @@ namespace Proof::UI
 	bool BindableVariableAttributeDrag(const std::string& label, BindableVariableVec4& val, Count<VariableRegistry> registry, float speed)
 	{
 		return BindableVariableAttributeDrag(label, val, registry, speed);
+	}
+	bool BindableVariableAttributeColor(const std::string& label, BindableVariableVec3& val, Count<VariableRegistry> registry)
+	{
+		bool modified = false;
+		if (val.IsSet())
+		{
+			UI::AttributeTextBar(label, fmt::format("Bound to: {}", registry->GetVariableAsName(val.GetVariableID())));
+			if (UI::AttributeButton("##Unbind", "Unbind"))
+			{
+				modified = true;
+				val.UnBind();
+			}
+		}
+		else
+		{
+			glm::vec3 currentvalue = val.GetValue();
+
+
+			if (UI::AttributeColor(label, currentvalue))
+			{
+				modified = true;
+				val.SetValue(currentvalue);
+			}
+			std::string searchValidvalidVariablesID = UI::GenerateLabelID("Valid Variables");
+			{
+				auto uuid = val.GetVariableID();
+				if (UI::VariablesSearchUp(searchValidvalidVariablesID.c_str(), registry, val.GetVariableType(), uuid))
+				{
+					val.SetUseAsVariable(true, registry->GetVariableSetStorage());
+					val.SetVariable(uuid);
+					modified = true;
+				}
+
+				if (ImGui::Button(GenerateLabelID("Bind")))
+				{
+					ImGui::OpenPopup(searchValidvalidVariablesID.c_str());
+				}
+
+			}
+		}
+		return modified;
+	}
+	bool BindableVariableAttributeColor(const std::string& label, BindableVariableVec4& val, Count<VariableRegistry> registry)
+	{
+		bool modified = false;
+		if (val.IsSet())
+		{
+			UI::AttributeTextBar(label, fmt::format("Bound to: {}", registry->GetVariableAsName(val.GetVariableID())));
+			if (UI::AttributeButton("##Unbind", "Unbind"))
+			{
+				modified = true;
+				val.UnBind();
+			}
+		}
+		else
+		{
+			glm::vec4 currentvalue = val.GetValue();
+
+
+			if (UI::AttributeColor(label, currentvalue))
+			{
+				modified = true;
+				val.SetValue(currentvalue);
+			}
+			std::string searchValidvalidVariablesID = UI::GenerateLabelID("Valid Variables");
+			{
+				auto uuid = val.GetVariableID();
+				if (UI::VariablesSearchUp(searchValidvalidVariablesID.c_str(), registry, val.GetVariableType(), uuid))
+				{
+					val.SetUseAsVariable(true, registry->GetVariableSetStorage());
+					val.SetVariable(uuid);
+					modified = true;
+				}
+
+				if (ImGui::Button(GenerateLabelID("Bind")))
+				{
+					ImGui::OpenPopup(searchValidvalidVariablesID.c_str());
+				}
+
+			}
+		}
+		return modified;
 	}
 	bool BindableVariableAttributeInputText(const std::string& label, BindableVariableString& val)
 	{

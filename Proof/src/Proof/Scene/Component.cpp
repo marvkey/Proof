@@ -273,7 +273,7 @@ namespace Proof
 	}
 
 	ScriptComponentsClassesData::ScriptComponentsClassesData(const ScriptComponentsClassesData& other)
-		: ClassName(std::move(other.ClassName)), m_Instance(other.m_Instance) 
+		: ClassName(other.ClassName), m_Instance(other.m_Instance) 
 	{
 
 	}
@@ -289,18 +289,18 @@ namespace Proof
 
 	ScriptComponentsClassesData::ScriptComponentsClassesData(std::string className,
 		ScriptGCHandle instance)
-		: ClassName(std::move(className)), m_Instance(instance) {
+		: ClassName(className), m_Instance(instance) {
 	}
 
 	ScriptComponentsClassesData::ScriptComponentsClassesData(ScriptComponentsClassesData&& o) noexcept
-		: ClassName(std::move(o.ClassName)), m_Instance(o.m_Instance) {
+		: ClassName(o.ClassName), m_Instance(o.m_Instance) {
 		//o.m_Instance = nullptr;
 	}
 
 	ScriptComponentsClassesData&
 		ScriptComponentsClassesData::operator=(ScriptComponentsClassesData&& o) noexcept {
 		if (this != &o) {
-			ClassName = std::move(o.ClassName);
+			ClassName = o.ClassName;
 			m_Instance = o.m_Instance;
 			//o.m_Instance = nullptr;
 		}

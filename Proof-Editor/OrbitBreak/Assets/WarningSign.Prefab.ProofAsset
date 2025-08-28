@@ -1,0 +1,22 @@
+AssetType: Prefab
+ID: 246287549342871468
+EntityOwner: 10234877407379999809
+Entities:
+  - Entity: 10234877407379999809
+    TagComponent:
+      Tag: WarningSign
+      tags: []
+    TransformComponent:
+      Location: [-17.7984219, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 3466576992119307829
+      Visible: true
+      MaterialTable:
+        - Material: ""
+          AssetID: 3956802775359540082
+          Index: 0

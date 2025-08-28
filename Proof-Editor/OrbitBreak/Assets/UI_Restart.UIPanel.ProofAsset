@@ -1,0 +1,67 @@
+AssetType: UIPanel
+ID: 11346672866133504406
+VariableRegistry:
+  VariableRegistryID: 11798853314524265757
+  Variables:
+    - Name: RestartTime
+      Type: String
+      UUID: 6294475832432246498
+      Data: 5
+UIElements:
+  - UIElement: 18104811125223946848
+    UICoreComponent:
+      ElementID: 18104811125223946848
+      Name: Text
+      UIElementType: Text
+      Position: [-221.25, 147.25]
+      Rotation: [0, 0]
+      Size: [117, 131.25]
+      AnchorMinimum: [0.5, 0.5]
+      AnchorMaximum: [0.5, 0.5]
+      ParentHandle: 0
+      Children: []
+    UITextComponent:
+      Text:
+        Value: GAME  OVER
+        BindedVariableID: 0
+      Color: [1, 0, 0, 1]
+      Kerning: 0
+      LineSpacing: 1
+  - UIElement: 18134151165529957002
+    UICoreComponent:
+      ElementID: 18134151165529957002
+      Name: Text_00
+      UIElementType: Text
+      Position: [-135.25, 0]
+      Rotation: [0, 0]
+      Size: [45.75, 63]
+      AnchorMinimum: [0.5, 0.5]
+      AnchorMaximum: [0.5, 0.5]
+      ParentHandle: 0
+      Children: []
+    UITextComponent:
+      Text:
+        Value: RESTARTING...
+        BindedVariableID: 0
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1
+  - UIElement: 3356399505906460141
+    UICoreComponent:
+      ElementID: 3356399505906460141
+      Name: Text_01
+      UIElementType: Text
+      Position: [86.25, 0]
+      Rotation: [0, 0]
+      Size: [63.25, 65.5]
+      AnchorMinimum: [0.5, 0.5]
+      AnchorMaximum: [0.5, 0.5]
+      ParentHandle: 0
+      Children: []
+    UITextComponent:
+      Text:
+        Value: 5
+        BindedVariableID: 6294475832432246498
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1

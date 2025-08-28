@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 3846872847249935031
-EntityOwner: 4015397065061718038
+EntityOwner: 14748517775602516910
 Entities:
-  - Entity: 4015397065061718038
+  - Entity: 14748517775602516910
     TagComponent:
       Tag: Rock
       tags: [Enemy]

@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 16461051175706760248
-EntityOwner: 10475395993431845073
+EntityOwner: 16012540932938891930
 Entities:
-  - Entity: 10475395993431845073
+  - Entity: 16012540932938891930
     TagComponent:
       Tag: Explosion
       tags: []
@@ -28,7 +28,7 @@ Entities:
     ParticleSystemComponent:
       AssetID: 6821588461860843122
     AudioComponent:
-      VolumeMultiplier: 0.0930000022
+      VolumeMultiplier: 0.699999988
       PitchMultiplier: 1
       Looping: false
       PlayOnAwake: true

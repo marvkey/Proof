@@ -17,8 +17,42 @@ namespace Proof
 		internal Entity(ulong id)
 		{
 			ID = id;
-		}
-		public readonly ulong ID;
+
+        }
+
+        // NOTE: Implemented according to Microsofts official documentation:
+        // https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/how-to-define-value-equality-for-a-type
+        public override bool Equals(object obj) => obj is Entity other && Equals(other);
+
+        // NOTE: Implemented according to Microsofts official documentation:
+        // https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/statements-expressions-operators/how-to-define-value-equality-for-a-type
+        public bool Equals(Entity other)
+        {
+            if (other is null)
+                return false;
+
+            if (ReferenceEquals(this, other))
+                return true;
+
+            return ID == other.ID;
+        }
+        public static bool IsValid(Entity entity)
+        {
+            if (entity is null)
+                return false;
+
+            return InternalCalls.World_IsEntityValid(entity.ID);
+        }
+
+        public override int GetHashCode() => (int)ID;
+
+        public static bool operator ==(Entity entityA, Entity entityB) => entityA is null ? entityB is null : entityA.Equals(entityB);
+        public static bool operator !=(Entity entityA, Entity entityB) => !(entityA == entityB);
+
+        public static implicit operator bool(Entity entity) => IsValid(entity);
+
+
+        public readonly ulong ID;
 
         public event Action<Entity> CollisionEnterEvent;
         public event Action<Entity> CollisionStayEvent;

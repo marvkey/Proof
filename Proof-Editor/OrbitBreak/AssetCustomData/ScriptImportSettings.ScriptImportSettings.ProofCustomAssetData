@@ -3,6 +3,27 @@ ScriptImportSettings:
     - Script: Proof.GameManager
       ScriptName: Proof.GameManager
       Fields:
+        - NameID: Proof.GameManager.Lazer
+          Type: Texture2D
+          Data: 0
+        - NameID: Proof.GameManager.ExplosionLazer
+          Type: Prefab
+          Data: 0
+        - NameID: Proof.GameManager.Shield
+          Type: Texture2D
+          Data: 0
+        - NameID: Proof.GameManager.RestartPanel
+          Type: UIPanel
+          Data: 0
+        - NameID: Proof.GameManager.Speed
+          Type: Texture2D
+          Data: 0
+        - NameID: Proof.GameManager.PowerupPanel
+          Type: UIPanel
+          Data: 0
+    - Script: OrbitBreak.Camera
+      ScriptName: OrbitBreak.Camera
+      Fields:
         []
     - Script: OrbitBreak.DeleteEntityScript
       ScriptName: OrbitBreak.DeleteEntityScript
@@ -14,9 +35,22 @@ ScriptImportSettings:
         - NameID: OrbitBreak.Player.Bullet
           Type: Prefab
           Data: 0
-        - NameID: OrbitBreak.Player.OnHitParticle
+        - NameID: OrbitBreak.Player.ExpolsionParticle
           Type: Prefab
           Data: 0
+        - NameID: OrbitBreak.Player.PowerUpSound
+          Type: Prefab
+          Data: 0
+        - NameID: OrbitBreak.Player.PickUpHealthSound
+          Type: Prefab
+          Data: 0
+        - NameID: OrbitBreak.Player.HurtSound
+          Type: Prefab
+          Data: 0
+    - Script: OrbitBreak.LazerBullet
+      ScriptName: OrbitBreak.LazerBullet
+      Fields:
+        []
     - Script: OrbitBreak.PowerUp
       ScriptName: OrbitBreak.PowerUp
       Fields:
@@ -24,6 +58,9 @@ ScriptImportSettings:
     - Script: OrbitBreak.SpawnManager
       ScriptName: OrbitBreak.SpawnManager
       Fields:
+        - NameID: OrbitBreak.SpawnManager.PlayerHealthItem
+          Type: Prefab
+          Data: 0
         - NameID: OrbitBreak.SpawnManager.Enemies
           Type: Prefab
           Length: 0
@@ -34,3 +71,9 @@ ScriptImportSettings:
           Length: 0
           Data:
             []
+        - NameID: OrbitBreak.SpawnManager.SpeicalEnemyRocket
+          Type: Prefab
+          Data: 0
+        - NameID: OrbitBreak.SpawnManager.WarnRocketSpawn
+          Type: Prefab
+          Data: 0

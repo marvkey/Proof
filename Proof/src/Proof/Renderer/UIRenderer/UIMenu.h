@@ -152,12 +152,12 @@ namespace Proof
 
 	struct UIImageComponent
 	{
-		glm::vec4 TintColor{ 1.0f };
+		BindableVariableVec4 TintColor = glm::vec4{ 1.0f };
 		BindableStaticAssetKey Texture = StaticAssetKey(AssetType::Texture);
 	};
 	struct UIButtonComponent
 	{
-		glm::vec4 TintColor{ 1.0f };
+		BindableVariableVec4 TintColor =  glm::vec4{ 1.0f };
 		BindableStaticAssetKey Texture = StaticAssetKey(AssetType::Texture);
 	};
 	struct UITextComponent
@@ -170,8 +170,9 @@ namespace Proof
 	struct UIProggresBarComponent
 	{
 		BindableClampedFloat<0.0f, 1.0f> Proggress = { 1.0f };
-		glm::vec4 FillColor = { 1.0f, 0.0f, 0.0f, 1.0f };
-		glm::vec4 BackgroundColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+		BindableVariableVec4 FillColor = glm::vec4{ 1.0f, 0.0f, 0.0f, 1.0f };
+		BindableVariableVec4 BackgroundColor = glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f };
 	};
 
 	struct UIPadding

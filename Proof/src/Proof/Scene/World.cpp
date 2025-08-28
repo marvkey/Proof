@@ -1700,7 +1700,7 @@ namespace Proof
 #if 1
 
 		newWorld->Name = worldToCopy->Name;
-		//newWorld->m_ID = worldToCopy->GetID();
+		newWorld->m_ID = worldToCopy->GetID();
 	
 		auto& srcSceneRegistry = worldToCopy->m_Registry;
 		auto& dstSceneRegistry = newWorld->m_Registry;

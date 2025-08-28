@@ -2,6 +2,7 @@
 using System;
 using System.Data.SqlTypes;
 using Proof;
+using System.IO;
 
 namespace OrbitBreak
 {
@@ -16,8 +17,13 @@ namespace OrbitBreak
         public Entity ChildEnityShield = null;
 		public Entity SpawBullet = null;
 		public Prefab Bullet = null;
+		public Entity Camera;
 
-		public Prefab OnHitParticle = null;
+        public Prefab ExpolsionParticle = null;
+		public Prefab PowerUpSound = null;
+		public Prefab PickUpHealthSound = null;
+		public Prefab HurtSound = null;
+
         // OnCreate is called once when the Entity that this script is attached to
         // is instantiated in the world at runtime
         void OnCreate()
@@ -27,7 +33,13 @@ namespace OrbitBreak
 
 		float speedScale = 1.0f;
 
-        PowerUp.State m_PowerUpState
+		float m_Score = 0.0f;
+
+		public float Score
+		{
+			get { return m_Score; }
+        }
+        public PowerUp.State PowerUpState
 		{
 			get 
 			{
@@ -45,20 +57,25 @@ namespace OrbitBreak
 				Console.WriteLine("Player has been defeated!");
 				World.DeleteEntity(this);
             }
+            Health = Mathf.Clamp(Health, 0.0f, 100.0f);
 
-			OnUpdatePowerUp();
+            OnUpdatePowerUp();
 
 			m_FireRateTimer += deltaTime;
-            if (Input.IsKeyClicked(KeyBoardKey.Space) ||Input.IsMouseButtonClicked(MouseButton.Button0) && m_PowerUpState == PowerUp.State.Gun)
+            if (Input.IsKeyClicked(KeyBoardKey.Space) ||Input.IsMouseButtonClicked(MouseButton.Button0) && PowerUpState == PowerUp.State.Gun)
 			{
 				if(m_FireRateTimer >= FireRate)
 				{
-                    Entity e = World.Instantiate(Bullet, SpawBullet.Transform.Location);
-                    e.GetComponent<RigidBodyComponent>().Velocity = new Vector3(0.0f, 2.0f, 0.0f);
+                    Vector3 loc = SpawBullet.Transform.WorldTransform.Location;
+                    loc.z = -5.5f;
+                    Entity e = World.Instantiate(Bullet, loc);
+                    e.GetComponent<RigidBodyComponent>().Velocity = new Vector3(0.0f, 8.0f, 0.0f);
 
 					m_FireRateTimer = 0.0f;
                 }
 			}
+
+			m_Score += deltaTime;
         }
 
 		void OnUpdatePowerUp()
@@ -101,17 +118,37 @@ namespace OrbitBreak
             {
                 GetComponent<RigidBodyComponent>().Location += Transform.Right * SideSpeed * fixedPhysicsDeltaTime * speedScale;
             }
+
+
+            if(GetComponent<RigidBodyComponent>().Location.x <= -4.372f)
+            {
+                GetComponent<RigidBodyComponent>().Location = new Vector3(-4.372f, GetComponent<RigidBodyComponent>().Location.y, GetComponent<RigidBodyComponent>().Location.z);
+            }
+
+            if (GetComponent<RigidBodyComponent>().Location.x >= 4.372f)
+            {
+                GetComponent<RigidBodyComponent>().Location = new Vector3(4.372f, GetComponent<RigidBodyComponent>().Location.y, GetComponent<RigidBodyComponent>().Location.z);
+            }
         }
 
 		
+        void SpawnSounds(Prefab sound)
+        {
+            if (sound == null)
+                return;
+
+            Entity e = World.Instantiate(sound, Transform.Location);
+            World.DeleteEntity(e, true, 2.0f);
+        }
 		void OnTriggerEnter(Entity other)
 		{
-			Log.Info("Player Trigger Enter: " + other.ID);
             if (other.GetComponent<TagComponent>().HasSubTag("SpeedBoost"))
 			{
 				Log.Info("Speed Boost Collected");
                 GetScript<PowerUp>().SetState(PowerUp.State.Speed); // shield broken
                 other.GetComponent<MeshComponent>().Visible = false;
+
+                SpawnSounds(PowerUpSound);
                 return;
 			}
 
@@ -120,6 +157,9 @@ namespace OrbitBreak
                 Log.Info("Shield Collected");
                 GetScript<PowerUp>().SetState(PowerUp.State.Shield); // shield broken
                 other.GetComponent<MeshComponent>().Visible = false;
+
+                SpawnSounds(PowerUpSound);
+
                 return;
             }
 
@@ -128,6 +168,18 @@ namespace OrbitBreak
                 Log.Info("Lazer Collected");
                 GetScript<PowerUp>().SetState(PowerUp.State.Gun); // shield broken
                 other.GetComponent<MeshComponent>().Visible = false;
+
+                SpawnSounds(PowerUpSound);
+                return;
+            }
+
+            if (other.GetComponent<TagComponent>().HasSubTag("Health"))
+            {
+                Log.Info("health Collected");
+                other.GetComponent<MeshComponent>().Visible = false;
+
+                SpawnSounds(PickUpHealthSound);
+                Health += 15;
                 return;
             }
 
@@ -137,20 +189,37 @@ namespace OrbitBreak
 
 			other.GetComponent<MeshComponent>().Visible = false;
 			
-			if(m_PowerUpState == PowerUp.State.Shield)
+			if(PowerUpState == PowerUp.State.Shield)
 			{
 				Log.Info("Shield hit");
                 GetScript<PowerUp>().SetState(PowerUp.State.None); // shield broken
             }
 			else
 			{
-				if(OnHitParticle != null)
-				{
-					Entity e = World.Instantiate(OnHitParticle, Transform.Location);
-					e.GetScript<DeleteEntityScript>().TargetEntity = this;
-                }
+
                 Log.Error("Removed ehalth");
-				Health -= 10.0f;
+				if(other.GetComponent<TagComponent>().HasSubTag("EnemyRocket"))
+				{
+                    if (ExpolsionParticle != null)
+                    {
+                        Entity e = World.Instantiate(ExpolsionParticle, Transform.Location);
+                        e.GetScript<DeleteEntityScript>().TargetEntity = this;
+
+						World.DeleteEntity(e, true, 1.0f);
+                    }
+                    Health -= 30.0f;
+
+                    if (Camera != null)
+                        Camera.GetScript<Camera>().Shake(0.5f, 0.5f);
+                }
+				else
+				{
+                    if (Camera != null)
+                        Camera.GetScript<Camera>().Shake(0.25f, 0.25f);
+
+                    SpawnSounds(HurtSound);
+                    Health -= 10.0f;
+				}
 			}
         }
     }

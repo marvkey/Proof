@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 15707547901708157460
-EntityOwner: 15384515274683406203
+EntityOwner: 531526518319973170
 Entities:
-  - Entity: 15384515274683406203
+  - Entity: 531526518319973170
     TagComponent:
       Tag: Cow
       tags: [Enemy]

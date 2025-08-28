@@ -473,6 +473,9 @@ namespace Proof
 		subpassDescription.pPreserveAttachments = nullptr;
 		subpassDescription.pResolveAttachments = nullptr;
 
+		VkRenderPassCreateInfo renderPassInfo = {};
+
+#if 1 // set to 0 in RUNTIME 
 		VkSubpassDependency dependency = {};
 		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 		dependency.dstSubpass = 0;
@@ -481,7 +484,6 @@ namespace Proof
 		dependency.srcAccessMask = 0;
 		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-		VkRenderPassCreateInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 		renderPassInfo.attachmentCount = 1;
 		renderPassInfo.pAttachments = &colorAttachmentDesc;
@@ -489,6 +491,42 @@ namespace Proof
 		renderPassInfo.pSubpasses = &subpassDescription;
 		renderPassInfo.dependencyCount = 1;
 		renderPassInfo.pDependencies = &dependency;
+#else
+
+	
+
+
+		VkSubpassDependency deps[2]{};
+
+		// [0] EXTERNAL -> 0  (mirror pipeline’s first dep)
+		deps[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+		deps[0].dstSubpass = 0;
+		deps[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		deps[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		deps[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		deps[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		deps[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+		// [1] 0 -> EXTERNAL  (mirror pipeline’s second dep)
+		deps[1].srcSubpass = 0;
+		deps[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+		deps[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		deps[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		deps[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		deps[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		deps[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+
+		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+		renderPassInfo.attachmentCount = 1;
+		renderPassInfo.pAttachments = &colorAttachmentDesc;
+		renderPassInfo.subpassCount = 1;
+		renderPassInfo.pSubpasses = &subpassDescription;
+
+		renderPassInfo.dependencyCount = 2;
+		renderPassInfo.pDependencies = deps;
+
+#endif
 
 		VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass));
 		VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_RENDER_PASS, "Swapchain render pass", m_RenderPass);

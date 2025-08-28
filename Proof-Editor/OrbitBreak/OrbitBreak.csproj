@@ -87,9 +87,11 @@
     <Reference Include="System.Data.Entity" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Camera.cs" />
     <Compile Include="Assets\Scripts\DeleteEntityScript.cs" />
     <Compile Include="Assets\Scripts\GameManager.cs" />
     <Compile Include="Assets\Scripts\Player.cs" />
+    <Compile Include="Assets\Scripts\PowerUps\LazerBullet.cs" />
     <Compile Include="Assets\Scripts\PowerUps\PowerUp.cs" />
     <Compile Include="Assets\Scripts\SpawnManager.cs" />
   </ItemGroup>

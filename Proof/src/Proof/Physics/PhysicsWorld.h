@@ -28,7 +28,7 @@ namespace Proof
 		// begin world and end world is already called
 		PhysicsWorld(Count<class World> world);
 		virtual ~PhysicsWorld();
-		void Simulate(float deltaTime);
+		void Simulate(float dt);
 
 		void StartWorld();
 		void EndWorld();

@@ -35,11 +35,17 @@ namespace Proof
 		//if (m_IsViewportFocused)
 		{
 			//Application::Get()->GetWindow()->SetWindowInputEvent(true);
-			m_Renderer->BeginContext(glm::mat4(1.0f), glm::mat4(1.0f), { m_Camera.GetPosition().x,m_Camera.GetPosition().y,m_Camera.GetPosition().z }, { false }, true);
-			m_Renderer->EndContext();
+			//m_Renderer->BeginContext(glm::mat4(1.0f), glm::mat4(1.0f), { m_Camera.GetPosition().x,m_Camera.GetPosition().y,m_Camera.GetPosition().z }, { false }, true);
+		//	m_Renderer->EndContext();
 
 			//UI::Image()
+
+			glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)m_WindowSize.x, 0.0f, (float)m_WindowSize.y, -1.0f, 1.0f);
+			m_Renderer->BeginContext(orthoMatrix, glm::mat4(1.0f), Vector(0.0f), { false },true);
+			//m_Renderer->BeginContext(orthoMatrix, glm::mat4(1.0f), { m_Camera.GetPosition().x,m_Camera.GetPosition().y,m_Camera.GetPosition().z }, { false },true);
+
 			UIRenderer::DrawUI(m_UIPanel->Menu, m_Renderer, m_WindowSize.x, m_WindowSize.y);
+			m_Renderer->EndContext();
 
 			//m_Renderer->EndContext();
 
@@ -429,14 +435,14 @@ namespace Proof
 
 		//UI::AttributeBool("Visible", element->Visible);
 
-		DrawElementType<UIButtonComponent>(element, [](UIButtonComponent& button)
+		DrawElementType<UIButtonComponent>(element, [&](UIButtonComponent& button)
 			{
-				UI::AttributeColor("Color", button.TintColor);
+				UI::BindableVariableAttributeColor("Color", button.TintColor, m_UIPanel->VariableTable);
 			});
 
 		DrawElementType<UIImageComponent>(element, [&](UIImageComponent& image)
 			{
-				UI::AttributeColor("TintColor", image.TintColor);
+				UI::BindableVariableAttributeColor("TintColor", image.TintColor, m_UIPanel->VariableTable);
 				UI::BindableVariableAssetKey("Texture", image.Texture, m_UIPanel->VariableTable);
 			});
 
@@ -455,8 +461,8 @@ namespace Proof
 			{
 				UI::BindableVariableAttributeSlider("Progress", proggressBar.Proggress, m_UIPanel->VariableTable);
 				UI::BeginPropertyGrid();
-				UI::AttributeColor("Fill Color", proggressBar.FillColor);
-				UI::AttributeColor("Background Color", proggressBar.BackgroundColor);
+				UI::BindableVariableAttributeColor("Fill Color", proggressBar.FillColor,m_UIPanel->VariableTable);
+				UI::BindableVariableAttributeColor("Background Color", proggressBar.BackgroundColor, m_UIPanel->VariableTable);
 				UI::EndPropertyGrid();
 			});
 

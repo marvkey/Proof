@@ -17,8 +17,7 @@ namespace Proof {
     void UIRenderer::DrawUI(Count<class UIMenu> menu, Count<class Renderer2D> renderer, uint32_t screenWidth, uint32_t screenHeight)
     {
 
-        glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)screenWidth, 0.0f, (float)screenHeight, -1.0f, 1.0f);
-        renderer->BeginContext(orthoMatrix, glm::mat4(1.0f), Vector(0.0f), { true });
+       
         for (auto& [uiElementId,uiElement] : menu->m_UIElementsMap)
         {
             //if (element->Parent != nullptr)
@@ -26,8 +25,6 @@ namespace Proof {
             DrawElement(menu, renderer, screenWidth, screenHeight, uiElement);
 
         }
-          
-        renderer->EndContext();
     }
 
     struct UIRenderFinalData 
@@ -97,13 +94,13 @@ namespace Proof {
                 auto& button = element.GetComponent< UIButtonComponent>();
 
 
-                renderer->DrawQuad(finalTransform, button.TintColor,Utils::GetTexture(button.Texture));
+                renderer->DrawQuad(finalTransform, button.TintColor.GetValue(), Utils::GetTexture(button.Texture));
                 break;
             }
             case UIElementType::Image:
             {
                 auto& image = element.GetComponent< UIImageComponent>();
-                renderer->DrawQuad(finalTransform, image.TintColor, Utils::GetTexture(image.Texture));
+                renderer->DrawQuad(finalTransform, image.TintColor.GetValue(), Utils::GetTexture(image.Texture));
                 break;
             }
             case UIElementType::Text:
@@ -166,7 +163,7 @@ namespace Proof {
                 auto& progressBar = element.GetComponent<UIProggresBarComponent>();
 
                 // Draw background
-                renderer->DrawQuad(finalTransform, progressBar.BackgroundColor,Renderer::GetWhiteTexture());
+                renderer->DrawQuad(finalTransform, progressBar.BackgroundColor.GetValue(), Renderer::GetWhiteTexture());
 
                 // Compute foreground (filled) width
                 glm::mat4 filledTransform = finalTransform;
@@ -202,7 +199,7 @@ namespace Proof {
                 }
 
                 // Draw filled part
-                renderer->DrawQuad(filledTransform, progressBar.FillColor,Renderer::GetWhiteTexture());
+                renderer->DrawQuad(filledTransform, progressBar.FillColor.GetValue(), Renderer::GetWhiteTexture());
                 break;
             }
         }

@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 12885918439602832423
-EntityOwner: 5032291947280691950
+EntityOwner: 16371302714602923582
 Entities:
-  - Entity: 5032291947280691950
+  - Entity: 16371302714602923582
     TagComponent:
       Tag: SpeedBoost
       tags: [SpeedBoost]

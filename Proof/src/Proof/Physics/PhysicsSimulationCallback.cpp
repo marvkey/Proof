@@ -25,7 +25,7 @@ namespace Proof
 
 		for (const ScriptComponentsClassesData& scriptMetaData : sc.GetScriptMetadates())
 		{
-			if (ScriptEngine::IsModuleValid(scriptMetaData.ClassName))
+			//if (ScriptEngine::IsModuleValid(scriptMetaData.ClassName))
 			{
 				PF_CORE_ASSERT(scriptMetaData.GetInstance());
 				ScriptEngine::CallMethod(scriptMetaData.GetInstance(), methodName, b.GetUUID());

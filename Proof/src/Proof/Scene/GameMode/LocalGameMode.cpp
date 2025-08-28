@@ -100,6 +100,12 @@ namespace Proof
 
 		if (!m_Players.empty())
 		{
+
+			glm::mat4 orthoMatrix = glm::ortho(0.0f, (float)renderer->GetScreenData().FullResolution.x, 0.0f,
+				(float)renderer->GetScreenData().FullResolution.y, -1.0f, 1.0f);
+
+			m_HUDRenderer2D->BeginContext(orthoMatrix, glm::mat4(1.0f), Vector(0.0f), { false });
+
 			auto& player = m_Players[0];// assume only index is player 1
 			Entity e = m_World->TryGetEntityWithUUID(player.PlayerUUID);
 			if (e.IsValid())
@@ -107,6 +113,9 @@ namespace Proof
 				if (e.HasComponent<PlayerHUDComponent>())
 					RenderHUD(e.GetUUID(), renderer);
 			}
+
+			m_HUDRenderer2D->EndContext();
+
 		}
 		
 	}
@@ -379,8 +388,8 @@ namespace Proof
 			{
 				Count<UIPanelInstance> panelInstance = layer.GetUIPanels().at(j);
 				
-
-				UIRenderer::DrawUI(panelInstance->GetInstanceMenu(), m_HUDRenderer2D, renderer->GetScreenData().FullResolution.x, renderer->GetScreenData().FullResolution.y);
+				if(panelInstance->Visible)
+					UIRenderer::DrawUI(panelInstance->GetInstanceMenu(), m_HUDRenderer2D, renderer->GetScreenData().FullResolution.x, renderer->GetScreenData().FullResolution.y);
 
 			}
 		}

@@ -7,15 +7,15 @@ World:
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
-        Rotation: [2.15373635, 1.32470489, 2.07694173]
+        Rotation: [0, 1.29677963, 3.05083561]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
       DirectionalLightComponent:
         Color: [1, 1, 1]
-        Intensity: 1
-        CastShadow: true
+        Intensity: 1.36000001
+        CastShadow: false
         ShadowStrength: 0.5
         CastSoftShadow: true
         ShadowSoftness: 0.5
@@ -36,18 +36,18 @@ World:
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
-        Rotation: [0.0349065848, 0.185004905, 0.0174532924]
+        Rotation: [0.0349065848, 0.185004905, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
       SkyLightComponent:
-        TintColor: [1, 1, 1]
-        SkyBoxLod: 0
+        TintColor: [0.314814806, 0.64979434, 1]
+        SkyBoxLod: 0.293000013
         MapRotation: 0
         Intensity: 1
-        EnvironmentState: PreethamSky
-        TextureDataImage: 0
+        EnvironmentState: EnvironmentTexture
+        TextureDataImage: 6744582529806630813
         HosekWilkieTurbidity: 4
         HosekWilkieGroundReflectance: 0.100000001
         PreethamTurbidity: 4
@@ -70,21 +70,25 @@ World:
             Fields:
               - NameID: OrbitBreak.SpawnManager.SpawnInterval
                 Type: Float
-                Data: 2
+                Data: 3
+              - NameID: OrbitBreak.SpawnManager.PlayerHealthItem
+                Type: Prefab
+                Data: 13752472768452748325
               - NameID: OrbitBreak.SpawnManager.Enemies
                 Type: Prefab
-                Length: 4
+                Length: 5
                 Data:
                   - 4686870951544176460
                   - 3846872847249935031
                   - 1349368886052899675
                   - 7375823681748515890
+                  - 15707547901708157460
               - NameID: OrbitBreak.SpawnManager.SpawnHeight
                 Type: Float
                 Data: 5
               - NameID: OrbitBreak.SpawnManager.SpawnPowerUpInterval
                 Type: Float
-                Data: 4
+                Data: 3.5
               - NameID: OrbitBreak.SpawnManager.SpawnRangeX
                 Type: Float
                 Data: 3.70000005
@@ -95,6 +99,21 @@ World:
                   - 4054704403660622408
                   - 4663055247541764842
                   - 12885918439602832423
+              - NameID: OrbitBreak.SpawnManager.SpeicalEnemyRocket
+                Type: Prefab
+                Data: 17266496585004732240
+              - NameID: OrbitBreak.SpawnManager.WarnRocketSpawn
+                Type: Prefab
+                Data: 246287549342871468
+              - NameID: OrbitBreak.SpawnManager.SpawnEnemyRocketInterval
+                Type: Float
+                Data: 5
+              - NameID: OrbitBreak.SpawnManager.SpawnHealthBoostInterval
+                Type: Float
+                Data: 6
+              - NameID: OrbitBreak.SpawnManager.PlayerEntity
+                Type: Entity
+                Data: 1530953258790621239
     - Entity: 1530953258790621239
       TagComponent:
         Tag: Player
@@ -117,13 +136,10 @@ World:
             Fields:
               - NameID: OrbitBreak.Player.Bullet
                 Type: Prefab
-                Data: 10446895897543064672
+                Data: 2649271813571317641
               - NameID: OrbitBreak.Player.SideSpeed
                 Type: Float
                 Data: 3.5
-              - NameID: OrbitBreak.Player.OnHitParticle
-                Type: Prefab
-                Data: 16461051175706760248
               - NameID: OrbitBreak.Player.ChildEnityShield
                 Type: Entity
                 Data: 9873446959168710912
@@ -132,10 +148,25 @@ World:
                 Data: 100
               - NameID: OrbitBreak.Player.FireRate
                 Type: Float
-                Data: 0.5
+                Data: 0.349999994
+              - NameID: OrbitBreak.Player.PowerUpSound
+                Type: Prefab
+                Data: 14505478817643525493
               - NameID: OrbitBreak.Player.SpawBullet
                 Type: Entity
                 Data: 2141683991883366455
+              - NameID: OrbitBreak.Player.Camera
+                Type: Entity
+                Data: 3586159779000038146
+              - NameID: OrbitBreak.Player.ExpolsionParticle
+                Type: Prefab
+                Data: 16461051175706760248
+              - NameID: OrbitBreak.Player.PickUpHealthSound
+                Type: Prefab
+                Data: 6898816074704764206
+              - NameID: OrbitBreak.Player.HurtSound
+                Type: Prefab
+                Data: 2639487027692939352
           - Script: OrbitBreak.PowerUp
             ScriptClassName: OrbitBreak.PowerUp
             ScriptName: OrbitBreak.PowerUp
@@ -203,6 +234,29 @@ World:
               - NameID: Proof.GameManager.Player
                 Type: Entity
                 Data: 1530953258790621239
+              - NameID: Proof.GameManager.Lazer
+                Type: Texture2D
+                Data: 13367406075240529910
+              - NameID: Proof.GameManager.ExplosionLazer
+                Type: Prefab
+                Data: 10261118269521240760
+              - NameID: Proof.GameManager.Shield
+                Type: Texture2D
+                Data: 17821452074625037229
+              - NameID: Proof.GameManager.RestartPanel
+                Type: UIPanel
+                Data: 11346672866133504406
+              - NameID: Proof.GameManager.Speed
+                Type: Texture2D
+                Data: 4935365910962578932
+              - NameID: Proof.GameManager.PowerupPanel
+                Type: UIPanel
+                Data: 7310086667196599228
+          - Script: OrbitBreak.Camera
+            ScriptClassName: OrbitBreak.Camera
+            ScriptName: OrbitBreak.Camera
+            Fields:
+              []
       CameraComponent:
         NearPlane: 0.300000012
         FarPlane: 1000
@@ -235,13 +289,21 @@ World:
                 VariableRegistry:
                   VariableRegistryID: 9012242798001869154
                   Variables:
+                    - Name: HighScore
+                      Type: String
+                      UUID: 16044827081956861518
+                      Data: 0
                     - Name: Health
                       Type: Float
                       UUID: 13737011022023473833
                       Data: 100
-    - Entity: 14951433101629169201
+                    - Name: Score
+                      Type: String
+                      UUID: 4123078492241589822
+                      Data: "10\n\n"
+    - Entity: 8118600660328753677
       TagComponent:
-        Tag: Empty Entity
+        Tag: game sound
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
@@ -251,12 +313,12 @@ World:
         ParentHandle: 0
         Children: []
       AudioComponent:
-        VolumeMultiplier: 0.527999997
+        VolumeMultiplier: 0.25
         PitchMultiplier: 1
-        Looping: false
+        Looping: true
         PlayOnAwake: true
         MasterReverbSend: 0
         LowPassFilter: 1
         HighPassFilter: 0
         SpatializationEnabled: false
-        AudioAsset: 16410191482603395686
+        AudioAsset: 2594234860744992639

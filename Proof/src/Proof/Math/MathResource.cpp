@@ -94,6 +94,12 @@ namespace Proof::MathResource
 		if (epsilonEqual(LocalMatrix[3][3], static_cast<T>(0), epsilon<T>()))
 			return false;
 
+
+		if (!epsilonEqual(LocalMatrix[3][3], static_cast<T>(1), static_cast<T>(0.00001)))
+		{
+			// Normalize the matrix to make [3][3] = 1
+			LocalMatrix /= LocalMatrix[3][3];
+		}
 		// Assume matrix is already normalized
 		PF_CORE_ASSERT(epsilonEqual(LocalMatrix[3][3], static_cast<T>(1), static_cast<T>(0.00001)));
 		//for (length_t i = 0; i < 4; ++i)

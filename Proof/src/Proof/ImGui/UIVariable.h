@@ -23,6 +23,9 @@ namespace Proof::UI
 	bool BindableVariableAttributeDrag(const std::string& label, BindableVariableVec2& val, Count<VariableRegistry> registry, float speed = 1.0f);
 	bool BindableVariableAttributeDrag(const std::string& label, BindableVariableVec3& val, Count<VariableRegistry> registry, float speed = 1.0f);
 	bool BindableVariableAttributeDrag(const std::string& label, BindableVariableVec4& val, Count<VariableRegistry> registry, float speed = 1.0f);
+
+	bool BindableVariableAttributeColor(const std::string& label, BindableVariableVec3& val, Count<VariableRegistry> registry);
+	bool BindableVariableAttributeColor(const std::string& label, BindableVariableVec4& val, Count<VariableRegistry> registry);
 	bool BindableVariableAttributeInputText(const std::string& label, BindableVariableString& val);
 
 

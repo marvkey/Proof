@@ -779,7 +779,7 @@ namespace Proof {
 
 				out << YAML::Key << "UIImageComponent";
 				out << YAML::BeginMap; // UIImageComponent
-				out << YAML::Key << "TintColor" << YAML::Value << imageComponent.TintColor;
+				SaveBindableVariable(out, "TintColor", imageComponent.TintColor);
 				SaveStaticAssetBindableVarible(out, "Texture", imageComponent.Texture);
 				out << YAML::EndMap; // UIImageComponent
 			}
@@ -792,7 +792,7 @@ namespace Proof {
 
 				out << YAML::Key << "UIButtonComponent";
 				out << YAML::BeginMap; // UIButtonComponent
-				out << YAML::Key << "TintColor" << YAML::Value << buttonComponent.TintColor;
+				SaveBindableVariable(out, "TintColor", buttonComponent.TintColor);
 				SaveStaticAssetBindableVarible(out,"Texture", buttonComponent.Texture);
 				out << YAML::EndMap; // UIButtonComponent
 			}
@@ -822,8 +822,9 @@ namespace Proof {
 				//out << YAML::Key << "Proggress" << YAML::Value << proggressComponent.Proggress.GetValue();
 
 				SaveClampedBindableVariable(out, "Proggress", proggressComponent.Proggress);
-				out << YAML::Key << "FillColor" << YAML::Value << proggressComponent.FillColor;
-				out << YAML::Key << "BackgroundColor" << YAML::Value << proggressComponent.BackgroundColor;
+				SaveBindableVariable(out, "FillColor", proggressComponent.FillColor);
+				SaveBindableVariable(out, "BackgroundColor", proggressComponent.BackgroundColor);
+
 				out << YAML::EndMap; // UIProggresBarComponent
 			}
 		}
@@ -925,6 +926,8 @@ namespace Proof {
 				{
 					auto& src = newUIElement.GetComponent<UIImageComponent>();
 					src.TintColor = imageComponent["TintColor"].as<glm::vec4>(glm::vec4(1.0f));
+
+					LoadBindableVariable(imageComponent, "TintColor", src.TintColor, uiPanel->VariableTable->GetVariableSetStorage());
 					LoadStaticAssetBindableVarible(imageComponent, "Texture", src.Texture, uiPanel->VariableTable->GetVariableSetStorage());
 
 				}
@@ -936,6 +939,8 @@ namespace Proof {
 				{
 					auto& src = newUIElement.GetComponent<UIImageComponent>();
 					src.TintColor = buttonComponent["TintColor"].as<glm::vec4>(glm::vec4(1.0f));
+
+					LoadBindableVariable(buttonComponent, "TintColor", src.TintColor, uiPanel->VariableTable->GetVariableSetStorage());
 					LoadStaticAssetBindableVarible(buttonComponent, "Texture", src.Texture, uiPanel->VariableTable->GetVariableSetStorage());
 
 				}
@@ -961,8 +966,9 @@ namespace Proof {
 					src.Proggress = proggressComponent["Proggress"].as<float>(src.Proggress.GetValue());
 
 					LoadClampedBindableVariable(proggressComponent, "Proggress", src.Proggress, uiPanel->VariableTable->GetVariableSetStorage());
-					src.FillColor = proggressComponent["FillColor"].as<glm::vec4>(src.FillColor);
-					src.BackgroundColor = proggressComponent["BackgroundColor"].as<glm::vec4>(src.BackgroundColor);
+
+					LoadBindableVariable(proggressComponent, "FillColor", src.FillColor, uiPanel->VariableTable->GetVariableSetStorage());
+					LoadBindableVariable(proggressComponent, "BackgroundColor", src.BackgroundColor, uiPanel->VariableTable->GetVariableSetStorage());
 				}
 			}
 

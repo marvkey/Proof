@@ -2414,6 +2414,7 @@ namespace Proof
 			tenareaxWorld = m_ActiveWorld;
 			s_EditorData->ElevatedInputManager->OnEventDelegate.Bind<&EventDeleta>();
 		}
+		m_ActiveWorld->SetWorldTransitionCallback([this](AssetID id) { openNewWorld = true; newWorldID = id; });
 
 	}
 	void Editore3D::SimulateWorld() 

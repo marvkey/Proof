@@ -23,6 +23,7 @@
 #include "Proof/Project/Project.h"
 #include "Proof/Renderer/Font.h"
 #include "Proof/Scripting/ScriptWorld.h"
+#include "Proof/Math/Random.h"
 
 #include "Proof/Input/ElevatedInputSystem/ElevatedInputDevices/ElevatedInputDeviceManager.h"
 
@@ -82,11 +83,11 @@ namespace Proof {
 			
 			GraphicsPipelineConfiguration config;
 			config.DebugName = "Runtime";
-			config.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetColorFormat()};
+			config.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetColorFormat() };
 			config.CullMode = CullMode::None;
 			config.WriteDepth = false;
 			//config.DepthTest = false;
-			config.DepthCompareOperator = DepthCompareOperator::GreaterOrEqual;
+			config.DepthCompareOperator = DepthCompareOperator::Always;
 			config.Shader = Renderer::GetShader("TextPass");
 			config.VertexArray = quadVertexArray;
 
@@ -106,6 +107,15 @@ namespace Proof {
 		m_InputManager = Count<ElevatedInputDeviceManager>::Create();
 		m_InputManager->OnEventDelegate.Bind<&RuntimeLayer::InputBindElevatedDelegate>(this);
 
+		// depends on the game
+#if 1
+		auto prefabs = AssetManager::GetAllAssetType(AssetType::Prefab);
+
+		for (auto prefabID : prefabs)
+		{
+			AssetManager::LoadAsset(prefabID);
+		}
+#endif
 		m_World->StartRuntime();
 
 		Application::Get()->GetWindow()->SetWindowInputEvent(true);
@@ -121,19 +131,23 @@ namespace Proof {
 	void RuntimeLayer::OnUpdate(FrameTime DeltaTime)
 	{
 		PF_PROFILE_FUNC();
-		m_InputManager->OnUpdate(DeltaTime);
+
+
+		float fDeltaTime = DeltaTime.Get();
+		m_InputManager->OnUpdate(fDeltaTime);
 
 		if (m_World->HasWorldCamera())
 		{
 			m_Camera.SetActive(false);
-			m_World->OnUpdateRuntime(DeltaTime);
-			m_World->OnRenderRuntime(m_WorldRenderer, DeltaTime);
+			m_World->OnUpdateRuntime(fDeltaTime);
+			m_World->OnRenderRuntime(m_WorldRenderer, fDeltaTime);
+
 		}
 		else
 		{
 			m_Camera.SetActive(true);
 			m_Camera.SetViewportSize(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
-			m_World->OnRenderEditor(m_WorldRenderer,DeltaTime,m_Camera);
+			m_World->OnRenderEditor(m_WorldRenderer, fDeltaTime,m_Camera);
 		}
 		if (Input::IsKeyClicked(KeyBoardKey::F3))
 			Math::ChangeBool(m_ShowDebugStats);
