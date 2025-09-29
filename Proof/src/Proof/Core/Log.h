@@ -1,6 +1,5 @@
 
 #pragma once
-#include "SmartPointer.h"
 #include <Log/Loger.h>
 
 #include <memory>
@@ -8,14 +7,14 @@
 #include <utility>
 namespace Proof
 {
-	class LogManager : public RefCounted {
+	class LogManager {
 	public:
 		static void Init();
 		static const std::shared_ptr<Logger::Log>& GetEngineLogger();
 		static const std::shared_ptr<Logger::Log>& GetClientLogger();
 		enum class LogType 
 		{
-			ERROR,
+			ERRORR, // has t RR cause wndows has this same thign defined
 			WARN,
 			INFO,
 			TRACE,

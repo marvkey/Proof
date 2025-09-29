@@ -47,6 +47,8 @@ namespace Proof {
 		*/
 	AssetID changeWorldID = 0;
 	bool changeWorld = false;
+
+	uint32_t startFrame;
 	void RuntimeLayer::OnAttach()
 	{
 		PF_PROFILE_FUNC();

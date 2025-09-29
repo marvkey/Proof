@@ -6,7 +6,7 @@ namespace Proof
 {
     Count<SwapChain> SwapChain::Create(const class Window* window) {
 		switch (Renderer::GetAPI()) {
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+		case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!"); return nullptr;
 			case Renderer::API::OpenGL: return nullptr;
 			case Renderer::API::Vulkan: return Count<VulkanSwapChain>::Create(window);
 		}

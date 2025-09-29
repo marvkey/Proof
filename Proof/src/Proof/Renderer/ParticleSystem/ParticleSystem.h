@@ -35,6 +35,7 @@ namespace Proof
 		float Interval = 0;  // seconds between repeats (0 = all at startTime)
 		float Probability = 1.0f; // optional: 0..1 to randomly trigger
 	};
+
 	class ParticleWorld : public RefCounted
 	{
 	public:
@@ -45,6 +46,18 @@ namespace Proof
 		WeakCount<class World> m_World;
 		Count<ComputePass> m_ParticleUpdateComputePass;
 	};
+
+	struct ParticleEmitterConfig
+	{
+		std::string Name;
+		AssetKey<AssetType::Texture> Texture;
+		SBParticleInitalState ParticleInitialState;
+		SBParticleEmitterSettings ParticleEmitterSettings;
+		std::vector< ParticleBurst> Bursts;
+	private:
+	};
+
+
 
 	class ParticleEmitter : public RefCounted
 	{
@@ -80,6 +93,113 @@ namespace Proof
 		friend class WorldRenderer;
 	};
 
+#if 0
+	class NewParticleEmitter : public RefCounted
+	{
+	public:
+		NewParticleEmitter(Count< ParticleSystem> particleSystem, const ParticleEmitterConfig& config,uint32_t maxParticles = 1000,UUID32 ID  = UUID32());
+		NewParticleEmitter(Count<NewParticleEmitter> emitter);
+
+		uint32_t GetParticleCount();
+		void ResetMaxParticles(uint32_t size);
+		SBParticleTrackableData GetTrackableData();
+	private:
+		ParticleEmitterConfig& m_Config;
+		UUID32 m_ID;
+		friend class ParticleSystem;
+		friend class WorldRenderer;
+	};
+
+	class ParticleEmitterTimelineInstance : public RefCounted
+	{
+		float StartTime;
+		float EndTime;
+		ParticleEmitterTimelineInstance(Count<NewParticleEmitter> emitter);
+
+	private:
+		Count<class ParticleEmitter> m_Emitter;
+	};
+
+	class ParticleEmitterInstance : public RefCounted
+	{
+	public:
+		void OnUpdate(float dt, const Transform& transform, Count<ComputePass> cmdPass);
+		ParticleEmitterInstance(Count<NewParticleEmitter> emitter);
+
+	private:
+		glm::vec3 m_CurrentPos = glm::vec3(0.0f), m_PrevPos = glm::vec3(0.0f);
+		Count<class StorageBuffer> m_SBParticlesBuffer;
+		Count<class StorageBuffer> m_SBParticleParticleInitalState; // storage cause of aling
+		Count<class StorageBuffer> m_SBParticleEmitterSettingsBuffer; // storage cause of align 
+		Count<class StorageBuffer> m_SBTrackableData; // storage cause of align comptue shader will edit this
+		Count<class StorageBuffer> m_SBPerDrawData; // storage cause of align comptue shader will edit this
+	};
+
+
+	class ParticleTimelineLayer
+	{
+	public:
+		std::string Name;
+		std::vector<ParticleEmitterTimelineInstance> Emitters;
+		bool bEnabled = true;
+
+		void AddEmitter(const Count<NewParticleEmitter>& emitter, float startTime, float endTime, bool loop = false)
+		{
+			Emitters.push_back({ emitter, startTime, endTime, loop });
+		}
+
+		void Update(float currentTime, float dt, const Transform& transform, Count<ComputePass> computePass)
+		{
+			if (!bEnabled) return;
+
+			for (auto& entry : Emitters)
+			{
+				if (entry.IsActive(currentTime))
+				{
+					if (!entry.Emitter->Instance)
+						entry.Emitter->Instance = Count<ParticleEmitterInstance>::Create(entry.Emitter);
+
+					entry.Emitter->Instance->OnUpdate(dt, transform, computePass);
+				}
+			}
+		}
+	};
+
+	class ParticleTimelineLayerManager : public RefCounted
+	{
+	public:
+		void AddLayer(const std::string& name)
+		{
+			if (m_Layers.find(name) == m_Layers.end())
+				m_Layers[name] = ParticleTimelineLayer{ name };
+		}
+
+		void AddEmitterToLayer(const std::string& layerName, const Count<NewParticleEmitter>& emitter, float startTime, float endTime, bool loop = false)
+		{
+			AddLayer(layerName);
+			m_Layers[layerName].AddEmitter(emitter, startTime, endTime, loop);
+		}
+
+		void UpdateAll(float currentTime, float dt, const Transform& transform, Count<ComputePass> computePass)
+		{
+			for (auto& [_, layer] : m_Layers)
+			{
+				layer.Update(currentTime, dt, transform, computePass);
+			}
+		}
+
+		void SetLayerEnabled(const std::string& name, bool enabled)
+		{
+			if (m_Layers.find(name) != m_Layers.end())
+				m_Layers[name].bEnabled = enabled;
+		}
+
+	private:
+		std::unordered_map<std::string, ParticleTimelineLayer> m_Layers;
+	};
+
+
+#endif
 	enum class ParticleSystemState
 	{
 		None,
@@ -87,6 +207,13 @@ namespace Proof
 		Pause,
 		End
 	};
+
+	struct ParticleSystemSequencer
+	{
+		std::unordered_set<UUID> Emitters;
+		
+	};
+
 
 	class ParticleSystem : public Asset
 	{

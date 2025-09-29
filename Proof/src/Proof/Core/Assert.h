@@ -12,6 +12,8 @@
 #define PF_ASSERT(X,...){ if((!X)) {PF_ERROR("Assertion Failed {}",__VA_ARGS__); __debugbreak();  } }
 #define PF_CORE_ASSERT(...) PROOF_EXPAND_MACRO( PF_INTERNAL_ASSERT_GET_MACRO(__VA_ARGS__)(_ENGINE_, __VA_ARGS__) )
 #else
-#define PF_ASSERT(X,...)
-#define PF_CORE_ASSERT(X,...)
+
+#define PF_ASSERT(condition, ...) do {} while (false)  // so inside can run
+#define PF_CORE_ASSERT(condition, ...) do {} while (false) // so code inside can run
+
 #endif

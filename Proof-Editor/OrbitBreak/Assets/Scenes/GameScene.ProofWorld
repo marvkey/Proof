@@ -289,14 +289,14 @@ World:
                 VariableRegistry:
                   VariableRegistryID: 9012242798001869154
                   Variables:
-                    - Name: HighScore
-                      Type: String
-                      UUID: 16044827081956861518
-                      Data: 0
                     - Name: Health
                       Type: Float
                       UUID: 13737011022023473833
                       Data: 100
+                    - Name: HighScore
+                      Type: String
+                      UUID: 16044827081956861518
+                      Data: 0
                     - Name: Score
                       Type: String
                       UUID: 4123078492241589822

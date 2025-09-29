@@ -1160,6 +1160,9 @@ namespace Proof
 		}
 
 	}
+
+	ColorGradient grad;
+	ColorGradient grad2;
 	void SceneHierachyPanel::DrawComponent(Entity& entity) {
 		auto& Tag = entity.GetComponent<TagComponent>();
 		char buffer[256];
@@ -1217,6 +1220,9 @@ namespace Proof
 			AddComponentGui<BuoyancyComponent>(entity, "Buoyancy");
 			ImGui::EndPopup();
 		}
+		UI::ColorGradientEditor("fadadff", grad);
+		UI::ColorGradientEditor("fadadfsdsf",grad2);
+
 		DrawComponents<TagComponent>("Tag", entity, [](TagComponent& subTag) {
 			uint32_t iterate = 0;
 			if (ImGui::Button("Add tag")) {

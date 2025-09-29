@@ -3,6 +3,8 @@
 #include "Proof/Scene/Camera/EditorCamera.h"
 #include "Proof/Input/ElevatedInputSystem/InputTypes.h"
 #include "Proof/Asset/AssetTypes.h"
+
+#include "Proof/Core/FrameTime.h"
 namespace Proof
 {
 	class RuntimeLayer : public Layer {

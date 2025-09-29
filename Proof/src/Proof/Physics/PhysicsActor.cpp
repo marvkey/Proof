@@ -612,14 +612,14 @@ namespace Proof
 
 		physx::PxRigidDynamic* body = (physx::PxRigidDynamic*)m_RigidActor;
 		Count<CapsuleColliderShape> shape = m_Colliders.back().As<CapsuleColliderShape>();
-		SetCapsuleInertiaWithScale(
-			body,
-			GetMass(),
-			shape->GetRadius(),
-			shape->GetHeight()/2,
-			m_Entity.GetCurrentWorld()->GetWorldSpaceScale(m_Entity),
-			collider.Center
-		);
+		//SetCapsuleInertiaWithScale( 
+		//	body,
+		//	GetMass(),
+		//	shape->GetRadius(),
+		//	shape->GetHeight()/2,
+		//	m_Entity.GetCurrentWorld()->GetWorldSpaceScale(m_Entity),
+		//	collider.Center
+		//);
 
 	}
 
@@ -881,7 +881,7 @@ namespace Proof
 		physx::PxTransform actorPose = m_RigidActor->getGlobalPose();
 
 		transform.Location = PhysXUtils::FromPhysXVector(actorPose.p);
-		if (!IsAllRotationLocked())
+		//if (!IsAllRotationLocked())
 			transform.SetRotation(PhysXUtils::FromPhysXQuat(actorPose.q));
 
 		auto world = m_PhysicsWorld->GetWorld();

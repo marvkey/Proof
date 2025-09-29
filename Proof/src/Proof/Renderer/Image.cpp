@@ -28,7 +28,7 @@ namespace Proof
 
 		switch (Renderer::GetAPI())
 		{
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+		case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!"); return nullptr;
 			case Renderer::API::OpenGL: return nullptr;
 			case Renderer::API::Vulkan: return Count<VulkanImage2D>::Create(specification,SamplerFactory::GetOrAddSamplerToFactory(imageSamplerConfig));
 		}
@@ -41,7 +41,7 @@ namespace Proof
 
 		switch (Renderer::GetAPI())
 		{
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+		case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!"); return nullptr;
 			case Renderer::API::OpenGL: return nullptr;
 			case Renderer::API::Vulkan: return Count<VulkanImage2D>::Create(specification, sampler);
 		}
@@ -61,7 +61,7 @@ namespace Proof
 
 		switch (Renderer::GetAPI())
 		{
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+		case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!"); return nullptr;
 			case Renderer::API::OpenGL: return nullptr;
 			case Renderer::API::Vulkan: return Count<VulkanImage2D>::Create(specification, SamplerFactory::GetOrAddSamplerToFactory(imageSamplerConfig));
 		}
@@ -72,7 +72,7 @@ namespace Proof
 	{
 		switch (Renderer::GetAPI())
 		{
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+		case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!"); return nullptr;
 			case Renderer::API::OpenGL: return nullptr;
 			case Renderer::API::Vulkan: return Count<VulkanImageView>::Create(specification);
 		}

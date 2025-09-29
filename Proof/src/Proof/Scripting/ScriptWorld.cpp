@@ -27,6 +27,8 @@ namespace Proof
             m_SpecificID = UUID();
         }
         s_ScriptWorldReferences[m_SpecificID] = this;
+
+        
     }
     ScriptWorld::~ScriptWorld()
     {
@@ -773,6 +775,32 @@ namespace Proof
 
             }
         }
+
+        for(uint32_t index = 0; index < m_EntityInvokes.size(); index++)
+        {
+            EntityInvokeFuncs& invoke = m_EntityInvokes[index];
+            Entity entity = GetWorld()->TryGetEntityWithUUID(invoke.EntityID);
+            if (entity.IsValid() == false)
+            {
+				m_EntityInvokes.erase(m_EntityInvokes.begin() + index);
+                continue;
+            }
+
+			invoke.Time -= frame.Get();
+
+            if (invoke.Time <= 0.0f)
+            {
+                ScriptEngine::CallMethod(invoke.ScriptHandle, invoke.MeathodName);
+
+                if (invoke.Repeat == false)
+                {
+                    m_EntityInvokes.erase(m_EntityInvokes.begin() + index);
+                    continue;
+                }
+
+                invoke.Time = invoke.RepeatTime;
+            }
+		}
     }
 
     void ScriptWorld::OnPhysicsUpdate(float fixedPhysicsDeltaTime)
@@ -830,6 +858,29 @@ namespace Proof
             });
         m_IsRuntime = false;
         ScriptEngine::EndRuntime();
+    }
+
+    void ScriptWorld::AddInvoke(EntityInvokeFuncs invoke)
+    {
+        if(invoke.Time <= 0.0f)
+        {
+            PF_ENGINE_ERROR("Invoke time cannot be 0 or less");
+            return;
+		}
+
+        if (invoke.ScriptHandle == nullptr)
+        {
+            PF_ENGINE_ERROR("Invoke Managed Object cannot be null");
+            return;
+        }
+
+        if(GetWorld()->HasEntity( invoke.EntityID) == false)
+        {
+            PF_ENGINE_ERROR("Invoke Entity does not exist in the world");
+            return;
+		}
+
+		m_EntityInvokes.emplace_back(invoke);
     }
 
 }

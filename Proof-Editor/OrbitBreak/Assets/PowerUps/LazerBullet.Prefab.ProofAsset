@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 2649271813571317641
-EntityOwner: 13232477849549494055
+EntityOwner: 5737805888571801088
 Entities:
-  - Entity: 13232477849549494055
+  - Entity: 5737805888571801088
     TagComponent:
       Tag: LazerBullet
       tags: []
@@ -12,7 +12,7 @@ Entities:
       Scale: [0.5, 1, 1]
     HierarchyComponent:
       ParentHandle: 0
-      Children: [2377537415912690131]
+      Children: [15924325648069634]
     ScriptComponent:
       Scripts:
         - Script: OrbitBreak.LazerBullet
@@ -36,7 +36,7 @@ Entities:
       FreezeRotation: [false, false, false]
       Kinematic: false
       CollisionDetection: ContinuousSpeculative
-  - Entity: 2377537415912690131
+  - Entity: 15924325648069634
     TagComponent:
       Tag: LazerBullet
       tags: []
@@ -45,7 +45,7 @@ Entities:
       Rotation: [0, -0, 0]
       Scale: [0.25, 0.200000003, 0.25]
     HierarchyComponent:
-      ParentHandle: 13232477849549494055
+      ParentHandle: 5737805888571801088
       Children: []
     MeshComponent:
       MeshAssetPointerID: 54

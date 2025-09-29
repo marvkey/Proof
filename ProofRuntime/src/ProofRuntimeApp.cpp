@@ -32,8 +32,19 @@ namespace Proof {
             PushLayer(new class RuntimeLayer());
         }
     };
-    Application* CreateApplication(int argc, char** argv) {
+    Application* CreateApplication(int argc, char** argv) 
+    {
         std::string_view projectPath = "../Proof-Editor/Proof/Proof.ProofProject";
+
+#ifdef PF_DIST
+        namespace fs = std::filesystem;
+        for (const auto& entry : fs::directory_iterator(fs::current_path())) {
+            if (entry.is_regular_file() && entry.path().extension() == ".ProofProject") {
+                projectPath = entry.path().string();
+                break; // take the first one found
+            }
+        }
+#else
         projectPath = "Driftwood/Driftwood.ProofProject";
         //projectPath = "PacMan3D/PacMan3D.ProofProject";
         //projectPath = "../Proof-Editor/FlappyBird/FlappyBird.ProofProject";
@@ -42,6 +53,7 @@ namespace Proof {
 
         if (argc > 1)
             projectPath = argv[1];
+#endif
 
         ApplicationConfiguration configuration;
         configuration.Name = "Proof Runtime";

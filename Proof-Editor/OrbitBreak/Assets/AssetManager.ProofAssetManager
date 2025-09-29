@@ -311,3 +311,6 @@ Assets:
   - Asset: 11346672866133504406
     Type: UIPanel
     Path: UI_Restart.UIPanel.ProofAsset
+  - Asset: 291498077525739092
+    Type: ParticleSystem
+    Path: New ParticleSystem.ParticleSystem.ProofAsset

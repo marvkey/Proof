@@ -1,0 +1,52 @@
+AssetType: InputBindingContext
+ID: 16398527092879047856
+InputBindings:
+  - InputActionID: 10423665410370180105
+    KeyBindings:
+      - InputKeyBindingType: Key
+        InputKeyName: MouseMoveAxisXY
+      - InputKeyBindingType: Key
+        InputKeyName: ControllerRightStick2D
+  - InputActionID: 10865829555602001316
+    KeyBindings:
+      - InputKeyBindingType: Bundle
+        InputKeyBindingBundleName: ""
+        InputKeyBundleKeys:
+          - InputKeyBindingBundleType: PositiveX
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: D
+          - InputKeyBindingBundleType: NegativeX
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: A
+          - InputKeyBindingBundleType: PositiveY
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: W
+          - InputKeyBindingBundleType: NegativeY
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: S
+          - InputKeyBindingBundleType: PositiveZ
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: Invalid
+          - InputKeyBindingBundleType: NegativeZ
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: Invalid
+      - InputKeyBindingType: Key
+        InputKeyName: ControllerLeftStick2D
+  - InputActionID: 6365998182393193804
+    KeyBindings:
+      - InputKeyBindingType: Key
+        InputKeyName: SpaceBar
+      - InputKeyBindingType: Key
+        InputKeyName: ControllerFaceButtonBottom
+  - InputActionID: 9007542612317002724
+    KeyBindings:
+      - InputKeyBindingType: Key
+        InputKeyName: Control
+      - InputKeyBindingType: Key
+        InputKeyName: ControllerRightTrigger

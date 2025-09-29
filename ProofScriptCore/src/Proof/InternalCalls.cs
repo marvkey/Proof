@@ -92,6 +92,9 @@ namespace Proof
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool World_IsEntityValid(ulong ID);
 
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool World_Invoke(ulong entityID, string scriptName,string methodName,float time, bool repeat, float repeatTime);
+
         #endregion
 
         #region Entity

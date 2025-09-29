@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Numerics;
 using System.Linq;
 using Proof.Swizzle;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 
 // ReSharper disable InconsistentNaming
 
@@ -388,6 +389,15 @@ namespace Proof
         public static Quaternion EularToQuat(Vector3 eular)
         {
             return new Quaternion(eular);
+        }
+
+        /// <summary> proof
+        /// Unity-style overload: Create a quaternion from 3 float Euler.
+        /// Just forwards to the Vector3 version.
+        /// </summary>
+        public static Quaternion EularToQuat(float x, float y, float z)
+        {
+            return new Quaternion(new Vector3(x,y,z));
         }
 
         /// <summary>

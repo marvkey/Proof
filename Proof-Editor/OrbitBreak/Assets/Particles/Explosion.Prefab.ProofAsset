@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 16461051175706760248
-EntityOwner: 16012540932938891930
+EntityOwner: 8917264780517970203
 Entities:
-  - Entity: 16012540932938891930
+  - Entity: 8917264780517970203
     TagComponent:
       Tag: Explosion
       tags: []

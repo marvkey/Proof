@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 17266496585004732240
-EntityOwner: 6468456462943508997
+EntityOwner: 4018781195608382959
 Entities:
-  - Entity: 6468456462943508997
+  - Entity: 4018781195608382959
     TagComponent:
       Tag: EnemyRocket
       tags: [Enemy, EnemyRocket]
@@ -12,7 +12,7 @@ Entities:
       Scale: [1, 1, 1]
     HierarchyComponent:
       ParentHandle: 0
-      Children: [32141679622707396]
+      Children: [1253852226652605717]
     MeshComponent:
       MeshAssetPointerID: 13153016259216677068
       Visible: true
@@ -36,7 +36,7 @@ Entities:
       FreezeRotation: [false, false, false]
       Kinematic: false
       CollisionDetection: Discrete
-  - Entity: 32141679622707396
+  - Entity: 1253852226652605717
     TagComponent:
       Tag: Fuel
       tags: []
@@ -45,7 +45,7 @@ Entities:
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     HierarchyComponent:
-      ParentHandle: 6468456462943508997
+      ParentHandle: 4018781195608382959
       Children: []
     ParticleSystemComponent:
       AssetID: 18438284058195418736

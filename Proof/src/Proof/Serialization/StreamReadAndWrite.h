@@ -120,7 +120,7 @@ namespace Proof
 		template<typename T>
 		void ReadRaw(T& data)
 		{
-			PF_CORE_ASSERT(ReadData(reinterpret_cast<char*>(&data), sizeof(T)));
+			ReadData(reinterpret_cast<char*>(&data), sizeof(T));
 		}
 
 		template<typename T>

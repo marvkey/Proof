@@ -2,7 +2,8 @@
 #include "Core.h"
 namespace Proof
 {
-    class FrameTime {
+    class FrameTime 
+    {
     public:
         FrameTime(float time = 0.0f)
             :DeltaTime(time) {}
@@ -18,8 +19,8 @@ namespace Proof
         }
     private:
         float DeltaTime;
-        static uint64_t FrameCount;
-        static float WorldDeltaTime; // same thing as delta time
+        inline static uint64_t FrameCount = 0;
+        inline static float WorldDeltaTime = 0.0f; // same thing as delta time
         friend class Application;
     };
 }

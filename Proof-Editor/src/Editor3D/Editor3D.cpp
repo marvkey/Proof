@@ -1191,7 +1191,7 @@ namespace Proof
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 1);
 			for (auto& it : LogManager::Logs)
 			{
-				if (it.second.first == LogManager::LogType::ERROR)
+				if (it.second.first == LogManager::LogType::ERRORR)
 				{// ERROR
 					ImGui::PushID(pos);
 					if (pos % 2 == 0)

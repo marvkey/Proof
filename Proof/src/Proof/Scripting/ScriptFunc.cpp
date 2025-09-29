@@ -247,7 +247,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		world->Play();
 	}
 	//retutnrs entity ID
-	static uint64_t  World_Instanciate(uint64_t prefabID, Transform transform)
+	static uint64_t World_Instanciate(uint64_t prefabID, Transform transform)
 	{
 		if (!AssetManager::HasAsset(prefabID))
 		{
@@ -351,6 +351,30 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 	//static void 
 	static float World_GetDeltaTime() {
 		return FrameTime::GetWorldDeltaTime();
+	}
+	
+	static void World_Invoke(UUID entityID, MonoString* classFullName, MonoString* meathodName, float time, bool repeat = false, float repeatTime = 1.0f)
+	{
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
+
+		Count<World> world = ScriptEngine::GetWorldContext();
+		auto scriptWorld = world->GetScriptWorld();
+
+		ScriptGCHandle gcHandle = scriptWorld->GetScriptInstanceOfType(entity, ScriptUtils::MonoStringToUTF8(classFullName));
+
+		if (gcHandle == nullptr)
+			return ;
+
+		EntityInvokeFuncs invokes;
+		invokes.ScriptHandle = gcHandle;
+		invokes.EntityID = entityID;
+		invokes.Time = time;
+		invokes.MeathodName = ScriptUtils::MonoStringToUTF8(meathodName);
+
+		invokes.Repeat = repeat;
+		invokes.RepeatTime = repeatTime;
+
+		scriptWorld->AddInvoke(invokes);
 	}
 	#pragma endregion
 	
@@ -2164,7 +2188,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (inSphereCastData->ExcludeEntities)
 		{
-			PF_CORE_ASSERT(false, "Not support exlude entitites")
+			PF_CORE_ASSERT(false, "Not support exlude entitites");
 			size_t excludeEntitiesCount = mono_array_length(inSphereCastData->ExcludeEntities);
 			std::unordered_set<UUID> entityIDs(excludeEntitiesCount);
 			for (size_t i = 0; i < excludeEntitiesCount; i++)
@@ -4171,6 +4195,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(World_OpenWorld);
 			PF_ADD_INTERNAL_CALL(World_Play);
 			PF_ADD_INTERNAL_CALL(World_Pause);
+			PF_ADD_INTERNAL_CALL(World_Invoke);
 		}
 		//Entity 
 		{

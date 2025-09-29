@@ -1,0 +1,4 @@
+AssetType: InputAction
+ID: 10423665410370180105
+OutputType: Vector2D
+OutputValueBehavior: MaximumAbsolute

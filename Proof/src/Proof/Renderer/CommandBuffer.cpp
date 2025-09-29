@@ -6,7 +6,7 @@ namespace Proof
 {
     Count<CommandBuffer> Proof::CommandBuffer::Create() {
 		switch (Renderer::GetAPI()) {
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+		case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!"); return nullptr;
 			case Renderer::API::OpenGL: return nullptr;
 			case Renderer::API::Vulkan: return Count<VulkanCommandBuffer>::Create();
 		}
@@ -16,7 +16,7 @@ namespace Proof
 	{
 		switch (Renderer::GetAPI())
 		{
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+		case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!"); return nullptr;
 			case Renderer::API::OpenGL: return nullptr;
 			case Renderer::API::Vulkan: return Count<VulkanRenderCommandBuffer>::Create(debugName,false);
 		}
@@ -26,7 +26,7 @@ namespace Proof
 	{
 		switch (Renderer::GetAPI())
 		{
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+		case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!"); return nullptr;
 			case Renderer::API::OpenGL: return nullptr;
 			case Renderer::API::Vulkan: return Count<VulkanRenderCommandBuffer>::Create(debugName, true);
 		}
@@ -36,7 +36,7 @@ namespace Proof
 	{
 		switch (Renderer::GetAPI())
 		{
-			case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!") return nullptr;
+		case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!"); return nullptr;
 			case Renderer::API::OpenGL: return nullptr;
 			case Renderer::API::Vulkan: return Count<VulkanRenderCommandBuffer>::Create(buffer);
 		}

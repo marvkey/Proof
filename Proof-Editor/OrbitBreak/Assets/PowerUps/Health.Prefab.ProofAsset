@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 13752472768452748325
-EntityOwner: 1635941979554640804
+EntityOwner: 11724394756084047403
 Entities:
-  - Entity: 1635941979554640804
+  - Entity: 11724394756084047403
     TagComponent:
       Tag: Health
       tags: [Health]

@@ -1,0 +1,491 @@
+World:
+  ID: 9602169324105281993
+  Entities:
+    - Entity: 17452031021581415480
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [2.75936556, -0.0994837657, 0.0872664601]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [0, 0, 0]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 16189035043124429797
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [-81.7150726, -60, -59.7891273]
+        Rotation: [0, 0, 0]
+        Scale: [30, 86.0999985, 30]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 1263276587759243557
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 5750623861149869395
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [39.9961853, -60, -59.7891273]
+        Rotation: [0, 0, 0]
+        Scale: [30, 86.0999985, 30]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 1263276587759243557
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 11069687133292376840
+      TagComponent:
+        Tag: Player
+        tags: []
+      TransformComponent:
+        Location: [0, 0, -2.98023224e-08]
+        Rotation: [0, 0, 0]
+        Scale: [3, 3, 3]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [1034448653721098286]
+      MeshComponent:
+        MeshAssetPointerID: 52
+        Visible: true
+      ScriptComponent:
+        Scripts:
+          - Script: NullState.CharacterMovement
+            ScriptClassName: NullState.CharacterMovement
+            ScriptName: NullState.CharacterMovement
+            Fields:
+              - NameID: NullState.CharacterMovement.WalkingSpeed
+                Type: Float
+                Data: 17
+              - NameID: NullState.CharacterMovement.RunningSpeed
+                Type: Float
+                Data: 27
+              - NameID: NullState.CharacterMovement.RotationSpeed
+                Type: Float
+                Data: 5
+              - NameID: NullState.CharacterMovement.JumpForce
+                Type: Float
+                Data: 15
+              - NameID: NullState.CharacterMovement.IsRunning
+                Type: Bool
+                Data: false
+              - NameID: NullState.CharacterMovement.AirMultiplier
+                Type: Float
+                Data: 0.75
+              - NameID: NullState.CharacterMovement.JumpCoolDown
+                Type: Float
+                Data: 0.25
+              - NameID: NullState.CharacterMovement.Camera
+                Type: Entity
+                Data: 691886691816679158
+              - NameID: NullState.CharacterMovement.PlayerHeight
+                Type: Float
+                Data: 8
+              - NameID: NullState.CharacterMovement.GroundedDrag
+                Type: Float
+                Data: 2
+              - NameID: NullState.CharacterMovement.MaxSlopeAngle
+                Type: Float
+                Data: 40
+              - NameID: NullState.CharacterMovement.State
+                Type: Int32
+                Data: 0
+          - Script: NullState.CharacterInput
+            ScriptClassName: NullState.CharacterInput
+            ScriptName: NullState.CharacterInput
+            Fields:
+              - NameID: NullState.CharacterInput.MoveAction
+                Type: InputAction
+                Data: 10865829555602001316
+              - NameID: NullState.CharacterInput.RotateAction
+                Type: InputAction
+                Data: 10423665410370180105
+              - NameID: NullState.CharacterInput.JumpAction
+                Type: InputAction
+                Data: 6365998182393193804
+              - NameID: NullState.CharacterInput.IsRunningAction
+                Type: InputAction
+                Data: 9007542612317002724
+      CapsuleColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Radius: 0.5
+        Height: 2
+        Direction: Y
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [true, true, true]
+        Kinematic: false
+        CollisionDetection: Discrete
+      PlayerInputComponent:
+        InputBindings:
+          - InputBindingContextHandler: ""
+            InputBindingID: 16398527092879047856
+            Active: true
+      PlayerStartComponent:
+        InputPlayer: Player0
+        PlayerPrefab: 0
+        DontSpawn: true
+    - Entity: 1034448653721098286
+      TagComponent:
+        Tag: Head
+        tags: []
+      TransformComponent:
+        Location: [0, 0.548291087, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 11069687133292376840
+        Children: [4454438387438192492]
+    - Entity: 12711164553762100324
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [-81.7150726, -60, 15.5439215]
+        Rotation: [0, 0, 0]
+        Scale: [30, 86.0999985, 30]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 1263276587759243557
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 4454438387438192492
+      TagComponent:
+        Tag: CameraPos
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 1034448653721098286
+        Children: []
+    - Entity: 9124372981591131283
+      TagComponent:
+        Tag: Hack
+        tags: []
+      TransformComponent:
+        Location: [159.877731, -159.687881, -0.036514163]
+        Rotation: [0, 0, 0]
+        Scale: [7.84999943, 7.84999943, 7.84999943]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [13626361130344337131]
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 10093794893949333075
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 2720499360028191509
+      TagComponent:
+        Tag: slope
+        tags: [slope]
+      TransformComponent:
+        Location: [79.9823151, -115.311462, 0]
+        Rotation: [0, 0, -1.04719758]
+        Scale: [226.766983, 1, 50]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 18245935877011124802
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 13021222462841343192
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 5410944756043792821
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [0, -60, 0]
+        Rotation: [0, 0, 0]
+        Scale: [50, 86.0999985, 50]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 1263276587759243557
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 634658376785033489
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [-0.100000001, -13.7843904, -36.6191406]
+        Rotation: [0.195476875, 0, 0]
+        Scale: [14.6000004, 1, 35.2000008]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 1263276587759243557
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 13751464425370279853
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [150.457153, -206.672165, 0]
+        Rotation: [0, 0, 0]
+        Scale: [50, 86.0999985, 50]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 1263276587759243557
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 13626361130344337131
+      TagComponent:
+        Tag: HackLable
+        tags: []
+      TransformComponent:
+        Location: [-0.509029388, 0.511369705, -0.207903534]
+        Rotation: [0, -1.57079637, 0]
+        Scale: [0.25, 0.25, 0.25]
+      HierarchyComponent:
+        ParentHandle: 9124372981591131283
+        Children: []
+      TextComponent:
+        Color: [0, 0.266666651, 1, 1]
+        Kerning: 0
+        LineSpacing: 1
+        Text: HACK
+        Visible: true
+        UseLocalRotation: false
+        RenderInViewSpace: false
+    - Entity: 10004541839002132443
+      TagComponent:
+        Tag: CameraHolders
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [691886691816679158]
+    - Entity: 691886691816679158
+      TagComponent:
+        Tag: Player Camera
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 10004541839002132443
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: NullState.MoveCamera
+            ScriptClassName: NullState.MoveCamera
+            ScriptName: NullState.MoveCamera
+            Fields:
+              - NameID: NullState.MoveCamera.CameraPosition
+                Type: Entity
+                Data: 4454438387438192492
+      CameraComponent:
+        NearPlane: 0.300000012
+        FarPlane: 1000
+        FOV: 45
+        UseLocalRotation: false
+        ActiveForRendering: true
+    - Entity: 14280862100037573346
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [1.39626336, 0.17453292, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 0.5
+        CastShadow: false
+        ShadowStrength: 0.5
+        CastSoftShadow: true
+        ShadowSoftness: 0.5

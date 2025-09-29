@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 246287549342871468
-EntityOwner: 10234877407379999809
+EntityOwner: 3346766399720583176
 Entities:
-  - Entity: 10234877407379999809
+  - Entity: 3346766399720583176
     TagComponent:
       Tag: WarningSign
       tags: []

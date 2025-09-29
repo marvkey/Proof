@@ -4,7 +4,6 @@
 #include <map>
 #include "Proof/Asset/AssetTypes.h"
 #include "Proof/Scene/World.h"
-#include "Proof/Scene/World.h"
 
 namespace Proof
 {
@@ -79,6 +78,18 @@ namespace Proof
 	using ScriptInstanceMap = std::unordered_map<UUID, RuntimeScriptClassesContainerMetaData>;
 
 	class Entity;
+
+	struct EntityInvokeFuncs
+	{
+		UUID EntityID = 0;
+
+		float Time =0.0f;
+		ScriptGCHandle ScriptHandle = nullptr;
+		std::string MeathodName = "";
+
+		bool Repeat = false;
+		float RepeatTime = Time;
+	};
 	class ScriptWorld : RefCounted
 	{
 	public:
@@ -116,6 +127,8 @@ namespace Proof
 		void EndRuntime();
 
 		bool IsRuntime() { return m_IsRuntime; }
+
+		void AddInvoke(EntityInvokeFuncs invoke);
 	private:
 
 
@@ -151,5 +164,7 @@ namespace Proof
 		friend class World;
 
 		static const std::map<UUID, WeakCount<ScriptWorld>>& GetScriptWorlds();
+
+		std::vector< EntityInvokeFuncs> m_EntityInvokes;
 	};
 }

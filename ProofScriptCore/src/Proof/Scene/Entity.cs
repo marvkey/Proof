@@ -224,6 +224,12 @@ namespace Proof
             }
         }
 
+
+        public bool HasSubTag(string name)
+        {
+            return GetComponent<TagComponent>().HasSubTag(name);
+        }
+
         public void Destroy(bool includeChildren = true)
         {
             World.DeleteEntity(this,includeChildren);   
@@ -250,5 +256,20 @@ namespace Proof
                 input.BindAction(action, evt, callback);
         }
 
+        public void Invoke(Action callback, float time)
+        {
+            string className = this.GetType().FullName; // e.g., "CharacterMovement"
+            string methodName = callback.Method.Name;
+
+            InternalCalls.World_Invoke(this.ID, className, methodName, time, false, 0.0f);
+        }
+
+        public void InvokeRepeat(Action callback, float time, float repeatTime)
+        {
+            string className = this.GetType().FullName;
+            string methodName = callback.Method.Name;
+
+            InternalCalls.World_Invoke(this.ID, className, methodName, time, true, 0.0f);
+        }
     }
 }

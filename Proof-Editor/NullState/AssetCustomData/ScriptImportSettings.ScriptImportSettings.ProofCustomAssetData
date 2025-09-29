@@ -1,0 +1,29 @@
+ScriptImportSettings:
+  Scripts:
+    - Script: NullState.Character
+      ScriptName: NullState.Character
+      Fields:
+        []
+    - Script: NullState.CharacterInput
+      ScriptName: NullState.CharacterInput
+      Fields:
+        - NameID: NullState.CharacterInput.MoveAction
+          Type: InputAction
+          Data: 0
+        - NameID: NullState.CharacterInput.RotateAction
+          Type: InputAction
+          Data: 0
+        - NameID: NullState.CharacterInput.JumpAction
+          Type: InputAction
+          Data: 0
+        - NameID: NullState.CharacterInput.IsRunningAction
+          Type: InputAction
+          Data: 0
+    - Script: NullState.CharacterMovement
+      ScriptName: NullState.CharacterMovement
+      Fields:
+        []
+    - Script: NullState.MoveCamera
+      ScriptName: NullState.MoveCamera
+      Fields:
+        []

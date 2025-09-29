@@ -30,26 +30,6 @@ UIElements:
       DrawBorders: false
       BorderColor: [1, 1, 1, 1]
       BorderThickness: 1
-  - UIElement: 6258330987858771653
-    UICoreComponent:
-      ElementID: 6258330987858771653
-      Name: Image
-      UIElementType: Image
-      Position: [28, 54]
-      Rotation: [0, 0]
-      Size: [60.75, 63.5]
-      AnchorMinimum: [0, 1]
-      AnchorMaximum: [0, 1]
-      ParentHandle: 0
-      Children: []
-    UIImageComponent:
-      TintColor:
-        Value: [1, 1, 1, 1]
-        BindedVariableID: 0
-      Texture:
-        AssetID: 4935365910962578932
-        AssetType: Texture
-        BindedVariableID: 3490074956121475724
   - UIElement: 252603997310117199
     UICoreComponent:
       ElementID: 252603997310117199
@@ -72,3 +52,23 @@ UIElements:
       BackgroundColor:
         Value: [0.281481504, 0.744526982, 1, 1]
         BindedVariableID: 0
+  - UIElement: 6258330987858771653
+    UICoreComponent:
+      ElementID: 6258330987858771653
+      Name: Image
+      UIElementType: Image
+      Position: [28, 54]
+      Rotation: [0, 0]
+      Size: [60.75, 63.5]
+      AnchorMinimum: [0, 1]
+      AnchorMaximum: [0, 1]
+      ParentHandle: 0
+      Children: []
+    UIImageComponent:
+      TintColor:
+        Value: [1, 1, 1, 1]
+        BindedVariableID: 0
+      Texture:
+        AssetID: 4935365910962578932
+        AssetType: Texture
+        BindedVariableID: 3490074956121475724

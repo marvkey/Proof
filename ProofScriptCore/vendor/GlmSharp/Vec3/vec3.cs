@@ -550,12 +550,17 @@ namespace Proof
         /// Returns the euclidean length of this Vector.
         /// </summary>
         public float Length => (float)Math.Sqrt(((x*x + y*y) + z*z));
-        
+
+        // added by proof
+        public float Magnitude => (float)Math.Sqrt(((x * x + y * y) + z * z));
+
         /// <summary>
         /// Returns the squared euclidean length of this Vector.
         /// </summary>
         public float LengthSqr => ((x*x + y*y) + z*z);
-        
+
+        public float MagnitudeSqr => LengthSqr;
+         
         /// <summary>
         /// Returns the sum of all components.
         /// </summary>
@@ -912,11 +917,60 @@ namespace Proof
         /// </summary>
         public static Vector3 RandomNormal(System.Random random) => new Vector3((float)(Math.Cos(2 * Math.PI * random.NextDouble()) * Math.Sqrt(-2.0 * Math.Log(random.NextDouble()))), (float)(Math.Cos(2 * Math.PI * random.NextDouble()) * Math.Sqrt(-2.0 * Math.Log(random.NextDouble()))), (float)(Math.Cos(2 * Math.PI * random.NextDouble()) * Math.Sqrt(-2.0 * Math.Log(random.NextDouble()))));
 
+
+        // createed by proof
+        /// <summary>
+        /// Returns the angle in radians between two vectors.
+        /// </summary>
+        /// 
+        public const float kEpsilonNormalSqrt = 1e-15F;
+
+        public static float Angle(Vector3 a, Vector3 b)
+        {
+            /*
+            float dot = Dot(a, b);
+            float cosTheta = dot / (a.Magnitude * b.Magnitude);
+
+            return (float)Math.Acos(cosTheta);
+            */
+
+            float denominator = (float)Mathf.Sqrt(a.MagnitudeSqr * b.MagnitudeSqr);
+            if (denominator < kEpsilonNormalSqrt)
+                return 0F;
+            
+            float dot = Mathf.Clamp(Dot(a, b) / denominator, -1F, 1F);
+            return ((float)Math.Acos(dot));
+        }
+
+        // createed by proof
+        /// <summary>
+        /// Returns the angle in degrees between two vectors.
+        /// </summary>
+        public static float AngleDegrees(Vector3 a, Vector3 b)
+        {
+            return Angle(a, b) * (180f / (float)Math.PI);
+        }
+
+
+        // added by proof
+        public static Vector3 ProjectOnPlane(Vector3 vector, Vector3 planeNormal)
+        {
+            float sqrMag = Dot(planeNormal, planeNormal);
+            if (sqrMag < Mathf.Epsilon)
+                return vector;
+            else
+            {
+                var dot = Dot(vector, planeNormal);
+                return new Vector3(vector.x - planeNormal.x * dot / sqrMag,
+                    vector.y - planeNormal.y * dot / sqrMag,
+                    vector.z - planeNormal.z * dot / sqrMag);
+            }
+        }
         #endregion
 
 
         #region Component-Wise Static Functions
-        
+
         /// <summary>
         /// Returns a bVector3 from component-wise application of Equal (lhs == rhs).
         /// </summary>

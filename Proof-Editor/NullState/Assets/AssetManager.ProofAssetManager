@@ -1,0 +1,40 @@
+Assets:
+  - Asset: 1263276587759243557
+    Type: Material
+    Path: Materials\m_BlueNeon.Material.ProofAsset
+  - Asset: 9007542612317002724
+    Type: InputAction
+    Path: Inputs\CharacterMovement\IA_IsRunning.InputAction.ProofAsset
+  - Asset: 9602169324105281993
+    Type: World
+    Path: Scenes\TestScene.ProofWorld
+  - Asset: 10865829555602001316
+    Type: InputAction
+    Path: Inputs\CharacterMovement\IA_Move.InputAction.ProofAsset
+  - Asset: 10423665410370180105
+    Type: InputAction
+    Path: Inputs\CharacterMovement\IA_Rotate.InputAction.ProofAsset
+  - Asset: 18245935877011124802
+    Type: Material
+    Path: Materials\m_Blue.Material.ProofAsset
+  - Asset: 6365998182393193804
+    Type: InputAction
+    Path: Inputs\CharacterMovement\IA_Jump.InputAction.ProofAsset
+  - Asset: 16398527092879047856
+    Type: InputBindingContext
+    Path: Inputs\CharacterMovement\IB_CharacerMovement.InputBindingContext.ProofAsset
+  - Asset: 13021222462841343192
+    Type: PhysicsMaterial
+    Path: PhysicsMaterial\pm_Slide.PhysicsMaterial.ProofAsset
+  - Asset: 17927917000335048738
+    Type: PhysicsMaterial
+    Path: PhysicsMaterial\pm_PlayerPhysics.PhysicsMaterial.ProofAsset
+  - Asset: 11903875693727252191
+    Type: Texture
+    Path: Textures\neonMap.png
+  - Asset: 10093794893949333075
+    Type: Material
+    Path: Materials\m_RedNeon.Material.ProofAsset
+  - Asset: 17845486805074956028
+    Type: Texture
+    Path: Textures\neonMapRed.png

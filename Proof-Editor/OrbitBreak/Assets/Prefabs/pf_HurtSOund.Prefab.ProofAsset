@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 2639487027692939352
-EntityOwner: 12334449724949519878
+EntityOwner: 3678122241223359812
 Entities:
-  - Entity: 12334449724949519878
+  - Entity: 3678122241223359812
     TagComponent:
       Tag: Base Prefab
       tags: []

@@ -14,8 +14,56 @@
 
 #include "Proof/Renderer/Image.h"
 #include "Proof/Renderer/Texture.h"
+
+#include <ImSequencer.h>
 namespace Proof
 {
+
+	struct ParticleTimelineEvent
+	{
+		int StartFrame = 0;
+		int EndFrame = 30;
+		glm::vec4 Color = glm::vec4(1);
+		int ID = 0; // unique for editing
+	};
+	enum class SequencerTypes
+	{
+		None = 0,
+		ParticleSystem = 1,
+		Animation = 2,
+
+	};
+	class ParticleSequencerInterface : public ImSequencer::SequenceInterface
+	{
+	public:
+		std::vector<ParticleTimelineEvent>* Events = nullptr;
+
+		int GetFrameMin() const override { return 0; }
+		int GetFrameMax() const override { return 300; }
+		int GetItemCount() const override { return static_cast<int>(Events->size()); }
+		const char* GetItemLabel(int index) const override { return "Event"; }
+
+		void Get(int index, int** start, int** end, int* type, unsigned int* color) override {
+			auto& ev = (*Events)[index];
+			if(start)
+				*start = &ev.StartFrame;
+			if(end)
+				*end = &ev.EndFrame;
+			//*type = static_cast<int>(ev.Type);
+			if(color)
+				*color = 0xFF00FFFF; // teal
+		}
+
+		void Add(int type) override {
+			ParticleTimelineEvent ev;
+			Events->push_back(ev);
+		}
+
+		void Del(int index) override {
+			Events->erase(Events->begin() + index);
+		}
+	};
+
 	ParticleSystemEditorPanel::ParticleSystemEditorPanel()
 		:
 		AssetEditor("ParticleSystemEditorPanel")
@@ -279,6 +327,20 @@ namespace Proof
 			UI::Image(m_WorldRenderer->GetFinalPassImage(), ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
 			ImGui::EndChild();
 		}
+
+		/*
+		static std::vector<ParticleTimelineEvent> event = { ParticleTimelineEvent()};
+		ParticleSequencerInterface sequencer;
+		sequencer.Events = &event;
+
+		static int currentFrame =0;
+		static bool expanded = true;
+		static int selected = -1;
+		static int firstFrame = 0;
+
+		ImSequencer::Sequencer(&sequencer, &currentFrame, &expanded, &selected, &firstFrame, ImSequencer::SEQUENCER_EDIT_ALL);
+		*/
+
 		ImGui::End();
 
 

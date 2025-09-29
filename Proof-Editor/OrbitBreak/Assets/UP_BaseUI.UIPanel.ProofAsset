@@ -3,38 +3,36 @@ ID: 906094230909434426
 VariableRegistry:
   VariableRegistryID: 9012242798001869154
   Variables:
-    - Name: Health
-      Type: Float
-      UUID: 13737011022023473833
-      Data: 0.5
     - Name: HighScore
       Type: String
       UUID: 16044827081956861518
       Data: 0
+    - Name: Health
+      Type: Float
+      UUID: 13737011022023473833
+      Data: 0.5
     - Name: Score
       Type: String
       UUID: 4123078492241589822
       Data: "10\n\n"
 UIElements:
-  - UIElement: 3782340233264483477
+  - UIElement: 17105620133737296177
     UICoreComponent:
-      ElementID: 3782340233264483477
-      Name: Highscore (Number)
-      UIElementType: Text
-      Position: [-126.5, -27.5]
+      ElementID: 17105620133737296177
+      Name: HorizontalBox
+      UIElementType: HorizontalBox
+      Position: [0.699999988, -2.25]
       Rotation: [0, 0]
-      Size: [53.25, 55.5]
-      AnchorMinimum: [1, 0]
-      AnchorMaximum: [1, 0]
+      Size: [217.75, 37]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
       ParentHandle: 0
-      Children: []
-    UITextComponent:
-      Text:
-        Value: 0
-        BindedVariableID: 16044827081956861518
-      Color: [1, 0, 0, 1]
-      Kerning: 0
-      LineSpacing: 1
+      Children: [8345808350609036517]
+    UIHorizontalBoxComponent:
+      Spacing: 0
+      DrawBorders: false
+      BorderColor: [1, 1, 1, 1]
+      BorderThickness: 1
   - UIElement: 8345808350609036517
     UICoreComponent:
       ElementID: 8345808350609036517
@@ -57,23 +55,25 @@ UIElements:
       BackgroundColor:
         Value: [0.837037027, 0.604526758, 0.604526758, 1]
         BindedVariableID: 0
-  - UIElement: 17105620133737296177
+  - UIElement: 3782340233264483477
     UICoreComponent:
-      ElementID: 17105620133737296177
-      Name: HorizontalBox
-      UIElementType: HorizontalBox
-      Position: [0.699999988, -2.25]
+      ElementID: 3782340233264483477
+      Name: Highscore (Number)
+      UIElementType: Text
+      Position: [-126.5, -27.5]
       Rotation: [0, 0]
-      Size: [217.75, 37]
-      AnchorMinimum: [0, 0]
-      AnchorMaximum: [0, 0]
+      Size: [53.25, 55.5]
+      AnchorMinimum: [1, 0]
+      AnchorMaximum: [1, 0]
       ParentHandle: 0
-      Children: [8345808350609036517]
-    UIHorizontalBoxComponent:
-      Spacing: 0
-      DrawBorders: false
-      BorderColor: [1, 1, 1, 1]
-      BorderThickness: 1
+      Children: []
+    UITextComponent:
+      Text:
+        Value: 0
+        BindedVariableID: 16044827081956861518
+      Color: [1, 0, 0, 1]
+      Kerning: 0
+      LineSpacing: 1
   - UIElement: 14219824858506723645
     UICoreComponent:
       ElementID: 14219824858506723645
@@ -91,25 +91,6 @@ UIElements:
         Value: "10\n\n"
         BindedVariableID: 4123078492241589822
       Color: [0.222222209, 0.516049623, 1, 1]
-      Kerning: 0
-      LineSpacing: 1
-  - UIElement: 9415836995641114507
-    UICoreComponent:
-      ElementID: 9415836995641114507
-      Name: HighScore
-      UIElementType: Text
-      Position: [-215.5, 11]
-      Rotation: [0, 0]
-      Size: [47.75, 53.75]
-      AnchorMinimum: [1, 0]
-      AnchorMaximum: [1, 0]
-      ParentHandle: 0
-      Children: []
-    UITextComponent:
-      Text:
-        Value: HIGH SCORE
-        BindedVariableID: 0
-      Color: [1, 0, 0, 1]
       Kerning: 0
       LineSpacing: 1
   - UIElement: 11765610472157212341
@@ -132,3 +113,22 @@ UIElements:
         AssetID: 17788182098629569369
         AssetType: Texture
         BindedVariableID: 0
+  - UIElement: 9415836995641114507
+    UICoreComponent:
+      ElementID: 9415836995641114507
+      Name: HighScore
+      UIElementType: Text
+      Position: [-215.5, 11]
+      Rotation: [0, 0]
+      Size: [47.75, 53.75]
+      AnchorMinimum: [1, 0]
+      AnchorMaximum: [1, 0]
+      ParentHandle: 0
+      Children: []
+    UITextComponent:
+      Text:
+        Value: HIGH SCORE
+        BindedVariableID: 0
+      Color: [1, 0, 0, 1]
+      Kerning: 0
+      LineSpacing: 1

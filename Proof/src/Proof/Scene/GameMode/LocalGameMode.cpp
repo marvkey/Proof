@@ -96,6 +96,7 @@ namespace Proof
 			glm::inverse(cameraComp.UseLocalRotation ? m_World->GetWorldSpaceTransformUsingLocalRotation(worldCameraEntity) : m_World->GetWorldSpaceTransform(worldCameraEntity)));
 		
 		m_World->OnRender(renderer, time, sceneCamera, m_World->GetWorldSpaceLocation(worldCameraEntity), cameraComp.NearPlane, cameraComp.FarPlane, cameraComp.FovDeg);
+		
 		m_HUDRenderer2D->SetTargetFrameBuffer(renderer->GetExternalCompositePassFrameBuffer());
 
 		if (!m_Players.empty())
@@ -117,6 +118,7 @@ namespace Proof
 			m_HUDRenderer2D->EndContext();
 
 		}
+		
 		
 	}
 	void LocalGameMode::RenderRuntimeMultiPlayer(Count<class WorldRenderer> renderer, FrameTime time)
