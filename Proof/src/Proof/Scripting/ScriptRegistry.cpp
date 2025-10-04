@@ -601,6 +601,12 @@ namespace Proof
 						MonoObject* attrib = mono_custom_attrs_get_attr(attributes, GetManagedClassByName("Proof.ToolTipAttribute")->Class);
 						PF_TRY_GET_ATTRIBUTE_STRING(managedField.ToolTip, "Proof.ToolTipAttribute", "ToolTip", attrib);
 					}
+
+					if (HasAttribute(attributes, "Proof.SeperatorAttribute"))
+					{
+						MonoObject* attrib = mono_custom_attrs_get_attr(attributes, GetManagedClassByName("Proof.SeperatorAttribute")->Class);
+						managedField.Seperator = true;
+					}
 				}
 
 				if (managedField.IsArray())

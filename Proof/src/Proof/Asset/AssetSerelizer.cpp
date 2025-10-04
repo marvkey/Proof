@@ -757,6 +757,9 @@ namespace Proof {
 			out << YAML::Key << "AnchorMinimum" << YAML::Value << coreComponent.Transform.Anchor.Minimum;
 			out << YAML::Key << "AnchorMaximum" << YAML::Value << coreComponent.Transform.Anchor.Maximum;
 
+			out << YAML::Key << "PositionOffset" << YAML::Value << coreComponent.LayoutOffset.Position;
+
+
 			{
 				out << YAML::Key << "ParentHandle" << YAML::Value << coreComponent.m_ParentID;
 
@@ -906,6 +909,7 @@ namespace Proof {
 					transform.Size = coreComponent["Size"].as<glm::vec2>(transform.Size);
 					transform.Anchor.Minimum = coreComponent["AnchorMinimum"].as<glm::vec2>(transform.Anchor.Minimum);
 					transform.Anchor.Maximum = coreComponent["AnchorMaximum"].as<glm::vec2>(transform.Anchor.Maximum);
+					newUIElement.GetComponent<UICoreComponent>().LayoutOffset.Position = coreComponent["PositionOffset"].as<glm::vec2>(newUIElement.GetComponent<UICoreComponent>().LayoutOffset.Position);
 
 
 					newUIElement.GetComponent<UICoreComponent>().m_ParentID = coreComponent["ParentHandle"].as<uint64_t>(0);

@@ -8,15 +8,15 @@ Assets:
   - Asset: 9602169324105281993
     Type: World
     Path: Scenes\TestScene.ProofWorld
-  - Asset: 10865829555602001316
-    Type: InputAction
-    Path: Inputs\CharacterMovement\IA_Move.InputAction.ProofAsset
-  - Asset: 10423665410370180105
-    Type: InputAction
-    Path: Inputs\CharacterMovement\IA_Rotate.InputAction.ProofAsset
   - Asset: 18245935877011124802
     Type: Material
     Path: Materials\m_Blue.Material.ProofAsset
+  - Asset: 10423665410370180105
+    Type: InputAction
+    Path: Inputs\CharacterMovement\IA_Rotate.InputAction.ProofAsset
+  - Asset: 10865829555602001316
+    Type: InputAction
+    Path: Inputs\CharacterMovement\IA_Move.InputAction.ProofAsset
   - Asset: 6365998182393193804
     Type: InputAction
     Path: Inputs\CharacterMovement\IA_Jump.InputAction.ProofAsset
@@ -38,3 +38,6 @@ Assets:
   - Asset: 17845486805074956028
     Type: Texture
     Path: Textures\neonMapRed.png
+  - Asset: 1151499359691892158
+    Type: UIPanel
+    Path: HUD's\CharacterDefaultHUD.UIPanel.ProofAsset

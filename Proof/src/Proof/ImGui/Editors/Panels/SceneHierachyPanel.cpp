@@ -1950,6 +1950,10 @@ namespace Proof
 
 					std::string fieldName = field->GetFieldInfo()->DisplayName.empty() ? Utils::String::SubStr(field->GetFieldInfo()->Name, field->GetFieldInfo()->Name.find(':') + 1) : field->GetFieldInfo()->DisplayName;
 
+					if (field->GetFieldInfo()->Seperator)
+					{
+						ImGui::Separator();
+					}
 					if (field->GetFieldInfo()->IsArray())
 					{
 						Count<ArrayFieldStorage> storage = field.As<ArrayFieldStorage>();

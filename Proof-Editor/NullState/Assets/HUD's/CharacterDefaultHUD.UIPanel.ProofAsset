@@ -1,0 +1,95 @@
+AssetType: UIPanel
+ID: 1151499359691892158
+VariableRegistry:
+  VariableRegistryID: 4407006815197224424
+  Variables:
+    - Name: EntropyPercent
+      Type: Float
+      UUID: 9137722652652106186
+      Data: 0
+    - Name: Entropy
+      Type: String
+      UUID: 1870280012868056734
+      Data: 0
+UIElements:
+  - UIElement: 9871753163786572044
+    UICoreComponent:
+      ElementID: 9871753163786572044
+      Name: Entropyletter
+      UIElementType: Text
+      Position: [-317.25, -5.75]
+      Rotation: [0, 0]
+      Size: [47.75, 39]
+      AnchorMinimum: [1, 0]
+      AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 0
+      Children: []
+    UITextComponent:
+      Text:
+        Value: ENTROPY
+        BindedVariableID: 0
+      Color: [1, 1, 1, 1]
+      Kerning: 0.125
+      LineSpacing: 1
+  - UIElement: 15321843124374654191
+    UICoreComponent:
+      ElementID: 15321843124374654191
+      Name: HorizontalBox
+      UIElementType: HorizontalBox
+      Position: [-14, -3.5]
+      Rotation: [0, 0]
+      Size: [15, 15]
+      AnchorMinimum: [1, 0]
+      AnchorMaximum: [1, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 0
+      Children: [7889330638142550447, 15452452396704783142]
+    UIHorizontalBoxComponent:
+      Spacing: 0.5
+      DrawBorders: false
+      BorderColor: [1, 1, 1, 1]
+      BorderThickness: 1
+  - UIElement: 7889330638142550447
+    UICoreComponent:
+      ElementID: 7889330638142550447
+      Name: ProgressBar
+      UIElementType: ProgressBar
+      Position: [-14, -3.5]
+      Rotation: [0, 0]
+      Size: [17.75, 2]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 15321843124374654191
+      Children: []
+    UIProggresBarComponent:
+      Proggress:
+        Value: 0
+        BindedVariableID: 9137722652652106186
+      FillColor:
+        Value: [0.0810699537, 0.225194409, 0.729629636, 1]
+        BindedVariableID: 0
+      BackgroundColor:
+        Value: [0.0823529437, 0.223529413, 0.729411781, 0.411764711]
+        BindedVariableID: 0
+  - UIElement: 15452452396704783142
+    UICoreComponent:
+      ElementID: 15452452396704783142
+      Name: Text
+      UIElementType: Text
+      Position: [4.25, -3.5]
+      Rotation: [0, 0]
+      Size: [3.75, 3.5]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [40.4000015, 0]
+      PositionOffset: [-115.400002, 27.6000004]
+      ParentHandle: 15321843124374654191
+      Children: []
+    UITextComponent:
+      Text:
+        Value: 0
+        BindedVariableID: 1870280012868056734
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1

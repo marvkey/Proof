@@ -40,4 +40,14 @@ namespace Proof
         }
     }
 
+
+    [RegisterCoreClassStruct]
+    [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+    public class SeperatorAttribute : Attribute
+    {
+        public SeperatorAttribute()
+        {
+        }
+    }
+
 }

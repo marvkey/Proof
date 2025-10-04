@@ -79,6 +79,7 @@ namespace Proof
 		uint64_t Flags = 0;
 		std::string DisplayName = "";
 		std::string ToolTip ="";
+		bool Seperator = false;
 		bool HasFlag(FieldFlag flag) const { return Flags & (uint64_t)flag; }
 
 		bool IsWritable() const

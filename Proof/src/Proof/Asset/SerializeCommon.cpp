@@ -11,6 +11,7 @@
 
 #include "Proof/Utils/VariableSystem/Variable.h"
 #include "Proof/Utils/Curve.h"
+#include "Proof/Renderer/Colors.h"
 namespace Proof
 { 
 	static void SerializeInputCustomizer(YAML::Emitter& out, Count<class InputCustomizer> inputCustomizer)
@@ -1181,6 +1182,41 @@ namespace Proof
 			curve.Points.clear();
 			for (const auto& pointNode : node["Points"])
 				curve.AddPoint(pointNode.as<glm::vec2>());
+		}
+	}
+	void SerializeCommon::SerializeGradientColor(YAML::Emitter& out, const std::string& name, const ColorGradient& curve)
+	{
+		out << YAML::Key << name;
+		out << YAML::Value << YAML::BeginSeq;
+
+		for (const auto& point : curve.GetKeys())
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "Time" << YAML::Value << point.Time;
+			out << YAML::Key << "Color" << YAML::Value << point.Color; // uses your Color << overload
+			out << YAML::EndMap;
+		}
+
+		out << YAML::EndSeq;
+	}
+
+	void SerializeCommon::LoadGradientColor(const YAML::Node& node, const std::string& name, ColorGradient& curve)
+	{
+		if (!node[name])
+			return;
+
+		//curve.Clear();
+
+		const auto& seq = node[name];
+		for (const auto& entry : seq)
+		{
+			if (!entry.IsMap())
+				continue;
+
+			float time = entry["Time"].as<float>();
+			glm::vec4 color = entry["Color"].as<glm::vec4>();
+
+			curve.AddColorKey(color, time);
 		}
 	}
 }

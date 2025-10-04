@@ -88,6 +88,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Character\Character.cs" />
+    <Compile Include="Assets\Scripts\EntropyComponent.cs" />
+    <Compile Include="Assets\Scripts\Character\CharacterHud.cs" />
     <Compile Include="Assets\Scripts\Character\CharacterInput.cs" />
     <Compile Include="Assets\Scripts\Character\CharacterMovement.cs" />
     <Compile Include="Assets\Scripts\Character\MoveCamera.cs" />

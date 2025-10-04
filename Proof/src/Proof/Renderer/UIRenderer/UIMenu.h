@@ -118,6 +118,11 @@ namespace Proof
 		glm::vec2 Rotation = { 0,0 }; // radians
 		glm::vec2 Size = { 1, 1};
 	};
+
+	struct UILayouOffset
+	{
+		glm::vec2 Position = { 0,0 };
+	};
 	struct UICoreComponent
 	{
 		const std::string& GetName()const
@@ -129,6 +134,8 @@ namespace Proof
 		UIElementType ElementType;
 		UIElementID GetElementID() const { return m_ElementID; }
 
+		UILayouOffset LayoutOffset; // only really be used when has a parent with a horizontal or vertical box component
+
 		bool HasChild(UIElementID id)
 		{
 			return std::find(m_Children.begin(), m_Children.end(), id) != m_Children.end();
@@ -138,6 +145,8 @@ namespace Proof
 		{
 			return m_ParentID != 0;
 		}
+
+
 	private:
 		std::string m_Name;
 		UIElementID m_ElementID;

@@ -45,6 +45,7 @@ namespace Proof {
         glm::vec2 alignedPosition = anchorTopLeft + anchorSize * renderData.Alignment;
 
         // Step 3: Add offset position
+        
         glm::vec2 finalPosition = alignedPosition + renderData.Position;
 
      
@@ -74,12 +75,16 @@ namespace Proof {
         // Calculate the transform based on the anchor
         UIRenderFinalData renderData = CalculateRenderData(worldTransformComp, glm::vec2{screenWidth,screenHeight}, elementSize);
 
+        if(element.HasParent())
+        {
+            renderData.Position += element.GetComponent<UICoreComponent>().LayoutOffset.Position;
+		}
         glm::mat4 rotation = glm::toMat4(glm::quat(glm::vec3(worldTransformComp.Rotation, 1.0)));
 
         glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
         // Create a transformation matrix for this elemecv nt
-        glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(renderData.Position, 0.0f)) 
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), glm::vec3(renderData.Position,0.0f))
             *  glm::scale(glm::mat4(1.0f), glm::vec3(renderData.Size, 1.0f));
 
   
@@ -152,7 +157,7 @@ namespace Proof {
 
                     auto& childTransform = child.GetComponent<UICoreComponent>().Transform;
                     childTransform.Position = childStartPos + glm::vec2(xOffset, 0.0f);
-                    xOffset += childTransform.Size.y + layout.Spacing;
+                    xOffset += childTransform.Size.x + layout.Spacing;
 
                     DrawElement(menu, renderer, screenWidth, screenHeight, child);
                 }

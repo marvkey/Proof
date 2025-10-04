@@ -162,6 +162,35 @@ World:
               - NameID: NullState.CharacterInput.IsRunningAction
                 Type: InputAction
                 Data: 9007542612317002724
+          - Script: NullState.EntropyCompnent
+            ScriptClassName: NullState.EntropyCompnent
+            ScriptName: NullState.EntropyCompnent
+            Fields:
+              - NameID: NullState.EntropyCompnent.Entropy
+                Type: Float
+                Data: 0
+              - NameID: NullState.EntropyCompnent.MaxEntropy
+                Type: Float
+                Data: 100
+              - NameID: NullState.EntropyCompnent.DecayRate
+                Type: Float
+                Data: 1
+              - NameID: NullState.EntropyCompnent.SpeedEntropy
+                Type: Bool
+                Data: true
+              - NameID: NullState.EntropyCompnent.SpeedThreshold
+                Type: Float
+                Data: 27
+              - NameID: NullState.EntropyCompnent.SpeedGainMultiplier
+                Type: Float
+                Data: 0.0599999987
+          - Script: NullState.CharacterHud
+            ScriptClassName: NullState.CharacterHud
+            ScriptName: NullState.CharacterHud
+            Fields:
+              - NameID: NullState.CharacterHud.PlayerDefaultHUD
+                Type: UIPanel
+                Data: 1151499359691892158
       CapsuleColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
@@ -189,6 +218,36 @@ World:
         InputPlayer: Player0
         PlayerPrefab: 0
         DontSpawn: true
+      PlayerHUDComponent:
+        UITable:
+          - Layer: Menu
+            Visible: true
+            Panels:
+              []
+          - Layer: Modal
+            Visible: true
+            Panels:
+              []
+          - Layer: Content
+            Visible: true
+            Panels:
+              []
+          - Layer: HUD
+            Visible: true
+            Panels:
+              - PanelID: 1151499359691892158
+                Visible: true
+                VariableRegistry:
+                  VariableRegistryID: 4407006815197224424
+                  Variables:
+                    - Name: EntropyPercent
+                      Type: Float
+                      UUID: 9137722652652106186
+                      Data: 0
+                    - Name: Entropy
+                      Type: String
+                      UUID: 1870280012868056734
+                      Data: 0
     - Entity: 1034448653721098286
       TagComponent:
         Tag: Head

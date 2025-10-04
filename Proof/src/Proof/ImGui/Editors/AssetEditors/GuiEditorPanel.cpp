@@ -420,6 +420,7 @@ namespace Proof
 				UI::EndTreeNode();
 			}
 		}
+		UI::BeginPropertyGrid();
 
 		UI::AttributeDrag("Position", coreComponent.Transform.Position, 0.25);
 		{
@@ -432,6 +433,15 @@ namespace Proof
 			}
 		}
 		UI::AttributeDrag("Size", coreComponent.Transform.Size, 0.25);
+		UI::EndPropertyGrid();
+
+		if (element.HasParent())
+		{
+			ImGui::Separator();
+			ImGui::Text("Only use when have a padding and want to ovveride it a bit");
+			UI::AttributeDrag("PositionOffset", coreComponent.LayoutOffset.Position, 0.1f);
+			ImGui::Separator();
+		}
 
 		//UI::AttributeBool("Visible", element->Visible);
 

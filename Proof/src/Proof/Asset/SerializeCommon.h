@@ -29,5 +29,8 @@ namespace Proof
 
 		static void SerializeInterpolationCurve(YAML::Emitter& out, const std::string& name, const struct InterpolationCurve& curve);
 		static void LoadInterpolationCurve(const YAML::Node& node, const std::string& name,struct InterpolationCurve& curve);
+
+		static void SerializeGradientColor(YAML::Emitter& out, const std::string& name, const struct ColorGradient& curve);
+		static void LoadGradientColor(const YAML::Node& node, const std::string& name, struct ColorGradient& curve);
 	};
 }

@@ -201,7 +201,6 @@ namespace NullState
         }
         void SpeedControl()
         {
-
             Vector3 flatVel = new Vector3(m_RigidBody.Velocity.x, 0, m_RigidBody.Velocity.z);
             float maxSpeed = MoveSpeed;
 

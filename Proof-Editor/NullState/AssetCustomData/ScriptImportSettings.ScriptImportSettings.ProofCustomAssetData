@@ -4,6 +4,16 @@ ScriptImportSettings:
       ScriptName: NullState.Character
       Fields:
         []
+    - Script: NullState.EntropyCompnent
+      ScriptName: NullState.EntropyCompnent
+      Fields:
+        []
+    - Script: NullState.CharacterHud
+      ScriptName: NullState.CharacterHud
+      Fields:
+        - NameID: NullState.CharacterHud.PlayerDefaultHUD
+          Type: UIPanel
+          Data: 0
     - Script: NullState.CharacterInput
       ScriptName: NullState.CharacterInput
       Fields:

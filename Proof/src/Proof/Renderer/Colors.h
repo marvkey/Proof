@@ -129,4 +129,20 @@ namespace Proof
     private:
         std::vector<ColorKey> m_ColorKeys;
     };
+
+
+    struct UBGradientKeyHold
+    {
+        glm::vec4 Color;  // rgba
+        float Time;       // 0..1
+        float _pad[3];    // pad to 16
+    };
+
+    #define MAX_GRADIENT_KEYS 16
+    struct alignas(16) UBGradientKey
+    {
+        UBGradientKeyHold Keys[MAX_GRADIENT_KEYS];
+        int KeyCount;
+        glm::ivec3 _pad; // pad to 16
+    };
 }
