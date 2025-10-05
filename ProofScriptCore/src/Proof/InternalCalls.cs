@@ -184,6 +184,8 @@ namespace Proof
         internal static extern bool Physics_RayCastLayer(ref RaycastData raycastData, out RaycastHit hit, string layerName);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern bool Physics_SphereCast(ref SphereCastData sphereCastData, out RaycastHit hit);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern Entity[] Physics_OverlapSphere(ref Vector3 origin, float radius);
         /*
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern RaycastHit2D[] Physics_Raycast2D(ref RaycastData2D raycastData);

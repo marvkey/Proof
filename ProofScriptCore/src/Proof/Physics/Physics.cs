@@ -99,7 +99,16 @@ namespace Proof
             s_SphereCastData.RequiredComponents = componentFilters;
             return InternalCalls.Physics_SphereCast(ref s_SphereCastData, out hit);
         }
-        /*
+
+        public static Entity[] OverlapSphere(Proof.Vector3 origin, float radius)
+        {
+            Entity[] entities = InternalCalls.Physics_OverlapSphere(ref origin, radius);
+            if(entities == null)
+                return Array.Empty<Entity>();
+
+            return entities;
+        }
+        /*      
         public static RaycastHit2D[] Raycast2D(RaycastData2D raycastData) => InternalCalls.Physics_Raycast2D(ref raycastData);
         public static RaycastHit2D[] Raycast2D(Proof.Vector2 origin, Proof.Vector2 direction, float maxDistance, params Type[] componentFilters)
         {

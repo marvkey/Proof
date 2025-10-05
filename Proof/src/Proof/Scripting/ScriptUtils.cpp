@@ -211,6 +211,7 @@ namespace Proof::ScriptUtils
 		return nullptr;
 	}
 
+
 	void SetFieldValue(MonoObject* classInstance, const ScriptField* fieldInfo, const void* data)
 	{
 		PF_PROFILE_FUNC();
@@ -535,5 +536,166 @@ namespace Proof::ScriptUtils
 		}
 	}
 
+
+	// ManagedArrayUtils
+	//Utils::ValueWrapper ManagedArrayUtils::GetValue(MonoArray* arr, uintptr_t index)
+	//{
+	//	BEY_CORE_VERIFY(arr, "Can't get a value from a nullptr array");
+
+	//	uintptr_t length = mono_array_length(arr);
+	//	BEY_CORE_VERIFY(index < length, "index out of range");
+
+	//	MonoClass* arrayClass = mono_object_get_class((MonoObject*)arr);
+	//	MonoClass* elementClass = mono_class_get_element_class(arrayClass);
+	//	int32_t elementSize = mono_array_element_size(arrayClass);
+	//	ManagedType elementType = ManagedType::FromClass(elementClass);
+
+	//	if (elementType.IsReferenceType())
+	//	{
+	//		MonoObject* elem = mono_array_get(arr, MonoObject*, index);
+	//		return ScriptUtils::MonoObjectToValue(elem, elementType);
+	//	}
+
+	//	// Value type
+	//	char* src = mono_array_addr_with_size(arr, elementSize, index);
+	//	return Utils::ValueWrapper(src, elementSize);
+	//}
+
+	uintptr_t ManagedArrayUtils::Length(MonoArray* arr)
+	{
+		PF_CORE_ASSERT(arr);
+		return mono_array_length(arr);
+	}
+
+	void ManagedArrayUtils::Resize(MonoArray** arr, uintptr_t newLength)
+	{
+		if (arr == nullptr || *arr == nullptr)
+			return;
+
+		MonoClass* arrayClass = mono_object_get_class((MonoObject*)*arr);
+		MonoClass* elementClass = mono_class_get_element_class(arrayClass);
+
+		MonoArray* newArray = mono_array_new(ScriptEngine::GetAppDomain(), elementClass, newLength);
+
+		uintptr_t length = mono_array_length(*arr);
+		uintptr_t copyLength = newLength < length ? newLength : length;
+
+		char* src = mono_array_addr_with_size(*arr, mono_array_element_size(arrayClass), 0);
+		char* dst = mono_array_addr_with_size(newArray, mono_array_element_size(arrayClass), 0);
+		memcpy(dst, src, copyLength * mono_array_element_size(arrayClass));
+
+		*arr = newArray;
+	}
+
+	//void ManagedArrayUtils::RemoveAt(MonoArray** arr, uintptr_t index)
+	//{
+	//	BEY_CORE_VERIFY(arr && *arr, "Cannot remove elements from nullptr array");
+
+	//	uintptr_t length = mono_array_length(*arr);
+	//	BEY_CORE_VERIFY(index < length, "Index out of range");
+
+	//	if (index == length - 1)
+	//	{
+	//		Resize(arr, length - 1);
+	//		return;
+	//	}
+
+	//	MonoClass* arrayClass = mono_object_get_class((MonoObject*)*arr);
+	//	MonoClass* elementClass = mono_class_get_element_class(arrayClass);
+	//	int32_t elementSize = mono_array_element_size(arrayClass);
+	//	MonoArray* temp = mono_array_new(ScriptEngine::GetScriptDomain(), elementClass, length - 1);
+	//	BEY_CORE_VERIFY(temp);
+
+	//	if (index != 0)
+	//	{
+	//		char* src = mono_array_addr_with_size(*arr, elementSize, 0);
+	//		char* dst = mono_array_addr_with_size(temp, elementSize, 0);
+	//		memcpy(dst, src, index * elementSize);
+
+	//		src = mono_array_addr_with_size(*arr, elementSize, index + 1);
+	//		dst = mono_array_addr_with_size(temp, elementSize, index);
+	//		memcpy(dst, src, (length - index - 1) * elementSize);
+	//	}
+	//	else
+	//	{
+	//		char* src = mono_array_addr_with_size(*arr, elementSize, 1);
+	//		char* dst = mono_array_addr_with_size(temp, elementSize, 0);
+	//		memcpy(dst, src, (length - 1) * elementSize);
+	//	}
+
+	//	*arr = temp;
+	//}
+
+	MonoArray* ManagedArrayUtils::Copy(MonoArray* arr)
+	{
+		PF_CORE_ASSERT(arr);
+
+		// TODO: Maybe attempt a deep copy? mono_array_clone only creates a shallow copy, for now that's fine though.
+		return mono_array_clone(arr);
+	}
+
+	MonoArray* ManagedArrayUtils::Create(const std::string& arrayClass, uintptr_t length)
+	{
+		PF_CORE_ASSERT(!arrayClass.empty(), "Cannot create managed array of no type");
+
+		
+		ManagedClass* klass = ScriptRegistry::GetManagedClassByName(arrayClass);
+		PF_CORE_ASSERT(klass, "Unable to find array class");
+
+		return mono_array_new(ScriptEngine::GetAppDomain(), klass->Class, length);
+	}
+
+	MonoArray* ManagedArrayUtils::Create(ManagedClass* arrayClass, uintptr_t length)
+	{
+		PF_CORE_ASSERT(arrayClass, "Cannot create managed array of no type");
+		return mono_array_new(ScriptEngine::GetAppDomain(), arrayClass->Class, length);
+	}
+
+	void ManagedArrayUtils::SetValueInternal(MonoArray* arr, uintptr_t index, void* data)
+	{
+		PF_CORE_ASSERT(arr);
+
+		uintptr_t length = mono_array_length(arr);
+
+		if (index >= length)
+		{
+			PF_ENGINE_WARN("ScriptEngine Index out of bounds in C# array!");
+			return;
+		}
+
+		MonoClass* arrayClass = mono_object_get_class((MonoObject*)arr);
+		MonoClass* elementClass = mono_class_get_element_class(arrayClass);
+		int32_t elementSize = mono_array_element_size(arrayClass);
+		MonoType* elementType = mono_class_get_type(elementClass);
+
+		if (mono_type_is_reference(elementType) || mono_type_is_byref(elementType))
+		{
+			MonoObject* boxed = ScriptUtils::ValueToMonoObject(data, ScriptUtils::GetFieldTypeFromMonoType(elementType));
+			mono_array_setref(arr, index, boxed);
+		}
+		else
+		{
+			char* dst = mono_array_addr_with_size(arr, elementSize, index);
+			memcpy(dst, data, elementSize);
+		}
+	}
+
+	void ManagedArrayUtils::SetValueInternal(MonoArray* arr, uintptr_t index, MonoObject* value)
+	{
+		PF_CORE_ASSERT(arr);
+
+		uintptr_t length = mono_array_length(arr);
+		PF_CORE_ASSERT(index < length, "index out of range");
+
+		MonoClass* arrayClass = mono_object_get_class((MonoObject*)arr);
+		MonoClass* elementClass = mono_class_get_element_class(arrayClass);
+		int32_t elementSize = mono_array_element_size(arrayClass);
+		MonoType* elementType = mono_class_get_type(elementClass);
+
+		if (mono_type_is_reference(elementType) || mono_type_is_byref(elementType))
+			mono_array_setref(arr, index, value);
+		else
+			mono_array_set(arr, MonoObject*, index, value);
+	}
 }
 

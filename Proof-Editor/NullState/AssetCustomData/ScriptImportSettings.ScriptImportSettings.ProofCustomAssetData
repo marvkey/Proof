@@ -4,6 +4,10 @@ ScriptImportSettings:
       ScriptName: NullState.Character
       Fields:
         []
+    - Script: NullState.Turret
+      ScriptName: NullState.Turret
+      Fields:
+        []
     - Script: NullState.EntropyCompnent
       ScriptName: NullState.EntropyCompnent
       Fields:

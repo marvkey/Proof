@@ -2007,6 +2007,13 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		MonoArray* RequiredComponentTypes;
 		MonoArray* ExcludeEntities;
 	};
+
+	struct OverlapData
+	{
+		uint64_t HitEntity = 0;
+		//MonoArray* RequiredComponentTypes;
+		//MonoArray* ExcludeEntities;
+	};;
 	
 	bool Physics_RayCastBase(ScriptRaycastData* inRaycastData, ScriptRaycastHit* outHit, const std::string& layerName = std::string())
 	{
@@ -2303,6 +2310,33 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 
 		return success;
+	}
+
+
+	// retursn teh first 50 thigsn that overlapp
+	static MonoArray* Physics_OverlapSphere(glm::vec3* origin, float radius)
+	{
+		Count<World> scene = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(scene, "Physics.SetGravity No active World!");
+		std::array<OverlapHit, OVERLAP_MAX_COLLIDERS> results;
+		uint32_t count = 0;
+		scene->GetPhysicsWorld()->OverlapSphere(*origin, radius, results,count);
+
+		if (count == 0)
+			return nullptr;
+
+		MonoArray* outEntities = nullptr;
+
+		outEntities = ScriptUtils::ManagedArrayUtils::Create("Proof.Entity", count);
+		for (uint32_t i = 0; i < count; i++)
+		{
+			UUID id = results[i].Actor->GetEntity().GetUUID();
+
+			MonoObject* instance = ScriptUtils::ValueToMonoObject(&id, ScriptFieldType::Entity);
+			ScriptUtils::ManagedArrayUtils::SetValue<uint64_t>(outEntities, i, results[i].Actor->GetEntity().GetUUID());
+		}
+
+		return outEntities;
 	}
 	void Physics_GetGravity(glm::vec3* gravity)
 	{
@@ -4244,7 +4278,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			//PF_ADD_INTERNAL_CALL(Physics_Raycast2D);
 			//PF_ADD_INTERNAL_CALL(Physics_OverlapBox);
 			//PF_ADD_INTERNAL_CALL(Physics_OverlapCapsule);
-			//PF_ADD_INTERNAL_CALL(Physics_OverlapSphere);
+			PF_ADD_INTERNAL_CALL(Physics_OverlapSphere);
 			//PF_ADD_INTERNAL_CALL(Physics_OverlapBoxNonAlloc);
 			//PF_ADD_INTERNAL_CALL(Physics_OverlapCapsuleNonAlloc);
 			//PF_ADD_INTERNAL_CALL(Physics_OverlapSphereNonAlloc);

@@ -269,7 +269,15 @@ namespace Proof
             string className = this.GetType().FullName;
             string methodName = callback.Method.Name;
 
-            InternalCalls.World_Invoke(this.ID, className, methodName, time, true, 0.0f);
+            InternalCalls.World_Invoke(this.ID, className, methodName, time, true, repeatTime);
+        }
+
+        public void InvokeRepeat(Action callback, float time)
+        {
+            string className = this.GetType().FullName;
+            string methodName = callback.Method.Name;
+
+            InternalCalls.World_Invoke(this.ID, className, methodName, time, true, time);
         }
     }
 }

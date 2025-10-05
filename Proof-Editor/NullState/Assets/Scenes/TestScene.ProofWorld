@@ -191,6 +191,11 @@ World:
               - NameID: NullState.CharacterHud.PlayerDefaultHUD
                 Type: UIPanel
                 Data: 1151499359691892158
+          - Script: NullState.Character
+            ScriptClassName: NullState.Character
+            ScriptName: NullState.Character
+            Fields:
+              []
       CapsuleColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
@@ -326,6 +331,48 @@ World:
         IsTrigger: false
         Center: [0, 0, 0]
         Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 12573435654866647045
+      TagComponent:
+        Tag: Torus
+        tags: []
+      TransformComponent:
+        Location: [0, -12.0504646, 0]
+        Rotation: [0, 0, 0]
+        Scale: [11.1999998, 6.5999999, 8.19999981]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 53
+        Visible: true
+      ScriptComponent:
+        Scripts:
+          - Script: NullState.Turret
+            ScriptClassName: NullState.Turret
+            ScriptName: NullState.Turret
+            Fields:
+              - NameID: NullState.Turret.Muzzle
+                Type: Entity
+                Data: 0
+              - NameID: NullState.Turret.Range
+                Type: Float
+                Data: 15
+      MeshColliderComponent:
+        ColliderID: 3155843288179184268
+        IsTrigger: false
+        UseSharedShape: false
         PhysicsMaterialPointerID: 0
       RigidBodyComponent:
         Mass: 1
