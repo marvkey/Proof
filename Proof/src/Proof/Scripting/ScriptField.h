@@ -295,12 +295,8 @@ namespace Proof
 
 			if (m_RuntimeInstance != nullptr)
 			{
-				Buffer valueBuffer;
-				if (fieldStorage->GetValueRuntime(valueBuffer))
-				{
-					SetValueRuntime(valueBuffer.Data);
-					valueBuffer.Release();
-				}
+				Buffer valueBuffer = fieldStorage->GetValueBuffer();
+				SetValueRuntime(valueBuffer.Data);
 			}
 			else
 			{
@@ -397,12 +393,8 @@ namespace Proof
 
 			if (m_RuntimeInstance != nullptr)
 			{
-				Buffer valueBuffer;
-				if (fieldStorage->GetValueRuntime(valueBuffer))
-				{	
-					SetValueRuntime(valueBuffer.Data);
-					valueBuffer.Release();
-				}
+				Buffer valueBuffer = fieldStorage->GetValueBuffer();
+				SetValueRuntime(valueBuffer.Data);
 			}
 			else
 			{
@@ -545,12 +537,9 @@ namespace Proof
 
 			if (m_RuntimeInstance != nullptr)
 			{
-				Buffer valueBuffer;
-				if (fieldStorage->GetRuntimeArray(valueBuffer))
-				{
-					SetRuntimeArray(valueBuffer);
-					valueBuffer.Release();
-				}
+
+				Buffer valueBuffer = fieldStorage->GetValueBuffer();
+				SetRuntimeArray(valueBuffer);
 			}
 			else
 			{

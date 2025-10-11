@@ -1,12 +1,12 @@
+using Proof.Swizzle;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Runtime.InteropServices;
-
-using System.Numerics;
+using System.IO;
 using System.Linq;
-using Proof.Swizzle;
+using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
 
 // ReSharper disable InconsistentNaming
@@ -468,6 +468,10 @@ namespace Proof
         #endregion
 
 
+        Quaternion RotateTowards(Quaternion target, float maxDegreeDelta)
+        {
+            return Quaternion.RotateTowards(this, target, maxDegreeDelta);
+        }
         #region Operators
         
         /// <summary>
@@ -752,7 +756,7 @@ namespace Proof
         /// <summary>
         /// Calculates a proper spherical interpolation between two Quaternionernions (only works for normalized Quaternionernions).
         /// </summary>
-        public static Quaternion SLerp(Quaternion x, Quaternion y, float a)
+        public static Quaternion Slerp(Quaternion x, Quaternion y, float a)
         {
             var z = y;
             var cosTheta = (double)Dot(x, y);
@@ -771,11 +775,110 @@ namespace Proof
         /// </summary>
         public static Quaternion Squad(Quaternion q1, Quaternion q2, Quaternion s1, Quaternion s2, float h) => Mix(Mix(q1, q2, h), Mix(s1, s2, h), 2 * (1 - h) * h);
 
+
+        // add by proof
+
+        public static Quaternion LookRotation(Vector3 forward, Vector3 up)
+        {
+            //https://github.com/Unity-Technologies/Unity.Mathematics/blob/master/src/Unity.Mathematics/quaternion.cs
+            Vector3 t = (Vector3.Cross(up, forward)).Normalized;
+
+            var mat3 = new Matrix3(t, Vector3.Cross(forward, t), forward);
+            return new Quaternion(mat3);
+        }
+
+        public static float Distance(Quaternion q1, Quaternion q2)
+        {
+            float v = Dot(q1,q2);
+            v = Mathf.Clamp(v, -1.0f, 1.0f);
+            return 2.0f * glm.Acos(glm.Abs(v)); 
+        }
+        //https://github.com/miguelibero/darmok/blob/7a7a2b709f7f7649446f049b0f8d9ff4664364a1/src/math.cpp#L186
+        public static Quaternion RotateTowards(Quaternion current,Quaternion target, float maxDegreeDelta)
+        {
+            float maxRadiansDelta = Mathf.DegreesToRadians(maxDegreeDelta);
+
+            var dist = Distance(current, target);
+
+            if (glm.Abs(dist) < maxRadiansDelta)
+                return target;
+
+            float t = glm.Min(1.0f, maxRadiansDelta / dist);
+
+            return Slerp(current,target, t);
+
+        }
+
+
+        public static Quaternion FromToRotation(Vector3 fromDir, Vector3 toDir)
+        {
+            fromDir = fromDir.Normalized;
+            toDir = toDir.Normalized;
+
+            float dot = Vector3.Dot(fromDir, toDir);
+
+            // If vectors are almost identical ? no rotation
+            if (dot > 0.9999f)
+                return Quaternion.Identity;
+
+            // If vectors are opposite ? rotate 180° around an arbitrary perpendicular axis
+            if (dot < -0.9999f)
+            {
+                Vector3 axis = Vector3.Cross(Mathf.Right, fromDir);
+                if (axis.Magnitude < 0.0001f)
+                    axis = Vector3.Cross(Mathf.Up, fromDir);
+                axis = axis.Normalized;
+                return Quaternion.AngleAxis(Mathf.PI, axis);
+            }
+
+            Vector3 axisOfRotation = Vector3.Cross(fromDir, toDir);
+            float angle = Mathf.Acos(dot);
+            return Quaternion.AngleAxis(angle, axisOfRotation.Normalized);
+        }
+
+        public static Quaternion AngleAxis(float angleRadians, Vector3 axis)
+        {
+            // Ensure axis is normalized to avoid scaling artifacts
+            axis = axis.Normalized;
+
+            float halfAngle = angleRadians * 0.5f;
+            float s = Mathf.Sin(halfAngle);
+            float c = Mathf.Cos(halfAngle);
+
+            return new Quaternion(
+                axis.x * s,
+                axis.y * s,
+                axis.z * s,
+                c
+            );
+        }
+        /*
+        public static Quaternion LookRotationSafe(Vector3 forward, Vector3 up)
+        {
+            //https://github.com/Unity-Technologies/Unity.Mathematics/blob/master/src/Unity.Mathematics/quaternion.cs
+
+            float forwardLengthSq = Vector3.Dot(forward, forward);
+            float upLengthSq = Vector3.Dot(up, up);
+
+            forward *= rsqrt(forwardLengthSq);
+            up *= rsqrt(upLengthSq);
+
+            float3 t = cross(up, forward);
+            float tLengthSq = dot(t, t);
+            t *= rsqrt(tLengthSq);
+
+            float mn = min(min(forwardLengthSq, upLengthSq), tLengthSq);
+            float mx = max(max(forwardLengthSq, upLengthSq), tLengthSq);
+
+            bool accept = mn > 1e-35f && mx < 1e35f && isfinite(forwardLengthSq) && isfinite(upLengthSq) && isfinite(tLengthSq);
+            return quaternion(select(float4(0.0f, 0.0f, 0.0f, 1.0f), quaternion(float3x3(t, cross(forward, t), forward)).value, accept));
+        }
+        */
         #endregion
 
 
         #region Component-Wise Static Functions
-        
+
         /// <summary>
         /// Returns a bVector4 from component-wise application of IsInfinity (float.IsInfinity(v)).
         /// </summary>

@@ -16,6 +16,14 @@ namespace NullState
         {
             get { return IsRunning ? RunningSpeed : WalkingSpeed; }
         }
+
+        public float GetCurrentSpeed()
+        {
+            Vector3 flatVel = new Vector3(m_RigidBody.Velocity.x, 0, m_RigidBody.Velocity.z);
+            return flatVel.Magnitude;
+        }   
+
+
         public float RotationSpeed = 10;
         public float JumpForce = 12;
         public float JumpCoolDown = 0.5f;
@@ -199,6 +207,7 @@ namespace NullState
                 State = MovementState.Walking;
             }
         }
+        float timeAboveMaxSpeed = 0;
         void SpeedControl()
         {
             Vector3 flatVel = new Vector3(m_RigidBody.Velocity.x, 0, m_RigidBody.Velocity.z);
@@ -212,6 +221,8 @@ namespace NullState
                     Vector3 limitedVel = flatVel.Normalized * maxSpeed;
                     m_RigidBody.Velocity = new Vector3(limitedVel.x, m_RigidBody.Velocity.y, limitedVel.z);
                 }
+
+                timeAboveMaxSpeed = 0.0f;
                 return;
             }
 
@@ -229,6 +240,12 @@ namespace NullState
                 Vector3 adjustedVel = flatVel * factor;
 
                 m_RigidBody.Velocity = new Vector3(adjustedVel.x, m_RigidBody.Velocity.y, adjustedVel.z);
+
+                timeAboveMaxSpeed += World.GetDeltaTime();
+            }
+            else
+            {
+                timeAboveMaxSpeed = 0.0f;
             }
         }
          

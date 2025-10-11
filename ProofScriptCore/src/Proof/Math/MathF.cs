@@ -54,6 +54,14 @@ namespace Proof
             // Perform the linear interpolation
             return start + (end - start) * t;
         }
+
+        public static float InverseLerp(float a, float b, float value)
+        {
+            if (Mathf.Abs(b - a) < 1e-6f)
+                return 0f; // Prevent divide-by-zero
+
+            return Mathf.Clamp((value - a) / (b - a),0.0f,1.0f);
+        }
         public static float Asin(float x) => (float)Math.Asin(x);
         public static float Atan(float x) => (float)Math.Atan(x);
         public static float Atan2(float y, float x) => (float)Math.Atan2(y, x);

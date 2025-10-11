@@ -4,7 +4,7 @@
 #include <unordered_map>
 namespace Proof
 {
-	class PersistentDataManager : RefCounted
+	class PersistentDataManager : public RefCounted
 	{
 	public:
 		PersistentDataManager()

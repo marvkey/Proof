@@ -14,7 +14,7 @@ namespace Proof
 	};
 
 
-	class Wave : RefCounted
+	class Wave : public RefCounted
 	{
 	public:
 		Wave(Water* water, WaveType type);

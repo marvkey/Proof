@@ -30,7 +30,9 @@
 #include "Proof/Input/ElevatedInputSystem/InputAction.h"
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 #include "Proof/Renderer/Font.h"
+#include "Proof/Scene/Material.h"
 
+#include "Proof/Renderer/RenderMaterial.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/UIRenderer/UIRenderer.h"
 #include "Proof/Renderer/CommandBuffer.h"
@@ -215,6 +217,8 @@ namespace Proof
 
 		return screenSpacePos;
 	}
+
+	Count<Material> glitch;
 	void World::OnRender(Count<class WorldRenderer> worldRenderer, FrameTime timestep, const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane, float fov,
 		std::function<void(Count<class WorldRenderer>)> injectRendererCode,
 		std::function<void(Count<class Renderer2D>)> inject2DRenderer )
@@ -225,6 +229,14 @@ namespace Proof
 		worldRenderer->SetContext(this);
 		worldRenderer->BeginScene({ camera,nearPlane,farPlane,fov }, cameraLocation);
 
+		if (glitch == nullptr)
+		{
+			auto rd = RenderMaterial::Create("Glitch",Renderer::GetShader("ScreenGlitch"));
+
+			glitch = Count<Material>::Create("Glitch", rd);
+		}
+
+		worldRenderer->SubmitPostProcessMaterial(glitch);
 		// lighting
 		{
 			//directional lights
@@ -1356,8 +1368,11 @@ namespace Proof
 				return;
 
 			
-			if(typeid(Componnents) == typeid(ScriptComponent))
+			if (typeid(Componnents) == typeid(ScriptComponent))
+			{
+
 				dst.GetCurrentWorld()->GetScriptWorld()->DuplicateScriptInstance(src, dst);
+			}
 
 		}(), ...);
 	}

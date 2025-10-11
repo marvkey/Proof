@@ -60,6 +60,12 @@ namespace Proof
 		AssetManager::SaveAsset(m_Material->GetID());
 	}
 
+	enum class ShaderType
+	{
+		Standard,
+		Transparent,
+		Glitchy
+	};
 	void Proof::MaterialEditorPanel::RenderDetailSettings()
 	{
 		std::string name = m_Material->Name;
@@ -68,41 +74,64 @@ namespace Proof
 		auto shaderName = fmt::format("Shader: {}", renderMaterial->GetConfig().Shader->GetName());
 		ImGui::Text(shaderName.c_str());
 
-		bool transparentShader = renderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBRTransparent_Static");
+		PbrSurfaceMaterial surfaceMat(m_Material);
 
-		if (UI::AttributeBool("Transparent",transparentShader))
+		ShaderType type;
+
+		if(renderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBR_Static"))
+			type = ShaderType::Standard;
+		else if (renderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBRTransparent_Static"))
+			type = ShaderType::Transparent;
+		else
+			type = ShaderType::Glitchy;
+
+		if(UI::EnumCombo("ShaderType",type))
 		{
-			if (transparentShader)
-				m_Material->SetMaterialShader(m_Material->Name, Renderer::GetShader("ProofPBRTransparent_Static"));
-			else
+			switch (type)
+			{
+			case ShaderType::Standard:
 				m_Material->SetMaterialShader(m_Material->Name, Renderer::GetShader("ProofPBR_Static"));
+				break;
+			case ShaderType::Transparent:
+				m_Material->SetMaterialShader(m_Material->Name, Renderer::GetShader("ProofPBRTransparent_Static"));
+				break;
+			case ShaderType::Glitchy:
+				m_Material->SetMaterialShader(m_Material->Name, Renderer::GetShader("ProofPBR_Glitchy"));
+				break;
+			default:
+				break;
+			}
 			// dont render this frame so the render material can be set ready in the next frame
 			return;
 		}
+
+		bool transparentShader = renderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBRTransparent_Static");
+
+	
 		UI::PushModified(m_NeedsSaving);
 		//Albedo
 		if(UI::AttributeTreeNode("Albedo"))
 		{
 			AssetID outHandle ;
-			if (m_Material->GetAlbedoMap() == nullptr)
+			if (surfaceMat.GetAlbedoMap() == nullptr)
 			{
-				m_Material->SetAlbedoMap(Renderer::GetWhiteTexture());
+				surfaceMat.SetAlbedoMap(Renderer::GetWhiteTexture());
 				outHandle = 0;
 			}
 			else
-				outHandle = m_Material->GetAlbedoMap()->GetID();
+				outHandle = surfaceMat.GetAlbedoMap()->GetID();
 
 			if (UI::AttributeTextureAssetReference("", outHandle))
 			{
 				if (AssetManager::HasAsset(outHandle))
-					m_Material->SetAlbedoMap(AssetManager::GetAsset<Texture2D>(outHandle));
+					surfaceMat.SetAlbedoMap(AssetManager::GetAsset<Texture2D>(outHandle));
 				else
-					m_Material->SetAlbedoMap(Renderer::GetWhiteTexture());
+					surfaceMat.SetAlbedoMap(Renderer::GetWhiteTexture());
 			}
 			
 			ImGui::SameLine();
 			if(!transparentShader)
-				UI::AttributeColor("", m_Material->GetAlbedoColor());
+				UI::AttributeColor("", surfaceMat.GetAlbedoColor());
 			else
 				UI::AttributeColor("", renderMaterial->GetVector4("u_MaterialUniform.Albedo"));
 			UI::EndTreeNode();
@@ -112,23 +141,23 @@ namespace Proof
 		if (UI::AttributeTreeNode("Normal"))
 		{
 			AssetID outHandle;
-			if (m_Material->GetNormalMap() == nullptr)
+			if (surfaceMat.GetNormalMap() == nullptr)
 			{
-				m_Material->SetNormalMap(Renderer::GetWhiteTexture());
+				surfaceMat.SetNormalMap(Renderer::GetWhiteTexture());
 				outHandle = 0;
 			}
 			else
-				outHandle = m_Material->GetNormalMap()->GetID();
+				outHandle = surfaceMat.GetNormalMap()->GetID();
 			if (UI::AttributeTextureAssetReference("", outHandle))
 			{
 				if (AssetManager::HasAsset(outHandle))
-					m_Material->SetNormalMap(AssetManager::GetAsset<Texture2D>(outHandle));
+					surfaceMat.SetNormalMap(AssetManager::GetAsset<Texture2D>(outHandle));
 				else
-					m_Material->SetNormalMap(Renderer::GetWhiteTexture());
+					surfaceMat.SetNormalMap(Renderer::GetWhiteTexture());
 			}
 
 			ImGui::SameLine();
-			UI::AttributeBool("", m_Material->GetNormalTextureToggle());
+			UI::AttributeBool("", surfaceMat.GetNormalTextureToggle());
 			UI::EndTreeNode();
 		}
 		
@@ -136,23 +165,23 @@ namespace Proof
 		if (UI::AttributeTreeNode("Metalness"))
 		{
 			AssetID outHandle;
-			if (m_Material->GetMetalnessMap() == nullptr)
+			if (surfaceMat.GetMetalnessMap() == nullptr)
 			{
-				m_Material->SetMetalnessMap(Renderer::GetWhiteTexture());
+				surfaceMat.SetMetalnessMap(Renderer::GetWhiteTexture());
 				outHandle = 0;
 			}
 			else
-				outHandle = m_Material->GetMetalnessMap()->GetID();
+				outHandle = surfaceMat.GetMetalnessMap()->GetID();
 
 			if (UI::AttributeTextureAssetReference("", outHandle))
 			{
 				if (AssetManager::HasAsset(outHandle))
-					m_Material->SetMetalnessMap(AssetManager::GetAsset<Texture2D>(outHandle));
+					surfaceMat.SetMetalnessMap(AssetManager::GetAsset<Texture2D>(outHandle));
 				else
-					m_Material->SetMetalnessMap(Renderer::GetWhiteTexture());
+					surfaceMat.SetMetalnessMap(Renderer::GetWhiteTexture());
 			}
 			ImGui::SameLine();
-			UI::AttributeSlider("", m_Material->GetMetalness(),0,1);
+			UI::AttributeSlider("", surfaceMat.GetMetalness(),0,1);
 			UI::EndTreeNode();
 		}
 
@@ -160,45 +189,59 @@ namespace Proof
 		if (UI::AttributeTreeNode("Roughness"))
 		{
 			AssetID outHandle;
-			if (m_Material->GetRoughnessMap() == nullptr)
+			if (surfaceMat.GetRoughnessMap() == nullptr)
 			{
-				m_Material->SetRoughnessMap(Renderer::GetWhiteTexture());
+				surfaceMat.SetRoughnessMap(Renderer::GetWhiteTexture());
 				outHandle = 0;
 			}
 			else
-				outHandle = m_Material->GetRoughnessMap()->GetID();
+				outHandle = surfaceMat.GetRoughnessMap()->GetID();
 
 			if (UI::AttributeTextureAssetReference("", outHandle))
 			{
 				if (AssetManager::HasAsset(outHandle))
-					m_Material->SetRoughnessMap(AssetManager::GetAsset<Texture2D>(outHandle));
+					surfaceMat.SetRoughnessMap(AssetManager::GetAsset<Texture2D>(outHandle));
 				else
-					m_Material->SetRoughnessMap(Renderer::GetWhiteTexture());
+					surfaceMat.SetRoughnessMap(Renderer::GetWhiteTexture());
 			}
 
 			ImGui::SameLine();
-			UI::AttributeSlider("", m_Material->GetRoughness(), 0, 1);
+			UI::AttributeSlider("", surfaceMat.GetRoughness(), 0, 1);
 			UI::EndTreeNode();
 		}
 
 		if (UI::AttributeTreeNode("Emission"))
 		{
-			UI::AttributeDrag("Emission", m_Material->GetEmission(), 0.15, 0);
+			UI::AttributeDrag("Emission", surfaceMat.GetEmission(), 0.15, 0);
 
-			bool& ovverideToggle = m_Material->GetEmissionOverrideColorToggle();
+			bool& ovverideToggle = surfaceMat.GetEmissionOverrideColorToggle();
 
 			UI::AttributeBool("OverrideEmissionColor", ovverideToggle);
 
 
 			UI::PushItemDisabled(!ovverideToggle);
-			UI::AttributeColor("EmissionColor", m_Material->GetEmissionOverrideColor());
+			UI::AttributeColor("EmissionColor", surfaceMat.GetEmissionOverrideColor());
 			UI::PopItemDisabled();
 
 			UI::EndTreeNode();
 		}
 		
-		UI::AttributeDrag("Tiling", m_Material->GetTiling());
-		UI::AttributeDrag("Offset", m_Material->GetOffset());
+		UI::AttributeDrag("Tiling", surfaceMat.GetTiling());
+		UI::AttributeDrag("Offset", surfaceMat.GetOffset());
+
+		if(type ==ShaderType::Glitchy)
+		{
+			float glitchRate = renderMaterial->GetFloat("GlitchRate");
+			if (UI::AttributeDrag("GlitchRate", glitchRate,0.1f,0.f,10.f))
+			{
+				renderMaterial->Set("GlitchRate", glitchRate);
+			}
+			float glitchScale = renderMaterial->GetFloat("GlitchScale");
+			if (UI::AttributeDrag("GlitchScale", glitchScale, 0.1f, 0.f, 10.f))
+			{
+				renderMaterial->Set("GlitchScale", glitchScale);
+			}
+		}
 
 		UI::PopModified();
 	}

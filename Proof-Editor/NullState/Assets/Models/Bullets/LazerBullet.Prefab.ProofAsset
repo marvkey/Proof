@@ -1,0 +1,49 @@
+AssetType: Prefab
+ID: 17264578630111646164
+EntityOwner: 13955222777892492764
+Entities:
+  - Entity: 13955222777892492764
+    TagComponent:
+      Tag: LazerBullet
+      tags: []
+    TransformComponent:
+      Location: [0, -9.69299984, -1.46599996]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: [15185923007858705429]
+    BoxColliderComponent:
+      IsTrigger: true
+      Center: [0, 0, 0]
+      Size: [0.600000024, 0.5, 2.70000005]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: false
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 15185923007858705429
+    TagComponent:
+      Tag: LazerBulletMesh
+      tags: []
+    TransformComponent:
+      Location: [0, 0, -0.00018465519]
+      Rotation: [1.57079637, -0, 0]
+      Scale: [0.666999996, 2.49153447, 0.580999792]
+    HierarchyComponent:
+      ParentHandle: 13955222777892492764
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 50
+      Visible: true
+      MaterialTable:
+        - Material: ""
+          AssetID: 5948008084427186226
+          Index: 0

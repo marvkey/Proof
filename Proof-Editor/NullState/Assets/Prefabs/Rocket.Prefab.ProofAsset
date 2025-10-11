@@ -1,0 +1,106 @@
+AssetType: Prefab
+ID: 16587156431716427673
+EntityOwner: 13751592250503210604
+Entities:
+  - Entity: 13751592250503210604
+    TagComponent:
+      Tag: Rocket
+      tags: []
+    TransformComponent:
+      Location: [-3.78845787, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: [3186977875424619877]
+    ScriptComponent:
+      Scripts:
+        - Script: NullState.HomingMissile
+          ScriptClassName: NullState.HomingMissile
+          ScriptName: NullState.HomingMissile
+          Fields:
+            - NameID: NullState.HomingMissile.m_MaxDistancePredict
+              Type: Float
+              Data: 100
+            - NameID: NullState.HomingMissile.TargetEntity
+              Type: Entity
+              Data: 0
+            - NameID: NullState.HomingMissile.Speed
+              Type: Float
+              Data: 50
+            - NameID: NullState.HomingMissile.RotationSpeed
+              Type: Float
+              Data: 95
+            - NameID: NullState.HomingMissile.m_MinDistancePredict
+              Type: Float
+              Data: 5
+            - NameID: NullState.HomingMissile.m_MaxTimePrediction
+              Type: Float
+              Data: 5
+            - NameID: NullState.HomingMissile.m_DeviationAmount
+              Type: Float
+              Data: 2
+            - NameID: NullState.HomingMissile.m_DeviationSpeed
+              Type: Float
+              Data: 2
+            - NameID: NullState.HomingMissile.ExplosionPrefab
+              Type: Prefab
+              Data: 0
+        - Script: NullState.DamageComponent
+          ScriptClassName: NullState.DamageComponent
+          ScriptName: NullState.DamageComponent
+          Fields:
+            - NameID: NullState.DamageComponent.DamageAmount
+              Type: Float
+              Data: 35
+    BoxColliderComponent:
+      IsTrigger: false
+      Center: [0, 0, 0]
+      Size: [1, 1, 2.29999995]
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 3186977875424619877
+    TagComponent:
+      Tag: RocketMesh
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [1.57079637, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 13751592250503210604
+      Children: [16725674180210205098]
+    MeshComponent:
+      MeshAssetPointerID: 11358710558737543565
+      Visible: true
+  - Entity: 16725674180210205098
+    TagComponent:
+      Tag: Point Light
+      tags: []
+    TransformComponent:
+      Location: [0, -0.884621918, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 3186977875424619877
+      Children: []
+    PointLightComponent:
+      Color: [0.926584363, 1, 0.174074054]
+      Intensity: 4.65999985
+      MinRadius: 0
+      Radius: 19.8999996
+      Falloff: 1
+      CastsShadows: false
+      SoftShadows: false
+      ShadowStrength: 0.5
+      ShadowSoftness: 0.5

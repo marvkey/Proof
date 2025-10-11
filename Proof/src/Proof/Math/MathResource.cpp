@@ -87,6 +87,22 @@ namespace Proof::MathResource
 	bool DecomposeTransform(const glm::mat4& transform, glm::vec3& translation, glm::quat& rotation, glm::vec3& scale)
 	{
 		using namespace glm;
+
+#if 0
+
+		vec3 skew;
+		vec4 perspective;
+
+		// GLM’s built-in decompose: note argument order
+		if (!glm::decompose(transform, scale, rotation, translation, skew, perspective))
+			return false;
+
+		// glm::decompose() gives rotation inverted, so fix it
+		rotation = glm::conjugate(rotation);
+
+		return true;
+		#endif
+
 		using T = float;
 
 		mat4 LocalMatrix(transform);

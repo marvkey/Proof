@@ -4,14 +4,6 @@ ScriptImportSettings:
       ScriptName: NullState.Character
       Fields:
         []
-    - Script: NullState.Turret
-      ScriptName: NullState.Turret
-      Fields:
-        []
-    - Script: NullState.EntropyCompnent
-      ScriptName: NullState.EntropyCompnent
-      Fields:
-        []
     - Script: NullState.CharacterHud
       ScriptName: NullState.CharacterHud
       Fields:
@@ -39,5 +31,32 @@ ScriptImportSettings:
         []
     - Script: NullState.MoveCamera
       ScriptName: NullState.MoveCamera
+      Fields:
+        []
+    - Script: NullState.DamageComponent
+      ScriptName: NullState.DamageComponent
+      Fields:
+        []
+    - Script: NullState.HomingMissile
+      ScriptName: NullState.HomingMissile
+      Fields:
+        - NameID: NullState.HomingMissile.ExplosionPrefab
+          Type: Prefab
+          Data: 0
+    - Script: NullState.Turret
+      ScriptName: NullState.Turret
+      Fields:
+        - NameID: NullState.Turret.Bullet
+          Type: Prefab
+          Data: 0
+        - NameID: NullState.Turret.MuzzleFlash
+          Type: Prefab
+          Data: 0
+    - Script: NullState.EntropyCompnent
+      ScriptName: NullState.EntropyCompnent
+      Fields:
+        []
+    - Script: NullState.HealthComponent
+      ScriptName: NullState.HealthComponent
       Fields:
         []

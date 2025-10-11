@@ -211,6 +211,8 @@ namespace Proof
 		Count <RenderPass> GetPreDepthRenderPass() { return m_PreDepthPass; }
 
 		void SubmitParticleEmitter(Count<class ParticleEmitter> emiter);
+
+		void SubmitPostProcessMaterial(Count<class Material> material);
 	public:
 		// preProcess
 		WorldRendererDebugOptions DebugOptions;
@@ -223,6 +225,8 @@ namespace Proof
 		DepthOfFieldSettings& DOFSettings;
 		SSRSettings& SSRSettings;
 	private:
+
+		std::vector<Count<class Material>> m_PostProcessMaterials;
 
 		RendererCustomTypeSet<std::unordered_map<UUID, std::pair<Count<class GrassBladePlane>, glm::mat4>>> m_GrassPlanes;
 		Count<class World> m_ActiveWorld;
@@ -342,6 +346,8 @@ namespace Proof
 		// compoiste pass
 		Count<RenderPass> m_SkyBoxPass;
 		Count<RenderPass> m_CompositePass;
+
+		Count<FrameBuffer> m_PostProcessFrameBuffer;
 		Count<RenderMaterial> m_CompositeMaterial;
 		Count<FrameBuffer> m_ExternalCompositeFrameBuffer;
 		//AO
@@ -479,6 +485,8 @@ namespace Proof
 		Count<RenderPass> m_ParticleRenderPass;
 
 		std::unordered_set<Count<class ParticleEmitter>> m_Emitters;
+
+		std::unordered_map<Count<class Shader>, Count<class RenderPass>> m_PostProcessPasses;
 	private:
 
 		// only put attach to depth when you are sure u are not changing any vertex position
@@ -498,6 +506,7 @@ namespace Proof
 		void PreDepthPass();
 		void GeometryPass();
 		void LightFrustrumAndCullingPass();
+		void RenderPostProcessingPasses();
 		void CompositePass();
 
 		void HZBPass();
@@ -517,6 +526,8 @@ namespace Proof
 		void DrawScene();
 		void ClearPass(Count<RenderPass> renderPass, bool explicitClear);
 		void RenderParticleSystem();
+
+		void CreatePostProcessRenderPass(Count<class RenderMaterial> material);
 		// tehse are static so basically when wer are writng code we avoid errors of 
 		// writing code to a speicif world rendere class
 

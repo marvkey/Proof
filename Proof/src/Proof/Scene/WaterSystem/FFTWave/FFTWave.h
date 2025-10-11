@@ -21,7 +21,7 @@ namespace Proof
 	class Entity;
 	class ImageView;
 
-	class FFTWaveCascade : RefCounted
+	class FFTWaveCascade : public RefCounted
 	{
 	public:
 

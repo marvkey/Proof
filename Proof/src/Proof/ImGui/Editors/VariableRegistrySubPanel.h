@@ -3,7 +3,7 @@
 
 namespace Proof
 {
-	class VariableRegistrySubPanel : RefCounted
+	class VariableRegistrySubPanel : public RefCounted
 	{
 	public:
 		VariableRegistrySubPanel(Count<class VariableRegistry> registry);

@@ -760,7 +760,22 @@ namespace Proof
 			m_SkyBoxPass->AddGlobalInput(m_GlobalInputs);
 
 		}
+		// post proccess pass
+		{
 
+			{
+
+				FrameBufferConfig postProcessFramebufferSpec;
+				postProcessFramebufferSpec.DebugName = "PostProcesss";
+				postProcessFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
+				postProcessFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
+				//compFramebufferSpec.Transfer = true;
+				m_PostProcessFrameBuffer = FrameBuffer::Create(postProcessFramebufferSpec);
+
+				
+			}
+
+		}
 		//composite pass
 		{
 			/**
@@ -794,6 +809,8 @@ namespace Proof
 				m_CompositePass = RenderPass::Create(renderPassSpec);
 				m_CompositeMaterial = RenderMaterial::Create({ "Composite", Renderer::GetShader("WorldComposite") });
 			}
+
+			
 			//AmbientOcclusion
 			{
 				//AO-compoiste
@@ -1935,6 +1952,7 @@ namespace Proof
 			LightFrustrumAndCullingPass();
 			GeometryPass();
 			RenderParticleSystem();
+			RenderPostProcessingPasses();
 			CompositePass();
 
 			Renderer::EndCommandBuffer(m_CommandBuffer);
@@ -1976,6 +1994,7 @@ namespace Proof
 			m_TotalSubmeshesContext = 0;
 
 			m_Emitters.clear();
+			m_PostProcessMaterials.clear();
 		}
 
 		m_Timers.TotalDrawScene = drawSceneTimer.ElapsedMillis();
@@ -2018,6 +2037,16 @@ namespace Proof
 			return;
 
 		m_Emitters.insert(emiter);
+	}
+	
+
+	void WorldRenderer::SubmitPostProcessMaterial(Count<class Material> material)
+	{
+		if (material->GetSurfaceType() != MaterialTypes::PostProcess)
+			return;
+
+		CreatePostProcessRenderPass(material->GetRenderMaterial());
+		m_PostProcessMaterials.push_back(material);
 	}
 
 	void WorldRenderer::SubmitGrassPlane(Count<class GrassBladePlane> plane, const glm::mat4& transform)
@@ -2810,7 +2839,25 @@ namespace Proof
 
 		m_Timers.GeometryPass = geometryPassTimer.ElapsedMillis();
 	}
+	void WorldRenderer::RenderPostProcessingPasses()
+	{
+		PF_PROFILE_FUNC();
 
+		if(m_PostProcessMaterials.size() == 0)
+			return;
+
+		for(int i =0; i < m_PostProcessMaterials.size(); i++)
+		{
+			Count<RenderMaterial> renderMaterail = m_PostProcessMaterials[i]->GetRenderMaterial();
+
+			auto pass = m_PostProcessPasses.at(renderMaterail->GetConfig().Shader);
+			// clear teh inital pass
+			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, pass, i ==0 ? true : false);
+
+			Renderer::SubmitFullScreenQuad(m_CommandBuffer, pass, renderMaterail);
+			Renderer::EndRenderPass(pass);
+		}
+	}
 	void WorldRenderer::CompositePass()
 	{
 		PF_PROFILE_FUNC();
@@ -2837,6 +2884,10 @@ namespace Proof
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_CompositePass, true);
 			//float exposure = m_SceneData.SceneCamera.Camera.GetExposure();
 			auto inputImage = m_GeometryPass->GetOutput(0);
+
+			// use the post rocesss ouput if there is any
+			if(m_PostProcessMaterials.size() > 0)
+				inputImage = m_PostProcessFrameBuffer->GetOutput(0);
 			m_CompositeMaterial->Set("u_WorldTexture", inputImage);
 
 			m_CompositeMaterial->Set("u_BloomTexture", m_BloomComputeTextures[2]);
@@ -2917,6 +2968,7 @@ namespace Proof
 		*/
 		m_Timers.CompositePass = compositeTimer.ElapsedMillis();
 	}
+	
 	void WorldRenderer::AmbientOcclusionPass()
 	{
 		if (!AmbientOcclusionSettings.Enabled || m_MainDirectionllLight.bCastShadows == false)
@@ -4678,4 +4730,32 @@ namespace Proof
 		}
 	}
 
+	void WorldRenderer::CreatePostProcessRenderPass(Count<class RenderMaterial> material)
+	{
+		auto shader = material->GetConfig().Shader;
+		if (m_PostProcessPasses.contains(shader))
+			return;
+
+		GraphicsPipelineConfiguration pipelineSpecification;
+		pipelineSpecification.DebugName = fmt::format("PostProcess {}",shader->GetName());
+		pipelineSpecification.VertexArray = m_CompositePass->GetConfig().Pipeline->GetConfig().VertexArray; // quad vertexx array
+		pipelineSpecification.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
+		pipelineSpecification.CullMode = CullMode::None;
+		pipelineSpecification.WriteDepth = false;
+		pipelineSpecification.DepthTest = false;
+		pipelineSpecification.Shader = shader;
+
+		Count<GraphicsPipeline> compositePipeline = GraphicsPipeline::Create(pipelineSpecification);
+
+		RenderPassConfig renderPassSpec;
+		renderPassSpec.DebugName = fmt::format("PostProcess {}", shader->GetName());
+		renderPassSpec.Pipeline = compositePipeline;
+		renderPassSpec.TargetFrameBuffer = m_PostProcessFrameBuffer;
+
+		auto renderPass = RenderPass::Create(renderPassSpec);
+		m_PostProcessPasses[shader] = renderPass;
+		
+		renderPass->SetInput("u_InputColor", m_GeometryPass->GetOutput(0));
+		renderPass->SetInput("u_InputDepth", m_PreDepthPass->GetOutput(0));
+	}
 }

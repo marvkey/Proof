@@ -31,6 +31,17 @@ namespace Proof {
         m_DefaultShader = material.m_DefaultShader;
         m_RenderMaterial = Count<VulkanRenderMaterial>::CreateFrom( material.m_RenderMaterial.As<VulkanRenderMaterial>());
     }
+    MaterialTypes Material::GetSurfaceType()
+    {
+		auto shader = m_RenderMaterial->GetConfig().Shader; 
+
+        if (shader->GetAllShaderMacroDefines().contains("MATERIAL_SURFACE"))
+            return MaterialTypes::Surface;
+        if(shader->GetAllShaderMacroDefines().contains("MATERIAL_POST_PROCESS"))
+			return MaterialTypes::PostProcess;
+
+        return MaterialTypes::Other;
+    }
     Material::Material(const std::string& name, Count<class Shader> shader)
     {
         m_RenderMaterial = RenderMaterial::Create(name, shader);
@@ -66,135 +77,29 @@ namespace Proof {
     {
         if (!m_DefaultShader)
             return;
+
+		PbrSurfaceMaterial surfaceMaterial(this);
         if(m_RenderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBRTransparent_Static"))
             m_RenderMaterial->Set("u_MaterialUniform.Albedo", glm::vec4(0.8f));
         else
-            SetAlbedo(glm::vec3(0.8f));
+            surfaceMaterial.SetAlbedo(glm::vec3(0.8f));
 
-        SetMetalness(0.0f);
-        SetRoughness(0.4f);
-        SetEmission(0.4f); // default objects looks so dull wihtout a little emission
-        SetNormalTextureToggle(false);
 
-        SetTiling({ 1,1 });
-        SetOffset({ 0,0 });
+        surfaceMaterial.SetMetalness(0.0f);
+        surfaceMaterial.SetRoughness(0.4f);
+        surfaceMaterial.SetEmission(0.0f); 
+        surfaceMaterial.SetNormalTextureToggle(false);
 
-        SetAlbedoMap(Renderer::GetWhiteTexture());
-        SetNormalMap(Renderer::GetWhiteTexture());
-        SetMetalnessMap(Renderer::GetWhiteTexture());
-        SetRoughnessMap(Renderer::GetWhiteTexture());
+        surfaceMaterial.SetTiling({ 1,1 });
+        surfaceMaterial.SetOffset({ 0,0 });
 
-        SetEmissionOverrideColor(glm::vec3{ 0 });
-    }
+        surfaceMaterial.SetAlbedoMap(Renderer::GetWhiteTexture());
+        surfaceMaterial.SetNormalMap(Renderer::GetWhiteTexture());
+        surfaceMaterial.SetMetalnessMap(Renderer::GetWhiteTexture());
+        surfaceMaterial.SetRoughnessMap(Renderer::GetWhiteTexture());
 
-    glm::vec3& Material::GetAlbedoColor() const
-    {
-        return m_RenderMaterial->GetVector("u_MaterialUniform.Albedo");
+        surfaceMaterial.SetEmissionOverrideColor(glm::vec3{ 0 });
     }
-    void Material::SetAlbedo(const glm::vec3& vec)
-    {
-        m_RenderMaterial->Set("u_MaterialUniform.Albedo", vec);
-    }
-    float& Material::GetMetalness()const
-    {
-        return m_RenderMaterial->GetFloat("u_MaterialUniform.Metalness");
-    }
-    void Material::SetMetalness(float metallness)
-    {
-        m_RenderMaterial->Set("u_MaterialUniform.Metalness",metallness);
-    }
-    float& Material::GetRoughness()const
-    {
-        return m_RenderMaterial->GetFloat("u_MaterialUniform.Roughness");
-    }
-    void Material::SetRoughness(float roghness)
-    {
-        m_RenderMaterial->Set("u_MaterialUniform.Roughness", roghness);
-    }
-    bool& Material::GetNormalTextureToggle()
-    {
-        return m_RenderMaterial->GetBool("u_MaterialUniform.NormalTexToggle");
-    }
-    void Material::SetNormalTextureToggle(bool value)
-    {
-        m_RenderMaterial->Set("u_MaterialUniform.NormalTexToggle",value);
-    }
-    bool& Material::GetEmissionOverrideColorToggle()
-    {
-        return m_RenderMaterial->GetBool("u_MaterialUniform.EmissionOverrideColorToggle");
-    }
-    void Material::SetEmissionOverrideColorToggle(bool value)
-    {
-        m_RenderMaterial->Set("u_MaterialUniform.EmissionOverrideColorToggle", value);
-    }
-    glm::vec3& Material::GetEmissionOverrideColor()const
-    {
-        return m_RenderMaterial->GetVector("u_MaterialUniform.EmissionOverrideColor");
-    }
-    void Material::SetEmissionOverrideColor(const glm::vec3& vec)
-    {
-        m_RenderMaterial->Set("u_MaterialUniform.EmissionOverrideColor", vec);
-    }
-    glm::vec2& Material::GetTiling()const
-    {
-        return m_RenderMaterial->GetVector2("u_MaterialUniform.TextureTiling");
-    }
-    void Material::SetTiling(const glm::vec2& vec)
-    {
-        m_RenderMaterial->Set("u_MaterialUniform.TextureTiling",vec);
-    }
-    glm::vec2& Material::GetOffset()const
-    {
-        return m_RenderMaterial->GetVector2("u_MaterialUniform.TextureOffset");
-    }
-    void Material::SetOffset(const glm::vec2& value)const
-    {
-        return m_RenderMaterial->Set("u_MaterialUniform.TextureOffset", value);
-    }
-    void Material::SetAlbedoMap(Count<class Texture2D> texture)
-    {
-        m_RenderMaterial->Set("u_AlbedoMap", texture);
-    }
-    void Material::SetNormalMap(Count<class Texture2D> texture)
-    {
-        m_RenderMaterial->Set("u_NormalMap", texture);
-    }
-    void Material::SetMetalnessMap(Count<class Texture2D> texture)
-    {
-
-        m_RenderMaterial->Set("u_MetallicMap", texture);
-    }
-    void Material::SetRoughnessMap(Count<class Texture2D> texture)
-    {
-        m_RenderMaterial->Set("u_RoughnessMap", texture);
-    }
-
-    float& Material::GetEmission()const
-    {
-        return m_RenderMaterial->GetFloat("u_MaterialUniform.Emission");
-    }
-    void Material::SetEmission(float emisive)
-    {
-        return m_RenderMaterial->Set("u_MaterialUniform.Emission", emisive);
-    }
-    Count<class Texture2D> Material::GetAlbedoMap()
-    {
-        return m_RenderMaterial->TryGetTexture2D("u_AlbedoMap");
-    }
-    Count<class Texture2D> Material::GetNormalMap()
-    {
-        return m_RenderMaterial->TryGetTexture2D("u_NormalMap");
-    }
-    Count<class Texture2D> Material::GetMetalnessMap()
-    {
-        return m_RenderMaterial->TryGetTexture2D("u_MetallicMap");
-    }
-    Count<class Texture2D> Material::GetRoughnessMap()
-    {
-        return m_RenderMaterial->TryGetTexture2D("u_RoughnessMap");
-    }
-   
-    
 
     bool operator==(const MaterialTable& other, const MaterialTable& other1)
     {
@@ -240,4 +145,116 @@ namespace Proof {
         );
     }
 
+    PbrSurfaceMaterial::PbrSurfaceMaterial(Count<Material> material)
+        :m_Material(material)
+    {
+		m_RenderMaterial =  material->GetRenderMaterial();
+    }
+
+
+    glm::vec3& PbrSurfaceMaterial::GetAlbedoColor() const
+    {
+        return m_RenderMaterial->GetVector("u_MaterialUniform.Albedo");
+    }
+    void PbrSurfaceMaterial::SetAlbedo(const glm::vec3& vec)
+    {
+        m_RenderMaterial->Set("u_MaterialUniform.Albedo", vec);
+    }
+    float& PbrSurfaceMaterial::GetMetalness()const
+    {
+        return m_RenderMaterial->GetFloat("u_MaterialUniform.Metalness");
+    }
+    void PbrSurfaceMaterial::SetMetalness(float metallness)
+    {
+        m_RenderMaterial->Set("u_MaterialUniform.Metalness", metallness);
+    }
+    float& PbrSurfaceMaterial::GetRoughness()const
+    {
+        return m_RenderMaterial->GetFloat("u_MaterialUniform.Roughness");
+    }
+    void PbrSurfaceMaterial::SetRoughness(float roghness)
+    {
+        m_RenderMaterial->Set("u_MaterialUniform.Roughness", roghness);
+    }
+    bool& PbrSurfaceMaterial::GetNormalTextureToggle()
+    {
+        return m_RenderMaterial->GetBool("u_MaterialUniform.NormalTexToggle");
+    }
+    void PbrSurfaceMaterial::SetNormalTextureToggle(bool value)
+    {
+        m_RenderMaterial->Set("u_MaterialUniform.NormalTexToggle", value);
+    }
+    bool& PbrSurfaceMaterial::GetEmissionOverrideColorToggle()
+    {
+        return m_RenderMaterial->GetBool("u_MaterialUniform.EmissionOverrideColorToggle");
+    }
+    void PbrSurfaceMaterial::SetEmissionOverrideColorToggle(bool value)
+    {
+        m_RenderMaterial->Set("u_MaterialUniform.EmissionOverrideColorToggle", value);
+    }
+    glm::vec3& PbrSurfaceMaterial::GetEmissionOverrideColor()const
+    {
+        return m_RenderMaterial->GetVector("u_MaterialUniform.EmissionOverrideColor");
+    }
+    void PbrSurfaceMaterial::SetEmissionOverrideColor(const glm::vec3& vec)
+    {
+        m_RenderMaterial->Set("u_MaterialUniform.EmissionOverrideColor", vec);
+    }
+    glm::vec2& PbrSurfaceMaterial::GetTiling()const
+    {
+        return m_RenderMaterial->GetVector2("u_MaterialUniform.TextureTiling");
+    }
+    void PbrSurfaceMaterial::SetTiling(const glm::vec2& vec)
+    {
+        m_RenderMaterial->Set("u_MaterialUniform.TextureTiling", vec);
+    }
+    glm::vec2& PbrSurfaceMaterial::GetOffset()const
+    {
+        return m_RenderMaterial->GetVector2("u_MaterialUniform.TextureOffset");
+    }
+    void PbrSurfaceMaterial::SetOffset(const glm::vec2& value)const
+    {
+        return m_RenderMaterial->Set("u_MaterialUniform.TextureOffset", value);
+    }
+    void PbrSurfaceMaterial::SetAlbedoMap(Count<class Texture2D> texture)
+    {
+        m_RenderMaterial->Set("u_AlbedoMap", texture);
+    }
+    void PbrSurfaceMaterial::SetNormalMap(Count<class Texture2D> texture)
+    {
+        m_RenderMaterial->Set("u_NormalMap", texture);
+    }
+    void PbrSurfaceMaterial::SetMetalnessMap(Count<class Texture2D> texture)
+    {
+        m_RenderMaterial->Set("u_MetallicMap", texture);
+    }
+    void PbrSurfaceMaterial::SetRoughnessMap(Count<class Texture2D> texture)
+    {
+        m_RenderMaterial->Set("u_RoughnessMap", texture);
+    }
+
+    float& PbrSurfaceMaterial::GetEmission()const
+    {
+        return m_RenderMaterial->GetFloat("u_MaterialUniform.Emission");
+    }
+    void PbrSurfaceMaterial::SetEmission(float emisive)
+    {
+        return m_RenderMaterial->Set("u_MaterialUniform.Emission", emisive);
+    }
+    Count<class Texture2D> PbrSurfaceMaterial::GetAlbedoMap()
+    {
+        return m_RenderMaterial->TryGetTexture2D("u_AlbedoMap");
+    }
+    Count<class Texture2D> PbrSurfaceMaterial::GetNormalMap()
+    {
+        return m_RenderMaterial->TryGetTexture2D("u_NormalMap");
+    }
+    Count<class Texture2D> PbrSurfaceMaterial::GetMetalnessMap()
+    {
+        return m_RenderMaterial->TryGetTexture2D("u_MetallicMap");
+    }
+    Count<class Texture2D> PbrSurfaceMaterial::GetRoughnessMap()
+    {
+        return m_RenderMaterial->TryGetTexture2D("u_RoughnessMap");
+    }
 }

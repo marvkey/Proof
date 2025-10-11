@@ -1,0 +1,25 @@
+AssetType: Prefab
+ID: 6963299799565776090
+EntityOwner: 3802740064536461732
+Entities:
+  - Entity: 3802740064536461732
+    TagComponent:
+      Tag: p_LazerMuzzleFlash
+      tags: []
+    TransformComponent:
+      Location: [0, -9.88154697, 0.342726707]
+      Rotation: [0, -0, 0]
+      Scale: [5, 5, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []
+    PointLightComponent:
+      Color: [1, 0, 0]
+      Intensity: 34
+      MinRadius: 0
+      Radius: 25
+      Falloff: 1
+      CastsShadows: false
+      SoftShadows: false
+      ShadowStrength: 0.5
+      ShadowSoftness: 0.5

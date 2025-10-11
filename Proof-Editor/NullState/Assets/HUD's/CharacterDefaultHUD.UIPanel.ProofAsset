@@ -7,9 +7,17 @@ VariableRegistry:
       Type: Float
       UUID: 9137722652652106186
       Data: 0
+    - Name: Heatlh
+      Type: String
+      UUID: 6591819751967894606
+      Data: 100.0%
     - Name: Entropy
       Type: String
       UUID: 1870280012868056734
+      Data: 0
+    - Name: PlayerSpeed
+      Type: String
+      UUID: 14099059887723628480
       Data: 0
 UIElements:
   - UIElement: 9871753163786572044
@@ -73,6 +81,26 @@ UIElements:
       BackgroundColor:
         Value: [0.0823529437, 0.223529413, 0.729411781, 0.411764711]
         BindedVariableID: 0
+  - UIElement: 10566175052143785747
+    UICoreComponent:
+      ElementID: 10566175052143785747
+      Name: SpeedText
+      UIElementType: Text
+      Position: [5.75, 63.75]
+      Rotation: [0, 0]
+      Size: [60, 60]
+      AnchorMinimum: [0, 1]
+      AnchorMaximum: [0, 1]
+      PositionOffset: [0, 0]
+      ParentHandle: 0
+      Children: []
+    UITextComponent:
+      Text:
+        Value: "Speed: "
+        BindedVariableID: 0
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1
   - UIElement: 15452452396704783142
     UICoreComponent:
       ElementID: 15452452396704783142
@@ -91,5 +119,86 @@ UIElements:
         Value: 0
         BindedVariableID: 1870280012868056734
       Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1
+  - UIElement: 13435889437523538816
+    UICoreComponent:
+      ElementID: 13435889437523538816
+      Name: PlayerSpeed
+      UIElementType: Text
+      Position: [166.25, 63.75]
+      Rotation: [0, 0]
+      Size: [60, 60]
+      AnchorMinimum: [0, 1]
+      AnchorMaximum: [0, 1]
+      PositionOffset: [0, 0]
+      ParentHandle: 0
+      Children: []
+    UITextComponent:
+      Text:
+        Value: 0
+        BindedVariableID: 14099059887723628480
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1
+  - UIElement: 15688882969828126542
+    UICoreComponent:
+      ElementID: 15688882969828126542
+      Name: PlayerHealth(Text)
+      UIElementType: Text
+      Position: [-0.400000006, 0.150000006]
+      Rotation: [0, 0]
+      Size: [0.170000002, 0.270000011]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 951623175290927381
+      Children: []
+    UITextComponent:
+      Text:
+        Value: HEALTH
+        BindedVariableID: 0
+      Color: [0.0666666627, 0.481481433, 1, 1]
+      Kerning: 0
+      LineSpacing: 1
+  - UIElement: 951623175290927381
+    UICoreComponent:
+      ElementID: 951623175290927381
+      Name: Image
+      UIElementType: Image
+      Position: [199.75, -54.25]
+      Rotation: [0, 0]
+      Size: [450, 256.25]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 0
+      Children: [15688882969828126542, 4696386249627866605]
+    UIImageComponent:
+      TintColor:
+        Value: [1, 1, 1, 1]
+        BindedVariableID: 0
+      Texture:
+        AssetID: 13604995464265852117
+        AssetType: Texture
+        BindedVariableID: 0
+  - UIElement: 4696386249627866605
+    UICoreComponent:
+      ElementID: 4696386249627866605
+      Name: PlayerHealthVal
+      UIElementType: Text
+      Position: [0.150000006, 0.150000006]
+      Rotation: [0, 0]
+      Size: [0.119999997, 0.300000012]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 951623175290927381
+      Children: []
+    UITextComponent:
+      Text:
+        Value: 100.0%
+        BindedVariableID: 6591819751967894606
+      Color: [0.0666666701, 0.482352942, 1, 1]
       Kerning: 0
       LineSpacing: 1

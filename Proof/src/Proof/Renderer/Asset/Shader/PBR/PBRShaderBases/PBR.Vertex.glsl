@@ -28,6 +28,8 @@ invariant gl_Position;
 
 #extension GL_ARB_explicit_attrib_location : enable
 #include <Common.glslh>
+#include <Shader_Material.glslh>
+//#define MATERIAL_SURFACE
 
 #define PBR_SHADER_VERTEX_BASE
 struct PBRVertexOutput

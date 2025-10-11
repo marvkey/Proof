@@ -58,7 +58,20 @@ namespace Proof
 		const bool isSelected = SelectionManager::IsSelected(SelectionContext::ContentBrowser, m_ID);
 
 		ImGui::InvisibleButton("##thumbnailButton", ImVec2{ thumbnailSize, thumbnailSize });
-		UI::DrawButtonImage(m_Icon, IM_COL32(255, 255, 255, 225),
+
+		Count<Texture2D> temporaryIcon = nullptr;
+
+		if (AssetManager::HasAsset(m_ID))
+		{
+			if (AssetManager::GetAssetInfo(m_ID).Type == AssetType::Texture)
+			{
+				if (AssetManager::IsAssetLoaded(m_ID))
+				{
+					temporaryIcon = AssetManager::GetAsset<Texture2D>(m_ID);
+				}
+			}
+		}
+		UI::DrawButtonImage(temporaryIcon ? temporaryIcon : m_Icon, IM_COL32(255, 255, 255, 225),
 			IM_COL32(255, 255, 255, 255),
 			IM_COL32(255, 255, 255, 255),
 			UI::RectExpanded(UI::GetItemRect(), -6.0f, -6.0f));

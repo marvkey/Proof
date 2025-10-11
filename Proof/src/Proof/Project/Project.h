@@ -37,7 +37,7 @@ namespace Proof{
 	
 	};
 
-	class Project : RefCounted
+	class Project : public RefCounted
 	{
 	public:
 		Project();

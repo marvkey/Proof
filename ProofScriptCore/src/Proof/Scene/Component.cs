@@ -124,6 +124,16 @@ namespace Proof
                 return foward;
             }
         }
+
+		// Todo move to c++ side and recheck teh definiton
+        public Vector3 TransformDirection(Vector3 localDir)
+        {
+            Quaternion rotateQuat = Quaternion.EularToQuat(glm.Radians(WorldTransform.Rotation));
+            Vector3 rotated = rotateQuat * localDir;
+            rotated *= WorldTransform.Scale;
+            return rotated;
+        }
+
         public void Translate(Proof.Vector3 Vector)
 		{
 			Location += Vector;
@@ -701,7 +711,7 @@ namespace Proof
                 ? new PhysicsMaterial(MatrixerialHandle) : null;
         }
     }
-    /*
+	/*
     public class CapsuleColliderComponent : Component
     {
 

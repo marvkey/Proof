@@ -117,6 +117,13 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 #define SCRIPT_FUNC_ENTITY_ASSETKEY_ASSET(assetID,Component,returnValue)\
 	SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_BASE(assetID,Component,return returnValue);
 	
+	/*
+	*
+	*https://github.com/miguelibero/darmok/blob/7a7a2b709f7f7649446f049b0f8d9ff4664364a1/src/math.cpp#L186
+	*/
+
+
+
 	static inline Entity GetEntity(uint64_t entityID)
 	{
 		Count<World> scene = ScriptEngine::GetWorldContext();
@@ -184,6 +191,11 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 	static float Application_GetFPS()
 	{
 		return Application::GetFPS();
+	}
+
+	static float Application_GetTime()
+	{
+		return FrameTime::GetTime();
 	}
 	#pragma endregion 
 	#pragma region Mouse
@@ -460,6 +472,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		Count<World> world = ScriptEngine::GetWorldContext();
 		auto scriptWorld = world->GetScriptWorld();
 
+	
 		ScriptGCHandle gcHandle = scriptWorld->GetScriptInstanceOfType(entity, ScriptUtils::MonoStringToUTF8(classFullName));
 
 		if (gcHandle == nullptr)
@@ -473,7 +486,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		SCRIPT_FUNC_ENTITY_CHECK(nullptr);
 		Count<World> world = ScriptEngine::GetWorldContext();
 		auto scriptWorld = world->GetScriptWorld();
-
+		
 		ScriptGCHandle gcHandle = scriptWorld->GetScriptInstance(entity, ScriptUtils::MonoStringToUTF8(classFullName));
 
 		if (gcHandle == nullptr)
@@ -2130,12 +2143,12 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 						outHit->HitCollider = ScriptEngine::CreateManagedObject("Proof.SphereCollider", outHit->HitEntity, shape->IsTrigger(), shape->GetRadius());
 						break;
 					}
-					//case ColliderType::Capsule:
-					//{
-					//	Count<CapsuleColliderShape> shape = tempHit.HitCollider.As<CapsuleColliderShape>();
-					//	outHit->HitCollider = ScriptEngine::CreateManagedObject("PF.CapsuleCollider", outHit->HitEntity, shape->IsTrigger(), shape->GetRadius(), shape->GetHeight());
-					//	break;
-					//}
+					case ColliderType::Capsule:
+					{
+						Count<CapsuleColliderShape> shape = tempHit.HitCollider.As<CapsuleColliderShape>();
+						outHit->HitCollider = ScriptEngine::CreateManagedObject("Proof.CapsuleCollider", outHit->HitEntity, shape->IsTrigger(), shape->GetRadius(), shape->GetHeight());
+						break;
+					}
 					case ColliderType::ConvexMesh:
 					{
 						Count<ConvexMeshShape> shape = tempHit.HitCollider.As<ConvexMeshShape>();
@@ -4186,6 +4199,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		{
 			PF_ADD_INTERNAL_CALL(Application_Shutdown);
 			PF_ADD_INTERNAL_CALL(Application_GetFPS);
+			PF_ADD_INTERNAL_CALL(Application_GetTime);
 		}
 		//LOG
 		{

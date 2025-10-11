@@ -18,5 +18,9 @@ namespace Proof
         {
             return InternalCalls.Application_GetFPS();
         }
+        public static float GetTime()
+        {
+            return InternalCalls.Application_GetTime();
+        }
     }
 }

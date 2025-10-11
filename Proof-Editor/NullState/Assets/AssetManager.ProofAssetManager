@@ -8,15 +8,18 @@ Assets:
   - Asset: 9602169324105281993
     Type: World
     Path: Scenes\TestScene.ProofWorld
-  - Asset: 18245935877011124802
-    Type: Material
-    Path: Materials\m_Blue.Material.ProofAsset
-  - Asset: 10423665410370180105
-    Type: InputAction
-    Path: Inputs\CharacterMovement\IA_Rotate.InputAction.ProofAsset
   - Asset: 10865829555602001316
     Type: InputAction
     Path: Inputs\CharacterMovement\IA_Move.InputAction.ProofAsset
+  - Asset: 10423665410370180105
+    Type: InputAction
+    Path: Inputs\CharacterMovement\IA_Rotate.InputAction.ProofAsset
+  - Asset: 13569084378200082806
+    Type: ScriptFile
+    Path: Scripts\HealthComponent.cs
+  - Asset: 18245935877011124802
+    Type: Material
+    Path: Materials\m_Blue.Material.ProofAsset
   - Asset: 6365998182393193804
     Type: InputAction
     Path: Inputs\CharacterMovement\IA_Jump.InputAction.ProofAsset
@@ -32,12 +35,87 @@ Assets:
   - Asset: 11903875693727252191
     Type: Texture
     Path: Textures\neonMap.png
+  - Asset: 955979040150495302
+    Type: Texture
+    Path: Models\Futuristic robot Bot\texture_metallic.png
   - Asset: 10093794893949333075
     Type: Material
     Path: Materials\m_RedNeon.Material.ProofAsset
+  - Asset: 16004910019884060136
+    Type: DynamicMesh
+    Path: Meshes\New Folder\RobotBot2.DynamicMesh.ProofAsset
+  - Asset: 16587156431716427673
+    Type: Prefab
+    Path: Prefabs\Rocket.Prefab.ProofAsset
   - Asset: 17845486805074956028
     Type: Texture
     Path: Textures\neonMapRed.png
   - Asset: 1151499359691892158
     Type: UIPanel
     Path: HUD's\CharacterDefaultHUD.UIPanel.ProofAsset
+  - Asset: 768724856694674339
+    Type: MeshSourceFile
+    Path: Models\Futuristic robot Bot\base_basic_pbr.fbx
+  - Asset: 12620271240290650723
+    Type: MeshSourceFile
+    Path: Models\Futuristic robot Bot\base.fbx
+  - Asset: 9344205787060067317
+    Type: MeshSourceFile
+    Path: Models\Futuristic robot Bot\base_basic_shaded.fbx
+  - Asset: 14263213735333966676
+    Type: ScriptFile
+    Path: Scripts\DamageComponent.cs
+  - Asset: 14807338079391251991
+    Type: Texture
+    Path: Models\Futuristic robot Bot\texture_normal.png
+  - Asset: 978350869184898524
+    Type: Texture
+    Path: Models\Futuristic robot Bot\shaded.png
+  - Asset: 7620776126739072031
+    Type: Texture
+    Path: Models\Futuristic robot Bot\texture_diffuse.png
+  - Asset: 7148630198553903098
+    Type: Material
+    Path: Materials\m_Rocket.Material.ProofAsset
+  - Asset: 2351820973351286623
+    Type: Texture
+    Path: Models\Futuristic robot Bot\texture_pbr.png
+  - Asset: 9904556931666478505
+    Type: Texture
+    Path: Models\Futuristic robot Bot\texture_roughness.png
+  - Asset: 16405759186654434407
+    Type: DynamicMesh
+    Path: Meshes\New Folder\RobotBot.DynamicMesh.ProofAsset
+  - Asset: 14486622669096991682
+    Type: Material
+    Path: Meshes\New Folder\m_RobotBot.Material.ProofAsset
+  - Asset: 17264578630111646164
+    Type: Prefab
+    Path: Models\Bullets\LazerBullet.Prefab.ProofAsset
+  - Asset: 5948008084427186226
+    Type: Material
+    Path: Materials\m_LazerBullet.Material.ProofAsset
+  - Asset: 6963299799565776090
+    Type: Prefab
+    Path: Prefabs\Bullet\LazerBullet\p_LazerMuzzleFlash.Prefab.ProofAsset
+  - Asset: 6964135419703162131
+    Type: Prefab
+    Path: Prefabs\RobotBot2.Prefab.ProofAsset
+  - Asset: 13604995464265852117
+    Type: Texture
+    Path: Images\CharacterHud\HealthOutlineImage.png
+  - Asset: 5411836519774396444
+    Type: ParticleSystem
+    Path: ParticleSystem\ps_RocketSmoke.ParticleSystem.ProofAsset
+  - Asset: 724923881556054131
+    Type: Texture
+    Path: Images\SmokeParticlesystem.png
+  - Asset: 9869168224563120581
+    Type: MeshSourceFile
+    Path: Models\Rocket\scene.gltf
+  - Asset: 11358710558737543565
+    Type: Mesh
+    Path: Meshes\Rocket.Mesh.ProofAsset
+  - Asset: 9981575571642197365
+    Type: Material
+    Path: Materials\GlitchyMaterials\m_Glitchymaterial1.Material.ProofAsset

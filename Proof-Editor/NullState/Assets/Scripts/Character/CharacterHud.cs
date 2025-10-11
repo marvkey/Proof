@@ -40,8 +40,28 @@ namespace NullState
             if(entropyVar != null)
             {
                 entropyVar.SetData((string)entropyCompnent.Entropy.ToString("0"));
+
             }
 
+            Variable speedVar = m_HUDComponent.GetRegistryVariable("HUD", PlayerDefaultHUD, "PlayerSpeed");
+            if (speedVar != null)
+            {
+                speedVar.SetData((string)GetScript<CharacterMovement>().GetCurrentSpeed().ToString("0"));
+            }
+
+            Variable healthVar = m_HUDComponent.GetRegistryVariable("HUD", PlayerDefaultHUD, "Heatlh");
+
+            if (healthVar != null)
+            {
+                HealthComponent healthComponent;
+                if (!HasScript<HealthComponent>())
+                    return;
+                healthComponent = GetScript<HealthComponent>();
+                float health = healthComponent.HealthPercentage;
+
+                healthVar.SetData(health.ToString("F1") + "%");
+
+            }
         }
     }
 }

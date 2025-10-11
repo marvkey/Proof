@@ -561,7 +561,7 @@ namespace Proof::UI
 							AssetManager::NewAsset(asset, savedPath);
 						}
 
-						auto allTextures = baseMaterial->GetRenderMaterial()->GetAllTextures();
+						auto allTextures = material->GetRenderMaterial()->GetAllTextures();
 
 
 						for (auto& [biningName, texture] : allTextures)
@@ -570,7 +570,7 @@ namespace Proof::UI
 							if(Renderer::GetWhiteTexture() != savedTexture && savedTexture != nullptr)
 								material->GetRenderMaterial()->Set(biningName, savedTexture);
 						}
-						material->GetRenderMaterial()->CopyMaterialData(baseMaterial->GetRenderMaterial());
+						material->GetRenderMaterial()->CopyMaterialData(material->GetRenderMaterial());
 						ConvertDiskMaterial = {};
 						ImGui::CloseCurrentPopup();
 					}
@@ -631,37 +631,38 @@ namespace Proof::UI
 
 				}
 				float prevItemHeight = ImGui::GetItemRectSize().y;
+				PbrSurfaceMaterial surfaceMat(material);
 
 				ImGui::SameLine();
-				if (material->GetAlbedoMap() != nullptr)
+				if (surfaceMat.GetAlbedoMap() != nullptr)
 				{
 
-					UI::ImageButton(material->GetAlbedoMap(), { prevItemHeight, prevItemHeight },
-						{ material->GetAlbedoColor().x,material->GetAlbedoColor().y,material->GetAlbedoColor().z,1.0 });
+					UI::ImageButton(surfaceMat.GetAlbedoMap(), { prevItemHeight, prevItemHeight },
+						{ surfaceMat.GetAlbedoColor().x,surfaceMat.GetAlbedoColor().y,surfaceMat.GetAlbedoColor().z,1.0 });
 				}
-				else if (material->GetNormalMap() != nullptr && material->GetNormalTextureToggle() == true)
+				else if (surfaceMat.GetNormalMap() != nullptr && surfaceMat.GetNormalTextureToggle() == true)
 				{
 
-					UI::ImageButton(material->GetNormalMap(), { prevItemHeight, prevItemHeight },
-						{ material->GetAlbedoColor().x,material->GetAlbedoColor().y,material->GetAlbedoColor().z,1.0 });
+					UI::ImageButton(surfaceMat.GetNormalMap(), { prevItemHeight, prevItemHeight },
+						{ surfaceMat.GetAlbedoColor().x,surfaceMat.GetAlbedoColor().y,surfaceMat.GetAlbedoColor().z,1.0 });
 				}
-				else if (material->GetRoughnessMap() != nullptr)
+				else if (surfaceMat.GetRoughnessMap() != nullptr)
 				{
 
-					UI::ImageButton(material->GetRoughnessMap(), ImVec2{ prevItemHeight, prevItemHeight },
-						{ material->GetAlbedoColor().x,material->GetAlbedoColor().y,material->GetAlbedoColor().z,1.0 });
+					UI::ImageButton(surfaceMat.GetRoughnessMap(), ImVec2{ prevItemHeight, prevItemHeight },
+						{ surfaceMat.GetAlbedoColor().x,surfaceMat.GetAlbedoColor().y,surfaceMat.GetAlbedoColor().z,1.0 });
 				}
-				else if (material->GetMetalnessMap() != nullptr)
+				else if (surfaceMat.GetMetalnessMap() != nullptr)
 				{
 
-					UI::ImageButton(material->GetMetalnessMap(), ImVec2{ prevItemHeight, prevItemHeight },
-						{ material->GetAlbedoColor().x,material->GetAlbedoColor().y,material->GetAlbedoColor().z,1.0 });
+					UI::ImageButton(surfaceMat.GetMetalnessMap(), ImVec2{ prevItemHeight, prevItemHeight },
+						{ surfaceMat.GetAlbedoColor().x,surfaceMat.GetAlbedoColor().y,surfaceMat.GetAlbedoColor().z,1.0 });
 				}
 				else
 				{
 
 					UI::ImageButton(Renderer::GetWhiteTexture(), ImVec2{ prevItemHeight, prevItemHeight },
-						{ material->GetAlbedoColor().x,material->GetAlbedoColor().y,material->GetAlbedoColor().z,1.0 });
+						{ surfaceMat.GetAlbedoColor().x,surfaceMat.GetAlbedoColor().y,surfaceMat.GetAlbedoColor().z,1.0 });
 				}
 				if(!sourceHasMaterial && mathcingMaterials)
 					ImGui::NextColumn();

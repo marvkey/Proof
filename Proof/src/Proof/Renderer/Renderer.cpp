@@ -140,18 +140,28 @@ namespace Proof {
 	#endif
 
 		//PBR
-		RendererLoadShader("TerrainShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Terrain/TerrainRenderer.glsl");
-		RendererLoadShader("ProofPBR_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl");
 
 		{
 			std::unordered_map<std::string, std::string> macroDefintions = {
-				{ "PBR_ANIMATED", "" }
+			{ "MATERIAL_SURFACE", "" }
+			};
+			RendererLoadShader("TerrainShader", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/Terrain/TerrainRenderer.glsl", macroDefintions);
+			RendererLoadShader("ProofPBR_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl", macroDefintions);
+			RendererLoadShader("ProofPBR_Glitchy", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PBR_GlitchyShader.glsl", macroDefintions);
+		}
+		
+
+		{
+			std::unordered_map<std::string, std::string> macroDefintions = {
+				{ "PBR_ANIMATED", "" },
+				{ "MATERIAL_SURFACE", "" }
 			};
 			RendererLoadShader("ProofPBR_Anim", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl", macroDefintions);
 		}
 		{
 			std::unordered_map<std::string, std::string> macroDefintions = {
-				{ "PBR_USE_TRANSPARENCY", "" }
+				{ "PBR_USE_TRANSPARENCY", "" },
+				{ "MATERIAL_SURFACE", "" }
 			};
 			RendererLoadShader("ProofPBRTransparent_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBR_Static.glsl", macroDefintions);
 		}
@@ -159,6 +169,12 @@ namespace Proof {
 
 		RendererLoadShader("ProofPBRTransparent_Composite", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ProofPBRTransparent_Composite.glsl");
 		
+		{
+			std::unordered_map<std::string, std::string> macroDefintions = {
+				{ "MATERIAL_POST_PROCESS", "" },
+			};
+			RendererLoadShader("ScreenGlitch", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenGlitch.glsl", macroDefintions);
+		}
 		// predepth
 		RendererLoadShader("PreDepth_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PreDepth/PreDepth_Static.glsl");
 

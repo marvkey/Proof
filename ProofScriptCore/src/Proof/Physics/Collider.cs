@@ -43,9 +43,9 @@ namespace Proof
                 case SphereCollider _:
                     type = "SphereCollider";
                     break;
-                //case CapsuleCollider _:
-                //    type = "CapsuleCollider";
-                //    break;
+                case CapsuleCollider _:
+                    type = "CapsuleCollider";
+                    break;
                 case MeshCollider _:
                     type = "MeshCollider";
                     break;
@@ -96,7 +96,7 @@ namespace Proof
             Radius = radius;
         }
     }
-    /*
+    [RegisterCoreClassStruct]
     public class CapsuleCollider : Collider
     {
         public float Radius { get; protected set; }
@@ -119,7 +119,7 @@ namespace Proof
             Height = height;
         }
     }
-    */
+
     [RegisterCoreClassStruct]
     public class MeshCollider : Collider
     {

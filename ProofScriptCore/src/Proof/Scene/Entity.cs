@@ -64,6 +64,17 @@ namespace Proof
 
         private TransformComponent m_TransformComponent;
 
+        public Transform WorldTransform
+        {
+            get
+            {
+                if (m_TransformComponent == null)
+                    m_TransformComponent = GetComponent<TransformComponent>();
+
+                return m_TransformComponent.WorldTransform;
+            }
+        }
+
         public TransformComponent Transform
         {
             get

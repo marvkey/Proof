@@ -90,7 +90,7 @@ namespace Proof
 		bool Repeat = false;
 		float RepeatTime = Time;
 	};
-	class ScriptWorld : RefCounted
+	class ScriptWorld : public RefCounted
 	{
 	public:
 		ScriptWorld(class World* world);

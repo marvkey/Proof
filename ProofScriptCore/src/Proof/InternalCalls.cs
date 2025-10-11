@@ -57,6 +57,8 @@ namespace Proof
         internal extern static void Application_Shutdown();
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static float Application_GetFPS();
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float Application_GetTime();
         #endregion
         #region World
 

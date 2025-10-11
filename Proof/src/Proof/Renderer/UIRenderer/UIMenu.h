@@ -221,7 +221,7 @@ namespace Proof
 		float BorderThickness = 1.0f;
 	};
 	class UIElement;
-	class UIMenu : RefCounted
+	class UIMenu : public RefCounted
 	{
 	public:
 		UIMenu()

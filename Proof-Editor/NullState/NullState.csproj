@@ -22,8 +22,7 @@
     <OutputPath>Binaries\ScriptApp\</OutputPath>
     <BaseIntermediateOutputPath>Intermediates\ScriptApp\Debug\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -35,8 +34,7 @@
     <OutputPath>Binaries\ScriptApp\</OutputPath>
     <BaseIntermediateOutputPath>Intermediates\ScriptApp\Release\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -48,8 +46,7 @@
     <OutputPath>Binaries\ScriptApp\</OutputPath>
     <BaseIntermediateOutputPath>Intermediates\ScriptApp\Dist\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -88,21 +85,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\Scripts\Character\Character.cs" />
-    <Compile Include="Assets\Scripts\Enemies\Turret.cs" />
-    <Compile Include="Assets\Scripts\EntropyComponent.cs" />
     <Compile Include="Assets\Scripts\Character\CharacterHud.cs" />
     <Compile Include="Assets\Scripts\Character\CharacterInput.cs" />
     <Compile Include="Assets\Scripts\Character\CharacterMovement.cs" />
     <Compile Include="Assets\Scripts\Character\MoveCamera.cs" />
+    <Compile Include="Assets\Scripts\DamageComponent.cs" />
+    <Compile Include="Assets\Scripts\Enemies\HomingMissile.cs" />
+    <Compile Include="Assets\Scripts\Enemies\Turret.cs" />
+    <Compile Include="Assets\Scripts\EntropyComponent.cs" />
+    <Compile Include="Assets\Scripts\HealthComponent.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ProofScriptCore\ProofScriptCore.csproj">
       <Project>{49FAD7F9-B585-45BE-BE96-C8B22AA1A1BE}</Project>
       <Name>ProofScriptCore</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Assets\Scripts\GameWorld\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

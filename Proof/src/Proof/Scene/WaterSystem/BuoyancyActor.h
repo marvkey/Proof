@@ -5,7 +5,7 @@
 
 namespace Proof
 {
-	class BuoyancyActor : RefCounted
+	class BuoyancyActor : public RefCounted
 	{
 	public:
 		BuoyancyActor(Entity entity);

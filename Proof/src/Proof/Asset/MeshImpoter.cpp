@@ -309,6 +309,8 @@ namespace Proof
 				const auto materialPath = FileSystem::GenerateUniqueFileName(currentMeshDir / (aiMaterialName.C_Str()  + Utils::GetAssetExtensionString(AssetType::Material)));
 			#if 1
 				Count<Material> mi = Count<Material>::Create(materialPath.filename().string());
+
+				PbrSurfaceMaterial materialSurface(mi);
 				{
 					AssetManager::CreateRuntimeAsset(AssetManager::CreateID(), mi, aiMaterialName.data);
 				}
@@ -332,7 +334,7 @@ namespace Proof
 				if (aiMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, aiEmission) == AI_SUCCESS)
 					emission = aiEmission.r;
 
-				mi->SetAlbedo(glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
+				materialSurface.SetAlbedo(glm::vec3{ aiColor.r, aiColor.g, aiColor.b });
 				//mi->SetAlbedo(albedoColor);
 				//mi->Set("u_MaterialUniforms.Emission", emission);
 
@@ -349,7 +351,7 @@ namespace Proof
 				PF_ENGINE_TRACE("    ROUGHNESS = {0}", roughness);
 				PF_ENGINE_TRACE("    METALNESS = {0}", metalness);
 				PF_ENGINE_TRACE("    EMISSION = {0}", emission);
-				mi->SetEmission(emission);
+				materialSurface.SetEmission(emission);
 				bool hasAlbedoMap = aiMaterial->GetTexture(aiTextureType_DIFFUSE, 0, &aiTexPath) == AI_SUCCESS;
 				bool fallback = !hasAlbedoMap;
 				if (hasAlbedoMap)
@@ -428,8 +430,8 @@ namespace Proof
 					Count<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
 					if (texture /* && texture->Loaded()*/)
 					{
-						mi->SetAlbedoMap(texture);
-						mi->SetAlbedo(glm::vec3(1.0f));
+						materialSurface.SetAlbedoMap(texture);
+						materialSurface.SetAlbedo(glm::vec3(1.0f));
 					}
 					else
 					{
@@ -441,7 +443,7 @@ namespace Proof
 				if (fallback)
 				{
 					PF_ENGINE_INFO("    No albedo map");
-					mi->SetAlbedoMap(whiteTexture);
+					materialSurface.SetAlbedoMap(whiteTexture);
 				}
 
 				// Normal maps
@@ -527,8 +529,8 @@ namespace Proof
 					Count<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
 					if (texture /* && texture->Loaded()*/)
 					{
-						mi->SetNormalMap(texture);
-						mi->SetNormalTextureToggle(true);
+						materialSurface.SetNormalMap(texture);
+						materialSurface.SetNormalTextureToggle(true);
 					}
 					else
 					{
@@ -540,8 +542,8 @@ namespace Proof
 				if (fallback)
 				{
 					PF_ENGINE_INFO("    No normal map");
-					mi->SetNormalMap(whiteTexture);
-					mi->SetNormalTextureToggle(false);
+					materialSurface.SetNormalMap(whiteTexture);
+					materialSurface.SetNormalTextureToggle(false);
 				}
 
 				// Roughness map
@@ -621,8 +623,8 @@ namespace Proof
 					Count<Texture2D> texture = AssetManager::GetAsset<Texture2D>(textureHandle);
 					if (texture /*&& texture->Loaded()*/)
 					{
-						mi->SetRoughnessMap(texture);
-						mi->SetRoughness(1.0f);
+						materialSurface.SetRoughnessMap(texture);
+						materialSurface.SetRoughness(1.0f);
 					}
 					else
 					{
@@ -634,8 +636,8 @@ namespace Proof
 				if (fallback)
 				{
 					PF_ENGINE_TRACE("    No roughness map");
-					mi->SetRoughnessMap(whiteTexture);
-					mi->SetRoughness(roughness);
+					materialSurface.SetRoughnessMap(whiteTexture);
+					materialSurface.SetRoughness(roughness);
 				}
 				bool metalnessTextureFound = false;
 				for (uint32_t p = 0; p < aiMaterial->mNumProperties; p++)
@@ -727,8 +729,8 @@ namespace Proof
 							if (texture /*&& texture->Loaded()*/)
 							{
 								metalnessTextureFound = true;
-								mi->SetMetalnessMap(texture);
-								mi->SetMetalness(1.0f);
+								materialSurface.SetMetalnessMap(texture);
+								materialSurface.SetMetalness(1.0f);
 							}
 							else
 							{
@@ -743,8 +745,8 @@ namespace Proof
 				if (fallback)
 				{
 					PF_ENGINE_TRACE("    No metalness map");
-					mi->SetMetalnessMap(whiteTexture);
-					mi->SetMetalness(metalness);
+					materialSurface.SetMetalnessMap(whiteTexture);
+					materialSurface.SetMetalness(metalness);
 
 				}
 				AssetManager::SaveAsset(mi->GetID());

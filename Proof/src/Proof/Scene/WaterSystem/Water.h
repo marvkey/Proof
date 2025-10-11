@@ -7,7 +7,7 @@ namespace Proof
 {
 
 	enum class WaveType;
-	class Water : RefCounted
+	class Water : public RefCounted
 	{
 	public:
 		Water(WaveType waveType);

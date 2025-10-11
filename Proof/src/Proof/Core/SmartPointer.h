@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <unordered_set>
 #include <atomic>
 #include <compare>
@@ -35,12 +35,13 @@ namespace Proof {
 		}
 		void ReleaseStrongRef() {
 			m_StrongRefCount--;
-			if (m_StrongRefCount == 0)
+			if (m_StrongRefCount == 0 && m_IsConstructed == true)
 			{
 				Delete();
 			}
 		}
 		mutable std::atomic<uint32_t>  m_StrongRefCount = 0;
+		mutable std::atomic<bool>  m_IsConstructed = false;
 		template <class T>
 		friend class Count;
 	};
@@ -180,11 +181,90 @@ namespace Proof {
 			return this->Get() != nullptr;
 		}
 		template <class... Args, std::enable_if_t<std::is_constructible<T, Args...>::value, int> = 0>
-		static Count Create(Args&&... args) {
-#if PF_TRACK_MEMORY
-			return Count<T>(new(typeid(T).name()) T(std::forward<Args>(args)...));
+		static Count Create(Args&&... args) 
+		{
+#if 1
+	#if PF_TRACK_MEMORY
+				Count<T> sharedPtr(new(typeid(T).name()) T(std::forward<Args>(args)...));
+				RefCounted* ref = static_cast<RefCounted*>(sharedPtr.m_Ptr);
+				ref->m_IsConstructed = true;
+				return sharedPtr;
+	#else
+				Count<T> sharedPtr(new T(std::forward<Args>(args)...));
+				RefCounted* ref = static_cast<RefCounted*>(sharedPtr.m_Ptr);
+				ref->m_IsConstructed = true;
+				return sharedPtr;
+	#endif
 #else
-			return Count<T>(new T(std::forward<Args>(args)...));
+			// a
+			// 1️ Allocate uninitialized memory for T
+			//------------------------------------------------------------------------------
+			// Count<T>::Create
+			//
+			// This factory function safely constructs a RefCounted object inside a Count<T>
+			// smart pointer using *placement new*.
+			//
+			// Why this exists:
+			// Normally, writing `Count<T>(new T(...))` calls T's constructor before the
+			// Count<T> wrapper exists. If T internally creates a Count<T>(this) during
+			// construction, that temporary smart pointer can increment and immediately
+			// decrement the reference count before any real owner exists — causing the
+			// object to destroy itself inside its own constructor.
+			//
+			// How this works:
+			//  1. Allocate raw memory large enough for T (no constructor call yet).
+			//  2. Create an empty Count<T> wrapper (m_Ptr = nullptr).
+			//  3. Use placement new to construct T directly in the allocated memory.
+			//  4. Attach the constructed T to the Count<T> wrapper.
+			//  5. Manually add the first strong reference (refcount = 1).
+			//  6. Return the Count<T> that now owns the object.
+			//
+			// Result:
+			//  - The Count<T> "owner" exists *before* T's constructor finishes.
+			//  - Self-references (Count<T>(this)) inside T's constructor are now safe.
+			//  - Matches the semantics of std::make_shared (safe construction + ownership).
+			//
+			// Notes:
+			//  - If T's constructor throws, we manually delete the raw memory to prevent leaks.
+			//  - RefCounted::ReleaseStrongRef() must still handle destruction and memory free.
+			//
+			//------------------------------------------------------------------------------
+			
+			  // 1) Raw allocate
+		#if PF_TRACK_MEMORY
+					void* mem = operator new(sizeof(T), typeid(T).name());
+		#else
+					void* mem = operator new(sizeof(T));
+		#endif
+
+					// Step 1: compute the correct address of the RefCounted subobject
+		   // by taking a dummy T* and casting it to RefCounted*
+					uintptr_t baseAddr = reinterpret_cast<uintptr_t>(static_cast<T*>(mem));
+					uintptr_t refAddr = reinterpret_cast<uintptr_t>(
+						static_cast<RefCounted*>(reinterpret_cast<T*>(mem))
+						);
+					size_t refOffset = refAddr - baseAddr;
+
+					// Step 2: get the correct RefCounted* inside this unconstructed memory
+					RefCounted* ref = reinterpret_cast<RefCounted*>(
+						reinterpret_cast<uint8_t*>(mem) + refOffset
+						);
+
+					// Step 3: preinitialize the count safely
+					ref->m_StrongRefCount.store(1, std::memory_order_relaxed);
+			RefUtils::AddToLiveReference(ref);
+
+			Count<T> wrapper;  // empty; will take ownership without incrementing
+
+			// 3) Placement-construct T in that memory
+			T* obj = new (mem) T(std::forward<Args>(args)...);
+
+			// 4) Attach to wrapper (do NOT AddStrongRef — it's already 1)
+			wrapper.m_Ptr = obj;
+
+			// 5) Return owning Count<T> (refcount stays at 1)
+			return wrapper;
+
 #endif
 		}
 		template<class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
@@ -283,19 +363,17 @@ namespace Proof {
 		}
 
 		void DecrementStrongRef()const { // decrement reference count
+
 			if (m_Ptr)
 			{
 				void* cast = m_Ptr;
 				RefCounted* refCast = static_cast<RefCounted*>(cast);
-				bool remoeMemory = false;
-				// means its goig to get released from memoery
 				if (refCast->GetStrongCount() == 1)
 				{
 					RefUtils::RemoveFromLiveReference((void*)refCast);
 				}
-
 				refCast->ReleaseStrongRef();
-				//m_Ptr->ReleaseStrongRef();
+				
 			}
 		}
 

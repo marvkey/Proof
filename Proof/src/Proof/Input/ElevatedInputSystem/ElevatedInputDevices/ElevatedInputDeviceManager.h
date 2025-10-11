@@ -9,7 +9,7 @@ namespace Proof
 		NewPlayer,
 		LeaveAtPlayer0 
 	};
-	class ElevatedInputDeviceManager : RefCounted
+	class ElevatedInputDeviceManager : public RefCounted
 	{
 	public:
 		ElevatedInputDeviceManager();
@@ -29,7 +29,8 @@ namespace Proof
 		const std::vector<Count<ElevatedInputDevice>>& GetInputDevices() { return m_InputDevices; }
 		void OnUpdate(float deltaTime);
 
-		NewInputDeviceMode NewInputDeviceMode = NewInputDeviceMode::NewPlayer;
+		//NewInputDeviceMode NewInputDeviceMode = NewInputDeviceMode::NewPlayer;
+		NewInputDeviceMode NewInputDeviceMode = NewInputDeviceMode::LeaveAtPlayer0;
 
 		std::vector<Count<ElevatedInputDevice>> GetDevicePlayer(Players player);
 

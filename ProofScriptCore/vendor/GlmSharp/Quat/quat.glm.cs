@@ -221,7 +221,7 @@ namespace Proof
         /// <summary>
         /// Calculates a proper spherical interpolation between two Quaternionernions (only works for normalized Quaternionernions).
         /// </summary>
-        public static Quaternion SLerp(Quaternion x, Quaternion y, float a) => Quaternion.SLerp(x, y, a);
+        public static Quaternion Slerp(Quaternion x, Quaternion y, float a) => Quaternion.Slerp(x, y, a);
         
         /// <summary>
         /// Applies squad interpolation of these Quaternionernions

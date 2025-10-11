@@ -6,7 +6,7 @@
 #
 namespace Proof
 {
-    class ElevatedInputDevice : RefCounted
+    class ElevatedInputDevice : public RefCounted
     {
     public:
         ElevatedInputDevice(Count<class ElevatedInputDeviceManager> deviceManager, Players player)

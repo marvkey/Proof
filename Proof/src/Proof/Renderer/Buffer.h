@@ -54,7 +54,7 @@ namespace Proof {
 	protected:
 	};
 
-	class VertexBufferSet : RefCounted
+	class VertexBufferSet : public RefCounted
 	{
 	public:
 		VertexBufferSet(uint64_t Size);

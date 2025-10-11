@@ -83,7 +83,7 @@ namespace Proof {
 		bool RenderOnTop = false;
 
 	};
-	class Renderer2D : RefCounted 
+	class Renderer2D : public RefCounted 
 	{
 		friend class Camera;
 	public:

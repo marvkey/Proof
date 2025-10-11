@@ -26,6 +26,12 @@ namespace Proof
             DisplayName = displayName;
             IsReadOnly = readOnly;
         }
+
+        public ShowInEditorAttribute()
+        {
+
+        }
+
     }
 
     [RegisterCoreClassStruct]

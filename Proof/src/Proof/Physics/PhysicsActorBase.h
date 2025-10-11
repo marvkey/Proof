@@ -5,7 +5,7 @@ namespace Proof
 {
 	class Entity;
 	enum class PhysicsControllerType { None = 0, Actor, Controller };
-	class PhysicsActorBase : RefCounted
+	class PhysicsActorBase : public RefCounted
 	{
 	public:
 		Entity GetEntity() const { return m_Entity; }

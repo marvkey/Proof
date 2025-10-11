@@ -587,6 +587,7 @@ namespace Proof
     void ScriptWorld::DuplicateScriptInstance(Entity srcEntity, Entity dstEntity)
     {
         PF_PROFILE_FUNC();
+        dstEntity.AddorReplaceComponent<ScriptComponent>();
         if (!srcEntity.HasComponent<ScriptComponent>() || !dstEntity.HasComponent<ScriptComponent>())
             return;
         Count<ScriptWorld> srcScriptWorld = srcEntity.GetCurrentWorld()->GetScriptWorld();

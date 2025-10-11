@@ -57,9 +57,10 @@ namespace Proof
                config.GenerateMips = true;
                auto colorTexture = Texture2D::Create(config, colorBuffer, SamplerFactory::GetPoint());
 
-               chunk->Mesh->GetMaterialTable()->GetMaterial(0)->SetAlbedoMap(colorTexture);
-               chunk->Mesh->GetMaterialTable()->GetMaterial(0)->SetAlbedo(glm::vec3(1));
-               chunk->Mesh->GetMaterialTable()->GetMaterial(0)->SetEmission(0.0f);
+			   PbrSurfaceMaterial mat(chunk->Mesh->GetMaterialTable()->GetMaterial(0));
+               mat.SetAlbedoMap(colorTexture);
+               mat.SetAlbedo(glm::vec3(1));
+               mat.SetEmission(0.0f);
 
                colorBuffer.Release();
 

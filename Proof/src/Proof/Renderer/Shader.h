@@ -42,7 +42,8 @@ namespace Proof
         friend class Renderer;
     };
 
-    class ShaderLibrary : RefCounted{
+    class ShaderLibrary : public RefCounted
+    {
     public:
         void LoadShader(const std::string& name, const std::filesystem::path& path, const std::unordered_map<std::string, std::string>& macroDefintions = {});
         Count<Shader> GetShader(const std::string& name);

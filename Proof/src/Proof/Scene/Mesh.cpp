@@ -212,7 +212,7 @@ namespace Proof
                 continue;
             Count<Asset> asset = material;
             const std::string materialname = material->Name.empty() ? "UnnamedMaterial" : material->Name;
-            AssetManager::CreateRuntimeAsset(AssetManager::CreateID(), asset, materialname);
+            AssetManager::CreateRuntimeAsset(AssetManager::CreateID(), material, materialname);
         }
     }
 
