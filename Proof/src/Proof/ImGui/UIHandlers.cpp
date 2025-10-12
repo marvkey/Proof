@@ -14,6 +14,7 @@
 #include "Proof/Renderer/UIRenderer/UIMenu.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Utils/ContainerUtils.h"
+#include "Proof/Renderer/Shader.h"
 #include "UIVariable.h"
 
 #pragma region AssetsInclude
@@ -584,13 +585,41 @@ namespace Proof::UI
 				});
 		}
 	}
-	bool AttributeDrawMaterialTable(Count<class MaterialTable> materialTable, Count<class MaterialTable> sourceMaterialTable)
+	bool AttributeDrawMaterialTable(Count<class MaterialTable> materialTable, Count<class MaterialTable> sourceMaterialTable )
 	{
 		bool modified = false;
-
+		bool hasSourceMaterialTable = sourceMaterialTable != nullptr;
 		std::vector<uint32_t> clearMaterials;
+
+		//const std::string popUpID = fmt::format("AddMaterailPopUp {}", materialTable.GetMemoryAddress());
+
+		std::string popUpID = GenerateLabelID("ADMP");
+
 		if (UI::AttributeTreeNode("Materials"))
 		{
+			if (!hasSourceMaterialTable)
+			{
+				if (ImGui::Button("+"))
+				{
+					ImGui::OpenPopup(popUpID.c_str());
+				}
+			}
+
+			{
+				AssetID matID = 0;
+				if (Widgets::AssetSearchPopup(popUpID.c_str(), AssetType::Material, matID, UIMemoryAssetTypes::Default))
+				{
+					for (uint32_t i = 0; i < materialTable->GetMaterialCount() + 1; i++)
+					{
+						if (!materialTable->HasMaterial(i))
+						{
+							materialTable->SetMaterial(i, AssetManager::GetAsset<Material>(matID));
+							modified = true;
+							break;
+						}
+					}
+				}
+			}
 
 			for (auto& [index, material] : materialTable->GetMaterials())
 			{
@@ -601,17 +630,17 @@ namespace Proof::UI
 
 				UI::PropertyAssetReferenceSettings settings;
 
-				bool sourceHasMaterial = sourceMaterialTable->HasMaterial(index);
+				bool sourceHasMaterial = hasSourceMaterialTable ? sourceMaterialTable->HasMaterial(index) : false;
 
 				bool mathcingMaterials = false;
 				if (sourceHasMaterial)
 				{
 					auto sourceMaterial = sourceMaterialTable->GetMaterial(index);
-					mathcingMaterials = sourceMaterial == material;
+					mathcingMaterials = (sourceMaterial == material);
 				}
 
 				AssetID materialAssetHandle = 0;
-				materialAssetHandle = material->GetID();
+				materialAssetHandle = material ? material->GetID() : AssetID(0);
 				settings.AdvanceToNextColumn = false;
 				settings.AssetMemoryTypes = UIMemoryAssetTypes::Default;
 				settings.OnRightClick = CreateDiskMaterialFromRuntimeMaterial; // not working yet
@@ -630,54 +659,57 @@ namespace Proof::UI
 						materialTable->SetMaterial(index, AssetManager::GetAsset<Material>(materialAssetHandle));
 
 				}
-				float prevItemHeight = ImGui::GetItemRectSize().y;
-				PbrSurfaceMaterial surfaceMat(material);
-
-				ImGui::SameLine();
-				if (surfaceMat.GetAlbedoMap() != nullptr)
+				if (material!= nullptr && (material->GetRenderMaterial()->GetConfig().Shader->GetName() == "ProofPBR_Static"
+					|| material->GetRenderMaterial()->GetConfig().Shader->GetName() == "ProofPBRTransparent_Static"))
 				{
+					float prevItemHeight = ImGui::GetItemRectSize().y;
+					PbrSurfaceMaterial surfaceMat(material);
 
-					UI::ImageButton(surfaceMat.GetAlbedoMap(), { prevItemHeight, prevItemHeight },
-						{ surfaceMat.GetAlbedoColor().x,surfaceMat.GetAlbedoColor().y,surfaceMat.GetAlbedoColor().z,1.0 });
-				}
-				else if (surfaceMat.GetNormalMap() != nullptr && surfaceMat.GetNormalTextureToggle() == true)
-				{
-
-					UI::ImageButton(surfaceMat.GetNormalMap(), { prevItemHeight, prevItemHeight },
-						{ surfaceMat.GetAlbedoColor().x,surfaceMat.GetAlbedoColor().y,surfaceMat.GetAlbedoColor().z,1.0 });
-				}
-				else if (surfaceMat.GetRoughnessMap() != nullptr)
-				{
-
-					UI::ImageButton(surfaceMat.GetRoughnessMap(), ImVec2{ prevItemHeight, prevItemHeight },
-						{ surfaceMat.GetAlbedoColor().x,surfaceMat.GetAlbedoColor().y,surfaceMat.GetAlbedoColor().z,1.0 });
-				}
-				else if (surfaceMat.GetMetalnessMap() != nullptr)
-				{
-
-					UI::ImageButton(surfaceMat.GetMetalnessMap(), ImVec2{ prevItemHeight, prevItemHeight },
-						{ surfaceMat.GetAlbedoColor().x,surfaceMat.GetAlbedoColor().y,surfaceMat.GetAlbedoColor().z,1.0 });
-				}
-				else
-				{
-
-					UI::ImageButton(Renderer::GetWhiteTexture(), ImVec2{ prevItemHeight, prevItemHeight },
-						{ surfaceMat.GetAlbedoColor().x,surfaceMat.GetAlbedoColor().y,surfaceMat.GetAlbedoColor().z,1.0 });
-				}
-				if(!sourceHasMaterial && mathcingMaterials)
-					ImGui::NextColumn();
-				
-				if (sourceHasMaterial && !mathcingMaterials)
-				{
 					ImGui::SameLine();
-					if (ImGui::Button(UI::GenerateLabelID("X"), ImVec2{ prevItemHeight, prevItemHeight }))
+					if (surfaceMat.GetAlbedoMap() != nullptr)
 					{
-						modified = true;
-						materialTable->SetMaterial(index, sourceMaterialTable->GetMaterial(index));
-					}
-					ImGui::NextColumn();
-				}
 
+						UI::ImageButton(surfaceMat.GetAlbedoMap(), { prevItemHeight, prevItemHeight },
+							{ surfaceMat.GetAlbedoColor().x,surfaceMat.GetAlbedoColor().y,surfaceMat.GetAlbedoColor().z,1.0 });
+					}
+					else if (surfaceMat.GetNormalMap() != nullptr && surfaceMat.GetNormalTextureToggle() == true)
+					{
+
+						UI::ImageButton(surfaceMat.GetNormalMap(), { prevItemHeight, prevItemHeight },
+							{ surfaceMat.GetAlbedoColor().x,surfaceMat.GetAlbedoColor().y,surfaceMat.GetAlbedoColor().z,1.0 });
+					}
+					else if (surfaceMat.GetRoughnessMap() != nullptr)
+					{
+
+						UI::ImageButton(surfaceMat.GetRoughnessMap(), ImVec2{ prevItemHeight, prevItemHeight },
+							{ surfaceMat.GetAlbedoColor().x,surfaceMat.GetAlbedoColor().y,surfaceMat.GetAlbedoColor().z,1.0 });
+					}
+					else if (surfaceMat.GetMetalnessMap() != nullptr)
+					{
+
+						UI::ImageButton(surfaceMat.GetMetalnessMap(), ImVec2{ prevItemHeight, prevItemHeight },
+							{ surfaceMat.GetAlbedoColor().x,surfaceMat.GetAlbedoColor().y,surfaceMat.GetAlbedoColor().z,1.0 });
+					}
+					else
+					{
+
+						UI::ImageButton(Renderer::GetWhiteTexture(), ImVec2{ prevItemHeight, prevItemHeight },
+							{ surfaceMat.GetAlbedoColor().x,surfaceMat.GetAlbedoColor().y,surfaceMat.GetAlbedoColor().z,1.0 });
+					}
+					if (!sourceHasMaterial && mathcingMaterials)
+						ImGui::NextColumn();
+
+					if (sourceHasMaterial && !mathcingMaterials)
+					{
+						ImGui::SameLine();
+						if (ImGui::Button(UI::GenerateLabelID("X"), ImVec2{ prevItemHeight, prevItemHeight }))
+						{
+							modified = true;
+							materialTable->SetMaterial(index, sourceMaterialTable->GetMaterial(index));
+						}
+						ImGui::NextColumn();
+					}
+				}
 				ImGui::PopID();
 			}
 			UI::EndTreeNode();
@@ -686,7 +718,13 @@ namespace Proof::UI
 		for (auto clear : clearMaterials)
 			sourceMaterialTable->RemoveMaterial(clear);
 
+
+
+
+	
+
 		HandleModified(modified);
+
 		return modified;
 	}
 

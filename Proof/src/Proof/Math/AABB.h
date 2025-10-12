@@ -1,5 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
+
 namespace Proof
 {
 	struct AABB
@@ -116,5 +118,13 @@ namespace Proof
 
 			return sqrDistance;
 		}
+	};
+
+
+	struct OrientedBoundingBox
+	{
+		glm::vec3 Center;     // World space
+		glm::vec3 HalfExtents;
+		glm::quat Rotation;   
 	};
 }

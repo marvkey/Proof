@@ -69,7 +69,7 @@ namespace Proof::UI
 
 	bool AttributeTextureAssetReference(const std::string& label, AssetID& id, const PropertyAssetReferenceSettings& settings = {});
 	bool AttributeTextureAssetReference(const std::string& label, AssetKey<AssetType::Texture>& assetKey, const PropertyAssetReferenceSettings& settings = {});
-	bool AttributeDrawMaterialTable(Count<MaterialTable> materialTable, Count<MaterialTable> sourceMaterialTable);
+	bool AttributeDrawMaterialTable(Count<MaterialTable> materialTable, Count<MaterialTable> sourceMaterialTable = nullptr);
 	bool AttributeDrawUITable(Count<UITable> UITable);
 
 	enum class AttributeVectorSupportedItemTypes

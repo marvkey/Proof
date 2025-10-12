@@ -218,7 +218,6 @@ namespace Proof
 		return screenSpacePos;
 	}
 
-	Count<Material> glitch;
 	void World::OnRender(Count<class WorldRenderer> worldRenderer, FrameTime timestep, const Camera& camera, const glm::vec3& cameraLocation, float nearPlane, float farPlane, float fov,
 		std::function<void(Count<class WorldRenderer>)> injectRendererCode,
 		std::function<void(Count<class Renderer2D>)> inject2DRenderer )
@@ -229,14 +228,33 @@ namespace Proof
 		worldRenderer->SetContext(this);
 		worldRenderer->BeginScene({ camera,nearPlane,farPlane,fov }, cameraLocation);
 
-		if (glitch == nullptr)
 		{
-			auto rd = RenderMaterial::Create("Glitch",Renderer::GetShader("ScreenGlitch"));
+			auto postProcessVolumes = m_Registry.group<PostProcessVolumeComponent>(entt::get<TransformComponent>);
 
-			glitch = Count<Material>::Create("Glitch", rd);
+			for (auto& entityID : postProcessVolumes)
+			{
+				Entity entity(entityID, this);
+				PostProcessVolumeComponent& volume = entity.GetComponent<PostProcessVolumeComponent>();
+
+				if(!volume.IsGlobal)
+				{ 
+					OrientedBoundingBox obb = OrientedBoundingBox(
+						GetWorldSpaceLocation(entity),                      // OBB.Center (world position)
+						(volume.BoxSize * 0.5f) * GetWorldSpaceScale(entity), // OBB.HalfExtents (scaled half size)
+						GetWorldSpaceRotation(entity)                       // OBB.Rotation (world rotation)
+					);
+
+					if (!BasicCollision::IsPointInsideOBB(cameraLocation, obb))
+						continue;
+				}
+
+				for(auto& [index,mat] : volume.Materials->GetMaterials())
+				{
+					if(mat != nullptr)
+						worldRenderer->SubmitPostProcessMaterial(mat);
+				}
+			}
 		}
-
-		worldRenderer->SubmitPostProcessMaterial(glitch);
 		// lighting
 		{
 			//directional lights
@@ -697,6 +715,36 @@ namespace Proof
 		renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(), GlmVecToProof(cameraLocation), settings);
 
 		renderer2D->SetTargetFrameBuffer(renderer->GetExternalCompositePassFrameBuffer());
+		// ppost process
+		{
+			{
+
+				auto view = m_Registry.view<PostProcessVolumeComponent>();
+
+				for (auto entity : view)
+				{
+
+					Entity e = { entity, this };
+					if (selectedOnly)
+					{
+						if (!SelectionManager::IsEntityOrAncestorSelected(SelectionContext::Scene, e))
+							continue;
+					}
+					const auto& postProcess = e.GetComponent<PostProcessVolumeComponent>();
+
+
+					if (postProcess.IsGlobal)
+						continue;
+
+					TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
+					renderer2D->DrawDebugCube( worldTransformComp.Location, worldTransformComp.GetRotationEuler(),
+						(postProcess.BoxSize / 2.f) * worldTransformComp.Scale
+						, renderer->DebugOptions.PhysicsDebugOptions.PhysicsColliderColor);
+				}
+
+			}
+
+		}
 		//box colliders
 		
 		{

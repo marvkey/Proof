@@ -8,12 +8,12 @@ Assets:
   - Asset: 9602169324105281993
     Type: World
     Path: Scenes\TestScene.ProofWorld
-  - Asset: 13569084378200082806
-    Type: ScriptFile
-    Path: Scripts\HealthComponent.cs
   - Asset: 18245935877011124802
     Type: Material
     Path: Materials\m_Blue.Material.ProofAsset
+  - Asset: 13569084378200082806
+    Type: ScriptFile
+    Path: Scripts\HealthComponent.cs
   - Asset: 10423665410370180105
     Type: InputAction
     Path: Inputs\CharacterMovement\IA_Rotate.InputAction.ProofAsset
@@ -122,3 +122,6 @@ Assets:
   - Asset: 7976084304101403599
     Type: Material
     Path: Materials\GlitchyMaterials\m_ScreenGlitch.Material.ProofAsset
+  - Asset: 12400660277232460367
+    Type: Texture
+    Path: Images\glitch-texture-1.jpg

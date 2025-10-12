@@ -7,6 +7,7 @@ namespace Proof
 	struct AABB;
 	struct Ray;
 	class Camera;
+	struct OrientedBoundingBox;
 	struct Plane
 	{
 		// unit vector
@@ -38,7 +39,7 @@ namespace Proof
 	class BasicCollision
 	{
 	public:
-
+		static bool IsPointInsideOBB(const glm::vec3& point, const OrientedBoundingBox& obb);
 		static bool PointInAABB(const AABB& aabb, const glm::vec3& point);
 		static bool AABBInAABB(const AABB& aabb0, const AABB& aabb1);
 		static bool RayInAABB(const Ray& Ray,const AABB& aabb0, float& tmin, float& tmax);

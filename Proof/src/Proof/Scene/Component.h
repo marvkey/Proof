@@ -798,6 +798,20 @@ namespace Proof
 		// good to save performance for object that shoudl not tip over
 		bool AlwaysStayUpright = false; 
 	};
+
+
+	struct PostProcessVolumeComponent
+	{
+		PostProcessVolumeComponent();
+		PostProcessVolumeComponent(const PostProcessVolumeComponent&);
+		float Priority = 0.0f; // higher priority means it gets applied first
+		bool IsGlobal = false; // if false then we will have to do volume checkign agaisnt the camera
+		bool Enabled = true;
+		
+		glm::vec3 BoxSize = { 1.0f,1.0f,1.0f }; // only if not global
+
+		Count<class MaterialTable> Materials;
+	};
 	template<class ... Component>
 	struct ComponentGroup {
 
@@ -807,7 +821,7 @@ namespace Proof
 		MeshComponent,DynamicMeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent, CharacterControllerComponent,
 		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent, RigidBodyComponent, // rigid body should be here due to if we spawn entity we want to check if it has any collider then we add rigidbody on it
 		ScriptComponent, TextComponent,PlayerStartComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent, AudioListenerComponent,
-		WaterComponent, BuoyancyComponent, TerrainComponent, WorldHUDComponent>;
+		WaterComponent, BuoyancyComponent, TerrainComponent, WorldHUDComponent, PostProcessVolumeComponent>;
 	
 
 	using LightComponnet = ComponentGroup<SkyLightComponent, DirectionalLightComponent, PointLightComponent, SpotLightComponent>;

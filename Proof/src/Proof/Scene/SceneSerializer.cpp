@@ -1023,14 +1023,51 @@ namespace Proof
 					default:
 						break;
 				}
-			
+
 
 
 				out << YAML::EndMap; // WaterComponent
 			}
 
 		}
+		//Post Procces volume
+		{
+			if (entity.HasComponent<PostProcessVolumeComponent>())
+			{
+				PostProcessVolumeComponent& volume = entity.GetComponent<PostProcessVolumeComponent>();
+				
+				out << YAML::Key << "PostProcessVolumeComponent";
+				out << YAML::BeginMap; // PostProcessVolume
 
+				out << YAML::Key << "IsGlobal" << volume.IsGlobal;
+				out << YAML::Key << "BoxSize" << volume.BoxSize;
+				out << YAML::Key << "Enabled" << volume.Enabled;
+				out << YAML::Key << "Priority" << volume.Priority;
+
+				out << YAML::Key << "MaterialTable";
+				out << YAML::BeginSeq;//MaterialTbale 
+				for (auto& [index, material] : volume.Materials->GetMaterials())
+				{
+
+					if (!CanSaveAsset(material.As<Asset>()))
+						continue;
+					out << YAML::BeginMap;// material
+
+					// we nned th "" for some reason 
+					out << YAML::Key << "Material" << YAML::Key << "";
+
+					//id of 0 means default material
+					out << YAML::Key << "AssetID" << YAML::Value << material.As<Asset>()->GetID();
+					out << YAML::Key << "Index" << YAML::Value << index;
+
+					out << YAML::EndMap;// material
+
+				}
+				out << YAML::EndSeq; // matrailTable
+
+				out << YAML::EndMap; // PostProcessVolume
+			}
+		}
 		//buoyancy
 		{
 			if (entity.HasComponent<BuoyancyComponent>())
@@ -2007,6 +2044,33 @@ namespace Proof
 				}
 			
 			}
+			//Post Process Volume
+			{
+				auto postProcessVolume = entity["PostProcessVolumeComponent"];
+				if(postProcessVolume)
+				{
+					auto& ppvc = NewEntity.AddComponent<PostProcessVolumeComponent>();
+					ppvc.Enabled = postProcessVolume["Enabled"].as<bool>(ppvc.Enabled);
+					ppvc.IsGlobal = postProcessVolume["IsGlobal"].as<bool>(ppvc.IsGlobal);
+					ppvc.BoxSize = postProcessVolume["BoxSize"].as<glm::vec3>(ppvc.BoxSize);
+					ppvc.Priority = postProcessVolume["Priority"].as<float>(ppvc.Priority);
+
+					if (postProcessVolume["MaterialTable"])
+					{
+						Count<MaterialTable> matTable = Count<MaterialTable>::Create(false);
+						for (auto mat : postProcessVolume["MaterialTable"])
+						{
+							AssetID id = mat["AssetID"].as<uint64_t>();
+							uint32_t index = mat["Index"].as<uint32_t>();
+							if (AssetManager::HasAsset(id))
+							{
+								matTable->SetMaterial(index, AssetManager::GetAsset<Material>(id));
+							}
+						}
+						ppvc.Materials = matTable;
+					}
+				}
+			}
 
 			// ParticleSystemComponent
 			{
@@ -2051,7 +2115,6 @@ namespace Proof
 			}
 			//Script Component
 			{
-				#if 1
 				Count<ScriptWorld> scriptWorld = world->GetScriptWorld();
 				auto scriptComponent = entity["ScriptComponent"];
 				if (scriptComponent)
@@ -2098,94 +2161,6 @@ namespace Proof
 						}
 					}
 				}
-				#endif
-				#if 0
-				auto scriptComponent = entity["ScriptComponent"];
-				if (scriptComponent)
-				{
-					auto& scp = NewEntity.AddComponent<ScriptComponent>();
-					auto scripts = scriptComponent["Scripts"];
-					for (auto script : scripts)
-					{
-						std::string scriptName = script["Script"].as<std::string>();
-						auto& engineScripts = ScriptEngine::GetScripts();
-						if (!engineScripts.contains(scriptName))
-							continue;
-
-						scp.ScriptsNames.insert(scriptName);
-						if (isPrefab)
-							continue;
-						if (!script["ScriptFields"])continue;
-
-						Count<ScriptClass> scriptClass = ScriptEngine::GetScriptClass(scriptName);
-						const auto& fields = scriptClass->GetFields();
-						auto& entityFields = ScriptEngine::GetScriptFieldMap(NewEntity);
-
-						auto scriptFields = script["ScriptFields"];
-
-						for (auto scriptField : scriptFields)
-						{
-							std::string fieldName = scriptField["Name"].as<std::string>();
-							std::string fieldTypeString = scriptField["Type"].as<std::string>();
-							ScriptFieldType type = Utils::ScriptFieldTypeFromString(fieldTypeString);
-							if (!fields.contains(fieldName))
-							{
-								PF_ENGINE_WARN("Entity {} Script {} does not contain {} field", world->GetEntity(EntID).GetName(), scriptName, fieldName);
-								continue;
-							}
-							//creating the field instance adnscript
-							ScriptFieldInstance& fieldInstance = entityFields[scriptName][fieldName];
-
-							fieldInstance.Field = fields.at(fieldName);
-
-
-							switch (type)
-							{
-								READ_SCRIPT_FIELD(Float, float);
-								READ_SCRIPT_FIELD(Double, double);
-								READ_SCRIPT_FIELD(Bool, bool);
-								READ_SCRIPT_FIELD(Char, char);
-								READ_SCRIPT_FIELD(Int8_t, int8_t);
-								READ_SCRIPT_FIELD(Int16_t, int16_t);
-								READ_SCRIPT_FIELD(Int32_t, int32_t);
-								READ_SCRIPT_FIELD(Int64_t, int64_t);
-								READ_SCRIPT_FIELD(Uint8_t, uint8_t);
-								READ_SCRIPT_FIELD(Uint16_t, uint16_t);
-								READ_SCRIPT_FIELD(Uint32_t, uint32_t);
-								READ_SCRIPT_FIELD(Uint64_t, uint64_t);
-								//READ_SCRIPT_FIELD(Vector2, glm::vec2);
-								//READ_SCRIPT_FIELD(Vector3, glm::vec3);
-								//READ_SCRIPT_FIELD(Vector4, glm::vec4);
-								READ_SCRIPT_FIELD(Entity, uint64_t);
-								READ_SCRIPT_FIELD(Prefab, uint64_t);
-								READ_SCRIPT_FIELD(Texture, uint64_t);
-								case ScriptFieldType::Enum:
-									{
-										const std::string enumTypeName = ScriptEngine::GetFieldEnumName(fieldInstance.Field);
-										if (!ScriptEngine::GetEnumClasses().contains(enumTypeName))
-										{
-											fieldInstance.SetValue<uint64_t>(0);
-											break;
-										}
-										switch (ScriptEngine::GetEnumClasses().at(enumTypeName).first)
-										{
-											READ_SCRIPT_FIELD(Int8_t, int8_t);
-											READ_SCRIPT_FIELD(Int16_t, int16_t);
-											READ_SCRIPT_FIELD(Int32_t, int32_t);
-											READ_SCRIPT_FIELD(Int64_t, int64_t);
-											READ_SCRIPT_FIELD(Uint8_t, uint8_t);
-											READ_SCRIPT_FIELD(Uint16_t, uint16_t);
-											READ_SCRIPT_FIELD(Uint32_t, uint32_t);
-											READ_SCRIPT_FIELD(Uint64_t, uint64_t);
-											default: break;
-										}
-										break;
-									}
-							}
-						}
-					}
-				}
-				#endif
 			}
 		}
 	}

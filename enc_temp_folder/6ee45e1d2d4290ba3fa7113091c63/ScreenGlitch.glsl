@@ -33,7 +33,7 @@ layout(push_constant) uniform Material
 {
 
     vec3 GlitchAxis;
-    float GlitchStrength ;
+    float GlitchScale ;
     float TimeScalee; // shoudl animate this not leave static has cool effect so maybe lerp betwewn 1 and 0
 
 } u_MaterialUniform;
@@ -77,7 +77,7 @@ void Fragment(inout PostProcessFragmentInput fragmentInput)
     // this adds a lot more distorion
     {
         noiseR = noiseR -0.5;
-        noiseR *=2 * u_MaterialUniform.GlitchStrength; // when 0 no gltich when higher tahn 0 start to see gltich
+        noiseR *=2;
     }
  
     // Offset each channel using wrapped UVs

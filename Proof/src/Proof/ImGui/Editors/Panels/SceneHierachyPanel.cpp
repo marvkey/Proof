@@ -1218,6 +1218,7 @@ namespace Proof
 			AddComponentGui<AudioListenerComponent>(entity, "AudioListener");
 			AddComponentGui<WaterComponent>(entity, "Water");
 			AddComponentGui<BuoyancyComponent>(entity, "Buoyancy");
+			AddComponentGui<PostProcessVolumeComponent>(entity, "PostProcessVolumeComponent");
 			ImGui::EndPopup();
 		}
 		UI::ColorGradientEditor("fadadff", grad);
@@ -2466,6 +2467,20 @@ namespace Proof
 				UI::AttributeBool("Active", audio.Active);
 				UI::AttributeDrag("ConeOuterGain", audio.ConeOuterGain, 0.25f);
 				UI::EndPropertyGrid();
+			});
+
+		DrawComponents<PostProcessVolumeComponent>("PostProcessVolumeComponent", entity, [](PostProcessVolumeComponent& volume)
+			{
+				UI::BeginPropertyGrid();
+
+				UI::AttributeBool("Enabled", volume.Enabled);
+				UI::AttributeBool("IsGlobal", volume.IsGlobal);
+
+				if (!volume.IsGlobal)
+					UI::AttributeDrag("BoxSize", volume.BoxSize);
+				UI::EndPropertyGrid();
+
+				UI::AttributeDrawMaterialTable(volume.Materials, nullptr);
 			});
 	}
 

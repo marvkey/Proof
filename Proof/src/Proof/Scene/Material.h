@@ -115,14 +115,23 @@ namespace Proof
 	class MaterialTable : public RefCounted 
 	{
 	public:
-		MaterialTable(bool createMatIndex0Default = true, MaterialTypes  types = MaterialTypes::Surface) {
+		MaterialTable(bool createMatIndex0Default = true, MaterialTypes type = MaterialTypes::Surface) 
+		{
+			m_Type = type;
 			if(createMatIndex0Default)
 				SetMaterial(0, Count<Material>::Create(fmt::format("Default")));
 		}
-		// material can be nulltr
+
+		MaterialTable(Count<MaterialTable> other)
+		{
+			m_Materials = other->m_Materials;
+		} 
+
 		// index cna be existing or non exisitng
-		void SetMaterial(uint32_t materialIndex,Count<Material> material) {
-			m_Materials[materialIndex] =material;
+		void SetMaterial(uint32_t materialIndex,Count<Material> material) 
+		{
+			//if(material->GetSurfaceType() == m_Type)
+				m_Materials[materialIndex] =material;
 		}
 
 		void RemoveMaterial(uint32_t materialIndex) {
@@ -150,6 +159,7 @@ namespace Proof
 	private:
 		// index, materisl
 		std::map<uint32_t ,Count<Material>> m_Materials;
+		MaterialTypes m_Type;
 	};
 
 	bool operator==(const MaterialTable& other, const MaterialTable& other1);

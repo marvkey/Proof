@@ -310,4 +310,17 @@ namespace Proof
 	{
 		ScriptMetadates = other.ScriptMetadates;
 	}
+
+	PostProcessVolumeComponent::PostProcessVolumeComponent()
+	{
+		Materials = Count<class MaterialTable>::Create(false, MaterialTypes::PostProcess);
+	}
+	PostProcessVolumeComponent::PostProcessVolumeComponent(const PostProcessVolumeComponent& other)
+	{
+		Priority = other.Priority;
+		IsGlobal = other.IsGlobal;
+		Enabled = other.Enabled;
+		BoxSize = other.BoxSize;
+		Materials = Count<class MaterialTable>::Create(other.Materials);
+	}
 }

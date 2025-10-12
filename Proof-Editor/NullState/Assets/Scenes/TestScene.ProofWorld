@@ -846,3 +846,23 @@ World:
           - Material: ""
             AssetID: 14486622669096991682
             Index: 0
+    - Entity: 2868991405597355834
+      TagComponent:
+        Tag: Empty Entity
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      PostProcessVolumeComponent:
+        IsGlobal: true
+        BoxSize: [1, 1, 1]
+        Enabled: true
+        Priority: 0
+        MaterialTable:
+          - Material: ""
+            AssetID: 7976084304101403599
+            Index: 0

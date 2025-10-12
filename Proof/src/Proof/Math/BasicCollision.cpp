@@ -5,6 +5,16 @@
 #include "Proof/Scene/Camera/Camera.h"
 
 namespace Proof {
+    bool BasicCollision::IsPointInsideOBB(const glm::vec3& point, const OrientedBoundingBox& obb)
+    {
+        // Translate point into OBB local space
+        glm::vec3 localPoint = glm::inverse(obb.Rotation) * (point - obb.Center);
+
+        // Check against extents
+        return std::abs(localPoint.x) <= obb.HalfExtents.x &&
+            std::abs(localPoint.y) <= obb.HalfExtents.y &&
+            std::abs(localPoint.z) <= obb.HalfExtents.z;
+    }
     bool BasicCollision::PointInAABB(const AABB& collison, const glm::vec3& point)
     {
         /*
