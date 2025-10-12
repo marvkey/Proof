@@ -80,44 +80,95 @@ namespace Proof {
 	void MaterialAssetSerializer::Save(const AssetInfo& data, const Count<class Asset>& asset) const
 	{
 		Count<Material> material = asset.As<Material>();
+
+		auto renderMaterial = material->GetRenderMaterial();
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(material->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << material->GetID();
 		out << YAML::Key << "ShaderName" << YAML::Value << material->GetRenderMaterial()->GetConfig().Shader->GetName();
 
-		PbrSurfaceMaterial surfaceMat(material);
+		if (renderMaterial->GetConfig().Shader->GetName() == "ProofPBR_Static" || renderMaterial->GetConfig().Shader->GetName() == "ProofPBRTransparent_Static")
+		{
+			PbrSurfaceMaterial surfaceMat(material);
 
-		out << YAML::Key << "AlbedoColour" << YAML::Value << surfaceMat.GetAlbedoColor();
-		out << YAML::Key << "Roughness" << YAML::Value << surfaceMat.GetRoughness();
-		out << YAML::Key << "Metallness" << YAML::Value << surfaceMat.GetMetalness();
-		out << YAML::Key << "Emission" << YAML::Value << surfaceMat.GetEmission();
-		out << YAML::Key << "Tiling" << YAML::Value << surfaceMat.GetTiling();
-		out << YAML::Key << "NormalTextureToggle" << YAML::Value << surfaceMat.GetNormalTextureToggle();
-		out << YAML::Key << "Offset" << YAML::Value << surfaceMat.GetOffset();
+			out << YAML::Key << "AlbedoColour" << YAML::Value << surfaceMat.GetAlbedoColor();
+			out << YAML::Key << "Roughness" << YAML::Value << surfaceMat.GetRoughness();
+			out << YAML::Key << "Metallness" << YAML::Value << surfaceMat.GetMetalness();
+			out << YAML::Key << "Emission" << YAML::Value << surfaceMat.GetEmission();
+			out << YAML::Key << "Tiling" << YAML::Value << surfaceMat.GetTiling();
+			out << YAML::Key << "NormalTextureToggle" << YAML::Value << surfaceMat.GetNormalTextureToggle();
+			out << YAML::Key << "Offset" << YAML::Value << surfaceMat.GetOffset();
 
-		if (surfaceMat.GetAlbedoMap() && surfaceMat.GetAlbedoMap() != Renderer::GetWhiteTexture())
-			out << YAML::Key << "AlbedoTexture" << YAML::Value << surfaceMat.GetAlbedoMap()->GetID();
+			if (surfaceMat.GetAlbedoMap() && surfaceMat.GetAlbedoMap() != Renderer::GetWhiteTexture())
+				out << YAML::Key << "AlbedoTexture" << YAML::Value << surfaceMat.GetAlbedoMap()->GetID();
+			else
+				out << YAML::Key << "AlbedoTexture" << YAML::Value << 0;
+
+			if (surfaceMat.GetNormalMap() && surfaceMat.GetNormalMap() != Renderer::GetWhiteTexture())
+				out << YAML::Key << "NormalTexture" << YAML::Value << surfaceMat.GetNormalMap()->GetID();
+			else
+				out << YAML::Key << "NormalTexture" << YAML::Value << 0;
+
+			if (surfaceMat.GetMetalnessMap() && surfaceMat.GetMetalnessMap() != Renderer::GetWhiteTexture())
+				out << YAML::Key << "MetallicTexture" << YAML::Value << surfaceMat.GetMetalnessMap()->GetID();
+			else
+				out << YAML::Key << "MetallicTexture" << YAML::Value << 0;
+
+			if (surfaceMat.GetRoughnessMap() && surfaceMat.GetRoughnessMap() != Renderer::GetWhiteTexture())
+				out << YAML::Key << "RoughnessTexture" << YAML::Value << surfaceMat.GetRoughnessMap()->GetID();
+			else
+				out << YAML::Key << "RoughnessTexture" << YAML::Value << 0;
+			  
+			out << YAML::EndMap;
+		}
 		else
-			out << YAML::Key << "AlbedoTexture" << YAML::Value << 0;
+		{
+			auto var = material->GetMaterialVariables();
 
-		if (surfaceMat.GetNormalMap() && surfaceMat.GetNormalMap() != Renderer::GetWhiteTexture())
-			out << YAML::Key << "NormalTexture" << YAML::Value << surfaceMat.GetNormalMap()->GetID();
-		else
-			out << YAML::Key << "NormalTexture" << YAML::Value << 0;
+			for (auto [name, type] : var)
+			{
+				out << YAML::Key << name;
+				switch (type)
+				{
+				case VariableTypes::Bool:
+					out << YAML::Value << material->GetRenderMaterial()->GetBool(name);
+					break;
+				case VariableTypes::Int:
+					out << YAML::Value << material->GetRenderMaterial()->GetInt(name);
+					break;
+				case VariableTypes::Float:
+					out << YAML::Value << material->GetRenderMaterial()->GetFloat(name);
+					break;
+				case VariableTypes::Vec2:
+					out << YAML::Value << material->GetRenderMaterial()->GetVector2(name);
+					break;
+				case VariableTypes::Vec3:
+					out << YAML::Value << material->GetRenderMaterial()->GetVector(name);
+					break;
+				case VariableTypes::Vec4:
+					out << YAML::Value << material->GetRenderMaterial()->GetVector4(name);
+					break;
+				default:
+					PF_CORE_ASSERT(false);
+					break;
+				}
+			}
 
-		if (surfaceMat.GetMetalnessMap() && surfaceMat.GetMetalnessMap() != Renderer::GetWhiteTexture())
-			out << YAML::Key << "MetallicTexture" << YAML::Value << surfaceMat.GetMetalnessMap()->GetID();
-		else
-			out << YAML::Key << "MetallicTexture" << YAML::Value << 0;
 
-		if (surfaceMat.GetRoughnessMap() && surfaceMat.GetRoughnessMap() != Renderer::GetWhiteTexture())
-			out << YAML::Key << "RoughnessTexture" << YAML::Value << surfaceMat.GetRoughnessMap()->GetID();
-		else
-			out << YAML::Key << "RoughnessTexture" << YAML::Value << 0;
+			auto editableTextures = material->GetEditableTextures();
 
+			for(const auto& name : editableTextures)
+			{
+				out << YAML::Key << name;
+				auto texture = material->GetRenderMaterial()->TryGetTexture2D(name);
+				if (texture && AssetManager::HasAsset(texture))
+					out << YAML::Value << texture->GetID();
+				else
+					out << YAML::Value << 0;
+			}
 
-		out << YAML::EndMap;
+		}
 		std::ofstream stream(AssetManager::GetAssetFileSystemPath(data.Path).string());
 		stream << out.c_str();
 		stream.close();
@@ -135,57 +186,111 @@ namespace Proof {
 			material = Count<Material>::Create(assetData.GetName(), Renderer::GetShaderLibrary()->GetShader(data["ShaderName"].as<std::string>()));
 		else
 			material = Count<Material>::Create(assetData.GetName());
-		PbrSurfaceMaterial surfaceMat(material);
 
-		surfaceMat.GetAlbedoColor() = data["AlbedoColour"].as<glm::vec3>();
-
-		surfaceMat.GetMetalness() = data["Metallness"].as<float>();
-		surfaceMat.GetRoughness() = data["Roughness"].as<float>();
-		surfaceMat.GetEmission() = data["Emission"].as<float>(surfaceMat.GetEmission());
-		surfaceMat.GetNormalTextureToggle() = data["NormalTextureToggle"].as<bool>(false);
-		if (data["Tiling"])
+		auto renderMaterial = material->GetRenderMaterial();
+		if (renderMaterial->GetConfig().Shader->GetName() == "ProofPBR_Static" || renderMaterial->GetConfig().Shader->GetName() == "ProofPBRTransparent_Static")
 		{
-			surfaceMat.GetTiling() = data["Tiling"].as<glm::vec2>();
-			surfaceMat.GetOffset() = data["Offset"].as<glm::vec2>();
-		}
+			PbrSurfaceMaterial surfaceMat(material);
 
-		if (data["AlbedoTexture"])
-		{
-			uint64_t id = data["AlbedoTexture"].as<uint64_t>();
-			if (AssetManager::HasAsset(id))
+			surfaceMat.GetAlbedoColor() = data["AlbedoColour"].as<glm::vec3>();
+
+			surfaceMat.GetMetalness() = data["Metallness"].as<float>();
+			surfaceMat.GetRoughness() = data["Roughness"].as<float>();
+			surfaceMat.GetEmission() = data["Emission"].as<float>(surfaceMat.GetEmission());
+			surfaceMat.GetNormalTextureToggle() = data["NormalTextureToggle"].as<bool>(false);
+			if (data["Tiling"])
 			{
-				surfaceMat.SetAlbedoMap(AssetManager::GetAsset<Texture2D>(id));
+				surfaceMat.GetTiling() = data["Tiling"].as<glm::vec2>();
+				surfaceMat.GetOffset() = data["Offset"].as<glm::vec2>();
+			}
+
+			if (data["AlbedoTexture"])
+			{
+				uint64_t id = data["AlbedoTexture"].as<uint64_t>();
+				if (AssetManager::HasAsset(id))
+				{
+					surfaceMat.SetAlbedoMap(AssetManager::GetAsset<Texture2D>(id));
+				}
+			}
+			if (data["NormalTexture"])
+			{
+				uint64_t id = data["NormalTexture"].as<uint64_t>();
+				if (AssetManager::HasAsset(id))
+				{
+					surfaceMat.SetNormalMap(AssetManager::GetAsset<Texture2D>(id));
+					surfaceMat.GetNormalTextureToggle() = data["NormalTextureToggle"].as<bool>(true);
+				}
+			}
+
+			if (data["MetallicTexture"])
+			{
+				uint64_t id = data["MetallicTexture"].as<uint64_t>();
+				if (AssetManager::HasAsset(id))
+				{
+					surfaceMat.SetMetalnessMap(AssetManager::GetAsset<Texture2D>(id));
+				}
+			}
+
+
+			if (data["RoughnessTexture"])
+			{
+				uint64_t id = data["RoughnessTexture"].as<uint64_t>();
+				if (AssetManager::HasAsset(id))
+				{
+					surfaceMat.SetRoughnessMap(AssetManager::GetAsset<Texture2D>(id));
+				}
 			}
 		}
-		if (data["NormalTexture"])
+		else
 		{
-			uint64_t id = data["NormalTexture"].as<uint64_t>();
-			if (AssetManager::HasAsset(id))
+			auto variables = material->GetMaterialVariables();
+
+			for(auto& [name, varType] : variables)
 			{
-				surfaceMat.SetNormalMap(AssetManager::GetAsset<Texture2D>(id));
-				surfaceMat.GetNormalTextureToggle() = data["NormalTextureToggle"].as<bool>(true);
+				if (data[name])
+				{
+					switch (varType)
+					{
+					case VariableTypes::Bool:
+						renderMaterial->Set(name, data[name].as<bool>());
+						break;
+					case VariableTypes::Int:
+						renderMaterial->Set(name, data[name].as<int>());
+						break;
+					case VariableTypes::Float:
+						renderMaterial->Set(name, data[name].as<float>());
+						break;
+					case VariableTypes::Vec2:
+						renderMaterial->Set(name, data[name].as<glm::vec2>());
+						break;
+					case VariableTypes::Vec3:
+						renderMaterial->Set(name, data[name].as<glm::vec3>());
+						break;
+					case VariableTypes::Vec4:
+						renderMaterial->Set(name, data[name].as<glm::vec4>());
+						break;
+					default:
+						PF_CORE_ASSERT(false);
+						break;
+					}
+				}
 			}
-		}
 
-		if (data["MetallicTexture"])
-		{
-			uint64_t id = data["MetallicTexture"].as<uint64_t>();
-			if (AssetManager::HasAsset(id))
+			auto textures = material->GetEditableTextures();
+
+			for(const auto& name : textures)
 			{
-				surfaceMat.SetMetalnessMap(AssetManager::GetAsset<Texture2D>(id));
+				if (data[name])
+				{
+					uint64_t id = data[name].as<uint64_t>();
+					if (AssetManager::HasAssetAndAssetType(id,AssetType::Texture))
+					{
+						renderMaterial->Set(name, AssetManager::GetAsset<Texture2D>(id));
+					}
+				}
 			}
+
 		}
-
-
-		if (data["RoughnessTexture"])
-		{
-			uint64_t id = data["RoughnessTexture"].as<uint64_t>();
-			if (AssetManager::HasAsset(id))
-			{
-				surfaceMat.SetRoughnessMap(AssetManager::GetAsset<Texture2D>(id));
-			}
-		}
-
 
 		material->Name = assetData.GetName();
 		SetID(assetData, material);

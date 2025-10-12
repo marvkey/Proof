@@ -4757,5 +4757,6 @@ namespace Proof
 		
 		renderPass->SetInput("u_InputColor", m_GeometryPass->GetOutput(0));
 		renderPass->SetInput("u_InputDepth", m_PreDepthPass->GetOutput(0));
+		renderPass->AddGlobalInput(m_GlobalInputs);
 	}
 }

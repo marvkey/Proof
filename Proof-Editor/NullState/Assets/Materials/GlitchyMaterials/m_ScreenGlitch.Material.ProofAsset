@@ -1,0 +1,5 @@
+AssetType: Material
+ID: 7976084304101403599
+ShaderName: ScreenGlitch
+u_MaterialUniform.GlitchRate: 2
+u_MaterialUniform.GlitchScale: 0

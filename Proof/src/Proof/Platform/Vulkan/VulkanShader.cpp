@@ -596,6 +596,16 @@ namespace Proof
         return nullptr;
     }
 
+    const std::string VulkanShader::GetInputDeclarationName(uint32_t set, uint32_t binding) const
+    {
+        for(auto& [name, decl] : m_InputDeclaration)
+        {
+            if (decl.Set == set && decl.Binding == binding)
+                return name;
+		}
+        return std::string();
+    }
+
     const ShaderResourceBufferInfo* VulkanShader::GetStorageBufferInput(const std::string& storageName, const std::string& name) const
     {
         if (m_StorageBufferResourceInfo.contains(storageName))
@@ -640,6 +650,87 @@ namespace Proof
         if (vkCreateShaderModule(VulkanRenderer::GetGraphicsContext()->GetDevice()->GetVulkanDevice(), &createInfo, nullptr, shaderModule) != VK_SUCCESS)
             PF_CORE_ASSERT(false, "Failed To Create Shader Module");
 
+    }
+
+    ShaderResourceBufferVarType ConvertSPIRTypeToVarType(const spirv_cross::SPIRType& type,const std::string& name)
+    {
+        using VT = ShaderResourceBufferVarType;
+
+        auto base = type.basetype;
+        auto vec = type.vecsize;
+        auto col = type.columns;
+
+        // === Scalars ===
+        if (base == spirv_cross::SPIRType::Boolean)
+        {
+            if (vec == 1) return VT::Bool;
+            if (vec == 2) return VT::BVec2;
+            if (vec == 3) return VT::BVec3;
+            if (vec == 4) return VT::BVec4;
+        }
+
+        if (base == spirv_cross::SPIRType::Int)
+        {
+            if (vec == 1) return VT::Int;
+            if (vec == 2) return VT::IVec2;
+            if (vec == 3) return VT::IVec3;
+            if (vec == 4) return VT::IVec4;
+        }
+
+        if (base == spirv_cross::SPIRType::UInt)
+        {
+            // Heuristic: if the original name contains Toggle or looks like a boolean, treat it as bool
+            if (name.find("Toggle") != std::string::npos || name.starts_with("Is") != std::string::npos)
+                return ShaderResourceBufferVarType::Bool;
+
+            if (vec == 1) return VT::Uint;
+            if (vec == 2) return VT::UVec2;
+            if (vec == 3) return VT::UVec3;
+            if (vec == 4) return VT::UVec4;
+        }
+
+        if (base == spirv_cross::SPIRType::Int64) return VT::Int64;
+        if (base == spirv_cross::SPIRType::UInt64) return VT::Uint64;
+
+        if (base == spirv_cross::SPIRType::Float)
+        {
+            if (col == 1)
+            {
+                if (vec == 1) return VT::Float;
+                if (vec == 2) return VT::Vec2;
+                if (vec == 3) return VT::Vec3;
+                if (vec == 4) return VT::Vec4;
+            }
+            else if (col == 2 && vec == 2) return VT::Mat2;
+            else if (col == 3 && vec == 3) return VT::Mat3;
+            else if (col == 4 && vec == 4) return VT::Mat4;
+        }
+
+        if (base == spirv_cross::SPIRType::Double)
+        {
+            if (col == 1)
+            {
+                if (vec == 1) return VT::Double;
+                if (vec == 2) return VT::DVec2;
+                if (vec == 3) return VT::DVec3;
+                if (vec == 4) return VT::DVec4;
+            }
+            else if (col == 2 && vec == 2) return VT::DMat2;
+            else if (col == 3 && vec == 3) return VT::DMat3;
+            else if (col == 4 && vec == 4) return VT::DMat4;
+        }
+
+        // === Special Types ===
+        if (base == spirv_cross::SPIRType::Sampler) return VT::Sampler;
+        if (base == spirv_cross::SPIRType::SampledImage) return VT::SampledImage;
+        if (base == spirv_cross::SPIRType::Image) return VT::Image;
+        if (base == spirv_cross::SPIRType::AccelerationStructure) return VT::AccelerationStructure;
+        if (base == spirv_cross::SPIRType::RayQuery) return VT::RayQuery;
+        if (base == spirv_cross::SPIRType::AtomicCounter) return VT::AtomicCounter;
+        if (base == spirv_cross::SPIRType::Struct) return VT::Struct;
+
+        // === Unsupported or fallback ===
+        return VT::None;
     }
     void VulkanShader::Reflect(ShaderStage stage) {
         if (m_VulkanSPIRV.find(stage) == m_VulkanSPIRV.end()) {
@@ -739,7 +830,12 @@ namespace Proof
                 const auto& memberSize = compiler.get_declared_struct_member_size(bufferType, i);
                 auto memberOffset = compiler.get_member_decoration(resource.base_type_id, i, spv::DecorationOffset);
                 auto newName = fmt::format("{}.{}", resource.name, memberName);
-                resourceInputs[newName] = { (uint32_t)memberSize,(uint32_t)memberOffset };
+
+                const auto& memberType = compiler.get_type(bufferType.member_types[i]); // <--- Get the member's SPIRType
+
+                ShaderResourceBufferVarType varType = ConvertSPIRTypeToVarType(memberType,memberName);
+
+                resourceInputs[newName] = { (uint32_t)memberSize,(uint32_t)memberOffset,varType };
             }
             m_PushConstantResourceInfo[resource.name] = { bufferSize, resourceInputs };
             uint32_t pushStage = (int)m_PushConstants[resource.name].stageFlags;

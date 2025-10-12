@@ -18,6 +18,7 @@
 #include "Proof/ImGui/UI.h"
 #include "Proof/ImGui/UIHandlers.h"
 #include "Proof/Renderer/Texture.h"
+#include "Proof/Renderer/Shader.h"
 
 #include "Proof/Core/Profile.h"
 #include "Proof/ImGui/Editors/Panels/DetailsPanel.h"
@@ -60,12 +61,7 @@ namespace Proof
 		AssetManager::SaveAsset(m_Material->GetID());
 	}
 
-	enum class ShaderType
-	{
-		Standard,
-		Transparent,
-		Glitchy
-	};
+	
 	void Proof::MaterialEditorPanel::RenderDetailSettings()
 	{
 		std::string name = m_Material->Name;
@@ -74,45 +70,71 @@ namespace Proof
 		auto shaderName = fmt::format("Shader: {}", renderMaterial->GetConfig().Shader->GetName());
 		ImGui::Text(shaderName.c_str());
 
-		PbrSurfaceMaterial surfaceMat(m_Material);
-
-		ShaderType type;
-
-		if(renderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBR_Static"))
-			type = ShaderType::Standard;
-		else if (renderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBRTransparent_Static"))
-			type = ShaderType::Transparent;
-		else
-			type = ShaderType::Glitchy;
-
-		if(UI::EnumCombo("ShaderType",type))
 		{
-			switch (type)
+
+			std::vector<std::string> selecteableShaders;
+			for(auto& [name, shader] : Renderer::GetShaderLibrary()->GetShaderMap())
 			{
-			case ShaderType::Standard:
-				m_Material->SetMaterialShader(m_Material->Name, Renderer::GetShader("ProofPBR_Static"));
-				break;
-			case ShaderType::Transparent:
-				m_Material->SetMaterialShader(m_Material->Name, Renderer::GetShader("ProofPBRTransparent_Static"));
-				break;
-			case ShaderType::Glitchy:
-				m_Material->SetMaterialShader(m_Material->Name, Renderer::GetShader("ProofPBR_Glitchy"));
-				break;
-			default:
-				break;
+				if (shader->GetAllShaderMacroDefines().contains("MATERIAL_SURFACE") || shader->GetAllShaderMacroDefines().contains("MATERIAL_POST_PROCESS"))
+				{
+					selecteableShaders.push_back(name);
+				}
 			}
-			// dont render this frame so the render material can be set ready in the next frame
-			return;
+
+			auto [changed, outSelectionIndex, outSelectiongString]
+				= UI::Combo("Sahder", selecteableShaders, renderMaterial->GetConfig().Shader->GetName());
+
+			if (changed)
+			{
+				m_Material->SetMaterialShader(m_Material->Name, Renderer::GetShader(outSelectiongString));
+				// dont render this frame so the render material can be set ready in the next frame
+				return;
+			}
 		}
+		
+		if (renderMaterial->GetConfig().Shader->GetName() == "ProofPBR_Static" || renderMaterial->GetConfig().Shader->GetName() == "ProofPBRTransparent_Static")
+			RenderDefautlPBRShader();
+		else
+			RenderMaterials();
+	}
+	
+	void MaterialEditorPanel::SetDefaultLayout()
+	{
+		ImGuiID dockspace_id = ImGui::GetID(GetBaseDockspace().c_str());
+		ImGuiWindow* window = ImGui::FindWindowByName(m_DetailsPanelName.c_str());
+		if (m_DetailsPanel->GetImGuiWindow())
+		{
+			ImGui::SetWindowDock(m_DetailsPanel->GetImGuiWindow(), dockspace_id, 0);
+		}
+	}
+	bool MaterialEditorPanel::IsSubWindowsHovered()
+	{
+		if (m_DetailsPanel->IsHovered())
+			return true;
+
+		return false;
+	}
+	bool MaterialEditorPanel::IsSubWindowsFocused()
+	{
+		if (m_DetailsPanel->IsHovered())
+			return true;
+
+		return false;
+	}
+	void MaterialEditorPanel::RenderDefautlPBRShader()
+	{
+		Count<RenderMaterial> renderMaterial = m_Material->GetRenderMaterial().As<RenderMaterial>();
+
+		PbrSurfaceMaterial surfaceMat(m_Material);
 
 		bool transparentShader = renderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBRTransparent_Static");
 
-	
+
 		UI::PushModified(m_NeedsSaving);
 		//Albedo
-		if(UI::AttributeTreeNode("Albedo"))
+		if (UI::AttributeTreeNode("Albedo"))
 		{
-			AssetID outHandle ;
+			AssetID outHandle;
 			if (surfaceMat.GetAlbedoMap() == nullptr)
 			{
 				surfaceMat.SetAlbedoMap(Renderer::GetWhiteTexture());
@@ -128,9 +150,9 @@ namespace Proof
 				else
 					surfaceMat.SetAlbedoMap(Renderer::GetWhiteTexture());
 			}
-			
+
 			ImGui::SameLine();
-			if(!transparentShader)
+			if (!transparentShader)
 				UI::AttributeColor("", surfaceMat.GetAlbedoColor());
 			else
 				UI::AttributeColor("", renderMaterial->GetVector4("u_MaterialUniform.Albedo"));
@@ -160,7 +182,7 @@ namespace Proof
 			UI::AttributeBool("", surfaceMat.GetNormalTextureToggle());
 			UI::EndTreeNode();
 		}
-		
+
 		//Metalness
 		if (UI::AttributeTreeNode("Metalness"))
 		{
@@ -181,7 +203,7 @@ namespace Proof
 					surfaceMat.SetMetalnessMap(Renderer::GetWhiteTexture());
 			}
 			ImGui::SameLine();
-			UI::AttributeSlider("", surfaceMat.GetMetalness(),0,1);
+			UI::AttributeSlider("", surfaceMat.GetMetalness(), 0, 1);
 			UI::EndTreeNode();
 		}
 
@@ -225,49 +247,113 @@ namespace Proof
 
 			UI::EndTreeNode();
 		}
-		
+
 		UI::AttributeDrag("Tiling", surfaceMat.GetTiling());
 		UI::AttributeDrag("Offset", surfaceMat.GetOffset());
 
-		if(type ==ShaderType::Glitchy)
-		{
-			float glitchRate = renderMaterial->GetFloat("GlitchRate");
-			if (UI::AttributeDrag("GlitchRate", glitchRate,0.1f,0.f,10.f))
-			{
-				renderMaterial->Set("GlitchRate", glitchRate);
-			}
-			float glitchScale = renderMaterial->GetFloat("GlitchScale");
-			if (UI::AttributeDrag("GlitchScale", glitchScale, 0.1f, 0.f, 10.f))
-			{
-				renderMaterial->Set("GlitchScale", glitchScale);
-			}
-		}
-
 		UI::PopModified();
 	}
-	
-	void MaterialEditorPanel::SetDefaultLayout()
+	void MaterialEditorPanel::RenderMaterials()
 	{
-		ImGuiID dockspace_id = ImGui::GetID(GetBaseDockspace().c_str());
-		ImGuiWindow* window = ImGui::FindWindowByName(m_DetailsPanelName.c_str());
-		if (m_DetailsPanel->GetImGuiWindow())
+		Count<RenderMaterial> renderMaterial = m_Material->GetRenderMaterial().As<RenderMaterial>();
+
+		auto variables = m_Material->GetMaterialVariables();
+
+		UI::BeginPropertyGrid();
+		for (auto& [name, varType] : variables)
 		{
-			ImGui::SetWindowDock(m_DetailsPanel->GetImGuiWindow(), dockspace_id, 0);
+			switch (varType)
+			{
+				case VariableTypes::Bool:
+				{
+					bool value = renderMaterial->GetBool(name);
+					if (UI::AttributeBool(name.c_str(), value))
+					{
+						renderMaterial->Set(name, value);
+						m_NeedsSaving = true;
+					}
+				}
+				break;
+				case VariableTypes::Int:
+				{
+					int value = renderMaterial->GetInt(name);
+					if (UI::AttributeDrag(name.c_str(), value))
+					{
+						renderMaterial->Set(name, value);
+						m_NeedsSaving = true;
+					}
+				}
+				break;
+				case VariableTypes::Float:
+				{
+					float value = renderMaterial->GetFloat(name);
+					if (UI::AttributeDrag(name.c_str(), value))
+					{
+						renderMaterial->Set(name, value);
+						m_NeedsSaving = true;
+					}
+				}
+				break;
+				case VariableTypes::Vec2:
+				{
+					glm::vec2 value = renderMaterial->GetVector2(name);
+					if (UI::AttributeDrag(name.c_str(), value))
+					{
+						renderMaterial->Set(name, value);
+						m_NeedsSaving = true;
+					}
+				}
+				break;
+				case VariableTypes::Vec3:
+				{
+					glm::vec3 value = renderMaterial->GetVector(name);
+					if (UI::AttributeDrag(name.c_str(), value))
+					{
+						renderMaterial->Set(name, value);
+						m_NeedsSaving = true;
+					}
+				}
+				break;
+				case VariableTypes::Vec4:
+				{
+					glm::vec4 value = renderMaterial->GetVector4(name);
+					if (UI::AttributeDrag(name.c_str(), value))
+					{
+						renderMaterial->Set(name, value);
+						m_NeedsSaving = true;
+					}
+				}
+				break;
+			}
 		}
-	}
-	bool MaterialEditorPanel::IsSubWindowsHovered()
-	{
-		if (m_DetailsPanel->IsHovered())
-			return true;
 
-		return false;
-	}
-	bool MaterialEditorPanel::IsSubWindowsFocused()
-	{
-		if (m_DetailsPanel->IsHovered())
-			return true;
+		UI::EndPropertyGrid();
+		auto editableTextures = m_Material->GetEditableTextures();
 
-		return false;
+		ImGui::Separator();
+
+		UI::BeginPropertyGrid();
+		for(auto textureName : editableTextures)
+		{
+			AssetID outHandle;
+			if (renderMaterial->TryGetTexture2D(textureName) == nullptr)
+			{
+				outHandle = 0;
+			}
+			else
+				outHandle = renderMaterial->TryGetTexture2D(textureName)->GetID();
+
+			if (UI::AttributeTextureAssetReference(textureName.c_str(), outHandle))
+			{
+				if (AssetManager::HasAsset(outHandle))
+					renderMaterial->Set(textureName, AssetManager::GetAsset<Texture2D>(outHandle));
+				else
+					renderMaterial->Set(textureName, Renderer::GetWhiteTexture());
+				m_NeedsSaving = true;
+			}
+		}
+
+		UI::EndPropertyGrid();
 	}
 	PhysicsMaterialEditorPanel::PhysicsMaterialEditorPanel()
 		:

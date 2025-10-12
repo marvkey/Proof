@@ -2,6 +2,7 @@
 #include "Material.h"
 #include "Proof/Renderer/RenderMaterial.h"
 #include "Proof/Platform/Vulkan/VulkanRenderMaterial.h"
+#include "Proof/Platform/Vulkan/VulkanDescriptorManager.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Renderer/Shader.h"
 namespace Proof {
@@ -66,12 +67,96 @@ namespace Proof {
     }
     void Material::SetMaterialShader(const std::string& materialName,Count<class Shader> shader)
     {
+        m_DefaultShader = false;
         m_RenderMaterial = RenderMaterial::Create(materialName, shader);
         if (m_RenderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBR_Static"))
             m_DefaultShader = true;
         if (m_RenderMaterial->GetConfig().Shader == Renderer::GetShader("ProofPBRTransparent_Static"))
             m_DefaultShader = true;
         SetDefault();
+    }
+    std::map<std::string, VariableTypes> Material::GetMaterialVariables()
+    {
+        auto shader = m_RenderMaterial->GetConfig().Shader;
+        std::map<std::string, VariableTypes> vars;
+        for (auto& [uniforName,uniformData] : shader.As<VulkanShader>()->GetPushConstantInfo())
+        {
+            for (auto& [varID, varData] : uniformData.second)
+            {
+               switch(varData.VarType)
+                {
+                case ShaderResourceBufferVarType::Bool:
+                    vars[varID] = VariableTypes::Bool;
+                    break;
+                case ShaderResourceBufferVarType::Int:
+                    vars[varID] = VariableTypes::Int;
+                    break;
+                case ShaderResourceBufferVarType::Float:
+                    vars[varID] = VariableTypes::Float;
+                    break;
+                case ShaderResourceBufferVarType::Vec2:
+                    vars[varID] = VariableTypes::Vec2;
+                    break;
+                case ShaderResourceBufferVarType::Vec3:
+                    vars[varID] = VariableTypes::Vec3;
+                    break;
+                case ShaderResourceBufferVarType::Vec4:
+                    vars[varID] = VariableTypes::Vec4;
+                    break;
+                case ShaderResourceBufferVarType::Double:
+                case ShaderResourceBufferVarType::DVec2:
+                case ShaderResourceBufferVarType::DVec3:
+                case ShaderResourceBufferVarType::DVec4:
+                case ShaderResourceBufferVarType::Mat2:
+                case ShaderResourceBufferVarType::Mat3:
+                case ShaderResourceBufferVarType::Mat4:
+                case ShaderResourceBufferVarType::Int64:
+                case ShaderResourceBufferVarType::Uint64:
+                case ShaderResourceBufferVarType::BVec2:
+                case ShaderResourceBufferVarType::BVec3:
+                case ShaderResourceBufferVarType::BVec4:
+                case ShaderResourceBufferVarType::IVec2:
+                case ShaderResourceBufferVarType::IVec3:
+                case ShaderResourceBufferVarType::IVec4:
+                case ShaderResourceBufferVarType::UVec2:
+                case ShaderResourceBufferVarType::UVec3:
+                case ShaderResourceBufferVarType::UVec4:
+                case ShaderResourceBufferVarType::Sampler:
+                case ShaderResourceBufferVarType::SampledImage:
+                case ShaderResourceBufferVarType::Image:
+                case ShaderResourceBufferVarType::AccelerationStructure:
+                case ShaderResourceBufferVarType::RayQuery:
+                case ShaderResourceBufferVarType::Struct:
+                case ShaderResourceBufferVarType::AtomicCounter:
+                default:
+                    PF_EC_WARN("Material::GetMaterialVariables() {} - Unsupported variable Name:{} type: {}", shader->GetName(), varID, EnumReflection::EnumString(varData.VarType));
+                    break;
+			   }
+            }
+        }
+
+        return vars;
+    }
+    std::vector<std::string> Material::GetEditableTextures()
+    {
+		std::vector<std::string> result;
+        auto shader  = m_RenderMaterial->GetConfig().Shader;
+        for (auto& [set, setData] : shader.As<VulkanShader>()->GetShaderDescriptorSet())
+        {
+            if(set != 0)
+				continue;
+
+            for (auto& [id, resourcedata] : setData.ImageSamplers)
+            {
+                if(resourcedata.DescriptorCount > 1)
+                {
+                    PF_EC_WARN("Material::GetEditableTextures() {} - Texture2D array detected, only single textures are supported", shader->GetName());
+                    continue;
+				}
+                result.push_back(resourcedata.Name);
+            }
+        }
+        return result;
     }
     void Material::SetDefault()
     {
@@ -99,6 +184,8 @@ namespace Proof {
         surfaceMaterial.SetRoughnessMap(Renderer::GetWhiteTexture());
 
         surfaceMaterial.SetEmissionOverrideColor(glm::vec3{ 0 });
+
+        
     }
 
     bool operator==(const MaterialTable& other, const MaterialTable& other1)

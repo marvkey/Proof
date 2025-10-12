@@ -5,6 +5,7 @@
 #include "Proof/Math/Math.h"
 #include "Proof/Asset/Asset.h"
 #include <map>
+#include "Proof/Utils/VariableSystem/VariableUtils.h"
 namespace Proof
 {
 	
@@ -87,12 +88,29 @@ namespace Proof
 			return m_UniqeMaterialID;
 		}
 		void SetMaterialShader(const std::string& materialName,Count<class Shader> shader);
+
+		// maybe will add storage buffer later
+		// taht can store more variables
+		// for now only push constants
+		std::map<std::string, VariableTypes> GetMaterialVariables(); // only push constants
+		std::vector<std::string> GetEditableTextures(); // onluy set 0
 	private:
 		const UUID m_UniqeMaterialID = UUID();
 		void SetDefault();
 		bool m_DefaultShader = false;
 		Count<class RenderMaterial> m_RenderMaterial;
 	};
+
+
+	class MaterialVariableRegistry : public RefCounted
+	{
+		MaterialVariableRegistry(Count<Material> material);
+
+	private:
+		Count<Material> m_Material;
+		Count< class VariableRegistry> m_VariableRegistry;
+	};
+
 
 	class MaterialTable : public RefCounted 
 	{

@@ -27,8 +27,24 @@ struct CustomInputData
 
 layout(location = CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_POST_PROCESS) in CustomInputData VertexInputdata;
 
+
+layout(push_constant) uniform Material
+{
+
+    float GlitchRate; //0.5
+    float GlitchScale;//50
+
+} u_MaterialUniform;
+
+
 void Fragment(inout PostProcessFragmentInput fragmentInput)
 {
+
+//float noise = fract(sin(dot(fragmentInput.UV * u_FrameData.AppTimeSeconds, vec2(12.9898, 78.233))) * 43758.5453);
+//fragmentInput.Color.rgb += (noise - 0.5) ;
+//fragmentInput.Color.rgb *= 1.0 + scanline + flicker;
+
+/*
  vec2 uv = fragmentInput.UV;
 
     // Pixelation amount (try 240.0 for strong blockiness)
@@ -48,6 +64,7 @@ void Fragment(inout PostProcessFragmentInput fragmentInput)
     col.b = texture(u_InputColor, glitchOffsetB).b;
 
     fragmentInput.Color = vec3(col);
+    */
 }
 
 void PreEndFragment()

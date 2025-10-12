@@ -7,7 +7,36 @@
 #include <map>
 namespace Proof
 {
-    
+    enum class ShaderResourceBufferVarType
+    {
+        None,
+
+        // Scalars
+        Bool, Int, Uint, Int64, Uint64, Float, Double,
+
+        // Vectors
+        BVec2, BVec3, BVec4,
+        IVec2, IVec3, IVec4,
+        UVec2, UVec3, UVec4,
+        Vec2, Vec3, Vec4,
+        DVec2, DVec3, DVec4,
+
+        // Matrices (float)
+        Mat2, Mat3, Mat4,
+        // Matrices (double)
+        DMat2, DMat3, DMat4,
+
+        // Special types
+        Sampler,
+        SampledImage,
+        Image,
+        AccelerationStructure,
+        RayQuery,
+        Struct,
+        AtomicCounter,
+        // Half, Short, UShort, SByte, UByte — optional for now
+    };
+
     struct ShaderResoureData {
         uint32_t Set = 0;
         uint32_t Binding = 0;
@@ -16,6 +45,7 @@ namespace Proof
     struct ShaderResourceBufferInfo {
         uint32_t Size;
         uint32_t Offset;
+        ShaderResourceBufferVarType VarType;
     };
     struct ShaderDescriptorResource {
         VkDescriptorSet Set;
@@ -54,6 +84,7 @@ namespace Proof
         }
 
         const SahderInputDeclaration* GetInputDeclaration(std::string name)const;
+        const std::string GetInputDeclarationName(uint32_t set, uint32_t binding)const;
         const ShaderResourceBufferInfo* GetPushConstantInput(const std::string& storageName,const std::string& name)const;
         const ShaderResourceBufferInfo* GetStorageBufferInput(const std::string& storageName, const std::string& name)const;
         // storageBufferName, (totalSizeofBuffer)(name, data)

@@ -71,6 +71,8 @@ namespace Proof
 		void RT_Bind(Count < class VulkanRenderCommandBuffer > render, Count<class VulkanRenderPass> pass, bool onlyFragPushConstant = false);
 
 		std::vector < std::pair < std::string, Count<class Texture2D >>> GetAllTextures();
+		Count< VulkanDescriptorManager> GetDescritptorSetManager() { return m_DescritptorSetManager; };
+
 	private:
 		template<typename T>
 		void SetInternal(const std::string& name, T& value)

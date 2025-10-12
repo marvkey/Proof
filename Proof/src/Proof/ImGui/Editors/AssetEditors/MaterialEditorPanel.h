@@ -17,6 +17,9 @@ namespace Proof
 		virtual void SetDefaultLayout();
 		virtual bool IsSubWindowsHovered();
 		virtual bool IsSubWindowsFocused();
+
+		virtual void RenderDefautlPBRShader();
+		void RenderMaterials();
 	private:
 		bool m_NeedsSaving = true;
 		bool m_IsDetailsPanelOpen = true;
