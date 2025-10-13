@@ -8,6 +8,8 @@ namespace NullState
     {
         [Seperator]
         public Material GlitchyMaterial;
+        MaterialVariable m_GlitchyMaterialTimeScale;
+        MaterialVariable m_GlitchyMaterialGlitchStrength;
 
         void OnCreate()
         {
@@ -29,9 +31,11 @@ namespace NullState
                 Log.Error("GlitchyMaterial is not assigned in SceneVisualState");
                 return;
             }
+            m_GlitchyMaterialTimeScale= GlitchyMaterial.GetVariable("u_MaterialUniform.TimeScalee");
+            m_GlitchyMaterialGlitchStrength = GlitchyMaterial.GetVariable("u_MaterialUniform.GlitchStrength");
 
-            GlitchyMaterial.SetInput("u_MaterialUniform.TimeScalee", 0.0);
-            GlitchyMaterial.SetInput("u_MaterialUniform.GlitchStrength", 0.0);
+            m_GlitchyMaterialTimeScale.Set(0.0f);
+            m_GlitchyMaterialGlitchStrength.Set(0.0f);
 
         }
         float bufferSize = 0;

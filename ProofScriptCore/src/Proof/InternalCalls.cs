@@ -398,6 +398,10 @@ namespace Proof
         #endregion
 
         #region Material
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool Material_HasInput(ulong assetID, string name);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern bool Material_HasTexture(ulong assetID, string name);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void Material_SetInput(ulong assetID, string name, IntPtr data, uint size);

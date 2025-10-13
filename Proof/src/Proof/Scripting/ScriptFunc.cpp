@@ -2375,6 +2375,34 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 #pragma region Material
 
+	bool Material_HasInput(uint64_t assetHandle, MonoString* inputName)
+	{
+		AssetKey<AssetType::Material> key = AssetID(assetHandle);
+		if (!AssetManager::HasAsset(key))
+		{
+			PF_ERROR("Material.HasInput called on an invalid Material instance!");
+			return false;
+		}
+		Count<Material> material = AssetManager::GetAsset<Material>(key);
+		Count<RenderMaterial> renderMaterial = material->GetRenderMaterial();
+		std::string name = ScriptUtils::MonoStringToUTF8(inputName);
+		return renderMaterial->HasPushInput(name);
+	}
+
+	bool Material_HasTexture(uint64_t assetHandle, MonoString* textureName)
+	{
+		AssetKey<AssetType::Material> key = AssetID(assetHandle);
+		if (!AssetManager::HasAsset(key))
+		{
+			PF_ERROR("Material.HasTexture called on an invalid Material instance!");
+			return false;
+		}
+		Count<Material> material = AssetManager::GetAsset<Material>(key);
+		Count<RenderMaterial> renderMaterial = material->GetRenderMaterial();
+		std::string name = ScriptUtils::MonoStringToUTF8(textureName);
+		return renderMaterial->TryGetTexture2D(name) != nullptr;
+	}
+
 	void Material_SetInput(uint64_t assetHandle, MonoString* inputName, uint8_t* data, uint32_t size)
 	{
 
@@ -4524,6 +4552,8 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		//Material
 		{
+			PF_ADD_INTERNAL_CALL(Material_HasInput);
+			PF_ADD_INTERNAL_CALL(Material_HasTexture);
 			PF_ADD_INTERNAL_CALL(Material_GetInput);
 			PF_ADD_INTERNAL_CALL(Material_SetInput);
 			PF_ADD_INTERNAL_CALL(Material_SetTexture);
