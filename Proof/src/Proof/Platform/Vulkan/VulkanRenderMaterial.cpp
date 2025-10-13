@@ -167,6 +167,21 @@ namespace Proof {
 			//SetBufferData(data, decl->Offset);
 		}
 		auto& buffer = m_UniformBufferStorage;
+
+
+
+		uint32_t bufferSize = buffer.GetSize(); // Add this method if needed
+		uint32_t writeOffset = decl->Offset;
+		uint32_t writeSize = data.Size;
+
+		// ?? Prevent buffer overflow
+		if (writeOffset + writeSize > bufferSize)
+		{
+			PF_EC_ERROR("Uniform write to '{}' would overflow buffer! Offset: {}, Size: {}, BufferSize: {}",
+				name, writeOffset, writeSize, bufferSize);
+			return;
+		}
+
 		buffer.SetData(data.Data, data.Size, decl->Offset);
 	}
 
@@ -368,6 +383,31 @@ namespace Proof {
 			}
 		}
 		return textures;
+	}
+
+	uint8_t* VulkanRenderMaterial::GetData(const std::string& name)
+	{
+		const ShaderResourceBufferInfo* decl = FindUniformDeclaration(name);
+		PF_CORE_ASSERT(decl, fmt::format("Could not Find Storage! {}", name));
+
+		auto& buffer = m_UniformBufferStorage;
+
+		uint32_t offset = decl->Offset;
+		uint32_t bufferSize = buffer.GetSize();
+
+		//PF_CORE_ASSERT(buffer.Data != nullptr, "Buffer data is null!");
+		//PF_CORE_ASSERT(offset < bufferSize, fmt::format("Offset {} exceeds buffer size {}", offset, bufferSize));
+
+		return buffer.Data + offset;
+	}
+
+	bool VulkanRenderMaterial::HasPushInput(const std::string& name)
+	{
+		const ShaderResourceBufferInfo* decl = FindUniformDeclaration(name);
+		if (decl)
+			return true;
+
+		return false;
 	}
 
 	void VulkanRenderMaterial::RT_Bind(Count<VulkanRenderCommandBuffer> commandBuffer, Count<VulkanRenderPass> renderPass, bool onlyFragpushconstant)

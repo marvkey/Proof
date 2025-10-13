@@ -86,7 +86,7 @@ namespace Proof
                 Marshal.StructureToPtr(data, dataPtr, false);
 
                 VariableRaw variableRaw = new VariableRaw(VariableUUID, Type, StorageHandle);
-                InternalCalls.ProofScriptVariable_SetValue(variableRaw, dataPtr,(ulong)size);
+                InternalCalls.ProofScriptVariable_SetValue(variableRaw, dataPtr,(uint)size);
             }
             finally
             {
@@ -139,7 +139,7 @@ namespace Proof
                 Marshal.Copy(bytes, 0, dataPtr, bytes.Length);
 
                 VariableRaw variableRaw = new VariableRaw(VariableUUID, Type, StorageHandle);
-                InternalCalls.ProofScriptVariable_SetValue(variableRaw, dataPtr, (ulong)bytes.Length);
+                InternalCalls.ProofScriptVariable_SetValue(variableRaw, dataPtr, (uint)bytes.Length);
             }
             finally
             {

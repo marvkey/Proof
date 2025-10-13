@@ -56,6 +56,9 @@ namespace Proof {
 		virtual glm::mat3& GetMatrix3(const std::string& name) = 0;
 		virtual glm::mat4& GetMatrix4(const std::string& name) = 0;
 
+		virtual bool HasPushInput(const std::string& name) = 0; // has a push contnat input
+		virtual uint8_t* GetData(const std::string& name) = 0; // gets the raw data of a push constant input
+
 		// name of bidning, and texture
 		virtual std::vector<std::pair<std::string,Count<class Texture2D>>> GetAllTextures() = 0;
 		virtual Count<class Texture2D> TryGetTexture2D(std::string_view name) = 0;

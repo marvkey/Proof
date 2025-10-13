@@ -22,7 +22,8 @@
     <OutputPath>Binaries\ScriptApp\</OutputPath>
     <BaseIntermediateOutputPath>Intermediates\ScriptApp\Debug\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -34,7 +35,8 @@
     <OutputPath>Binaries\ScriptApp\</OutputPath>
     <BaseIntermediateOutputPath>Intermediates\ScriptApp\Release\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -46,7 +48,8 @@
     <OutputPath>Binaries\ScriptApp\</OutputPath>
     <BaseIntermediateOutputPath>Intermediates\ScriptApp\Dist\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants></DefineConstants>
+    <DefineConstants>
+    </DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -93,6 +96,7 @@
     <Compile Include="Assets\Scripts\Enemies\HomingMissile.cs" />
     <Compile Include="Assets\Scripts\Enemies\Turret.cs" />
     <Compile Include="Assets\Scripts\EntropyComponent.cs" />
+    <Compile Include="Assets\Scripts\GameMode\SceneVisualState.cs" />
     <Compile Include="Assets\Scripts\HealthComponent.cs" />
   </ItemGroup>
   <ItemGroup>

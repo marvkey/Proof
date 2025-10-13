@@ -396,6 +396,21 @@ namespace Proof
         #region CameraComponent
 
         #endregion
+
+        #region Material
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void Material_SetInput(ulong assetID, string name, IntPtr data, uint size);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern IntPtr Material_GetInput(ulong assetID, string name);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern ulong Material_GetTexture(ulong assetID, string name);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void Material_SetTexture(ulong assetID, string name, ulong textureID);
+
+        #endregion
         #region PhysicsMaterial
 
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -597,7 +612,7 @@ namespace Proof
 
         #region Variable
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void ProofScriptVariable_SetValue(VariableRaw variable, IntPtr data, ulong size);
+        internal static extern void ProofScriptVariable_SetValue(VariableRaw variable, IntPtr data, uint size);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern IntPtr ProofScriptVariable_GetValue(VariableRaw variable);

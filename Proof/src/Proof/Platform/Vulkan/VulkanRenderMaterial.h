@@ -73,6 +73,10 @@ namespace Proof
 		std::vector < std::pair < std::string, Count<class Texture2D >>> GetAllTextures();
 		Count< VulkanDescriptorManager> GetDescritptorSetManager() { return m_DescritptorSetManager; };
 
+		virtual uint8_t* GetData(const std::string& name);
+		virtual bool HasPushInput(const std::string& name);
+
+
 	private:
 		template<typename T>
 		void SetInternal(const std::string& name, T& value)

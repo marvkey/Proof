@@ -25,6 +25,8 @@
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 #include "Proof/Scripting/ScriptWorld.h"
 #include "Proof/Scene/Mesh.h"
+#include "Proof/Scene/Material.h"
+#include "Proof/Renderer/RenderMaterial.h"
 #include "Proof/Scene/SceneUtils.h"
 #include "Proof/Renderer/Font.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
@@ -2370,6 +2372,120 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		PF_CORE_ASSERT(scene, "Physics.AddRadialImpulse No active World!");
 		scene->GetPhysicsWorld()->AddRadialImpulse(*inOrigin, radius, strength, falloff, velocityChange);
 	}
+
+#pragma region Material
+
+	void Material_SetInput(uint64_t assetHandle, MonoString* inputName, uint8_t* data, uint32_t size)
+	{
+
+		AssetKey<AssetType::Material> key = AssetID(assetHandle);
+		if (!AssetManager::HasAsset(key))
+		{
+			PF_ERROR("Material.SetUniform called on an invalid Material instance!");
+		}
+
+		Count<Material> material = AssetManager::GetAsset<Material>(key);
+
+		Count<RenderMaterial> renderMaterial = material->GetRenderMaterial();
+
+		std::string name = ScriptUtils::MonoStringToUTF8(inputName);
+		if (!renderMaterial->HasPushInput(name))
+		{
+			PF_ERROR("Material.SetUniform called with an invalid input name: {0}", name);
+			return;
+		}
+		Buffer buffer(data, size, true);
+		renderMaterial->Set(name, buffer);
+		buffer.Release();
+	}
+
+	uint8_t* Material_GetInput(uint64_t handle, MonoString* sring)
+	{
+		AssetKey<AssetType::Material> key = AssetID(handle);
+		if(!AssetManager::HasAsset(key))
+		{
+			PF_ERROR("Material.GetUniform called on an invalid Material instance!");
+			return nullptr;
+		}
+
+		Count<Material> material = AssetManager::GetAsset<Material>(key);
+
+		Count<RenderMaterial> renderMaterial = material->GetRenderMaterial();
+
+		std::string name = ScriptUtils::MonoStringToUTF8(sring);
+
+		if(!renderMaterial->HasPushInput(name))
+		{
+			PF_ERROR("Material.GetUniform called with an invalid input name: {0}", name);
+			return nullptr;
+		}	
+
+		return renderMaterial->GetData(name);
+	}
+
+	// returns texture handle
+	uint64_t Material_GetTexture(uint64_t assetHandle, MonoString* sring)
+	{
+		AssetKey<AssetType::Material> key = AssetID(assetHandle);
+		if (!AssetManager::HasAsset(key))
+		{
+			PF_ERROR("Material.GetTexture called on an invalid Material instance!");
+			return 0;
+		}
+		Count<Material> material = AssetManager::GetAsset<Material>(key);
+		Count<RenderMaterial> renderMaterial = material->GetRenderMaterial();
+
+		std::string name = ScriptUtils::MonoStringToUTF8(sring);
+
+		auto texture = renderMaterial->TryGetTexture2D(name);
+		if(!texture)
+		{
+			PF_ERROR("Material.GetTexture called with an invalid texture name: {0}", name);
+			return 0;
+		}
+		if(AssetManager::HasAsset(texture))
+			return texture->GetID();
+		else
+		{
+			PF_ERROR("Material.GetTexture - Texture is not a valid asset!");
+			return 0;
+		}
+
+	}
+
+	void Material_SetTexture(uint64_t assetHandle, MonoString* textureName, uint64_t textureHandle)
+	{
+		AssetKey<AssetType::Material> key = AssetID(assetHandle);
+		if(!AssetManager::HasAsset(key))
+		{
+			PF_ERROR("Material.SetTexture called on an invalid Material instance!");
+			return;
+		}
+
+		Count<Material> material = AssetManager::GetAsset<Material>(key);
+		Count<RenderMaterial> renderMaterial = material->GetRenderMaterial();
+		std::string name = ScriptUtils::MonoStringToUTF8(textureName);
+
+		if(!renderMaterial->TryGetTexture2D(name))
+		{
+			PF_ERROR("Material.SetTexture called with an invalid texture name: {0}", name);
+			return;
+		}
+
+		AssetKey<AssetType::Texture> textureKey = AssetID(textureHandle);
+
+		if (!textureKey.IsValid())
+		{
+			PF_ERROR("Material.SetTexture called with an invalid Texture {} asset!",name);
+			return;
+		}
+
+		renderMaterial->Set(name, textureKey.GetAsset<Texture2D>());
+	}
+
+	
+
+#pragma endregion
 #pragma region PhysicsMaterial
 
 	float PhysicsMaterial_GetStaticFriction(AssetID* handle)
@@ -3578,12 +3694,14 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 	#pragma endregion
 #pragma region ProofScriptVariable
 
+	
 	struct ProofScriptVariable
 	{
 		uint64_t VariableUUID;
 		int Type;//VariableTyes
-		uint64_t SetStorageHandle;
+		uint64_t SetStorageHandle; // if 
 	};
+
 
 	static void ProofScriptVariable_SetValue(ProofScriptVariable variable, uint8_t* data, uint32_t size)
 	{
@@ -4402,6 +4520,14 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(PhysicsMaterial_SetFrictionCombineMode);
 			PF_ADD_INTERNAL_CALL(PhysicsMaterial_GetBouncinessCombineMode);
 			PF_ADD_INTERNAL_CALL(PhysicsMaterial_SetBouncinessCombineMode);
+		}
+
+		//Material
+		{
+			PF_ADD_INTERNAL_CALL(Material_GetInput);
+			PF_ADD_INTERNAL_CALL(Material_SetInput);
+			PF_ADD_INTERNAL_CALL(Material_SetTexture);
+			PF_ADD_INTERNAL_CALL(Material_GetTexture);
 		}
 
 		//Mesh Collider

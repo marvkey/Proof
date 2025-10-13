@@ -56,6 +56,12 @@ ScriptImportSettings:
       ScriptName: NullState.EntropyCompnent
       Fields:
         []
+    - Script: NullState.SceneVisualState
+      ScriptName: NullState.SceneVisualState
+      Fields:
+        - NameID: NullState.SceneVisualState.GlitchyMaterial
+          Type: Material
+          Data: 0
     - Script: NullState.HealthComponent
       ScriptName: NullState.HealthComponent
       Fields:
