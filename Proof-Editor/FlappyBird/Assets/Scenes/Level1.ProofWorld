@@ -47,13 +47,7 @@ World:
                 Data: 4337114102758531292
               - NameID: FlappyBird.BirdMovement.PlayerScorePanel
                 Type: UIPanel
-                Data: 35420920226295225
-              - NameID: FlappyBird.BirdMovement.maxTiltAngle
-                Type: Float
-                Data: 60
-              - NameID: FlappyBird.BirdMovement.IncreaseSpeedValue
-                Type: Float
-                Data: 0.25
+                Data: 0
               - NameID: FlappyBird.BirdMovement.ForwardSpeed
                 Type: Float
                 Data: 4
@@ -63,12 +57,12 @@ World:
               - NameID: FlappyBird.BirdMovement.JumpAction
                 Type: InputAction
                 Data: 14119781984078702474
-              - NameID: FlappyBird.BirdMovement.IncreaseSpeedIntervalSeconds
+              - NameID: FlappyBird.BirdMovement.AccelerationRate
                 Type: Float
-                Data: 5
+                Data: 0.200000003
               - NameID: FlappyBird.BirdMovement.JumpForce
                 Type: Float
-                Data: 4.25
+                Data: 6
               - NameID: FlappyBird.BirdMovement.ScoreEntity
                 Type: Entity
                 Data: 10047144193988509295
@@ -81,11 +75,15 @@ World:
                   - 12694213833621260716
               - NameID: FlappyBird.BirdMovement.TextCameras
                 Type: Entity
-                Length: 3
+                Length: 0
                 Data:
-                  - 15045088149692351039
-                  - 10047144193988509295
-                  - 6541340304331375578
+                  []
+              - NameID: FlappyBird.BirdMovement.UIPanel
+                Type: UIPanel
+                Data: 562114627404798443
+              - NameID: FlappyBird.BirdMovement.maxTiltAngle
+                Type: Float
+                Data: 60
               - NameID: FlappyBird.BirdMovement.tiltSmooth
                 Type: Float
                 Data: 5
@@ -110,9 +108,36 @@ World:
           - InputBindingContextHandler: ""
             InputBindingID: 17819033342336243331
             Active: true
+      PlayerStartComponent:
+        InputPlayer: Player0
+        PlayerPrefab: 0
+        DontSpawn: true
       PlayerHUDComponent:
         UITable:
-          []
+          - Layer: Menu
+            Visible: true
+            Panels:
+              []
+          - Layer: Modal
+            Visible: true
+            Panels:
+              []
+          - Layer: Content
+            Visible: true
+            Panels:
+              []
+          - Layer: HUD
+            Visible: true
+            Panels:
+              - PanelID: 562114627404798443
+                Visible: true
+                VariableRegistry:
+                  VariableRegistryID: 8060267294189281287
+                  Variables:
+                    - Name: Score
+                      Type: String
+                      UUID: 6961273276269306249
+                      Data: 0
     - Entity: 12917521485709972632
       TagComponent:
         Tag: BehindCamera
@@ -174,14 +199,14 @@ World:
         ParentHandle: 0
         Children: []
       SkyLightComponent:
-        TintColor: [0.637037039, 0.637037039, 0.637037039]
-        SkyBoxLod: 0.5
+        TintColor: [0.637037039, 1, 0.677366197]
+        SkyBoxLod: 3.06599998
         MapRotation: 0.25
-        Intensity: 0.5
-        EnvironmentState: EnvironmentTexture
-        TextureDataImage: 3152980911532530012
-        HosekWilkieTurbidity: 4
-        HosekWilkieGroundReflectance: 0.100000001
+        Intensity: 1
+        EnvironmentState: HosekWilkie
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 19.9020004
+        HosekWilkieGroundReflectance: 0.425999999
         PreethamTurbidity: 4
     - Entity: 8170577130468737619
       TagComponent:
@@ -262,7 +287,7 @@ World:
         Tag: Player
         tags: []
       TransformComponent:
-        Location: [0, 0, 0]
+        Location: [5.30000019, 0, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -306,6 +331,32 @@ World:
         FOV: 45
         UseLocalRotation: false
         ActiveForRendering: true
+      PlayerHUDComponent:
+        UITable:
+          - Layer: Menu
+            Visible: true
+            Panels:
+              []
+          - Layer: Modal
+            Visible: true
+            Panels:
+              []
+          - Layer: Content
+            Visible: true
+            Panels:
+              []
+          - Layer: HUD
+            Visible: true
+            Panels:
+              - PanelID: 562114627404798443
+                Visible: true
+                VariableRegistry:
+                  VariableRegistryID: 8060267294189281287
+                  Variables:
+                    - Name: Score
+                      Type: String
+                      UUID: 6961273276269306249
+                      Data: 5
     - Entity: 17468590031491286107
       TagComponent:
         Tag: Platform

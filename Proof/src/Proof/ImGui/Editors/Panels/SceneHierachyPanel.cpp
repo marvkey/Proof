@@ -54,6 +54,7 @@
 #include "Proof/ImGui/UiUtilities.h"
 #include "Proof/ImGui/UIWidgets.h"
 #include "Proof/ImGui/UIGenericEditors.h"
+#include "Proof/Physics/Boids/BoidFlock.h"
 #define IM_VEC2_CLASS_EXTRA
 #include <imgui_internal.h>
 #include <math.h>
@@ -1173,8 +1174,15 @@ namespace Proof
 		}
 		ImGui::SameLine();
 		ImGui::PushItemWidth(-1);
-		//ImGui::Text(std::to_string(std<uint32_t>()((uint32_t)entity.GetID())).c_str());
-		//ImGui::SameLine();
+
+		{
+			char bufferS[256];
+			memset(bufferS, 0, sizeof(bufferS));
+			std::string idTOSring = std::to_string(entity.GetUUID().Get());
+			strcpy_s(bufferS, sizeof(bufferS), idTOSring.c_str());
+			if (ImGui::InputText("##IDadfadfadf", bufferS, sizeof(bufferS))) {
+			}
+		}
 		if (ImGui::Button("Add Component"))
 			ImGui::OpenPopup("AddComponent");
 		ImGui::PopItemWidth();
@@ -1219,10 +1227,11 @@ namespace Proof
 			AddComponentGui<WaterComponent>(entity, "Water");
 			AddComponentGui<BuoyancyComponent>(entity, "Buoyancy");
 			AddComponentGui<PostProcessVolumeComponent>(entity, "PostProcessVolumeComponent");
+			AddComponentGui<BoidFlockComponent>(entity,"BoidFlockComponent");
 			ImGui::EndPopup();
 		}
-		UI::ColorGradientEditor("fadadff", grad);
-		UI::ColorGradientEditor("fadadfsdsf",grad2);
+		//UI::ColorGradientEditor("fadadff", grad);
+		//UI::ColorGradientEditor("fadadfsdsf",grad2);
 
 		DrawComponents<TagComponent>("Tag", entity, [](TagComponent& subTag) {
 			uint32_t iterate = 0;
@@ -2481,6 +2490,164 @@ namespace Proof
 				UI::EndPropertyGrid();
 
 				UI::AttributeDrawMaterialTable(volume.Materials, nullptr);
+			});
+
+		DrawComponents<BoidFlockComponent>("BoidFlockComponent", entity, [&](BoidFlockComponent& comp)
+		{
+			auto flock = comp.Flock;
+			BoidFlockSettings& settings = flock->GetSettingsRef();
+
+			UI::BeginPropertyGrid();
+				
+				//--------------------------------------
+			ImGui::Separator();
+			//--------------------------------------
+			UI::AttributeDrag(
+				"MinSpeed", settings.MinSpeed, 0.1f, 0.0f, 100.0f,
+				"Minimum movement speed. Prevents drones from stalling. "
+				"Increasing makes them constantly move faster, "
+				"decreasing allows slower, floatier motion."
+			);
+
+			UI::AttributeDrag(
+				"MaxSpeed", settings.MaxSpeed, 0.1f, 0.0f, 100.0f,
+				"Maximum allowed speed. Caps how fast boids can chase or orbit. "
+				"Increasing makes them dart quicker; decreasing smooths motion."
+			);
+
+			UI::AttributeDrag(
+				"MaxSteerForce", settings.MaxSteerForce, 0.1f, 0.0f, 100.0f,
+				"Maximum steering force per frame. Controls how sharply they can turn. "
+				"Increase for snappier response; decrease for smoother arcs."
+			);
+			UI::EnumCombo("SetFacingDirection",settings.FacingMode);
+
+			//--------------------------------------
+			ImGui::Separator();
+			//--------------------------------------
+			UI::AttributeDrag(
+				"PerceptionRadius", settings.PerceptionRadius, 0.1f, 0.0f, 50.0f,
+				"How far each boid can sense others. Larger values make groups more aware "
+				"and cohesive; smaller values make them form smaller clusters."
+			);
+
+			UI::AttributeDrag(
+				"AvoidanceRadius", settings.AvoidanceRadius, 0.1f, 0.0f, 50.0f,
+				"Personal space radius. Boids steer away when others enter this distance. "
+				"Increasing spreads them out more; decreasing makes them cluster tighter."
+			);
+
+			UI::AttributeDrag(
+				"AlignWeight", settings.AlignWeight, 0.1f, 0.0f, 10.0f,
+				"Weight of alignment behavior. Determines how much they match direction "
+				"with nearby flockmates. Increasing forms smoother unified motion."
+			);
+
+			UI::AttributeDrag(
+				"CohesionWeight", settings.CohesionWeight, 0.1f, 0.0f, 10.0f,
+				"Weight of cohesion behavior. Controls how strongly they move toward "
+				"the group's center. Increasing pulls the flock tighter together."
+			);
+
+			UI::AttributeDrag(
+				"SeperateWeight", settings.SeperateWeight, 0.1f, 0.0f, 10.0f,
+				"Weight of separation behavior. Determines how strongly they avoid each other. "
+				"Increasing spacing reduces collisions; too high can scatter the group."
+			);
+
+			//--------------------------------------
+			ImGui::Separator();
+			
+			//--------------------------------------
+			UI::AttributeDrag(
+				"TargetWeight", settings.TargetWeight, 0.1f, 0.0f, 50.0f,
+				"How strongly boids are pulled toward their target entity. "
+				"Increase to make them chase or hold orbit position more tightly."
+			);
+
+			UI::AttributeEntity(
+				"TargetEntity", entity.GetCurrentWorld(), settings.TargetEntity
+			);
+
+			UI::AttributeBool(
+				"Orbit", settings.Orbit,
+				"Enable orbit mode. Boids will circle around the target instead of directly approaching."
+			);
+
+			
+			if (settings.Orbit)
+			{
+				UI::AttributeDrag(
+					"OrbitRadius", settings.OrbitRadius, 0.1f, 0.0f, 100.0f,
+					"Distance from the target center to maintain when orbiting. "
+					"Increasing moves them further out; decreasing tightens the orbit."
+				);
+
+				UI::AttributeDrag(
+					"OrbitWandering", settings.OrbitWandering, 0.05f, 0.0f, 5.0f,
+					"Randomness in orbit path. Higher values cause more drifting and fluid motion; "
+					"lower keeps orbits cleaner and more uniform."
+				);
+
+				// Horizontal Angle Controls
+				float minAngleDegrees = Math::Degrees(settings.OrbitMinAngleRadians);
+				if (UI::AttributeDrag("Orbit Min Angle", minAngleDegrees, 0.05f, -360.0f, 360.0f))
+				{
+					settings.OrbitMinAngleRadians = Math::Radian(minAngleDegrees);
+				}
+
+				float maxAngleDegrees = Math::Degrees(settings.OrbitMaxAngleRadians);
+				if (UI::AttributeDrag("Orbit Max Angle", maxAngleDegrees, 0.05f, -360.0f, 360.0f))
+				{
+					settings.OrbitMaxAngleRadians = Math::Radian(maxAngleDegrees);
+				}
+
+				// Vertical Angle Controls
+				float minVerticalAngleDegrees = Math::Degrees(settings.OrbitMinVerticalAngleRadians);
+				if (UI::AttributeDrag("Orbit Min Vertical Angle", minVerticalAngleDegrees, 0.05f, -360.0f, 360.0f))
+				{
+					settings.OrbitMinVerticalAngleRadians = Math::Radian(minVerticalAngleDegrees);
+				}
+
+				float maxVerticalAngleDegrees = Math::Degrees(settings.OrbitMaxVerticalAngleRadians);
+				if (UI::AttributeDrag("Orbit Max Vertical Angle", maxVerticalAngleDegrees, 0.05f, -360.0f, 360.0f))
+				{
+					settings.OrbitMaxVerticalAngleRadians = Math::Radian(maxVerticalAngleDegrees);
+				}
+
+				// Display sphere coverage percentage
+				float coverage = settings.GetTotalSphereCoverage() * 100.0f;
+				UI::AttributeTextBar("Sphere Coverage", fmt::format("{:.1f}%", coverage));
+
+				UI::AttributeDrag("Horizontal Speed", settings.OrbitHorizontalSpeed, 0.01f, 0.0f, 2.0f);
+				UI::AttributeDrag("Vertical Speed", settings.OrbitVerticalSpeed, 0.01f, 0.0f, 1.0f);
+				UI::AttributeDrag("Vertical Bobbing", settings.OrbitVerticalBobbing, 0.001f, 0.0f, 0.1f);
+			}
+
+				//--------------------------------------
+				ImGui::Separator();
+			
+				//--------------------------------------
+				UI::AttributeDrag(
+					"BoundsRadius", settings.BoundsRadius, 0.01f, 0.0f, 5.0f,
+					"Approximate size of each boid used for raycasting and collision checks. "
+					"Increase if they clip into obstacles; decrease if avoidance feels too wide."
+				);
+
+				UI::AttributeDrag(
+					"AvoidCollisionWeight", settings.AvoidCollisionWeight, 0.1f, 0.0f, 50.0f,
+					"How strongly boids steer away from obstacles. "
+					"Increasing makes them react instantly; too high can cause jitter."
+				);
+
+				UI::AttributeDrag(
+					"CollisionAvoidDst", settings.CollisionAvoidDst, 0.1f, 0.0f, 50.0f,
+					"Distance ahead each boid checks for collisions. "
+					"Increase for earlier obstacle detection; decrease for tighter navigation."
+				);
+
+				UI::EndPropertyGrid();
+
 			});
 	}
 

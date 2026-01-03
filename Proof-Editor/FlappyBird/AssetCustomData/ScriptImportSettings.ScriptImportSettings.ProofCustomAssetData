@@ -15,6 +15,9 @@ ScriptImportSettings:
         - NameID: FlappyBird.BirdMovement.JumpAction
           Type: InputAction
           Data: 0
+        - NameID: FlappyBird.BirdMovement.UIPanel
+          Type: UIPanel
+          Data: 0
     - Script: FlappyBird.CameraFollow
       ScriptName: FlappyBird.CameraFollow
       Fields:

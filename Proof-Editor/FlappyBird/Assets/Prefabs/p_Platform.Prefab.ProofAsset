@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 9412958720818837739
-EntityOwner: 13442181645069984308
+EntityOwner: 1203450131556807183
 Entities:
-  - Entity: 13442181645069984308
+  - Entity: 1203450131556807183
     TagComponent:
       Tag: platform
       tags: []
@@ -12,8 +12,8 @@ Entities:
       Scale: [1, 1, 1]
     HierarchyComponent:
       ParentHandle: 0
-      Children: [16948094453850422663]
-  - Entity: 16948094453850422663
+      Children: [3167000260499278246]
+  - Entity: 3167000260499278246
     TagComponent:
       Tag: Platform
       tags: []
@@ -22,10 +22,11 @@ Entities:
       Rotation: [0, -0, 0]
       Scale: [112, 10, 112]
     HierarchyComponent:
-      ParentHandle: 13442181645069984308
+      ParentHandle: 1203450131556807183
       Children: []
     MeshComponent:
       MeshAssetPointerID: 50
+      Visible: true
       MaterialTable:
         - Material: ""
           AssetID: 1279727863603567063
@@ -38,6 +39,7 @@ Entities:
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
       AngularDrag: 0.0500000007
       Gravity: true
       Type: Static

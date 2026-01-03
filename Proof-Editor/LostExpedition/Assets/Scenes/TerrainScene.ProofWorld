@@ -273,7 +273,7 @@ World:
         Children: []
       DirectionalLightComponent:
         Color: [1, 1, 1]
-        Intensity: 1
+        Intensity: 0.699999988
         CastShadow: true
         ShadowStrength: 0.5
         CastSoftShadow: true
@@ -898,3 +898,40 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: true
         CollisionDetection: Discrete
+    - Entity: 2448233851240576458
+      TagComponent:
+        Tag: Campfire
+        tags: []
+      TransformComponent:
+        Location: [45.5492249, 28.5427361, 57.925209]
+        Rotation: [0, 0, 0]
+        Scale: [2, 2, 2]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [677045913307585962]
+      MeshComponent:
+        MeshAssetPointerID: 17985043161946889361
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 1149652828977714299
+            Index: 0
+          - Material: ""
+            AssetID: 1149652828977714299
+            Index: 1
+          - Material: ""
+            AssetID: 8572210176166247757
+            Index: 2
+    - Entity: 677045913307585962
+      TagComponent:
+        Tag: Empty Entity
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [0.5, 0.5, 0.5]
+      HierarchyComponent:
+        ParentHandle: 2448233851240576458
+        Children: []
+      ParticleSystemComponent:
+        AssetID: 1957398642130827785

@@ -8,18 +8,24 @@ Assets:
   - Asset: 9602169324105281993
     Type: World
     Path: Scenes\TestScene.ProofWorld
-  - Asset: 10865829555602001316
-    Type: InputAction
-    Path: Inputs\CharacterMovement\IA_Move.InputAction.ProofAsset
-  - Asset: 10423665410370180105
-    Type: InputAction
-    Path: Inputs\CharacterMovement\IA_Rotate.InputAction.ProofAsset
   - Asset: 18245935877011124802
     Type: Material
     Path: Materials\m_Blue.Material.ProofAsset
   - Asset: 13569084378200082806
     Type: ScriptFile
     Path: Scripts\HealthComponent.cs
+  - Asset: 10423665410370180105
+    Type: InputAction
+    Path: Inputs\CharacterMovement\IA_Rotate.InputAction.ProofAsset
+  - Asset: 8851702765656265123
+    Type: Prefab
+    Path: Prefabs\Bullet\LazerBullet\Cone.Prefab.ProofAsset
+  - Asset: 10865829555602001316
+    Type: InputAction
+    Path: Inputs\CharacterMovement\IA_Move.InputAction.ProofAsset
+  - Asset: 5471588005917015338
+    Type: Texture
+    Path: Images\PerlinNoise.png
   - Asset: 6365998182393193804
     Type: InputAction
     Path: Inputs\CharacterMovement\IA_Jump.InputAction.ProofAsset
@@ -32,21 +38,24 @@ Assets:
   - Asset: 17927917000335048738
     Type: PhysicsMaterial
     Path: PhysicsMaterial\pm_PlayerPhysics.PhysicsMaterial.ProofAsset
-  - Asset: 11903875693727252191
-    Type: Texture
-    Path: Textures\neonMap.png
   - Asset: 955979040150495302
     Type: Texture
     Path: Models\Futuristic robot Bot\texture_metallic.png
-  - Asset: 10093794893949333075
-    Type: Material
-    Path: Materials\m_RedNeon.Material.ProofAsset
+  - Asset: 11903875693727252191
+    Type: Texture
+    Path: Textures\neonMap.png
   - Asset: 16004910019884060136
     Type: DynamicMesh
     Path: Meshes\New Folder\RobotBot2.DynamicMesh.ProofAsset
+  - Asset: 10093794893949333075
+    Type: Material
+    Path: Materials\m_RedNeon.Material.ProofAsset
   - Asset: 16587156431716427673
     Type: Prefab
     Path: Prefabs\Rocket.Prefab.ProofAsset
+  - Asset: 15531315088096953945
+    Type: Texture
+    Path: Models\Drone\textures\Material.006_diffuse.png
   - Asset: 17845486805074956028
     Type: Texture
     Path: Textures\neonMapRed.png
@@ -62,36 +71,45 @@ Assets:
   - Asset: 9344205787060067317
     Type: MeshSourceFile
     Path: Models\Futuristic robot Bot\base_basic_shaded.fbx
-  - Asset: 14263213735333966676
-    Type: ScriptFile
-    Path: Scripts\DamageComponent.cs
-  - Asset: 14807338079391251991
+  - Asset: 8529638578393898363
     Type: Texture
-    Path: Models\Futuristic robot Bot\texture_normal.png
+    Path: Models\DroneFuture\textures\DefaultMaterial_Base_color.png
+  - Asset: 10261542693649744042
+    Type: Texture
+    Path: Models\Drone\textures\Material.015_diffuse.png
   - Asset: 978350869184898524
     Type: Texture
     Path: Models\Futuristic robot Bot\shaded.png
+  - Asset: 14807338079391251991
+    Type: Texture
+    Path: Models\Futuristic robot Bot\texture_normal.png
+  - Asset: 14263213735333966676
+    Type: ScriptFile
+    Path: Scripts\DamageComponent.cs
   - Asset: 7620776126739072031
     Type: Texture
     Path: Models\Futuristic robot Bot\texture_diffuse.png
-  - Asset: 7148630198553903098
-    Type: Material
-    Path: Materials\m_Rocket.Material.ProofAsset
   - Asset: 2351820973351286623
     Type: Texture
     Path: Models\Futuristic robot Bot\texture_pbr.png
+  - Asset: 7148630198553903098
+    Type: Material
+    Path: Materials\m_Rocket.Material.ProofAsset
   - Asset: 9904556931666478505
     Type: Texture
     Path: Models\Futuristic robot Bot\texture_roughness.png
-  - Asset: 12400660277232460367
-    Type: Texture
-    Path: Images\glitch-texture-1.jpg
   - Asset: 16405759186654434407
     Type: DynamicMesh
     Path: Meshes\New Folder\RobotBot.DynamicMesh.ProofAsset
+  - Asset: 12400660277232460367
+    Type: Texture
+    Path: Images\glitch-texture-1.jpg
   - Asset: 14486622669096991682
     Type: Material
     Path: Meshes\New Folder\m_RobotBot.Material.ProofAsset
+  - Asset: 12307540739497146649
+    Type: Prefab
+    Path: Prefabs\DroneFollower.Prefab.ProofAsset
   - Asset: 17264578630111646164
     Type: Prefab
     Path: Models\Bullets\LazerBullet.Prefab.ProofAsset
@@ -101,27 +119,129 @@ Assets:
   - Asset: 6963299799565776090
     Type: Prefab
     Path: Prefabs\Bullet\LazerBullet\p_LazerMuzzleFlash.Prefab.ProofAsset
-  - Asset: 6964135419703162131
-    Type: Prefab
-    Path: Prefabs\RobotBot2.Prefab.ProofAsset
   - Asset: 13604995464265852117
     Type: Texture
     Path: Images\CharacterHud\HealthOutlineImage.png
+  - Asset: 1950940261512637703
+    Type: Texture
+    Path: Models\Drone\textures\Material.018_diffuse.png
   - Asset: 5411836519774396444
     Type: ParticleSystem
     Path: ParticleSystem\ps_RocketSmoke.ParticleSystem.ProofAsset
   - Asset: 724923881556054131
     Type: Texture
     Path: Images\SmokeParticlesystem.png
+  - Asset: 6623191527013799357
+    Type: Texture
+    Path: Models\Drone\textures\Material.009_specularGlossiness.png
+  - Asset: 11946306303952883040
+    Type: Texture
+    Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Emissive.png
   - Asset: 9869168224563120581
     Type: MeshSourceFile
     Path: Models\Rocket\scene.gltf
   - Asset: 11358710558737543565
     Type: Mesh
     Path: Meshes\Rocket.Mesh.ProofAsset
+  - Asset: 17701050045277260680
+    Type: Texture
+    Path: Models\Drone\textures\Material.005_diffuse.png
   - Asset: 9981575571642197365
     Type: Material
     Path: Materials\GlitchyMaterials\m_Glitchymaterial1.Material.ProofAsset
   - Asset: 7976084304101403599
     Type: Material
     Path: Materials\GlitchyMaterials\m_ScreenGlitch.Material.ProofAsset
+  - Asset: 11763331792252507130
+    Type: World
+    Path: Scenes\New World.ProofWorld
+  - Asset: 13013495449842500942
+    Type: Texture
+    Path: Images\259986a612b9431839fee603ef2eccbc.jpg
+  - Asset: 8464040316779385823
+    Type: ScriptFile
+    Path: Scripts\Enemies\Drone.cs
+  - Asset: 15718886565811525784
+    Type: Texture
+    Path: Images\texGlitchNose.jpg
+  - Asset: 13243229169440954581
+    Type: MeshSourceFile
+    Path: Models\DroneFuture\source\DronoSphere\SD.fbx
+  - Asset: 13118365228542057988
+    Type: Texture
+    Path: Models\Drone\textures\Material.016_diffuse.png
+  - Asset: 671419289433263251
+    Type: MeshSourceFile
+    Path: Models\Drone\scene.gltf
+  - Asset: 16784046416852032464
+    Type: Texture
+    Path: Models\Drone\textures\Material.001_diffuse.png
+  - Asset: 15611310432674875534
+    Type: Texture
+    Path: Models\DroneFuture\textures\DefaultMaterial_Mixed_AO.png
+  - Asset: 5528791536284051188
+    Type: Texture
+    Path: Models\Drone\textures\Material.013_diffuse.png
+  - Asset: 10729087123050657331
+    Type: Texture
+    Path: Models\Drone\textures\Material.009_diffuse.png
+  - Asset: 15196113799356177743
+    Type: Texture
+    Path: Models\Drone\textures\Material.017_diffuse.png
+  - Asset: 4958113743849962161
+    Type: Texture
+    Path: Models\Drone\textures\Material.020_diffuse.png
+  - Asset: 784384639054779730
+    Type: Texture
+    Path: Models\Drone\textures\Material.022_diffuse.png
+  - Asset: 5974710913247827984
+    Type: Mesh
+    Path: Meshes\Drone.Mesh.ProofAsset
+  - Asset: 11877075933518958755
+    Type: Texture
+    Path: Models\DroneFuture\textures\DefaultMaterial_Emissive.png
+  - Asset: 11153823734517650128
+    Type: Texture
+    Path: Models\DroneFuture\textures\DefaultMaterial_Height.png
+  - Asset: 15289214756583400978
+    Type: Texture
+    Path: Models\DroneFuture\textures\DefaultMaterial_Metallic.png
+  - Asset: 5220143863605419177
+    Type: Texture
+    Path: Models\DroneFuture\textures\DefaultMaterial_Roughness.png
+  - Asset: 718462954617213024
+    Type: Texture
+    Path: Models\DroneFuture\source\DronoSphere\print.png
+  - Asset: 16387496654589156182
+    Type: Texture
+    Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Base_color.png
+  - Asset: 16843537044813924609
+    Type: Texture
+    Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Height.png
+  - Asset: 11477088556250181178
+    Type: Texture
+    Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Metallic.png
+  - Asset: 12125327636136761240
+    Type: Texture
+    Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Mixed_AO.png
+  - Asset: 3576836091183402335
+    Type: Texture
+    Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Normal.png
+  - Asset: 12052982116799935738
+    Type: Texture
+    Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Normal_DirectX.png
+  - Asset: 15382384043102591794
+    Type: Material
+    Path: Materials\m_DroneFuture.Material.ProofAsset
+  - Asset: 4332363279821732544
+    Type: Prefab
+    Path: Prefabs\RocketRobot.Prefab.ProofAsset
+  - Asset: 16367550496779679935
+    Type: Texture
+    Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Roughness.png
+  - Asset: 6737507810788571096
+    Type: Mesh
+    Path: Meshes\DroneFuture.Mesh.ProofAsset
+  - Asset: 14094327721765858305
+    Type: Mesh
+    Path: Meshes\RobotStaticMesh.Mesh.ProofAsset

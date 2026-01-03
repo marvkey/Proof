@@ -1,0 +1,203 @@
+World:
+  ID: 4623808136090387581
+  Entities:
+    - Entity: 3013898235721666972
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.212930158, 0.486946851, 0.0925024524]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [0.452400535, 0.52723062, 0.629629612]
+        SkyBoxLod: 0
+        MapRotation: 33.75
+        Intensity: 0.699999988
+        EnvironmentState: EnvironmentTexture
+        TextureDataImage: 1566124166730254362
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 17960827540052736448
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0855211318, 0.830776691, 0.0244346093]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [0.256351143, 0.45620364, 0.948148131]
+        Intensity: 1
+        CastShadow: true
+        ShadowStrength: 0.5
+        CastSoftShadow: true
+        ShadowSoftness: 0.5
+    - Entity: 8891653551631660720
+      TagComponent:
+        Tag: Proof
+        tags: []
+      TransformComponent:
+        Location: [0.586950004, 6.10833931, 2.08928013]
+        Rotation: [1.57079637, -0.869173944, 0]
+        Scale: [1.5, 0.100000001, 1.60000002]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 14514108685430737209
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 13635081845488536444
+            Index: 0
+    - Entity: 8557742091350593982
+      TagComponent:
+        Tag: Sponza
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 18141853162402936448
+        Visible: false
+    - Entity: 12820788420395218976
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [-2.4532187, 3.5999999, 6.29816008]
+        Rotation: [0, 0, 0]
+        Scale: [50, 1, 50]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 13866412923197075697
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 7311706013593759825
+      TagComponent:
+        Tag: Sphere
+        tags: []
+      TransformComponent:
+        Location: [1.32197511, 5.46658659, -2.25624084]
+        Rotation: [0, 0, 0]
+        Scale: [2.15999985, 2.15999985, 2.15999985]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 51
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 3753138374564548584
+            Index: 0
+      SphereColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Radius: 0.5
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 6372175869301601230
+      TagComponent:
+        Tag: DodgeCar
+        tags: []
+      TransformComponent:
+        Location: [4.37197161, 5.69999981, 0.550453186]
+        Rotation: [0, -0.647517145, 0]
+        Scale: [1.34000003, 1.34000003, 1.34000003]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 6628385827340589740
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 9923854152297372655
+            Index: 0
+          - Material: ""
+            AssetID: 13161690426467102304
+            Index: 1
+    - Entity: 6075243188616674515
+      TagComponent:
+        Tag: Spot Light
+        tags: []
+      TransformComponent:
+        Location: [3.86999989, 12.1690655, -1.89499998]
+        Rotation: [1.57079637, 0, 1.57079637]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SpotLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 2.22000003
+        Range: 89.75
+        Angle: 92.25
+        AngleAttenuation: 5
+        Falloff: 2
+        CastsShadows: false
+        SoftShadows: false
+        ShadowStrength: 0.5
+        ShadowSoftness: 0.5
+    - Entity: 2925547818041806098
+      TagComponent:
+        Tag: CratesBox
+        tags: []
+      TransformComponent:
+        Location: [10.4807453, 5.5, 1.14378905]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 3569097684381116429
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 11634957302077779221
+            Index: 1

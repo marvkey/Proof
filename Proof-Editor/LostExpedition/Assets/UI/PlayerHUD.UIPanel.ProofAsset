@@ -8,61 +8,25 @@ VariableRegistry:
       UUID: 16242045011453165744
       Data: 13127080171188781274
       AssetType: Texture
-    - Name: HungerPercent
-      Type: Float
-      UUID: 9176028665357783032
-      Data: 1
     - Name: Invenotry1
       Type: AssetKey
       UUID: 1802181474746937623
       Data: 13127080171188781274
       AssetType: Texture
-    - Name: HealthPercent
+    - Name: HungerPercent
       Type: Float
-      UUID: 16440992634324638982
+      UUID: 9176028665357783032
       Data: 1
     - Name: Inventory2
       Type: AssetKey
       UUID: 14272131317188086835
       Data: 13127080171188781274
       AssetType: Texture
+    - Name: HealthPercent
+      Type: Float
+      UUID: 16440992634324638982
+      Data: 1
 UIElements:
-  - UIElement: 11460780810668014295
-    UICoreComponent:
-      ElementID: 11460780810668014295
-      Name: Heart
-      UIElementType: Image
-      Position: [-0.649999976, 0]
-      Rotation: [0, 0]
-      Size: [0.25, 1.5]
-      AnchorMinimum: [0, 0]
-      AnchorMaximum: [0, 0]
-      ParentHandle: 12392705659439113092
-      Children: []
-    UIImageComponent:
-      TintColor: [1, 1, 1, 1]
-      Texture:
-        AssetID: 14463897640908507128
-        AssetType: Texture
-        BindedVariableID: 0
-  - UIElement: 12392705659439113092
-    UICoreComponent:
-      ElementID: 12392705659439113092
-      Name: HealthBox
-      UIElementType: ProgressBar
-      Position: [-0.949999988, -1]
-      Rotation: [0, 0]
-      Size: [1, 1]
-      AnchorMinimum: [0, 0]
-      AnchorMaximum: [0, 0]
-      ParentHandle: 13852632237138326862
-      Children: [11460780810668014295]
-    UIProggresBarComponent:
-      Proggress:
-        Value: 1
-        BindedVariableID: 16440992634324638982
-      FillColor: [1, 0, 0, 1]
-      BackgroundColor: [1, 1, 1, 1]
   - UIElement: 8848501089546760458
     UICoreComponent:
       ElementID: 8848501089546760458
@@ -73,10 +37,73 @@ UIElements:
       Size: [60, 60]
       AnchorMinimum: [0, 1]
       AnchorMaximum: [0, 1]
+      PositionOffset: [0, 0]
       ParentHandle: 0
       Children: [1466150974567134310, 7113161298137729961, 16000487577577749809]
     UIHorizontalBoxComponent:
       Spacing: 0.300000012
+      DrawBorders: false
+      BorderColor: [1, 1, 1, 1]
+      BorderThickness: 1
+  - UIElement: 12392705659439113092
+    UICoreComponent:
+      ElementID: 12392705659439113092
+      Name: HealthBox
+      UIElementType: ProgressBar
+      Position: [-0.949999988, -1]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 13852632237138326862
+      Children: [11460780810668014295]
+    UIProggresBarComponent:
+      Proggress:
+        Value: 1
+        BindedVariableID: 16440992634324638982
+      FillColor:
+        Value: [1, 0, 0, 1]
+        BindedVariableID: 0
+      BackgroundColor:
+        Value: [1, 1, 1, 1]
+        BindedVariableID: 0
+  - UIElement: 11460780810668014295
+    UICoreComponent:
+      ElementID: 11460780810668014295
+      Name: Heart
+      UIElementType: Image
+      Position: [-0.649999976, 0]
+      Rotation: [0, 0]
+      Size: [0.25, 1.5]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 12392705659439113092
+      Children: []
+    UIImageComponent:
+      TintColor:
+        Value: [1, 1, 1, 1]
+        BindedVariableID: 0
+      Texture:
+        AssetID: 14463897640908507128
+        AssetType: Texture
+        BindedVariableID: 0
+  - UIElement: 13852632237138326862
+    UICoreComponent:
+      ElementID: 13852632237138326862
+      Name: Verticalhealthbox
+      UIElementType: VerticalBox
+      Position: [-0.949999988, -1]
+      Rotation: [0, 0]
+      Size: [228, 33]
+      AnchorMinimum: [1, 0]
+      AnchorMaximum: [1, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 0
+      Children: [12392705659439113092, 16831848638525854702]
+    UIVerticalBoxComponent:
+      Spacing: -3
       DrawBorders: false
       BorderColor: [1, 1, 1, 1]
       BorderThickness: 1
@@ -90,10 +117,13 @@ UIElements:
       Size: [1, 1]
       AnchorMinimum: [0, 0]
       AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
       ParentHandle: 8848501089546760458
       Children: []
     UIImageComponent:
-      TintColor: [1, 1, 1, 1]
+      TintColor:
+        Value: [1, 1, 1, 1]
+        BindedVariableID: 0
       Texture:
         AssetID: 13127080171188781274
         AssetType: Texture
@@ -108,31 +138,17 @@ UIElements:
       Size: [1, 1]
       AnchorMinimum: [0, 0]
       AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
       ParentHandle: 8848501089546760458
       Children: []
     UIImageComponent:
-      TintColor: [1, 1, 1, 1]
+      TintColor:
+        Value: [1, 1, 1, 1]
+        BindedVariableID: 0
       Texture:
         AssetID: 13127080171188781274
         AssetType: Texture
         BindedVariableID: 1802181474746937623
-  - UIElement: 13852632237138326862
-    UICoreComponent:
-      ElementID: 13852632237138326862
-      Name: Verticalhealthbox
-      UIElementType: VerticalBox
-      Position: [-0.949999988, -1]
-      Rotation: [0, 0]
-      Size: [228, 33]
-      AnchorMinimum: [1, 0]
-      AnchorMaximum: [1, 0]
-      ParentHandle: 0
-      Children: [12392705659439113092, 16831848638525854702]
-    UIVerticalBoxComponent:
-      Spacing: -3
-      DrawBorders: false
-      BorderColor: [1, 1, 1, 1]
-      BorderThickness: 1
   - UIElement: 16000487577577749809
     UICoreComponent:
       ElementID: 16000487577577749809
@@ -143,10 +159,13 @@ UIElements:
       Size: [1, 1]
       AnchorMinimum: [0, 0]
       AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
       ParentHandle: 8848501089546760458
       Children: []
     UIImageComponent:
-      TintColor: [1, 1, 1, 1]
+      TintColor:
+        Value: [1, 1, 1, 1]
+        BindedVariableID: 0
       Texture:
         AssetID: 13127080171188781274
         AssetType: Texture
@@ -161,14 +180,19 @@ UIElements:
       Size: [1, 1]
       AnchorMinimum: [0, 0]
       AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
       ParentHandle: 13852632237138326862
       Children: [17723146002270850297]
     UIProggresBarComponent:
       Proggress:
         Value: 1
         BindedVariableID: 9176028665357783032
-      FillColor: [0.92592591, 0.639612794, 0.168038398, 1]
-      BackgroundColor: [1, 1, 1, 1]
+      FillColor:
+        Value: [1, 0, 0, 1]
+        BindedVariableID: 0
+      BackgroundColor:
+        Value: [1, 1, 1, 1]
+        BindedVariableID: 0
   - UIElement: 17723146002270850297
     UICoreComponent:
       ElementID: 17723146002270850297
@@ -179,10 +203,13 @@ UIElements:
       Size: [0.25, 1.5]
       AnchorMinimum: [0, 0]
       AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
       ParentHandle: 16831848638525854702
       Children: []
     UIImageComponent:
-      TintColor: [1, 1, 1, 1]
+      TintColor:
+        Value: [1, 1, 1, 1]
+        BindedVariableID: 0
       Texture:
         AssetID: 17312616813620753042
         AssetType: Texture

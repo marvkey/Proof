@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 16587156431716427673
-EntityOwner: 13751592250503210604
+EntityOwner: 15722882732424419876
 Entities:
-  - Entity: 13751592250503210604
+  - Entity: 15722882732424419876
     TagComponent:
       Tag: Rocket
       tags: []
@@ -12,9 +12,16 @@ Entities:
       Scale: [1, 1, 1]
     HierarchyComponent:
       ParentHandle: 0
-      Children: [3186977875424619877]
+      Children: [9206164967208451274]
     ScriptComponent:
       Scripts:
+        - Script: NullState.DamageComponent
+          ScriptClassName: NullState.DamageComponent
+          ScriptName: NullState.DamageComponent
+          Fields:
+            - NameID: NullState.DamageComponent.DamageAmount
+              Type: Float
+              Data: 35
         - Script: NullState.HomingMissile
           ScriptClassName: NullState.HomingMissile
           ScriptName: NullState.HomingMissile
@@ -46,13 +53,6 @@ Entities:
             - NameID: NullState.HomingMissile.ExplosionPrefab
               Type: Prefab
               Data: 0
-        - Script: NullState.DamageComponent
-          ScriptClassName: NullState.DamageComponent
-          ScriptName: NullState.DamageComponent
-          Fields:
-            - NameID: NullState.DamageComponent.DamageAmount
-              Type: Float
-              Data: 35
     BoxColliderComponent:
       IsTrigger: false
       Center: [0, 0, 0]
@@ -69,7 +69,7 @@ Entities:
       FreezeRotation: [false, false, false]
       Kinematic: false
       CollisionDetection: Discrete
-  - Entity: 3186977875424619877
+  - Entity: 9206164967208451274
     TagComponent:
       Tag: RocketMesh
       tags: []
@@ -78,12 +78,12 @@ Entities:
       Rotation: [1.57079637, -0, 0]
       Scale: [1, 1, 1]
     HierarchyComponent:
-      ParentHandle: 13751592250503210604
-      Children: [16725674180210205098]
+      ParentHandle: 15722882732424419876
+      Children: [7400490629116874035]
     MeshComponent:
       MeshAssetPointerID: 11358710558737543565
       Visible: true
-  - Entity: 16725674180210205098
+  - Entity: 7400490629116874035
     TagComponent:
       Tag: Point Light
       tags: []
@@ -92,7 +92,7 @@ Entities:
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     HierarchyComponent:
-      ParentHandle: 3186977875424619877
+      ParentHandle: 9206164967208451274
       Children: []
     PointLightComponent:
       Color: [0.926584363, 1, 0.174074054]

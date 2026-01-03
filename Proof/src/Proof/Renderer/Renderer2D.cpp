@@ -309,6 +309,92 @@ namespace Proof {
 		m_ContextSettings = contextSettings;
 
 	}
+
+	void Renderer2D::DrawTriangle(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec4& color)
+	{
+		if (m_QuadIndexCount + 3 >= c_MaxIndexCount)
+		{
+			Render();
+			Reset();
+		}
+
+		// Each triangle uses the same vertex format as a quad (Position, Color, TexCoords, TexSlot)
+		const float textureIndex = 0.0f; // White texture
+		const glm::vec3 normal = glm::normalize(glm::cross(p1 - p0, p2 - p0));
+
+		m_QuadVertexBufferPtr->Position = GlmVecToProof(p0);
+		m_QuadVertexBufferPtr->Color = color;
+		m_QuadVertexBufferPtr->TexCoords = {0.0f, 0.0f};
+		m_QuadVertexBufferPtr->TexSlot = textureIndex;
+		m_QuadVertexBufferPtr++;
+
+		m_QuadVertexBufferPtr->Position = GlmVecToProof(p1);
+		m_QuadVertexBufferPtr->Color = color;
+		m_QuadVertexBufferPtr->TexCoords = {1.0f, 0.0f};
+		m_QuadVertexBufferPtr->TexSlot = textureIndex;
+		m_QuadVertexBufferPtr++;
+
+		m_QuadVertexBufferPtr->Position = GlmVecToProof(p2);
+		m_QuadVertexBufferPtr->Color = color;
+		m_QuadVertexBufferPtr->TexCoords = {0.5f, 1.0f};
+		m_QuadVertexBufferPtr->TexSlot = textureIndex;
+		m_QuadVertexBufferPtr++;
+
+		// Add 3 indices (like one half of a quad)
+		m_QuadIndexCount += 3;
+	}
+
+	void Renderer2D::DrawTriangle(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec4& color,
+		const Count<Texture2D>& texture)
+	{
+		if (m_QuadIndexCount + 3 >= c_MaxIndexCount)
+		{
+			Render();
+			Reset();
+		}
+
+		float textureIndex = -1.0f;
+		for (uint32_t i = 0; i < m_QuadTextureSlotIndex; i++)
+		{
+			if (m_QuadTextures[i] == texture)
+			{
+				textureIndex = (float)i;
+				break;
+			}
+		}
+		if (textureIndex == -1.0f)
+		{
+			if (m_QuadTextureSlotIndex >= c_MaxTextureSlots)
+			{
+				Render();
+				Reset();
+			}
+			textureIndex = (float)m_QuadTextureSlotIndex;
+			m_QuadTextures[m_QuadTextureSlotIndex] = texture;
+			m_QuadTextureSlotIndex++;
+		}
+
+		m_QuadVertexBufferPtr->Position = GlmVecToProof(p0);
+		m_QuadVertexBufferPtr->Color = color;
+		m_QuadVertexBufferPtr->TexCoords = {0.0f, 0.0f};
+		m_QuadVertexBufferPtr->TexSlot = textureIndex;
+		m_QuadVertexBufferPtr++;
+
+		m_QuadVertexBufferPtr->Position = GlmVecToProof(p1);
+		m_QuadVertexBufferPtr->Color = color;
+		m_QuadVertexBufferPtr->TexCoords = {1.0f, 0.0f};
+		m_QuadVertexBufferPtr->TexSlot = textureIndex;
+		m_QuadVertexBufferPtr++;
+
+		m_QuadVertexBufferPtr->Position = GlmVecToProof(p2);
+		m_QuadVertexBufferPtr->Color = color;
+		m_QuadVertexBufferPtr->TexCoords = {0.5f, 1.0f};
+		m_QuadVertexBufferPtr->TexSlot = textureIndex;
+		m_QuadVertexBufferPtr++;
+
+		m_QuadIndexCount += 3;
+	}
+
 	Renderer2D::Renderer2D(const std::string& debugName)
 	{
 		m_DebugName = debugName;
@@ -464,6 +550,58 @@ namespace Proof {
 			DrawAABB(aabb, aabbTransform, color);
 		}
 	}
+
+	void Renderer2D::DrawCone(const glm::vec3& position, const glm::vec3& direction, float angle, float range,
+		const glm::vec4& color, uint32_t segments)
+	{
+	// The 'position' is the Apex of the cone (the light source).
+	    // The 'direction' is the axis of the cone.
+	    // 'angle' is the spotlight's half-angle (in radians).
+	    // 'range' is the spotlight's distance/height.
+
+	    // 1. Calculate the radius of the cone's base (the frustum slice)
+	    // Radius = tan(half_angle) * range
+	    float halfAngle = angle; // Assuming 'angle' is the half-angle in radians
+	    float radius = std::tan(halfAngle) * range;
+	    
+	    // 2. Calculate the center position of the cone's base circle
+	    glm::vec3 normalizedDirection = -glm::normalize(direction);
+	    glm::vec3 baseCenter = position + normalizedDirection * range;
+
+	    // 3. Calculate the rotation for the base circle.
+	    // We need to find the rotation that aligns the circle's normal (local Z) with the cone's direction.
+	    glm::quat orientation = glm::lookAt(position, baseCenter, Math::GetUpVector()); // Get the quaternion for the cone's orientation
+
+	    // The circle plane is perpendicular to the cone's direction.
+	    // Since DrawCircle assumes the circle is on the XY plane, we must rotate it to align with the cone's direction.
+	    // This is typically handled by the rotation/transform passed to DrawCircle.
+	    glm::vec3 baseRotation = glm::eulerAngles(orientation);
+
+	    // 4. Draw the base circle
+	    // DrawCircle draws the circle on the XY plane of its local space, which is then transformed.
+	    DrawCircle(baseCenter, baseRotation, radius, color);
+
+	    // 5. Draw the connecting lines (rays) from the apex to the base circle's circumference
+	    
+	    // We can draw rays to key points on the circle, plus a few extra for a better cone visualization.
+	    for (uint32_t i = 0; i < segments; ++i)
+	    {
+	        float currentAngle = 2.0f * glm::pi<float>() * (float)i / segments;
+
+	        // Get a point on the circumference of a unit circle on the XY plane
+	        glm::vec3 localCircumferencePoint = { glm::cos(currentAngle), glm::sin(currentAngle), 0.0f };
+
+	        // Scale by radius and rotate by the cone's orientation
+	        glm::vec3 rotatedPoint = orientation * localCircumferencePoint * radius;
+
+	        // Translate to the base center position to get the final world point on the circumference
+	        glm::vec3 circumferenceWorldPoint = baseCenter + rotatedPoint;
+
+	        // Draw a line from the apex to this circumference point
+	        DrawLine(position, circumferenceWorldPoint, color);
+	    }
+	}
+
 	void Renderer2D::DrawCylinder(glm::vec3 position, glm::vec3 rotationRadians, float height, float radius, glm::vec4 color, bool drawFromBase)
 	{
 		//https://dev-tut.com/2022/unity-draw-a-debug-cylinder-and-capsule/

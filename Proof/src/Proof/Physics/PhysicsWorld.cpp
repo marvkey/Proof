@@ -11,6 +11,7 @@
 
 #include "Proof/Scripting/ScriptWorld.h"
 #include "Proof/Scripting/ScriptEngine.h"
+#include "Boids/BoidManager.h"
 
 #include "Proof/Scene/WaterSystem/BuoyancyActor.h"
 namespace Proof {
@@ -111,6 +112,7 @@ namespace Proof {
 
 		m_PhysXControllerManager = PxCreateControllerManager(*m_PhysXScene);
 		CreateRegions();
+
 	}
 
 	PhysicsWorld::~PhysicsWorld()
@@ -120,6 +122,8 @@ namespace Proof {
 	void PhysicsWorld::Simulate(float dt)
 	{
 		PF_PROFILE_FUNC();
+
+		m_BoidManager->OnUpdate(dt);
 		if (m_World->IsPlaying() && lastAdvance)
 		{
 			for (auto& [Id, actor] : m_Actors)
@@ -268,11 +272,14 @@ namespace Proof {
 				CreateBuoyancyActor(entity);
 			});
 
+		m_BoidManager = Count<BoidManager>::Create(this);
+			
 
 	}
 	void PhysicsWorld::EndWorld()
 	{
 		// release all rigid bodies before we release teh scene
+		m_BoidManager = nullptr;
 		m_BuoyancyActors.clear();
 		m_Actors.clear();
 		m_Controllers.clear();
@@ -281,7 +288,6 @@ namespace Proof {
 
 		m_PhysXScene = nullptr;
 		m_World = nullptr;
-
 		if (m_RegionBounds)
 			pdelete[] m_RegionBounds;
 	}
@@ -334,8 +340,6 @@ namespace Proof {
 
 		for (uint32_t i = 0; i < m_NumSubSteps; i++)
 		{
-
-
 			Count<ScriptWorld> scriptWorld = m_World->GetScriptWorld();
 			if (scriptWorld)
 				scriptWorld->OnPhysicsUpdate(PhysicsEngine::GetSettings().PhysicsFixedDeltaTime);
@@ -579,7 +583,7 @@ namespace Proof {
 
 		physx::PxSweepBuffer sweepBuffer;
 		bool result = m_PhysXScene->sweep(physx::PxSphereGeometry(radius), physx::PxTransform(PhysXUtils::ToPhysXVector(origin)),
-			PhysXUtils::ToPhysXVector(direction), maxDistance, sweepBuffer);
+			PhysXUtils::ToPhysXVector(glm::normalize(direction)), maxDistance, sweepBuffer);
 
 		if (result)
 		{

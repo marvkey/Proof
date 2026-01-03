@@ -75,6 +75,7 @@ namespace Proof
 		m_ScriptWorld = Count<ScriptWorld>::Create(this);
 		Init();
 		m_DebugRenderer = Count<DebugRenderer>::Create();
+		m_ImmediateRenderer = Count<ImmediateRenderer>::Create();
 		m_ParticleWorld = Count<ParticleWorld>::Create(this);
 		//m_Registry.on_destroy<ChildComponent>().connect<&World::OnChildComponentDestroy>(this);
 	}
@@ -235,6 +236,8 @@ namespace Proof
 			{
 				Entity entity(entityID, this);
 				PostProcessVolumeComponent& volume = entity.GetComponent<PostProcessVolumeComponent>();
+				if (!volume.Enabled)
+					continue;
 
 				if(!volume.IsGlobal)
 				{ 
@@ -491,6 +494,15 @@ namespace Proof
 
 			}
 		}
+		{
+			// immediate rendere
+			auto& renderQueue = m_ImmediateRenderer->GetRenderQueue();
+			for (auto&& func : renderQueue)
+				func(worldRenderer);
+
+			m_ImmediateRenderer->ClearRenderQueue();
+		}
+
 
 		// render water
 		{
@@ -501,10 +513,14 @@ namespace Proof
 			
 		}
 
+	
+	
+
 		if(injectRendererCode)
 			injectRendererCode(worldRenderer);
 
 
+		
 		RenderPhysicsDebug(worldRenderer, false);
 
 		worldRenderer->EndScene();
@@ -517,7 +533,6 @@ namespace Proof
 		renderer2D->SetTargetFrameBuffer(worldRenderer->GetExternalCompositePassFrameBuffer());
 
 		renderer2D->BeginContext(camera.GetProjectionMatrix(), camera.GetViewMatrix(), GlmVecToProof(cameraLocation));
-
 		
 		Count<Texture2D> prefilter2D;
 		auto skylights = m_Registry.group<SkyLightComponent>(entt::get<TransformComponent>);
@@ -744,6 +759,30 @@ namespace Proof
 
 			}
 
+		}
+				// spot lgiht
+		{
+			{
+
+				auto view = m_Registry.view<SpotLightComponent>();
+
+				for (auto entity : view)
+				{
+				
+					Entity e = { entity, this };
+					if (selectedOnly)
+					{
+						if (!SelectionManager::IsEntityOrAncestorSelected(SelectionContext::Scene, e))
+							continue;
+					}
+					const auto& spotLight = e.GetComponent<SpotLightComponent>();
+					TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
+
+					glm::vec3 direction = glm::normalize(glm::rotate(worldTransformComp.GetRotation(), glm::vec3(1.0f, 0.0f, 0.0f)));
+					renderer2D->DrawCone(worldTransformComp.Location,direction,spotLight.Angle,spotLight.Range,Colors::Green,8);
+				}
+
+			}
 		}
 		//box colliders
 		

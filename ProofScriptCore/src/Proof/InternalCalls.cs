@@ -65,6 +65,10 @@ namespace Proof
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
 		//returns entity ID
         internal extern static ulong World_Instanciate(ulong prefabID, Transform transform);
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static ulong World_CreateEntity(string name, Transform transform);
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static ulong World_CreateEntityFromEntity(ulong entityID,bool includeChildren );
 
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void World_Pause();
@@ -97,6 +101,9 @@ namespace Proof
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool World_Invoke(ulong entityID, string scriptName,string methodName,float time, bool repeat, float repeatTime);
 
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void World_GetEntitiesOfScriptType(string classFullName, ref ulong[] types);
+
         #endregion
 
         #region Entity
@@ -121,6 +128,9 @@ namespace Proof
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static object GetScriptInstanceOfType(ulong entityID, string scrptName);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static object AddScriptInstance(ulong entityID, string scrptName);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static object Entity_GetParent(ulong entityID, out ulong ownerID);
@@ -170,12 +180,25 @@ namespace Proof
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static void TransformComponent_GetRightVector(ulong entityID, out Vector3 Vector);
 
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TransformComponent_SetForwardVector(ulong entityID, ref Vector3 Vector);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TransformComponent_SetUpVector(ulong entityID, ref Vector3 Vector);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void TransformComponent_SetRightVector(ulong entityID, ref Vector3 Vector);
+        
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void TransformComponent_GetTransform(ulong entityID, out Transform outTransform);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void TransformComponent_SetTransform(ulong entityID, ref Transform inTransform);
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void TransformComponent_GetWorldSpaceTransform(ulong entityID, out Transform outTransform);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void TransformComponent_GetWorldSpaceTransformMatrix(ulong entityID, out TransferMatrix4 outTransform);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void TransformComponent_GetTransformMatrix(ulong entityID, out TransferMatrix4 outTransform);
         #endregion
 
         #region Physics
@@ -229,7 +252,13 @@ namespace Proof
         internal static extern void DebugRenderer_SetLineWidth(float width);
 
         #endregion
+		#region ImmediateRenderer
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static void ImmediateRenderer_SubmitMesh(ulong meshID, ulong materialID,ref TransferMatrix4 transform, bool castShadow);
 
+        [MethodImpl(MethodImplOptions.InternalCall)]
+		internal extern static void ImmediateRenderer_SubmitDynamicMesh(AssetID meshID,AssetID materialID,uint subMeshIndex,ref TransferMatrix4 transform, bool castShadow);
+		#endregion
         #region RigidBody
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool RigidBody_GetGravity(ulong entityID);
@@ -472,6 +501,20 @@ namespace Proof
         internal extern static bool TextComponent_GetVisible(ulong entityID);
         #endregion
 
+        #region  BoidFlockComponent
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void BoidFlockComponent_AddBoid(ulong entityID, ulong addEntityID);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void BoidFlockComponent_RemoveBoid(ulong entityID, ulong addEntityID);
+        
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void BoidFlockComponent_SetSettings(ulong entityID, ref BoidFlockData boidData);
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void BoidFlockComponent_GetSettings(ulong entityID, out BoidFlockData boidData);
+        
+        #endregion
         #region Random
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
 		internal extern static bool Random_RandomBool();
@@ -486,16 +529,44 @@ namespace Proof
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static double Random_RandomDouble(double min, double max);
+        
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static Vector3 Random_InsideUnitSphere();
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static Vector3 Random_UnitVector();
+
         #endregion
 
         #region MeshComponent
+
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool MeshComponent_GetVisible(ulong entityID);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static bool MeshComponent_SetVisible(ulong entityID, bool value);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static AssetID MeshComponent_GetMesh(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void MeshComponent_SetMesh(ulong entityID,AssetID meshID,bool takeMaterialTable);
+
         #endregion
 
+        #region  DynamicMeshComponent
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void DynamicMeshComponent_SetVisible(ulong entityID, bool visible);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool DynamicMeshComponent_GetVisible(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static AssetID DynamicMeshComponent_GetMesh(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void DynamicMeshComponent_SetMesh(ulong entityID,AssetID meshID,bool takeMaterialTable);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void DynamicMeshComponent_SetSubMeshIndex(ulong entityID, uint index);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static uint DynamicMeshComponent_GetSubMeshIndex(ulong entityID);
+
+        #endregion
         #region PlayerInputComponent
 
         

@@ -30,9 +30,9 @@ namespace NullState
 			var healthComp = other.GetScript<HealthComponent>();
 
 			if(healthComp != null)
-			{
+			{ 
 				healthComp.TakeDamage(this, DamageAmount);
 			}
-        }
+        } 
     }
 }

@@ -1,0 +1,50 @@
+AssetType: Prefab
+ID: 12307540739497146649
+EntityOwner: 1030686959225099626
+Entities:
+  - Entity: 1030686959225099626
+    TagComponent:
+      Tag: DroneFollower
+      tags: []
+    TransformComponent:
+      Location: [0, 13.7709599, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 6737507810788571096
+      Visible: true
+      MaterialTable:
+        - Material: ""
+          AssetID: 15382384043102591794
+          Index: 0
+    ScriptComponent:
+      Scripts:
+        - Script: NullState.Drone
+          ScriptClassName: NullState.Drone
+          ScriptName: NullState.Drone
+          Fields:
+            - NameID: NullState.Drone.FlockHolder
+              Type: Entity
+              Data: 0
+            - NameID: NullState.Drone.Target
+              Type: Entity
+              Data: 0
+    SphereColliderComponent:
+      IsTrigger: true
+      Center: [0, 0, 0]
+      Radius: 3
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: false
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: true
+      CollisionDetection: Discrete

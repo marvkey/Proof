@@ -1,1977 +1,8 @@
 AssetType: Prefab
 ID: 16451095300668606735
-EntityOwner: 13305239619602238686
+EntityOwner: 2955623273107179799
 Entities:
-  - Entity: 15761059141868033351
-    TagComponent:
-      Tag: FracturedBird
-      tags: []
-    TransformComponent:
-      Location: [0, 0, 0]
-      Rotation: [0, 3.14159274, 0]
-      Scale: [0.5, 0.5, 0.5]
-    HierarchyComponent:
-      ParentHandle: 13305239619602238686
-      Children: [12502767888234911022, 6464584014508228355, 10742789503002666894, 11055472846226562390, 6583538336902249461, 1725505414331174347, 2094007474709286324, 15907639270481714258, 3413934047331448761, 1901976325537612857, 16837439407265390146, 9554793716562781896, 14877746337324255502, 7152082336837362158, 7809613904442429550, 5414165954520461626, 2288535261187370824, 7475900003282584524, 11801392819269520108, 12791285546121522751, 2269570858064503600, 16753085254530989316, 13977218841757038692, 16690144530622836959, 3200955398536927194, 11363975945307512945, 11619392932448021160, 9717884177488251662, 10690649320477645805, 8117950972924433738, 14715537799526363313, 2048885906834050355, 1215730330991091902, 15235049746339786420, 1098729483112058318, 9249477095058220387, 1238737990943802099, 5903395014503880734, 1389650480147670696, 16200304123191591590, 11518564975571372825, 12219932034483439126, 9481595270980942551, 4771007568518287962, 3474156533626547778, 403086655185349129, 16285123621887726941, 16533350674623410215, 15665419420062968340, 14349878066744906065, 5035743344886051478, 811253716106147854, 7486212696256660430, 1827871846544465255, 8943619738575787707, 1361511803973187440, 9206819305822509458, 13566768091712868414, 11114783515541265170, 10794982285267666953, 14443553064592807978, 12583266268495428481, 8947061288933499673, 477984386917979733, 2523202446055514997, 7350487348498418335]
-  - Entity: 16200304123191591590
-    TagComponent:
-      Tag: Object_7_cell.009
-      tags: []
-    TransformComponent:
-      Location: [-0.325043321, 0.38490063, -1.31237674]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 39
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 16837439407265390146
-    TagComponent:
-      Tag: Object_4.002_cell
-      tags: []
-    TransformComponent:
-      Location: [1.24276805, -0.260400176, -0.332040459]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 10
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 10794982285267666953
-    TagComponent:
-      Tag: Object_6.001_cell.004
-      tags: []
-    TransformComponent:
-      Location: [0.418437093, 0.547707558, -0.980225503]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 59
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 4771007568518287962
-    TagComponent:
-      Tag: Object_7.005_cell.003
-      tags: []
-    TransformComponent:
-      Location: [0.553529382, -0.603417635, -0.18892096]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 43
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 13305239619602238686
-    TagComponent:
-      Tag: FracturedBird
-      tags: []
-    TransformComponent:
-      Location: [0, 0, 0]
-      Rotation: [0, 0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 0
-      Children: [15761059141868033351]
-  - Entity: 8943619738575787707
-    TagComponent:
-      Tag: Object_6_cell.004
-      tags: []
-    TransformComponent:
-      Location: [0.426071227, 0.731154203, 0.807707608]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 54
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 14877746337324255502
-    TagComponent:
-      Tag: Object_4.002_cell.002
-      tags: []
-    TransformComponent:
-      Location: [1.90275478, -0.211136222, -0.113365926]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 12
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 12502767888234911022
-    TagComponent:
-      Tag: Object_4.004_cell
-      tags: []
-    TransformComponent:
-      Location: [1.8608743, 0.119035795, -0.379768103]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 0
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 10742789503002666894
-    TagComponent:
-      Tag: Object_4.004_cell.002
-      tags: []
-    TransformComponent:
-      Location: [0.668160319, 0.153120577, -1.05906129]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 2
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 6464584014508228355
-    TagComponent:
-      Tag: Object_4.004_cell.001
-      tags: []
-    TransformComponent:
-      Location: [1.20223677, 0.149036735, 0.605731249]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 1
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 11055472846226562390
-    TagComponent:
-      Tag: Object_4.004_cell.003
-      tags: []
-    TransformComponent:
-      Location: [1.75153446, 0.130889714, 0.587738395]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 3
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 13977218841757038692
-    TagComponent:
-      Tag: Object_7.003_cell.002
-      tags: []
-    TransformComponent:
-      Location: [-1.39910722, 0.688620448, 1.41278005]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 22
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 6583538336902249461
-    TagComponent:
-      Tag: Object_4.004_cell.004
-      tags: []
-    TransformComponent:
-      Location: [1.44383526, 0.154590353, -0.66655755]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 4
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 1725505414331174347
-    TagComponent:
-      Tag: Object_4.004_cell.005
-      tags: []
-    TransformComponent:
-      Location: [0.999060154, 0.170465514, -1.06697738]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 5
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 15665419420062968340
-    TagComponent:
-      Tag: Object_7.005_cell.008
-      tags: []
-    TransformComponent:
-      Location: [-0.679285169, -0.35103476, -0.661398232]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 48
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 2094007474709286324
-    TagComponent:
-      Tag: Object_4.004_cell.006
-      tags: []
-    TransformComponent:
-      Location: [1.74009812, 0.168542251, -0.089108631]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 6
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 9481595270980942551
-    TagComponent:
-      Tag: Object_7.005_cell.002
-      tags: []
-    TransformComponent:
-      Location: [0.221118674, -0.58964175, 0.723103523]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 42
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 15907639270481714258
-    TagComponent:
-      Tag: Object_4.004_cell.007
-      tags: []
-    TransformComponent:
-      Location: [1.04876328, 0.14201875, -0.689094961]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 7
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 11114783515541265170
-    TagComponent:
-      Tag: Object_6.001_cell.003
-      tags: []
-    TransformComponent:
-      Location: [0.827361703, 0.399559677, -0.871053755]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 58
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 3413934047331448761
-    TagComponent:
-      Tag: Object_4.004_cell.008
-      tags: []
-    TransformComponent:
-      Location: [1.77755284, 0.169020563, 0.194439068]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 8
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 2269570858064503600
-    TagComponent:
-      Tag: Object_7.003_cell
-      tags: []
-    TransformComponent:
-      Location: [-0.730634749, 0.793379247, 1.29914367]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 20
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 1901976325537612857
-    TagComponent:
-      Tag: Object_4.004_cell.009
-      tags: []
-    TransformComponent:
-      Location: [0.84601593, 0.0591208339, -1.03402889]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 9
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 9554793716562781896
-    TagComponent:
-      Tag: Object_4.002_cell.001
-      tags: []
-    TransformComponent:
-      Location: [0.96578449, -0.19874607, -0.808664441]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 11
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 7152082336837362158
-    TagComponent:
-      Tag: Object_4.002_cell.003
-      tags: []
-    TransformComponent:
-      Location: [1.6223582, -0.16568628, -0.56298846]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 13
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 7809613904442429550
-    TagComponent:
-      Tag: Object_4.002_cell.004
-      tags: []
-    TransformComponent:
-      Location: [1.22040701, -0.229675189, -0.962838829]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 14
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 11363975945307512945
-    TagComponent:
-      Tag: Object_7.003_cell.005
-      tags: []
-    TransformComponent:
-      Location: [-0.484996319, 0.221816614, 1.30806971]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 25
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 5414165954520461626
-    TagComponent:
-      Tag: Object_4.002_cell.005
-      tags: []
-    TransformComponent:
-      Location: [1.37743545, -0.230182528, -0.00707963854]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 15
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 2288535261187370824
-    TagComponent:
-      Tag: Object_4.002_cell.006
-      tags: []
-    TransformComponent:
-      Location: [1.50080955, -0.157870412, 0.372281164]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 16
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 5035743344886051478
-    TagComponent:
-      Tag: Object_6_cell
-      tags: []
-    TransformComponent:
-      Location: [0.778236508, 0.75027895, 0.370280743]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 50
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 1238737990943802099
-    TagComponent:
-      Tag: Object_7_cell.006
-      tags: []
-    TransformComponent:
-      Location: [-0.776684821, -0.15119727, -1.4244715]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 36
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 7475900003282584524
-    TagComponent:
-      Tag: Object_4.002_cell.007
-      tags: []
-    TransformComponent:
-      Location: [1.80647624, -0.219095424, 0.594969869]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 17
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 11801392819269520108
-    TagComponent:
-      Tag: Object_4.002_cell.008
-      tags: []
-    TransformComponent:
-      Location: [1.91712999, -0.2378304, 0.329090118]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 18
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 12791285546121522751
-    TagComponent:
-      Tag: Object_4.002_cell.009
-      tags: []
-    TransformComponent:
-      Location: [1.17930734, -0.206328958, 0.818342268]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 19
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 3200955398536927194
-    TagComponent:
-      Tag: Object_7.003_cell.004
-      tags: []
-    TransformComponent:
-      Location: [-0.179520145, 0.596070111, 1.17987239]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 24
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 16753085254530989316
-    TagComponent:
-      Tag: Object_7.003_cell.001
-      tags: []
-    TransformComponent:
-      Location: [-0.482262671, -0.2864905, 1.38552248]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 21
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 16533350674623410215
-    TagComponent:
-      Tag: Object_7.005_cell.007
-      tags: []
-    TransformComponent:
-      Location: [0.30880484, 0.711821735, -0.505627155]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 47
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 16690144530622836959
-    TagComponent:
-      Tag: Object_7.003_cell.003
-      tags: []
-    TransformComponent:
-      Location: [-0.789308906, 0.626686633, 1.32003367]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 23
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 1827871846544465255
-    TagComponent:
-      Tag: Object_6_cell.003
-      tags: []
-    TransformComponent:
-      Location: [0.815720737, 0.506429017, 0.772556245]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 53
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 11619392932448021160
-    TagComponent:
-      Tag: Object_7.003_cell.006
-      tags: []
-    TransformComponent:
-      Location: [-1.55562735, 0.226548538, 1.494295]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 26
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 9717884177488251662
-    TagComponent:
-      Tag: Object_7.003_cell.007
-      tags: []
-    TransformComponent:
-      Location: [-1.0127157, 0.144162446, 1.47614193]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 27
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 2048885906834050355
-    TagComponent:
-      Tag: Object_7_cell.001
-      tags: []
-    TransformComponent:
-      Location: [-0.276717097, 0.264728755, -1.19023442]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 31
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 10690649320477645805
-    TagComponent:
-      Tag: Object_7.003_cell.008
-      tags: []
-    TransformComponent:
-      Location: [-0.0351457447, 0.0153535604, 1.27272058]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 28
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 8117950972924433738
-    TagComponent:
-      Tag: Object_7.003_cell.009
-      tags: []
-    TransformComponent:
-      Location: [-1.34367025, 0.295254648, 1.43916845]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 29
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 14715537799526363313
-    TagComponent:
-      Tag: Object_7_cell
-      tags: []
-    TransformComponent:
-      Location: [-0.274364293, -0.31387803, -1.358922]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 30
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 1215730330991091902
-    TagComponent:
-      Tag: Object_7_cell.002
-      tags: []
-    TransformComponent:
-      Location: [-1.51276827, 0.473824948, -1.46206057]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 32
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 15235049746339786420
-    TagComponent:
-      Tag: Object_7_cell.003
-      tags: []
-    TransformComponent:
-      Location: [-1.19162965, 0.645779133, -1.37883234]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 33
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 3474156533626547778
-    TagComponent:
-      Tag: Object_7.005_cell.004
-      tags: []
-    TransformComponent:
-      Location: [-0.839182138, 0.325234711, 0.452877104]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 44
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 1098729483112058318
-    TagComponent:
-      Tag: Object_7_cell.004
-      tags: []
-    TransformComponent:
-      Location: [-0.65918237, 0.565217793, -1.30875897]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 34
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 5903395014503880734
-    TagComponent:
-      Tag: Object_7_cell.007
-      tags: []
-    TransformComponent:
-      Location: [-0.00847470015, -0.227989614, -1.24341846]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 37
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 9249477095058220387
-    TagComponent:
-      Tag: Object_7_cell.005
-      tags: []
-    TransformComponent:
-      Location: [0.0477428809, 0.145671636, -1.25188994]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 35
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 16285123621887726941
-    TagComponent:
-      Tag: Object_7.005_cell.006
-      tags: []
-    TransformComponent:
-      Location: [-0.354979336, 0.418263197, -0.778665543]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 46
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 1389650480147670696
-    TagComponent:
-      Tag: Object_7_cell.008
-      tags: []
-    TransformComponent:
-      Location: [-1.28605962, 0.108626753, -1.47746527]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 38
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 13566768091712868414
-    TagComponent:
-      Tag: Object_6.001_cell.002
-      tags: []
-    TransformComponent:
-      Location: [0.609535277, 0.805842459, -0.566561818]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 57
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 11518564975571372825
-    TagComponent:
-      Tag: Object_7.005_cell
-      tags: []
-    TransformComponent:
-      Location: [0.58249414, 0.752303243, 0.109418198]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 40
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 12219932034483439126
-    TagComponent:
-      Tag: Object_7.005_cell.001
-      tags: []
-    TransformComponent:
-      Location: [-0.501491725, -0.459073097, 0.809755683]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 41
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 403086655185349129
-    TagComponent:
-      Tag: Object_7.005_cell.005
-      tags: []
-    TransformComponent:
-      Location: [0.1829734, 0.511657834, 0.771310925]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 45
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 14349878066744906065
-    TagComponent:
-      Tag: Object_7.005_cell.009
-      tags: []
-    TransformComponent:
-      Location: [-0.775215626, -0.528029025, -0.0266473889]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 49
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 7486212696256660430
-    TagComponent:
-      Tag: Object_6_cell.002
-      tags: []
-    TransformComponent:
-      Location: [0.465588748, 0.385697722, 1.0581789]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 52
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 811253716106147854
-    TagComponent:
-      Tag: Object_6_cell.001
-      tags: []
-    TransformComponent:
-      Location: [0.819042921, 0.313019723, 0.868810296]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 51
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 1361511803973187440
-    TagComponent:
-      Tag: Object_6.001_cell
-      tags: []
-    TransformComponent:
-      Location: [0.976154506, 0.552758813, -0.380656421]
-      Rotation: [0, -0, 0]
-      Scale: [1, 1, 1]
-    HierarchyComponent:
-      ParentHandle: 15761059141868033351
-      Children: []
-    DynamicMeshComponent:
-      DynamicMeshAssetPointerID: 17557257251425637366
-      CastShadow: true
-      Visible: true
-      SubMeshIndex: 55
-      MaterialTable:
-        []
-    MeshColliderComponent:
-      ColliderID: 1462782654630928778
-      IsTrigger: false
-      UseSharedShape: false
-      PhysicsMaterialPointerID: 0
-    RigidBodyComponent:
-      Mass: 1
-      LinearDrag: 0.00999999978
-      AngularDrag: 0.0500000007
-      Gravity: true
-      Type: Dynamic
-      FreezeLocation: [false, false, false]
-      FreezeRotation: [false, false, false]
-      Kinematic: false
-      CollisionDetection: Discrete
-  - Entity: 9206819305822509458
+  - Entity: 1357968342770731801
     TagComponent:
       Tag: Object_6.001_cell.001
       tags: []
@@ -1980,7 +11,7 @@ Entities:
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     HierarchyComponent:
-      ParentHandle: 15761059141868033351
+      ParentHandle: 1674217844734549400
       Children: []
     DynamicMeshComponent:
       DynamicMeshAssetPointerID: 17557257251425637366
@@ -1997,6 +28,7 @@ Entities:
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
       AngularDrag: 0.0500000007
       Gravity: true
       Type: Dynamic
@@ -2004,22 +36,22 @@ Entities:
       FreezeRotation: [false, false, false]
       Kinematic: false
       CollisionDetection: Discrete
-  - Entity: 14443553064592807978
+  - Entity: 10641693367509488847
     TagComponent:
-      Tag: Object_5_cell
+      Tag: Object_7.005_cell.005
       tags: []
     TransformComponent:
-      Location: [1.04612625, 0.602080286, 0.538563728]
+      Location: [0.1829734, 0.511657834, 0.771310925]
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     HierarchyComponent:
-      ParentHandle: 15761059141868033351
+      ParentHandle: 1674217844734549400
       Children: []
     DynamicMeshComponent:
       DynamicMeshAssetPointerID: 17557257251425637366
       CastShadow: true
       Visible: true
-      SubMeshIndex: 60
+      SubMeshIndex: 45
       MaterialTable:
         []
     MeshColliderComponent:
@@ -2030,6 +62,7 @@ Entities:
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
       AngularDrag: 0.0500000007
       Gravity: true
       Type: Dynamic
@@ -2037,7 +70,573 @@ Entities:
       FreezeRotation: [false, false, false]
       Kinematic: false
       CollisionDetection: Discrete
-  - Entity: 12583266268495428481
+  - Entity: 5953942638596754677
+    TagComponent:
+      Tag: Object_4.004_cell
+      tags: []
+    TransformComponent:
+      Location: [1.8608743, 0.119035795, -0.379768103]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 0
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 2955623273107179799
+    TagComponent:
+      Tag: FracturedBird
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: [1674217844734549400]
+  - Entity: 15038738342530721671
+    TagComponent:
+      Tag: Object_6.001_cell.003
+      tags: []
+    TransformComponent:
+      Location: [0.827361703, 0.399559677, -0.871053755]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 58
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 15829504550545432368
+    TagComponent:
+      Tag: Object_7_cell.005
+      tags: []
+    TransformComponent:
+      Location: [0.0477428809, 0.145671636, -1.25188994]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 35
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 1674217844734549400
+    TagComponent:
+      Tag: FracturedBird
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 3.14159274, 0]
+      Scale: [0.5, 0.5, 0.5]
+    HierarchyComponent:
+      ParentHandle: 2955623273107179799
+      Children: [5953942638596754677, 10144730043163192819, 2719568549499103377, 9813259656794742554, 16353820373706441328, 15272690232898597571, 11928505926750260590, 11151643796896919261, 6865527629364333158, 4646529962113281835, 12653196075159630306, 7437707384330223146, 5065572419099105742, 6873491513862600458, 5267731072809819136, 11664896147777432426, 12980729939994167388, 17307060439620090380, 15570661981193693548, 6967262041384019062, 5643158494182310428, 900280070972097188, 16463246684895371571, 14839335249965305538, 4490264862288657879, 7285532116907549036, 9538517711422482320, 10452166521599380602, 8329210147856814598, 3960397083267300607, 12886202538039095209, 12525462952919572737, 12247078875399288864, 583226122870180386, 14215174372759457707, 15829504550545432368, 10332785313236627693, 7246528600067328835, 15314240628481766891, 12389956602619011707, 17138856261736824081, 13485475810960512904, 4553021960221736331, 14701966949145224316, 6463204902758974558, 10641693367509488847, 12462222675336364558, 11884005518224046761, 12335751743862406249, 11591577729355466641, 17865262365773028623, 10828417293255510603, 2847258610755059086, 9644191892596439414, 2410265369375684491, 2637376000222422802, 1357968342770731801, 14463946512151884248, 15038738342530721671, 14906974232122376443, 9919306036573857008, 6177448939471999649, 12995368605006570060, 15832821170603029576, 9463938870128254896, 376456442388140712]
+  - Entity: 14839335249965305538
+    TagComponent:
+      Tag: Object_7.003_cell.003
+      tags: []
+    TransformComponent:
+      Location: [-0.789308906, 0.626686633, 1.32003367]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 23
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 17307060439620090380
+    TagComponent:
+      Tag: Object_4.002_cell.007
+      tags: []
+    TransformComponent:
+      Location: [1.80647624, -0.219095424, 0.594969869]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 17
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 16353820373706441328
+    TagComponent:
+      Tag: Object_4.004_cell.004
+      tags: []
+    TransformComponent:
+      Location: [1.44383526, 0.154590353, -0.66655755]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 4
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 7285532116907549036
+    TagComponent:
+      Tag: Object_7.003_cell.005
+      tags: []
+    TransformComponent:
+      Location: [-0.484996319, 0.221816614, 1.30806971]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 25
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 5065572419099105742
+    TagComponent:
+      Tag: Object_4.002_cell.002
+      tags: []
+    TransformComponent:
+      Location: [1.90275478, -0.211136222, -0.113365926]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 12
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 10144730043163192819
+    TagComponent:
+      Tag: Object_4.004_cell.001
+      tags: []
+    TransformComponent:
+      Location: [1.20223677, 0.149036735, 0.605731249]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 1
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 11664896147777432426
+    TagComponent:
+      Tag: Object_4.002_cell.005
+      tags: []
+    TransformComponent:
+      Location: [1.37743545, -0.230182528, -0.00707963854]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 15
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 2719568549499103377
+    TagComponent:
+      Tag: Object_4.004_cell.002
+      tags: []
+    TransformComponent:
+      Location: [0.668160319, 0.153120577, -1.05906129]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 2
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 11884005518224046761
+    TagComponent:
+      Tag: Object_7.005_cell.007
+      tags: []
+    TransformComponent:
+      Location: [0.30880484, 0.711821735, -0.505627155]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 47
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 9813259656794742554
+    TagComponent:
+      Tag: Object_4.004_cell.003
+      tags: []
+    TransformComponent:
+      Location: [1.75153446, 0.130889714, 0.587738395]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 3
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 15272690232898597571
+    TagComponent:
+      Tag: Object_4.004_cell.005
+      tags: []
+    TransformComponent:
+      Location: [0.999060154, 0.170465514, -1.06697738]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 5
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 6865527629364333158
+    TagComponent:
+      Tag: Object_4.004_cell.008
+      tags: []
+    TransformComponent:
+      Location: [1.77755284, 0.169020563, 0.194439068]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 8
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 11928505926750260590
+    TagComponent:
+      Tag: Object_4.004_cell.006
+      tags: []
+    TransformComponent:
+      Location: [1.74009812, 0.168542251, -0.089108631]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 6
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 6177448939471999649
     TagComponent:
       Tag: Object_5_cell.001
       tags: []
@@ -2046,7 +645,7 @@ Entities:
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     HierarchyComponent:
-      ParentHandle: 15761059141868033351
+      ParentHandle: 1674217844734549400
       Children: []
     DynamicMeshComponent:
       DynamicMeshAssetPointerID: 17557257251425637366
@@ -2063,6 +662,7 @@ Entities:
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
       AngularDrag: 0.0500000007
       Gravity: true
       Type: Dynamic
@@ -2070,7 +670,1469 @@ Entities:
       FreezeRotation: [false, false, false]
       Kinematic: false
       CollisionDetection: Discrete
-  - Entity: 8947061288933499673
+  - Entity: 12525462952919572737
+    TagComponent:
+      Tag: Object_7_cell.001
+      tags: []
+    TransformComponent:
+      Location: [-0.276717097, 0.264728755, -1.19023442]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 31
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 11151643796896919261
+    TagComponent:
+      Tag: Object_4.004_cell.007
+      tags: []
+    TransformComponent:
+      Location: [1.04876328, 0.14201875, -0.689094961]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 7
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 9538517711422482320
+    TagComponent:
+      Tag: Object_7.003_cell.006
+      tags: []
+    TransformComponent:
+      Location: [-1.55562735, 0.226548538, 1.494295]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 26
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 4646529962113281835
+    TagComponent:
+      Tag: Object_4.004_cell.009
+      tags: []
+    TransformComponent:
+      Location: [0.84601593, 0.0591208339, -1.03402889]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 9
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 12653196075159630306
+    TagComponent:
+      Tag: Object_4.002_cell
+      tags: []
+    TransformComponent:
+      Location: [1.24276805, -0.260400176, -0.332040459]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 10
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 7437707384330223146
+    TagComponent:
+      Tag: Object_4.002_cell.001
+      tags: []
+    TransformComponent:
+      Location: [0.96578449, -0.19874607, -0.808664441]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 11
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 17138856261736824081
+    TagComponent:
+      Tag: Object_7.005_cell
+      tags: []
+    TransformComponent:
+      Location: [0.58249414, 0.752303243, 0.109418198]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 40
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 900280070972097188
+    TagComponent:
+      Tag: Object_7.003_cell.001
+      tags: []
+    TransformComponent:
+      Location: [-0.482262671, -0.2864905, 1.38552248]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 21
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 14215174372759457707
+    TagComponent:
+      Tag: Object_7_cell.004
+      tags: []
+    TransformComponent:
+      Location: [-0.65918237, 0.565217793, -1.30875897]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 34
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 10452166521599380602
+    TagComponent:
+      Tag: Object_7.003_cell.007
+      tags: []
+    TransformComponent:
+      Location: [-1.0127157, 0.144162446, 1.47614193]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 27
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 2410265369375684491
+    TagComponent:
+      Tag: Object_6_cell.004
+      tags: []
+    TransformComponent:
+      Location: [0.426071227, 0.731154203, 0.807707608]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 54
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 6873491513862600458
+    TagComponent:
+      Tag: Object_4.002_cell.003
+      tags: []
+    TransformComponent:
+      Location: [1.6223582, -0.16568628, -0.56298846]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 13
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 4553021960221736331
+    TagComponent:
+      Tag: Object_7.005_cell.002
+      tags: []
+    TransformComponent:
+      Location: [0.221118674, -0.58964175, 0.723103523]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 42
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 5267731072809819136
+    TagComponent:
+      Tag: Object_4.002_cell.004
+      tags: []
+    TransformComponent:
+      Location: [1.22040701, -0.229675189, -0.962838829]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 14
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 9644191892596439414
+    TagComponent:
+      Tag: Object_6_cell.003
+      tags: []
+    TransformComponent:
+      Location: [0.815720737, 0.506429017, 0.772556245]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 53
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 12980729939994167388
+    TagComponent:
+      Tag: Object_4.002_cell.006
+      tags: []
+    TransformComponent:
+      Location: [1.50080955, -0.157870412, 0.372281164]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 16
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 6967262041384019062
+    TagComponent:
+      Tag: Object_4.002_cell.009
+      tags: []
+    TransformComponent:
+      Location: [1.17930734, -0.206328958, 0.818342268]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 19
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 15570661981193693548
+    TagComponent:
+      Tag: Object_4.002_cell.008
+      tags: []
+    TransformComponent:
+      Location: [1.91712999, -0.2378304, 0.329090118]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 18
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 5643158494182310428
+    TagComponent:
+      Tag: Object_7.003_cell
+      tags: []
+    TransformComponent:
+      Location: [-0.730634749, 0.793379247, 1.29914367]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 20
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 16463246684895371571
+    TagComponent:
+      Tag: Object_7.003_cell.002
+      tags: []
+    TransformComponent:
+      Location: [-1.39910722, 0.688620448, 1.41278005]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 22
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 4490264862288657879
+    TagComponent:
+      Tag: Object_7.003_cell.004
+      tags: []
+    TransformComponent:
+      Location: [-0.179520145, 0.596070111, 1.17987239]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 24
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 8329210147856814598
+    TagComponent:
+      Tag: Object_7.003_cell.008
+      tags: []
+    TransformComponent:
+      Location: [-0.0351457447, 0.0153535604, 1.27272058]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 28
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 3960397083267300607
+    TagComponent:
+      Tag: Object_7.003_cell.009
+      tags: []
+    TransformComponent:
+      Location: [-1.34367025, 0.295254648, 1.43916845]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 29
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 12886202538039095209
+    TagComponent:
+      Tag: Object_7_cell
+      tags: []
+    TransformComponent:
+      Location: [-0.274364293, -0.31387803, -1.358922]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 30
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 12247078875399288864
+    TagComponent:
+      Tag: Object_7_cell.002
+      tags: []
+    TransformComponent:
+      Location: [-1.51276827, 0.473824948, -1.46206057]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 32
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 583226122870180386
+    TagComponent:
+      Tag: Object_7_cell.003
+      tags: []
+    TransformComponent:
+      Location: [-1.19162965, 0.645779133, -1.37883234]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 33
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 13485475810960512904
+    TagComponent:
+      Tag: Object_7.005_cell.001
+      tags: []
+    TransformComponent:
+      Location: [-0.501491725, -0.459073097, 0.809755683]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 41
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 12335751743862406249
+    TagComponent:
+      Tag: Object_7.005_cell.008
+      tags: []
+    TransformComponent:
+      Location: [-0.679285169, -0.35103476, -0.661398232]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 48
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 10332785313236627693
+    TagComponent:
+      Tag: Object_7_cell.006
+      tags: []
+    TransformComponent:
+      Location: [-0.776684821, -0.15119727, -1.4244715]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 36
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 7246528600067328835
+    TagComponent:
+      Tag: Object_7_cell.007
+      tags: []
+    TransformComponent:
+      Location: [-0.00847470015, -0.227989614, -1.24341846]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 37
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 15314240628481766891
+    TagComponent:
+      Tag: Object_7_cell.008
+      tags: []
+    TransformComponent:
+      Location: [-1.28605962, 0.108626753, -1.47746527]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 38
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 12389956602619011707
+    TagComponent:
+      Tag: Object_7_cell.009
+      tags: []
+    TransformComponent:
+      Location: [-0.325043321, 0.38490063, -1.31237674]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 39
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 9919306036573857008
+    TagComponent:
+      Tag: Object_5_cell
+      tags: []
+    TransformComponent:
+      Location: [1.04612625, 0.602080286, 0.538563728]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 60
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 14701966949145224316
+    TagComponent:
+      Tag: Object_7.005_cell.003
+      tags: []
+    TransformComponent:
+      Location: [0.553529382, -0.603417635, -0.18892096]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 43
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 6463204902758974558
+    TagComponent:
+      Tag: Object_7.005_cell.004
+      tags: []
+    TransformComponent:
+      Location: [-0.839182138, 0.325234711, 0.452877104]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 44
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 12462222675336364558
+    TagComponent:
+      Tag: Object_7.005_cell.006
+      tags: []
+    TransformComponent:
+      Location: [-0.354979336, 0.418263197, -0.778665543]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 46
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 11591577729355466641
+    TagComponent:
+      Tag: Object_7.005_cell.009
+      tags: []
+    TransformComponent:
+      Location: [-0.775215626, -0.528029025, -0.0266473889]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 49
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 17865262365773028623
+    TagComponent:
+      Tag: Object_6_cell
+      tags: []
+    TransformComponent:
+      Location: [0.778236508, 0.75027895, 0.370280743]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 50
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 10828417293255510603
+    TagComponent:
+      Tag: Object_6_cell.001
+      tags: []
+    TransformComponent:
+      Location: [0.819042921, 0.313019723, 0.868810296]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 51
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 2847258610755059086
+    TagComponent:
+      Tag: Object_6_cell.002
+      tags: []
+    TransformComponent:
+      Location: [0.465588748, 0.385697722, 1.0581789]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 52
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 2637376000222422802
+    TagComponent:
+      Tag: Object_6.001_cell
+      tags: []
+    TransformComponent:
+      Location: [0.976154506, 0.552758813, -0.380656421]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 55
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 14463946512151884248
+    TagComponent:
+      Tag: Object_6.001_cell.002
+      tags: []
+    TransformComponent:
+      Location: [0.609535277, 0.805842459, -0.566561818]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 57
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 14906974232122376443
+    TagComponent:
+      Tag: Object_6.001_cell.004
+      tags: []
+    TransformComponent:
+      Location: [0.418437093, 0.547707558, -0.980225503]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 1674217844734549400
+      Children: []
+    DynamicMeshComponent:
+      DynamicMeshAssetPointerID: 17557257251425637366
+      CastShadow: true
+      Visible: true
+      SubMeshIndex: 59
+      MaterialTable:
+        []
+    MeshColliderComponent:
+      ColliderID: 1462782654630928778
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Dynamic
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 12995368605006570060
     TagComponent:
       Tag: Object_5_cell.002
       tags: []
@@ -2079,7 +2141,7 @@ Entities:
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     HierarchyComponent:
-      ParentHandle: 15761059141868033351
+      ParentHandle: 1674217844734549400
       Children: []
     DynamicMeshComponent:
       DynamicMeshAssetPointerID: 17557257251425637366
@@ -2096,6 +2158,7 @@ Entities:
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
       AngularDrag: 0.0500000007
       Gravity: true
       Type: Dynamic
@@ -2103,7 +2166,7 @@ Entities:
       FreezeRotation: [false, false, false]
       Kinematic: false
       CollisionDetection: Discrete
-  - Entity: 477984386917979733
+  - Entity: 15832821170603029576
     TagComponent:
       Tag: Object_5.001_cell
       tags: []
@@ -2112,7 +2175,7 @@ Entities:
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     HierarchyComponent:
-      ParentHandle: 15761059141868033351
+      ParentHandle: 1674217844734549400
       Children: []
     DynamicMeshComponent:
       DynamicMeshAssetPointerID: 17557257251425637366
@@ -2129,6 +2192,7 @@ Entities:
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
       AngularDrag: 0.0500000007
       Gravity: true
       Type: Dynamic
@@ -2136,7 +2200,7 @@ Entities:
       FreezeRotation: [false, false, false]
       Kinematic: false
       CollisionDetection: Discrete
-  - Entity: 2523202446055514997
+  - Entity: 9463938870128254896
     TagComponent:
       Tag: Object_5.001_cell.001
       tags: []
@@ -2145,7 +2209,7 @@ Entities:
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     HierarchyComponent:
-      ParentHandle: 15761059141868033351
+      ParentHandle: 1674217844734549400
       Children: []
     DynamicMeshComponent:
       DynamicMeshAssetPointerID: 17557257251425637366
@@ -2162,6 +2226,7 @@ Entities:
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
       AngularDrag: 0.0500000007
       Gravity: true
       Type: Dynamic
@@ -2169,7 +2234,7 @@ Entities:
       FreezeRotation: [false, false, false]
       Kinematic: false
       CollisionDetection: Discrete
-  - Entity: 7350487348498418335
+  - Entity: 376456442388140712
     TagComponent:
       Tag: Object_5.001_cell.002
       tags: []
@@ -2178,7 +2243,7 @@ Entities:
       Rotation: [0, -0, 0]
       Scale: [1, 1, 1]
     HierarchyComponent:
-      ParentHandle: 15761059141868033351
+      ParentHandle: 1674217844734549400
       Children: []
     DynamicMeshComponent:
       DynamicMeshAssetPointerID: 17557257251425637366
@@ -2195,6 +2260,7 @@ Entities:
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
       AngularDrag: 0.0500000007
       Gravity: true
       Type: Dynamic

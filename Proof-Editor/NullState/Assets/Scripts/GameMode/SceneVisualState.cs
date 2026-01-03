@@ -48,5 +48,11 @@ namespace NullState
 
             GlitchyMaterial.SetInput("u_MaterialUniform.TimeScalee", Mathf.Sin(Application.GetTime()));
         }
+
+
+        void InitilizeTaskManager()
+        {
+
+        }
     }
 }

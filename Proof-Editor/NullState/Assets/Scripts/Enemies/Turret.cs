@@ -34,18 +34,24 @@ namespace NullState
         bool LockedOnPlayer => m_LockOnPlayer > WaitTimeBeforeShoot;
         float m_TimeSinceLastShot;
 
+        MeshComponent m_MeshComponent;
         void OnCreate()
         {
             InvokeRepeat(SphereCheck, 1.0f);
+
+
+            m_MeshComponent = GetComponentInHierarchy<MeshComponent>();
+            m_MeshComponent.Visible = false;
             m_TimeSinceLastShot = (FireRate) * 2; // want it to be 100% ready to fire on first shot
         }
 
+
         void OnUpdate(float deltaTime)
         {
+            
             m_TimeSinceLastShot += deltaTime;
             LookAtTarget(deltaTime);
             Shoot();
-
 
         }
         void LookAtTarget(float deltaTime)
@@ -55,7 +61,6 @@ namespace NullState
                 m_LockOnPlayer = 0.0f;
                 return;
             }
-
 
             Vector3 direction = (m_Target.Transform.Location - Transform.Location).Normalized;
 
@@ -111,7 +116,12 @@ namespace NullState
             if (entities.Length == 0)
             {
                 if(m_Target != null)
+                {
                     Log.Trace("Target Lost: " + m_Target.Name);
+                    m_MeshComponent.Visible = false;
+                    World.GetAllEntitiesWithScript<GlitchManager>()[0].GetScript<GlitchManager>().QueueGlitch(this);
+                    
+                }
 
                 m_Target = null;
                 return;
@@ -125,12 +135,24 @@ namespace NullState
                         return;
                     m_Target = entity;
                     Log.Trace("Target Acquired: " + m_Target.Name);
+
+                    if(m_MeshComponent.Visible == false)
+                    {
+                        World.GetAllEntitiesWithScript<GlitchManager>()[0].GetScript<GlitchManager>().QueueGlitch(this);
+                        m_MeshComponent.Visible = true;
+                    }
+
                     return;
                 }
             }
 
             if (m_Target != null)
+            {
+                m_MeshComponent.Visible = false;
+                World.GetAllEntitiesWithScript<GlitchManager>()[0].GetScript<GlitchManager>().QueueGlitch(this);
+
                 Log.Trace("Target Lost: " + m_Target.Name);
+            }
 
             m_Target = null;
         }

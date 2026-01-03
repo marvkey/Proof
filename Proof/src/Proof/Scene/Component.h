@@ -191,6 +191,35 @@ namespace Proof
 			MathResource::DecomposeTransform(transform, Location, Rotation, Scale);
 			RotationEuler = glm::eulerAngles(Rotation);
 		}
+
+		// Sets the forward direction and updates rotation
+		void SetFowardVector(const glm::vec3& forward)
+		{
+			glm::vec3 f = glm::normalize(forward);
+			glm::quat lookRot = glm::quatLookAt(f, Math::GetUpVector());
+			SetRotation(lookRot);
+		}
+
+		// Sets the up direction and updates rotation
+		void SetUpVector(const glm::vec3& up)
+		{
+			glm::vec3 forward = GetFowardVector();
+			glm::vec3 f = glm::normalize(forward);
+			glm::vec3 u = glm::normalize(up);
+			glm::vec3 right = glm::normalize(glm::cross(u, f));
+			glm::mat3 rot(right, u, f);
+			SetRotation(glm::quat_cast(rot));
+		}
+
+		// Sets the right direction and updates rotation
+		void SetRightVector(const glm::vec3& right)
+		{
+			glm::vec3 r = glm::normalize(right);
+			glm::vec3 up = GetUpVector();
+			glm::vec3 f = glm::normalize(glm::cross(r, up));
+			glm::mat3 rot(r, up, f);
+			SetRotation(glm::quat_cast(rot));
+		}
 	private:
 
 		//from cherno
@@ -616,6 +645,8 @@ namespace Proof
 
 			return -1;
 		}
+
+		void AddScript(const std::string& classFullname);
 		const std::vector<ScriptComponentsClassesData>& GetScriptMetadates() const { return ScriptMetadates; }
 	private:
 		std::vector<ScriptComponentsClassesData> ScriptMetadates = {};
@@ -812,6 +843,13 @@ namespace Proof
 
 		Count<class MaterialTable> Materials;
 	};
+
+	struct BoidFlockComponent
+	{
+		BoidFlockComponent();
+		BoidFlockComponent(const BoidFlockComponent&);
+		Count< class BoidFlock> Flock;
+	};
 	template<class ... Component>
 	struct ComponentGroup {
 
@@ -821,7 +859,7 @@ namespace Proof
 		MeshComponent,DynamicMeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent, CharacterControllerComponent,
 		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent, RigidBodyComponent, // rigid body should be here due to if we spawn entity we want to check if it has any collider then we add rigidbody on it
 		ScriptComponent, TextComponent,PlayerStartComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent, AudioListenerComponent,
-		WaterComponent, BuoyancyComponent, TerrainComponent, WorldHUDComponent, PostProcessVolumeComponent>;
+		WaterComponent, BuoyancyComponent, TerrainComponent, WorldHUDComponent, PostProcessVolumeComponent, BoidFlockComponent>;
 	
 
 	using LightComponnet = ComponentGroup<SkyLightComponent, DirectionalLightComponent, PointLightComponent, SpotLightComponent>;

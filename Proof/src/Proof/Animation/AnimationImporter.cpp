@@ -66,6 +66,11 @@ namespace Proof
 		}
 		void TraverseBone(aiNode* node, SkeletonData* skeleton, uint32_t parentIndex)
 		{
+			if (!m_Bones.contains(node->mName.C_Str()))
+			{
+				PF_EC_ERROR("Does not conain Bone {} ",node->mName.C_Str());
+				return;
+			}
 			// Ensure this node is actually a bone
 			PF_CORE_ASSERT(m_Bones.contains(node->mName.C_Str()));
 
@@ -202,7 +207,7 @@ namespace Proof
 
 			RightArm
 
-		Each of these bones moves over time in an animation — that's a channel.
+		Each of these bones moves over time in an animation ï¿½ that's a channel.
 
 		So:
 
@@ -369,9 +374,9 @@ namespace Proof
 			/*(
 				The prevFrameTime is used to optimize forward playback of animations.
 				When you later sample or blend keyframes during animation playback, this gives you a hint:
-				“The last key was at time X — start looking from there.”
+				ï¿½The last key was at time X ï¿½ start looking from there.ï¿½
 
-				At -1.0f It's just a sentinel value — a special value that means:
+				At -1.0f It's just a sentinel value ï¿½ a special value that means:
 				"This is the first keyframe in this channel."
 			*/
 

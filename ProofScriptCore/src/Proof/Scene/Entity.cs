@@ -72,9 +72,21 @@ namespace Proof
                     m_TransformComponent = GetComponent<TransformComponent>();
 
                 return m_TransformComponent.WorldTransform;
+
             }
         }
+        public TransferMatrix4 WorldTransformMatrix
+        {
+            get
+            {
+                if (m_TransformComponent == null)
+                    m_TransformComponent = GetComponent<TransformComponent>();
 
+                return m_TransformComponent.WorldTransformMatrix;
+
+            }
+        }
+       
         public TransformComponent Transform
         {
             get
@@ -197,10 +209,41 @@ namespace Proof
 
 			T component = new T() { Entity = this };
 			return component;
-		} 
+		}
+
+        public T GetComponentInHierarchy<T>() where T : Component, new ()
+        {
+            var component = GetComponent<T>();
+            if (component != null)
+                return component;
+
+            var children = GetChildren();
+            if (children == null)
+                return null;
+
+            foreach (var child in children)
+            {
+                if (child == null)
+                    continue;
+
+                var found = child.GetComponentInHierarchy<T>();
+                if (found != null)
+                    return found;
+            }
+
+            return null;
+        }
         public T GetScript<T>() where T : Entity, new()
         {
             object instance = InternalCalls.GetScriptInstance(ID, typeof(T).FullName);
+            if(instance == null)
+                return null;
+            return instance as T;
+        }
+
+        public T AddScript<T>() where T : Entity, new()
+        {
+            object instance = InternalCalls.AddScriptInstance(ID, typeof(T).FullName);
             if(instance == null)
                 return null;
             return instance as T;
@@ -211,12 +254,62 @@ namespace Proof
             return GetScript<T>() != null;
         }
 
+        public T GetScriptInChildren<T>() where T : Entity, new()
+        {
+            // Check if this entity has the script
+            if (HasScript<T>())
+                return GetScript<T>();
+
+            // Get all direct children
+            Entity[] children = GetChildren();
+
+            // Recursively check children and their descendants
+            foreach (var child in children)
+            {
+                if (child.HasScript<T>())
+                    return child.GetScript<T>();
+
+                // Recurse deeper into the hierarchy
+                var found = child.GetScriptInChildren<T>();
+                if (found != null)
+                    return found;
+            }
+
+            // None found
+            return null;
+        }
+        
         public T GetScriptInstance<T>() where T : Entity, new()
         {
             object instance = InternalCalls.GetScriptInstanceOfType(ID, typeof(T).FullName);
             if (instance == null)
                 return null;
             return instance as T;
+        }
+        
+        public T GetScriptInstanceInChildren<T>() where T : Entity, new()
+        {
+            // Check this entity first
+            if (HasScriptInstance<T>())
+                return GetScriptInstance<T>();
+
+            // Get direct children
+            Entity[] children = GetChildren();
+
+            // Recursively check children
+            foreach (var child in children)
+            {
+                if (child.HasScriptInstance<T>())
+                    return child.GetScriptInstance<T>();
+
+                // Recurse deeper
+                var found = child.GetScriptInstanceInChildren<T>();
+                if (found != null)
+                    return found;
+            }
+
+            // None found in this branch
+            return null;
         }
 
         public bool HasScriptInstance<T>() where T : Entity, new()

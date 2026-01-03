@@ -13,6 +13,8 @@ Emitters:
       EmitterPosition: [1, 1, 1]
       FadeOutSpeed: 0.5
       EmitterPrevPosition: [1, 1, 1]
+    Bursts:
+      []
     Emission:
       ParticlesPerSecond: 300
       ParticlesPerDistance: 0

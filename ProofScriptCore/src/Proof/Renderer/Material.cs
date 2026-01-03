@@ -88,8 +88,8 @@ namespace Proof
             if (!InternalCalls.Material_HasTexture(m_Material.ID.ToUInt64(), m_Name))
             {
                 Log.Error($"MaterialVariable.GetTexture failed: Material does not contain texture '{m_Name}'");
-                return null;
-            }
+                return null; 
+            } 
 
             return m_Material.GetTexture(m_Name);
         }

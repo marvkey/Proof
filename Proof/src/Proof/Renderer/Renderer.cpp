@@ -37,7 +37,8 @@ namespace Proof {
 
 	/*
 	*Adding `mutable` to the lambda capture list is necessary when you want to modify variables captured by value within a lambda function. 
-	In your code, you have a lambda function that captures the `instance` variable, among others. The `mutable` keyword allows you to modify these captured variables within the lambda, even if the lambda itself is declared as a `const` or if the lambda is called on a `const` instance.
+	In your code, you have a lambda function that captures the `instance` variable, among others.
+	The `mutable` keyword allows you to modify these captured variables within the lambda, even if the lambda itself is declared as a `const` or if the lambda is called on a `const` instance.
 
 	In your case, by adding `mutable`, you've indicated that the lambda should be allowed to modify the `instance` variable, 
 	and this change has resolved the crash. Without `mutable`, the lambda captures variables by value, 
@@ -286,12 +287,14 @@ namespace Proof {
 		RendererLoadShader("ParticleSystemUpdateCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ParticleSystem/ParticleSystemUpdateCompute.glsl");
 		RendererLoadShader("ParticleSystemRenderer", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/ParticleSystem/ParticleRenderer.glsl");
 
-
+		// boid
+		
+		RendererLoadShader("BoidCompute", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/BoidComputePass.glsl");
 
 		s_Data->RenderCommandBuffer = RenderCommandBuffer::Create("RendererCommandBuffer");
 		Renderer::BeginCommandBuffer(s_Data->RenderCommandBuffer);
 		SamplerFactory::Init();
-		s_BaseTextures = pnew BaseTextures();
+		s_BaseTextures = pnew BaseTextures();	
 
 		{
 			TemporalBlueNoise& blueNoise = s_Data->BlueNoiseSpp1Data;

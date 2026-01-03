@@ -174,8 +174,10 @@ namespace Proof
 		void SubmitPointLight(const SBPointLightSceneData& pointLights);
 		void SubmitSpotLight(const SBSpotLightSceneData& spotLights);
 		void SubmitMesh(Count<Mesh> mesh, Count<RenderMaterial> renderMaterial, const glm::mat4& transform, bool CastShadowws = true);
+		void SubmitMesh(Count<Mesh> mesh, uint32_t subMeshIndex,Count<RenderMaterial> renderMaterial, const glm::mat4& transform, bool CastShadowws = true);
 		void SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws = true);
 		void SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<MaterialTable> materialTable, uint32_t subMeshIndex, const glm::mat4& transform, bool CastShadowws = true, const std::vector<glm::mat4>& boneTransforms = {});
+		void SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<RenderMaterial> renderMaterial, uint32_t subMeshIndex, const glm::mat4& transform, bool CastShadowws = true, const std::vector<glm::mat4>& boneTransforms = {});
 
 		void SubmitPhysicsDebugMesh(Count<Mesh> mesh, const glm::mat4& transform);
 		void SubmitPhysicsDynamicDebugMesh(Count<DynamicMesh> mesh, uint32_t subMeshIndex, const glm::mat4& transform);
@@ -306,6 +308,7 @@ namespace Proof
 		std::map<MeshKey, MeshDrawInfo> m_TransparentMeshDrawList;
 
 		std::unordered_map<Count<class Shader>,std::map<MeshKey, MeshDrawInfo>> m_GeometryPassInstancesDrawList; // shaderName
+		std::unordered_map<Count<class Shader>,std::map<MeshKey, DynamicMeshDrawInfo>> m_GeometryPassDynamicMeshInstancesDrawList; // shaderName
 
 		Count<class Environment> m_Environment;
 		bool m_InContext = false;

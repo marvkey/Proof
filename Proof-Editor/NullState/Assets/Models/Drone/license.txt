@@ -1,0 +1,11 @@
+Model Information:
+* title:	D.S.E.V. Drone
+* source:	https://sketchfab.com/3d-models/dsev-drone-edf5ca5bd9f1459c81d8acc672c5a389
+* author:	Mxk (https://sketchfab.com/Mxk)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "D.S.E.V. Drone" (https://sketchfab.com/3d-models/dsev-drone-edf5ca5bd9f1459c81d8acc672c5a389) by Mxk (https://sketchfab.com/Mxk) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

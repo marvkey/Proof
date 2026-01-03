@@ -17,12 +17,18 @@ Assets:
   - Asset: 2892619565570009721
     Type: Material
     Path: MeshResources\glTF\Sponza UnnamedMaterial (08).Material.ProofAsset
-  - Asset: 11824846558633893989
+  - Asset: 7295989052997219484
     Type: Texture
-    Path: HdrMaps\Arches_E_PineTree_3k.hdr
+    Path: Models\Football\textures\football_Roughness.png
   - Asset: 1165648952014580025
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\755318871556304029.jpg
+  - Asset: 11824846558633893989
+    Type: Texture
+    Path: HdrMaps\Arches_E_PineTree_3k.hdr
+  - Asset: 3569097684381116429
+    Type: Mesh
+    Path: Meshes\CratesBox.Mesh.ProofAsset
   - Asset: 2001942831744342266
     Type: Texture
     Path: HdrMaps\MegaSun4k.hdr
@@ -35,6 +41,9 @@ Assets:
   - Asset: 16726134267773242065
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\16299174074766089871.jpg
+  - Asset: 3502908560644689593
+    Type: MeshSourceFile
+    Path: Models\backpack\backpack.obj
   - Asset: 1566124166730254362
     Type: Texture
     Path: HdrMaps\DayInTheClouds4k.hdr
@@ -86,6 +95,9 @@ Assets:
   - Asset: 7694377061340339865
     Type: Texture
     Path: Models\SponzaObj\textures\lion2_ddn.tga
+  - Asset: 13505915277457817604
+    Type: Texture
+    Path: Models\Batman\textures\T_M_MED_Cavern_Armored_Body_D.png
   - Asset: 223673641344993874
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2051777328469649772.jpg
@@ -107,6 +119,9 @@ Assets:
   - Asset: 4966515647719611056
     Type: Texture
     Path: TexturesMaps\rustediron1-alt2-bl\rustediron2_roughness.png
+  - Asset: 10692590996995499768
+    Type: Texture
+    Path: Models\backpack\diffuse.jpg
   - Asset: 5196410077587065318
     Type: Texture
     Path: Models\Cerberus_by_Andrew_Maximov\Textures\Raw\Cerberus_UV.tga
@@ -143,6 +158,9 @@ Assets:
   - Asset: 4452809211143330653
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\12501374198249454378.jpg
+  - Asset: 5068643207735314210
+    Type: Texture
+    Path: ..\..\..\..\..\..\..\S.A.M_Studio\Desktop\Project Car\Dodge\Texturing\Wheel.001.png
   - Asset: 3471092537680981683
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13196865903111448057.jpg
@@ -161,6 +179,9 @@ Assets:
   - Asset: 174992091033950330
     Type: ScriptFile
     Path: Script\Demos\AltoAdventures\SceneController.cs
+  - Asset: 17883839976339577045
+    Type: MeshSourceFile
+    Path: Models\crates2\source\Wood_Box.obj
   - Asset: 5914562122218714052
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\14650633544276105767.jpg
@@ -176,12 +197,12 @@ Assets:
   - Asset: 4726010682691345928
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\16885566240357350108.jpg
-  - Asset: 12273592198299883054
-    Type: Material
-    Path: MeshResources\glTF\Sponza UnnamedMaterial (14).Material.ProofAsset
   - Asset: 8944740075545851800
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\17556969131407844942.jpg
+  - Asset: 12273592198299883054
+    Type: Material
+    Path: MeshResources\glTF\Sponza UnnamedMaterial (14).Material.ProofAsset
   - Asset: 9718947252793965124
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\17876391417123941155.jpg
@@ -242,6 +263,9 @@ Assets:
   - Asset: 1028768937145540223
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\332936164838540657.jpg
+  - Asset: 4341390727802434251
+    Type: Texture
+    Path: Models\backpack\normal.png
   - Asset: 18022093917908328079
     Type: Texture
     Path: TexturesMaps\brick-wall-bl\brick-wall_metallic.png
@@ -302,6 +326,9 @@ Assets:
   - Asset: 13994665151775855675
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\5823059166183034438.jpg
+  - Asset: 6828262984481598351
+    Type: Texture
+    Path: Models\Car\textures\Dodge.png
   - Asset: 13866412923197075697
     Type: Material
     Path: Materials\m_BloomYellow.Material.ProofAsset
@@ -413,6 +440,9 @@ Assets:
   - Asset: 6092132128746249896
     Type: Texture
     Path: MeshCollider\images.jpg
+  - Asset: 1701136218347989778
+    Type: World
+    Path: Scenes\Youtube.ProofWorld
   - Asset: 5412365953404524970
     Type: PhysicsMaterial
     Path: PhysicsMaterial\BouncyMaterial.PhysicsMaterial.ProofAsset
@@ -431,6 +461,9 @@ Assets:
   - Asset: 17754158434779396922
     Type: Prefab
     Path: Prefab\New Prefab.Prefab.ProofAsset
+  - Asset: 3753138374564548584
+    Type: Material
+    Path: Materials\BLUE.Material.ProofAsset
   - Asset: 14983098330679523653
     Type: Material
     Path: Materials\Red.Material.ProofAsset
@@ -455,6 +488,9 @@ Assets:
   - Asset: 5214277807533021923
     Type: Texture
     Path: Models\Cerberus_by_Andrew_Maximov\Textures\Cerberus_M.tga
+  - Asset: 14514108685430737209
+    Type: Mesh
+    Path: Meshes\Proof.Mesh.ProofAsset
   - Asset: 17140777671652420178
     Type: Texture
     Path: Models\Cerberus_by_Andrew_Maximov\Textures\Cerberus_N.tga
@@ -467,12 +503,18 @@ Assets:
   - Asset: 5921384776833615366
     Type: Texture
     Path: TexturesMaps\brick-wall-bl\brick-wall_albedo.png
+  - Asset: 16962195204824404614
+    Type: Texture
+    Path: ..\..\..\..\..\..\..\S.A.M_Studio\Desktop\Project Car\Dodge\Texturing\Dodge.png
   - Asset: 3743909219085228446
     Type: Texture
     Path: TexturesMaps\brick-wall-bl\brick-wall_ao.png
   - Asset: 13622034852740947642
     Type: Texture
     Path: TexturesMaps\brick-wall-bl\brick-wall_normal-ogl.png
+  - Asset: 12812740607986450960
+    Type: Texture
+    Path: Models\backpack\specular.jpg
   - Asset: 12857925597736787672
     Type: Texture
     Path: TexturesMaps\brick-wall-bl\brick-wall_preview.jpg
@@ -485,6 +527,9 @@ Assets:
   - Asset: 9012391714592976836
     Type: Texture
     Path: TexturesMaps\heavily-rusted-metal-ue\heavily-rusted-metal_metallic.png
+  - Asset: 3605007682410639877
+    Type: Material
+    Path: Mesh\New Material (01).Material.ProofAsset
   - Asset: 1389422389927926979
     Type: Texture
     Path: TexturesMaps\heavily-rusted-metal-ue\heavily-rusted-metal_normal-dx.png
@@ -494,6 +539,9 @@ Assets:
   - Asset: 14460477121805554759
     Type: Texture
     Path: TexturesMaps\red-brick2-ue\red-bricks2_ao.png
+  - Asset: 4273423002025621342
+    Type: Texture
+    Path: Models\Batmobile\textures\MMRB55.jpg
   - Asset: 10860352099319054299
     Type: Texture
     Path: TexturesMaps\red-brick2-ue\red-bricks2_height.png
@@ -605,6 +653,9 @@ Assets:
   - Asset: 17798294371990991790
     Type: Texture
     Path: Models\SponzaObj\textures\sponza_column_b_diff.tga
+  - Asset: 2296128115596047905
+    Type: Texture
+    Path: Models\Football\textures\football_Base_Color.png
   - Asset: 6851602968551319577
     Type: Texture
     Path: Models\SponzaObj\textures\sponza_roof_ddn.tga
@@ -632,6 +683,9 @@ Assets:
   - Asset: 16856014238689204343
     Type: Texture
     Path: Models\SponzaObj\textures\sponza_fabric_ddn.tga
+  - Asset: 3043998440655398153
+    Type: MeshSourceFile
+    Path: Models\Batman\source\FN Armored Batman Alt Cape.fbx
   - Asset: 10274256864311577583
     Type: Texture
     Path: Models\SponzaObj\textures\sponza_flagpole_ddn.tga
@@ -686,6 +740,9 @@ Assets:
   - Asset: 6908004824489380050
     Type: Material
     Path: MeshResources\glTF\Sponza UnnamedMaterial (10).Material.ProofAsset
+  - Asset: 13635081845488536444
+    Type: Material
+    Path: Meshes\m_PRoof.Material.ProofAsset
   - Asset: 6802028926887944600
     Type: Material
     Path: MeshResources\glTF\Sponza UnnamedMaterial (11).Material.ProofAsset
@@ -722,6 +779,9 @@ Assets:
   - Asset: 12205783108969511215
     Type: MeshSourceFile
     Path: Models\vampire\dancing_vampire.dae
+  - Asset: 15878543512907879731
+    Type: Texture
+    Path: Models\Batman\textures\T_M_MED_Cavern_Backpack_N.png
   - Asset: 15050938010388068018
     Type: Material
     Path: MeshResources\SponzaObj\chain.Material.ProofAsset
@@ -749,6 +809,12 @@ Assets:
   - Asset: 10429872743785781806
     Type: Material
     Path: MeshResources\SponzaObj\details.Material.ProofAsset
+  - Asset: 4624657614690934252
+    Type: Material
+    Path: Materials\m_Green.Material.ProofAsset
+  - Asset: 18421157745623981703
+    Type: Material
+    Path: Materials\BLACK.Material.ProofAsset
   - Asset: 12546305359085022069
     Type: Material
     Path: MeshResources\SponzaObj\fabric_c.Material.ProofAsset
@@ -788,9 +854,15 @@ Assets:
   - Asset: 2590303111819537873
     Type: Mesh
     Path: Mesh\TestSponza.Mesh.ProofAsset
+  - Asset: 1038065123750893823
+    Type: Texture
+    Path: Models\Batman\textures\T_M_MED_Cavern_Armored_Body_N.png
   - Asset: 5013333249053124386
     Type: Texture
     Path: Models\vampire\textures\Vampire_emission.png
+  - Asset: 4361968912782375708
+    Type: Texture
+    Path: Models\Batman\textures\T_M_MED_Cavern_Armored_Head_N.png
   - Asset: 17060776473028672473
     Type: Texture
     Path: Models\vampire\textures\Vampire_diffuse.png
@@ -809,3 +881,108 @@ Assets:
   - Asset: 16271617679080287219
     Type: ParticleSystem
     Path: New ParticleSystem (01).ParticleSystem.ProofAsset
+  - Asset: 4623808136090387581
+    Type: World
+    Path: Scenes\sponza.ProofWorld
+  - Asset: 5511696431678642687
+    Type: Texture
+    Path: Models\backpack\ao.jpg
+  - Asset: 12515752861504350920
+    Type: Texture
+    Path: Models\backpack\roughness.jpg
+  - Asset: 42995991951681913
+    Type: Mesh
+    Path: Meshes\Backpack.Mesh.ProofAsset
+  - Asset: 5451319788110331518
+    Type: Material
+    Path: Materials\m_Backpack.Material.ProofAsset
+  - Asset: 17700368041135356794
+    Type: MeshSourceFile
+    Path: Models\Homer\scene.gltf
+  - Asset: 6743126212257938792
+    Type: Mesh
+    Path: Meshes\Homer.Mesh.ProofAsset
+  - Asset: 9940712068231345998
+    Type: Texture
+    Path: Models\Batman\textures\T_M_MED_Cavern_Armored_Head_D.png
+  - Asset: 14712155538307909746
+    Type: Texture
+    Path: Models\Batman\textures\T_M_MED_Cavern_Backpack_D.png
+  - Asset: 12831222325212356872
+    Type: World
+    Path: Scenes\hysicsTest.ProofWorld
+  - Asset: 7095973075234201013
+    Type: Mesh
+    Path: Meshes\Batman.Mesh.ProofAsset
+  - Asset: 11226777045825128045
+    Type: Material
+    Path: Materials\m_Batman.Material.ProofAsset
+  - Asset: 9355874557324325888
+    Type: Texture
+    Path: Models\Batarang\textures\Batarang_Texture.jpeg
+  - Asset: 15161686341057519373
+    Type: MeshSourceFile
+    Path: Models\Batmobile\source\Batmobile for Sketchfab.fbx
+  - Asset: 12799689097635180991
+    Type: Texture
+    Path: Models\Batmobile\textures\slide-bg.jpg
+  - Asset: 2644497615506556092
+    Type: Mesh
+    Path: Meshes\Batmobile.Mesh.ProofAsset
+  - Asset: 9128839459026187082
+    Type: MeshSourceFile
+    Path: Models\Proof(Text).fbx
+  - Asset: 10682340069702343512
+    Type: Texture
+    Path: Models\Car\source\Fbx\Dodge.png
+  - Asset: 18233626882416986492
+    Type: MeshSourceFile
+    Path: Models\Car\source\Fbx\Dodge.fbx
+  - Asset: 6628385827340589740
+    Type: Mesh
+    Path: Meshes\DodgeCar.Mesh.ProofAsset
+  - Asset: 9923854152297372655
+    Type: Material
+    Path: Mesh\Dodgee\m_Dodge1.Material.ProofAsset
+  - Asset: 13161690426467102304
+    Type: Material
+    Path: Mesh\Dodgee\m_Dodg2.Material.ProofAsset
+  - Asset: 9040196512103407521
+    Type: MeshSourceFile
+    Path: Models\CratesStack\scene.gltf
+  - Asset: 7622446605145036914
+    Type: Texture
+    Path: Models\CratesStack\textures\material_baseColor.png
+  - Asset: 9329640816690173271
+    Type: Texture
+    Path: Models\Football\textures\football_Mixed_AO.png
+  - Asset: 18033527552311357906
+    Type: Mesh
+    Path: Meshes\Crates.Mesh.ProofAsset
+  - Asset: 8313659770392484808
+    Type: Texture
+    Path: Models\crates2\textures\Wood_Box_low_DefaultMaterial_BaseColor.png
+  - Asset: 16231440029557774105
+    Type: Texture
+    Path: Models\crates2\textures\Wood_Box_low_DefaultMaterial_Metallic.png
+  - Asset: 11632790137224404845
+    Type: Texture
+    Path: Models\crates2\textures\Wood_Box_low_DefaultMaterial_Normal.png
+  - Asset: 7612274551200372564
+    Type: Texture
+    Path: Models\crates2\textures\Wood_Box_low_DefaultMaterial_Roughness.png
+  - Asset: 3061152104688357689
+    Type: MeshSourceFile
+    Path: Models\Football\source\football_lp.fbx
+  - Asset: 8863758932166571959
+    Type: Texture
+    Path: Models\Football\textures\football_Normal_OpenGL.png
+  - Asset: 11634957302077779221
+    Type: Material
+    Path: Meshes\m_CratesBox.Material.ProofAsset
+  - Asset: 11267468950587005704
+    Type: Mesh
+    Path: Meshes\Football.Mesh.ProofAsset
+  - Asset: 12029109414341551967
+    Type: Material
+    Path: Meshes\m_Football.Material.ProofAsset

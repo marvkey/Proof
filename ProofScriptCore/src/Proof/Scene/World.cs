@@ -70,6 +70,34 @@ namespace Proof
             return new Entity(id);
         }
 
+
+        public static Entity CreateEntity(string name,Transform transform)
+        {
+            return new Entity(InternalCalls.World_CreateEntity(name,transform));
+        }
+
+        public static Entity CreateEntity(string name,Entity parent)
+        {
+            if(Entity.IsValid(parent))
+            {
+                Entity e =  CreateEntity(name, Transform.Zero);
+                parent.AddChild(e);
+
+                return e;
+            }
+
+            return null;
+        }
+
+        public static Entity CreateEntity(Entity ent,bool includeChildren = true)
+        {
+            if(Entity.IsValid(ent) == false)
+                return null;
+
+            return new Entity( InternalCalls.World_CreateEntityFromEntity(ent.ID,includeChildren ));
+        }
+
+
         public static void DeleteEntity(Entity entity, bool deleteChildren = true,float time = 0.0f)
         {
             InternalCalls.World_DeleteEntity(entity.ID, deleteChildren,time);
@@ -83,35 +111,27 @@ namespace Proof
         {
             InternalCalls.World_Restart();
         }
-        public static T[] GetEntityWithType<T>() where T : Entity, new()
-        {
-            ulong[] list =null;
-            InternalCalls.World_ForEachEntityWith(typeof(T).FullName, ref list);
 
-            if (list == null)
-            {
-                list = new ulong[] { };
-                T[] scriptslist = new T[list.Length];
-                int index = 0;
-                foreach (ulong entityID in list)
-                {
-                    Entity entity = new Entity(entityID);
-                    scriptslist[index] = entity.GetScript<T>();
-                    index++;
-                }
-                return scriptslist;
-            }
-            {
-                T[] scriptslist = new T[list.Length];
-                int index = 0;
-                foreach (ulong entityID in list)
-                {
-                    Entity entity = new Entity(entityID);
-                    scriptslist[index] = entity.GetScript<T>();
-                    index++;
-                }
-                return scriptslist;
-            }
+    
+        public static Entity[] GetAllEntitiesWithScript<T>() where T : Entity, new()
+        {
+            ulong[] list = null;
+             InternalCalls.World_GetEntitiesOfScriptType(typeof(T).FullName,ref list);
+
+             if (list == null || list.Length == 0)
+             {
+                 return Array.Empty<Entity>();
+             }
+
+             Entity[] entityList = new Entity[list.Length];
+             for (int i = 0; i < list.Length; i++)
+             {
+                 entityList[i] = new Entity(list[i]);
+             }
+
+             return entityList;
         }
+        
+
     }
 }

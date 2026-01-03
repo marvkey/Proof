@@ -37,5 +37,27 @@ namespace Proof
         public static bool Bool(){
             return InternalCalls.Random_RandomBool();
         }
+
+        public static Vector3 InsideUnitSphere
+        {
+            get
+            {
+                return InternalCalls.Random_InsideUnitSphere();
+            }
+        }
+
+        public static Vector3 InsideSphere(float radius)
+        {
+            return InsideUnitSphere * radius;
+        }
+
+        public static Vector3 UnitVector
+        {
+            get
+            {
+                return InternalCalls.Random_UnitVector();
+            } 
+        }
+        
     }
 }

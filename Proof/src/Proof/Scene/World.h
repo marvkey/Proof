@@ -163,6 +163,7 @@ namespace Proof {
 		void OnWorldTransition(AssetID id);
 		void SetWorldTransitionCallback(const std::function<void(AssetID)>& callback) { m_OnWorldTransitionCallback = callback; }
 		Count<class DebugRenderer> GetDebugRenderer() { return m_DebugRenderer; }
+		Count<class ImmediateRenderer> GetImmediateRenderer() { return m_ImmediateRenderer; }
 
 		const RuntimeConfiguration& GetRuntimeConfig()const { return m_RuntimeConfig; }
 		Count<class GameMode> GetGameMode()
@@ -177,6 +178,7 @@ namespace Proof {
 		RuntimeConfiguration m_RuntimeConfig;
 
 		Count<class DebugRenderer>  m_DebugRenderer;
+		Count<class ImmediateRenderer> m_ImmediateRenderer;
 
 		// the parent entity shoudl be the prefab base entity 
 		void PrefabCopyEntity(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity,bool includeChildren = true);

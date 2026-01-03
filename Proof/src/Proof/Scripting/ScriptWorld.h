@@ -129,6 +129,8 @@ namespace Proof
 		bool IsRuntime() { return m_IsRuntime; }
 
 		void AddInvoke(EntityInvokeFuncs invoke);
+		const std::unordered_map<std::string, std::unordered_set<UUID>>& GetScriptByType()const {return m_ScriptByType; };
+		const std::unordered_map<std::string, std::unordered_set<UUID>>& GetScriptByType(){return m_ScriptByType; };
 	private:
 
 
@@ -137,6 +139,9 @@ namespace Proof
 
 		void EditorScriptEntityDeleteScript(Entity entity, const std::string& classFullName);
 		void RuntimeScriptEntityDeleteScript(Entity entity, const std::string& classFullName);
+
+		void InternalPushScript(Entity entity, const std::string& classFullName);
+		void InternalDeleteScript(Entity entity, const std::string& classFullName);
 
 		bool EditorIsEntityScriptInstantiated(Entity entity);
 		bool RuntimeIsEntityScriptInstantiated(Entity entity);
@@ -166,5 +171,7 @@ namespace Proof
 		static const std::map<UUID, WeakCount<ScriptWorld>>& GetScriptWorlds();
 
 		std::vector< EntityInvokeFuncs> m_EntityInvokes;
+		std::unordered_map<std::string, std::unordered_set<UUID>> m_ScriptByType; // (class name, list of all entities with that class)
+
 	};
 }

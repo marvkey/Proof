@@ -17,6 +17,19 @@ namespace Proof
 		virtual uint64_t GetSize() = 0;
 		virtual Buffer GetDataRaw() = 0;
 
+		template<typename T>
+		std::vector<T> GetDataAsVector()
+		{
+			Buffer buffer = GetDataRaw();
+			if (buffer.GetSize() == 0)
+				return {};
+			size_t count = buffer.Size / sizeof(T);
+			std::vector<T> data(count);
+			std::memcpy(data.data(), buffer.Data, buffer.Size);
+			buffer.Release();
+			return data;
+		}
+
 		RENDER_VIEW_RESOURCE_CLASS_TYPE(StorageBuffer);
 
 	};

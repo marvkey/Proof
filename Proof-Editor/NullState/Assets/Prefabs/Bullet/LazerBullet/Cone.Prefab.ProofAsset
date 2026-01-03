@@ -1,0 +1,27 @@
+AssetType: Prefab
+ID: 8851702765656265123
+EntityOwner: 2144774613325595787
+Entities:
+  - Entity: 2144774613325595787
+    TagComponent:
+      Tag: Cone
+      tags: []
+    TransformComponent:
+      Location: [0, 2.0666182, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 51
+      Visible: true
+      MaterialTable:
+        - Material: ""
+          AssetID: 15382384043102591794
+          Index: 0
+    MeshColliderComponent:
+      ColliderID: 3875610032953850217
+      IsTrigger: false
+      UseSharedShape: false
+      PhysicsMaterialPointerID: 0

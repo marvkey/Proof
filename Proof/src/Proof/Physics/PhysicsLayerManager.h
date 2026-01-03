@@ -5,6 +5,8 @@
 //https://github.com/Ant-Play/Ant/blob/2dab7c0362f017911df9090b1608ec4b81ad1f2c/Ant/src/Ant/Physics/3D/PhysicsLayer.h
 namespace Proof
 {
+
+	using PhysicsLayerID = uint32_t;
 	struct PhysicsLayer
 	{
 		uint32_t LayerID;
@@ -17,6 +19,8 @@ namespace Proof
 			return !Name.empty() && CollidesValue > 0;
 		}
 	};
+
+
 	class PhysicsLayerManager
 	{
 	public:

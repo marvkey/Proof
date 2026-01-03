@@ -277,7 +277,7 @@ namespace Proof
 				case VariableTypes::Int:
 				{
 					int value = renderMaterial->GetInt(name);
-					if (UI::AttributeDrag(name.c_str(), value))
+					if (UI::AttributeDrag(name.c_str(), value,0.025))
 					{
 						renderMaterial->Set(name, value);
 						m_NeedsSaving = true;
@@ -287,7 +287,7 @@ namespace Proof
 				case VariableTypes::Float:
 				{
 					float value = renderMaterial->GetFloat(name);
-					if (UI::AttributeDrag(name.c_str(), value))
+					if (UI::AttributeDrag(name.c_str(), value,0.025))
 					{
 						renderMaterial->Set(name, value);
 						m_NeedsSaving = true;
@@ -297,7 +297,7 @@ namespace Proof
 				case VariableTypes::Vec2:
 				{
 					glm::vec2 value = renderMaterial->GetVector2(name);
-					if (UI::AttributeDrag(name.c_str(), value))
+					if (UI::AttributeDrag(name.c_str(), value,0.025))
 					{
 						renderMaterial->Set(name, value);
 						m_NeedsSaving = true;
@@ -307,7 +307,7 @@ namespace Proof
 				case VariableTypes::Vec3:
 				{
 					glm::vec3 value = renderMaterial->GetVector(name);
-					if (UI::AttributeDrag(name.c_str(), value))
+					if (UI::AttributeDrag(name.c_str(), value,0.025))
 					{
 						renderMaterial->Set(name, value);
 						m_NeedsSaving = true;
@@ -317,7 +317,7 @@ namespace Proof
 				case VariableTypes::Vec4:
 				{
 					glm::vec4 value = renderMaterial->GetVector4(name);
-					if (UI::AttributeDrag(name.c_str(), value))
+					if (UI::AttributeDrag(name.c_str(), value,0.025))
 					{
 						renderMaterial->Set(name, value);
 						m_NeedsSaving = true;

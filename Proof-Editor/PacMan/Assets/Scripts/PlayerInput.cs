@@ -28,6 +28,8 @@ namespace PacMan
             }
 
             m_PlayerMovement = GetScript<PlayerMovement>();
+        
+            Mouse.SetCursorMode(MouseCursorMode.Locked);
 
         }
 
@@ -39,7 +41,10 @@ namespace PacMan
         void MovePlayer(InputActionOutput actionOutput)
         {
             if (m_PlayerMovement == null)
+            {
+                Log.Error($"{Name} PlayerInput Script needs a PlayerInputComponent");
                 return;
+            }
 
             m_PlayerMovement.Move(actionOutput.Get<Vector2>());
 

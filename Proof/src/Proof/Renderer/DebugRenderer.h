@@ -24,4 +24,28 @@ namespace Proof
 	private:
 		RenderQueue m_RenderQueue;
 	};
+
+	class Mesh;
+	class RenderMaterial;
+	class MaterialTable;
+	class DynamicMesh;
+	class WorldRenderer;
+	class ImmediateRenderer : public RefCounted
+	{
+	public:
+		using RenderQueue = std::vector<std::function<void(Count<WorldRenderer>)>>;
+	public:
+		ImmediateRenderer() = default;
+		~ImmediateRenderer() = default;
+
+		void SubmitMesh(Count<Mesh> mesh, Count<RenderMaterial> renderMaterial, const glm::mat4& transform, bool CastShadowws = true);
+		//void SubmitMesh(Count<Mesh> mesh, uint32_t subMeshIndex,Count<RenderMaterial> renderMaterial, const glm::mat4& transform, bool CastShadowws = true);
+		//void SubmitMesh(Count<Mesh> mesh, Count<MaterialTable> materialTable, const glm::mat4& transform, bool CastShadowws = true);
+		//void SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<MaterialTable> materialTable, uint32_t subMeshIndex, const glm::mat4& transform, bool CastShadowws = true, const std::vector<glm::mat4>& boneTransforms = {});
+		void SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<RenderMaterial> material, uint32_t subMeshIndex, const glm::mat4& transform, bool CastShadowws = true, const std::vector<glm::mat4>& boneTransforms = {});
+		RenderQueue& GetRenderQueue() { return m_RenderQueue; }
+		void ClearRenderQueue() { m_RenderQueue.clear(); }
+	private:
+		RenderQueue m_RenderQueue;
+	};
 }

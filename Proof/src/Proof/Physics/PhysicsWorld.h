@@ -97,6 +97,8 @@ namespace Proof
 		std::unordered_map<UUID, Count<class PhysicsActor>> m_Actors;
 		std::unordered_map<UUID,Count<class PhysicsController>> m_Controllers;
 		std::unordered_map<UUID, Count<class BuoyancyActor>> m_BuoyancyActors;
+
+		Count<class BoidManager> m_BoidManager;
 		Count<class World> m_World;
 		physx::PxBounds3* m_RegionBounds = nullptr;
 		physx::PxControllerManager* m_PhysXControllerManager;

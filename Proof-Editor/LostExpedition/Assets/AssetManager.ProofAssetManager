@@ -20,6 +20,9 @@ Assets:
   - Asset: 4130666624169366902
     Type: Material
     Path: Meshes\Shotgun\m_ShotGunMaterial.Material.ProofAsset
+  - Asset: 2874471289393428353
+    Type: Texture
+    Path: Models\Campfire\textures\TX_Campfire_Basecolour_02.png
   - Asset: 1896371110154550254
     Type: World
     Path: Scenes\TerrainScene.ProofWorld
@@ -29,6 +32,9 @@ Assets:
   - Asset: 7659929436396046509
     Type: Material
     Path: Materials\m_Green.Material.ProofAsset
+  - Asset: 1994661626827492259
+    Type: Texture
+    Path: Projects\Facility22\tex\shotgunNormal_1.png
   - Asset: 17359469819360106960
     Type: Texture
     Path: Textures\TerrainTextues\Ground084\Ground084_2K-PNG_Color.png
@@ -233,6 +239,9 @@ Assets:
   - Asset: 13813091649708503554
     Type: Texture
     Path: Textures\TerrainTextues\Ground084\Ground084_2K-PNG_NormalDX.png
+  - Asset: 8572210176166247757
+    Type: Material
+    Path: Materials\m_campfireWood.Material.ProofAsset
   - Asset: 323208586395221621
     Type: Texture
     Path: Textures\TerrainTextues\Ground084\Ground084_2K-PNG_NormalGL.png
@@ -248,6 +257,9 @@ Assets:
   - Asset: 812331647443226358
     Type: Texture
     Path: Models\Trees\HandPaintedPineTree\textures\PineTree_001.png
+  - Asset: 17985043161946889361
+    Type: Mesh
+    Path: Meshes\Campfire.Mesh.ProofAsset
   - Asset: 2236110959667834781
     Type: MeshSourceFile
     Path: Models\Trees\LowPolyTree\source\LowPoly_Tree.fbx
@@ -338,6 +350,9 @@ Assets:
   - Asset: 11068716214396453032
     Type: Texture
     Path: Models\Food\Apple\textures\Apple_BaseColor.png
+  - Asset: 10339114840206231833
+    Type: Texture
+    Path: Models\Campfire\textures\TX_Campfire_Normal_01.png
   - Asset: 15057485417622794179
     Type: Texture
     Path: Models\Food\Apple\textures\Apple_Normal.png
@@ -386,3 +401,39 @@ Assets:
   - Asset: 14544814774096856567
     Type: ParticleSystem
     Path: ParticleSystem\rocketboost.ParticleSystem.ProofAsset
+  - Asset: 13348994686901897201
+    Type: Texture
+    Path: Models\Campfire\textures\TX_Campfire_Basecolour_03.png
+  - Asset: 17929354281806433545
+    Type: Texture
+    Path: Models\Campfire\textures\TX_Campfire_OcclusionRoughnessMetallic_01.png
+  - Asset: 15922500686138876632
+    Type: Texture
+    Path: Models\Campfire\textures\TX_Campfire_OcclusionRoughnessMetallic_03.png
+  - Asset: 17518595759412695256
+    Type: MeshSourceFile
+    Path: Models\Campfire\source\En_Campfire_01.fbx
+  - Asset: 1732376316796722580
+    Type: Texture
+    Path: Models\Campfire\textures\TX_Campfire_normal_03.png
+  - Asset: 6073634749276233001
+    Type: Texture
+    Path: Models\Campfire\textures\TX_Campfire_Emissive_01.png
+  - Asset: 8945979650023174276
+    Type: Texture
+    Path: Models\Campfire\textures\TX_Campfire_OcclusionRoughnessMetallic_02.png
+  - Asset: 15987397289900886263
+    Type: Texture
+    Path: Models\Campfire\textures\TX_Campfire_Basecolour_01.png
+  - Asset: 10221129328568346641
+    Type: Texture
+    Path: Models\Campfire\textures\TX_Campfire_Normal_02.png
+  - Asset: 1149652828977714299
+    Type: Material
+    Path: Materials\m_Campfire.Material.ProofAsset
+  - Asset: 1957398642130827785
+    Type: ParticleSystem
+    Path: FlameParricleSystem.ParticleSystem.ProofAsset
+  - Asset: 13028525636486859157
+    Type: Texture
+    Path: Projects\Facility22\tex\shotgunColor_1.png

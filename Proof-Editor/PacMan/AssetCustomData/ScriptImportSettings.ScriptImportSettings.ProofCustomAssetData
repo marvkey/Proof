@@ -5,7 +5,7 @@ ScriptImportSettings:
       Fields:
         - NameID: PacMan.PlayerInput.MovePlayerAction
           Type: InputAction
-          Data: 5641647121618112534
+          Data: 0
     - Script: PacMan.PlayerMovement
       ScriptName: PacMan.PlayerMovement
       Fields:

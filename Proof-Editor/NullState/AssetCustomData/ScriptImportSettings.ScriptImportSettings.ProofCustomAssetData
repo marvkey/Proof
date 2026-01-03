@@ -10,6 +10,10 @@ ScriptImportSettings:
         - NameID: NullState.CharacterHud.PlayerDefaultHUD
           Type: UIPanel
           Data: 0
+    - Script: NullState.Drone
+      ScriptName: NullState.Drone
+      Fields:
+        []
     - Script: NullState.CharacterInput
       ScriptName: NullState.CharacterInput
       Fields:
@@ -29,10 +33,20 @@ ScriptImportSettings:
       ScriptName: NullState.CharacterMovement
       Fields:
         []
+    - Script: NullState.TaskManager
+      ScriptName: NullState.TaskManager
+      Fields:
+        []
     - Script: NullState.MoveCamera
       ScriptName: NullState.MoveCamera
       Fields:
         []
+    - Script: NullState.DroneSpawner
+      ScriptName: NullState.DroneSpawner
+      Fields:
+        - NameID: NullState.DroneSpawner.Drone
+          Type: Prefab
+          Data: 0
     - Script: NullState.DamageComponent
       ScriptName: NullState.DamageComponent
       Fields:
@@ -52,8 +66,24 @@ ScriptImportSettings:
         - NameID: NullState.Turret.MuzzleFlash
           Type: Prefab
           Data: 0
+    - Script: NullState.GlitchManager
+      ScriptName: NullState.GlitchManager
+      Fields:
+        - NameID: NullState.GlitchManager.m_GlitchMaterials
+          Type: Material
+          Length: 0
+          Data:
+            []
+    - Script: NullState.SystemMangers
+      ScriptName: NullState.SystemMangers
+      Fields:
+        []
     - Script: NullState.EntropyCompnent
       ScriptName: NullState.EntropyCompnent
+      Fields:
+        []
+    - Script: NullState.GameMode
+      ScriptName: NullState.GameMode
       Fields:
         []
     - Script: NullState.SceneVisualState
@@ -66,3 +96,21 @@ ScriptImportSettings:
       ScriptName: NullState.HealthComponent
       Fields:
         []
+    - Script: NullState.MemoryInjection
+      ScriptName: NullState.MemoryInjection
+      Fields:
+        []
+    - Script: NullState.TraceRemoval
+      ScriptName: NullState.TraceRemoval
+      Fields:
+        []
+    - Script: NullState.Task
+      ScriptName: NullState.Task
+      Fields:
+        []
+    - Script: NullState.TestBoid
+      ScriptName: NullState.TestBoid
+      Fields:
+        - NameID: NullState.TestBoid.Prefab
+          Type: Prefab
+          Data: 0

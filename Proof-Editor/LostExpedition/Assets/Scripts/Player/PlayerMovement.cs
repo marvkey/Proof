@@ -42,6 +42,7 @@ namespace LostExpedition
 			verticalRotation = Camera.Rotation.z;
 
             Mouse.SetCursorMode(MouseCursorMode.Locked);
+            
 
 
         }

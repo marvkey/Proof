@@ -718,13 +718,7 @@ namespace Proof::UI
 		for (auto clear : clearMaterials)
 			sourceMaterialTable->RemoveMaterial(clear);
 
-
-
-
-	
-
 		HandleModified(modified);
-
 		return modified;
 	}
 

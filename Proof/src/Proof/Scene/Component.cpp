@@ -4,31 +4,16 @@
 #include "World.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Material.h"
-#include "script.h"
-#include "Component.h"
-#include "Mesh.h"
-#include "World.h"
-#include "Material.h"
-#include "script.h"
-#include "Proof/Renderer/MeshWorkShop.h"
-#include "Proof/Asset/AssetManager.h"
-#include "Proof/Physics/PhysicsEngine.h" 
 #include "Proof/Scripting/ScriptEngine.h"
-#include "Proof/Scene/Material.h"
-#include "Proof/Physics/PhysicsMaterial.h"
 #include "Proof/Renderer/Renderer.h"
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
-#include "Proof/Scene/WaterSystem/WaterSystem.h"
 #include "Proof/Scene/WaterSystem/Water.h"
 #include "Proof/Renderer/Font.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
 #include "Proof/Renderer/ParticleSystem/ParticleSystem.h"
-#include "Proof/Physics/MeshCollider.h"
 #include "Proof/Scene/TerrainRenderer/TerrainRenderer.h"
-#include "Proof/Animation/Animation.h"
 #include "Proof/Animation/AnimationController.h"
-
-#include "Material.h"
+#include "Proof/Physics/Boids/BoidFlock.h"
 
 namespace Proof
 {
@@ -311,6 +296,14 @@ namespace Proof
 		ScriptMetadates = other.ScriptMetadates;
 	}
 
+	void ScriptComponent::AddScript(const std::string& classFullname)
+	{
+		if (ScriptEngine::IsModuleValid(classFullname))
+		{
+			ScriptMetadates.emplace_back(ScriptComponentsClassesData{ classFullname });
+		}
+	}
+
 	PostProcessVolumeComponent::PostProcessVolumeComponent()
 	{
 		Materials = Count<class MaterialTable>::Create(false, MaterialTypes::PostProcess);
@@ -322,5 +315,14 @@ namespace Proof
 		Enabled = other.Enabled;
 		BoxSize = other.BoxSize;
 		Materials = Count<class MaterialTable>::Create(other.Materials);
+	}
+	BoidFlockComponent::BoidFlockComponent()
+	{
+		Flock = Count<class BoidFlock>::Create();
+	}
+	BoidFlockComponent::BoidFlockComponent(const BoidFlockComponent& other)
+	{
+		Flock = Count<class BoidFlock>::Create(other.Flock);
+
 	}
 }

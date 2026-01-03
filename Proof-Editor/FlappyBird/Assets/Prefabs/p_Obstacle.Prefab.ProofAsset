@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 13311740954232371865
-EntityOwner: 12857229865965160997
+EntityOwner: 8105044941182708934
 Entities:
-  - Entity: 12857229865965160997
+  - Entity: 8105044941182708934
     TagComponent:
       Tag: p_Obstacle
       tags: []
@@ -12,8 +12,8 @@ Entities:
       Scale: [1, 1, 1]
     HierarchyComponent:
       ParentHandle: 0
-      Children: [4984298893873637781, 8623324302980259005, 10746486510096243554]
-  - Entity: 4984298893873637781
+      Children: [4073207346666403016, 10131961401315126255, 11279909626876971875]
+  - Entity: 4073207346666403016
     TagComponent:
       Tag: Obstacle
       tags: []
@@ -22,10 +22,11 @@ Entities:
       Rotation: [0, -0, 3.14159274]
       Scale: [1, 5, 1]
     HierarchyComponent:
-      ParentHandle: 12857229865965160997
+      ParentHandle: 8105044941182708934
       Children: []
     MeshComponent:
       MeshAssetPointerID: 17409813409522069563
+      Visible: true
     BoxColliderComponent:
       IsTrigger: false
       Center: [0, 35, 0]
@@ -34,6 +35,7 @@ Entities:
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
       AngularDrag: 0.0500000007
       Gravity: true
       Type: Static
@@ -41,7 +43,7 @@ Entities:
       FreezeRotation: [false, false, false]
       Kinematic: false
       CollisionDetection: Discrete
-  - Entity: 8623324302980259005
+  - Entity: 10131961401315126255
     TagComponent:
       Tag: Obstacle
       tags: []
@@ -50,10 +52,11 @@ Entities:
       Rotation: [0, -0, 0]
       Scale: [1, 5, 1]
     HierarchyComponent:
-      ParentHandle: 12857229865965160997
+      ParentHandle: 8105044941182708934
       Children: []
     MeshComponent:
       MeshAssetPointerID: 17409813409522069563
+      Visible: true
     BoxColliderComponent:
       IsTrigger: false
       Center: [0, -35, 0]
@@ -62,6 +65,7 @@ Entities:
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
       AngularDrag: 0.0500000007
       Gravity: true
       Type: Static
@@ -69,7 +73,7 @@ Entities:
       FreezeRotation: [false, false, false]
       Kinematic: false
       CollisionDetection: Discrete
-  - Entity: 10746486510096243554
+  - Entity: 11279909626876971875
     TagComponent:
       Tag: ScoreIncreaseCollider
       tags: []
@@ -78,7 +82,7 @@ Entities:
       Rotation: [0, -0, 0]
       Scale: [1, 5.19999981, 1]
     HierarchyComponent:
-      ParentHandle: 12857229865965160997
+      ParentHandle: 8105044941182708934
       Children: []
     BoxColliderComponent:
       IsTrigger: true
@@ -88,6 +92,7 @@ Entities:
     RigidBodyComponent:
       Mass: 1
       LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
       AngularDrag: 0.0500000007
       Gravity: true
       Type: Static

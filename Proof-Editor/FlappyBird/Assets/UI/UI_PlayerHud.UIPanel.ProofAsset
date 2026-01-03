@@ -1,16 +1,48 @@
 AssetType: UIPanel
-ID: 35420920226295225
+ID: 562114627404798443
+VariableRegistry:
+  VariableRegistryID: 8060267294189281287
+  Variables:
+    - Name: Score
+      Type: String
+      UUID: 6961273276269306249
+      Data: 5
 UIElements:
-  - UIElement: 11749623098364570259
+  - UIElement: 12779165114489159445
     UICoreComponent:
-      ElementID: 11749623098364570259
-      Name: PlayerScore
+      ElementID: 12779165114489159445
+      Name: Text_00
       UIElementType: Text
-      Position: [30, 100]
+      Position: [0, 0]
       Rotation: [0, 0]
-      Size: [100, 100]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 15145430715202305286
+      Children: []
     UITextComponent:
-      Text: 21
-      Color: [1, 1, 1, 1]
+      Text:
+        Value: 5
+        BindedVariableID: 6961273276269306249
+      Color: [1, 0.955555558, 0, 1]
       Kerning: 0
       LineSpacing: 1
+  - UIElement: 15145430715202305286
+    UICoreComponent:
+      ElementID: 15145430715202305286
+      Name: HorizontalBox
+      UIElementType: HorizontalBox
+      Position: [0, 0]
+      Rotation: [0, 0]
+      Size: [150, 150]
+      AnchorMinimum: [0.5, 0]
+      AnchorMaximum: [0.5, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 0
+      Children: [12779165114489159445]
+    UIHorizontalBoxComponent:
+      Spacing: 1.75
+      DrawBorders: false
+      BorderColor: [1, 1, 1, 1]
+      BorderThickness: 1

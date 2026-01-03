@@ -1988,6 +1988,7 @@ namespace Proof
 			m_ColliderDrawList.clear();
 			m_DynamicColliderDrawList.clear();
 			m_GeometryPassInstancesDrawList.clear();
+			m_GeometryPassDynamicMeshInstancesDrawList.clear();
 
 			m_GrassPlanes.Get().clear();
 
@@ -2603,6 +2604,22 @@ namespace Proof
 				RenderMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 			}
 		}
+
+		for (auto& [shaderName, meshDrawList] : m_GeometryPassDynamicMeshInstancesDrawList)
+		{
+			if (!m_GeometryPassInstances.contains(shaderName))
+				continue;
+
+			if (m_GeometryPassInstances.at(shaderName).DepthDraw != GeometryInstanceRenderData::DepthDrawType::PreDepth)
+				continue;
+			
+			for (auto& [meshKey, dc] : meshDrawList)
+			{
+				const auto& transformData = m_CurTransformMap->at(meshKey);
+				uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+				RenderDynamicMesh(m_CommandBuffer, dc.Mesh, m_PreDepthPass, m_SubmeshTransformBuffers[frameIndex].Buffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+			}
+		}
 #endif
 		
 		Renderer::EndRenderPass(m_PreDepthPass);
@@ -2812,6 +2829,46 @@ namespace Proof
 					const auto& transformData = m_CurTransformMap->at(meshKey);
 					uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
 					RenderMeshWithMaterial(m_CommandBuffer, dc.Mesh, dc.OverrideMaterial, renderPass, transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
+				}
+
+				Renderer::EndRenderPass(renderPass);
+			}
+		}
+
+		{
+			PF_PROFILE_FUNC("GeometryPass Dynamic::Instances");
+			std::unordered_set<Count<Shader>> addedInstances;
+			for (auto& [shader, meshDrawList] : m_GeometryPassDynamicMeshInstancesDrawList)
+			{
+				if (!m_GeometryPassInstances.contains(shader))
+				{
+					// we do not attach to depth because the vertex shader 
+					// in water shader will change so it will create wierd effect
+					// only put attach to depth when you are sure u are not changing any vertex position
+
+
+					m_GeometryPassInstances[shader] = CreateGeometryInstanceRenderData(shader);
+					addedInstances.insert(shader);
+					continue;
+				}
+				if (addedInstances.contains(shader))
+					continue;
+
+
+				auto renderPass = m_GeometryPassInstances[shader].RenderPass;
+
+				renderPass->SetInput("u_IrradianceMap", m_Environment->GetPrefilterMap());
+				renderPass->SetInput("u_PrefilterMap", m_Environment->GetPrefilterMap());
+
+				Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, renderPass);
+
+				for (auto& [meshKey, dc] : meshDrawList)
+				{
+					const auto& transformData = m_CurTransformMap->at(meshKey);
+					uint32_t transformOffset = transformData.TransformOffset + dc.InstanceOffset * sizeof(TransformVertexData);
+					RenderDynamicMeshWithMaterial(m_CommandBuffer, dc.Mesh, m_GeometryWireFramePassMaterial,
+						renderPass,
+						transformBuffer, dc.SubMeshIndex, transformOffset, dc.InstanceCount);
 				}
 
 				Renderer::EndRenderPass(renderPass);
@@ -3995,12 +4052,24 @@ namespace Proof
 		for (uint32_t submeshIndex : mesh->GetSubMeshes())
 		{
 			const auto& subMesh = meshSource->GetSubMeshes().at(submeshIndex);
-
-			glm::mat4 subMeshTransform = transform * mesh->GetTransform() * subMesh.Transform;
-
 			uint32_t materialIndex = subMesh.MaterialIndex;
 
 			AssetID materialHandle = materialTable->HasMaterial(materialIndex) ? materialTable->GetMaterial(materialIndex)->GetID() : mesh->GetMaterialTable()->GetMaterial(materialIndex)->GetID();
+
+			{
+
+				Count<Material> material = AssetManager::GetAsset<Material>(materialHandle);
+				if (material->GetRenderMaterial()->GetConfig().Shader != Renderer::GetShader("ProofPBR_Static") && 
+					material->GetRenderMaterial()->GetConfig().Shader != Renderer::GetShader("ProofPBRTransparent_Static"))
+				{
+					SubmitMesh(mesh, submeshIndex,material->GetRenderMaterial(), transform, CastShadowws);
+					continue;
+				}
+			}
+
+			glm::mat4 subMeshTransform = transform * mesh->GetTransform() * subMesh.Transform;
+
+
 			PF_CORE_ASSERT(materialHandle, "Material ID cannot be zero");
 
 			Count<Material> material = AssetManager::GetAsset<Material>(materialHandle);
@@ -4092,6 +4161,62 @@ namespace Proof
 		}
 	}
 
+	void WorldRenderer::SubmitMesh(Count<Mesh> mesh, uint32_t subMeshIndex, Count<RenderMaterial> renderMaterial, const glm::mat4& transform, bool CastShadowws)
+	{
+		PF_PROFILE_FUNC();
+		PF_PROFILE_TAG("{}", mesh->GetName().c_str());
+		//TODO FASTER HASH FUNCTION FOR MESHKEY
+		PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
+
+
+		PF_CORE_ASSERT(!(renderMaterial->GetConfig().Shader->GetAllShaderMacroDefines().contains("PBR_SHADER_VERTEX_BASE") &&
+			renderMaterial->GetConfig().Shader->GetAllShaderMacroDefines().contains("PBR_SHADER_FRAGMENT_BASE")),
+			"Shader has to be a sub of PBR_SHADER_BASES");
+
+
+		AssetID meshID = mesh->GetID();
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		//for (uint32_t submeshIndex : mesh->GetSubMeshes())
+		{
+			const auto& subMesh = meshSource->GetSubMeshes().at(subMeshIndex);
+
+			glm::mat4 subMeshTransform = transform * mesh->GetTransform() * subMesh.Transform;
+
+			AssetID materialHandle = AssetID((uint64_t)renderMaterial.Get());
+			PF_CORE_ASSERT(materialHandle, "Render Material ID cannot be zero");
+
+			MeshKey meshKey = { meshID, materialHandle, subMeshIndex, false };
+			auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
+			m_TotalSubmeshesContext++;
+
+			transformStorage.Transform = subMeshTransform;
+
+			if ((*m_PrevTransformMap).find(meshKey) == (*m_PrevTransformMap).end())
+			{
+				(*m_PrevTransformMap)[meshKey] = (*m_CurTransformMap)[meshKey];
+			}
+			// geo pass
+			{
+				auto& dc = m_GeometryPassInstancesDrawList[renderMaterial->GetConfig().Shader][meshKey];
+				dc.MaterialTable = nullptr;
+				dc.OverrideMaterial = renderMaterial;
+				dc.Mesh = mesh;
+				dc.SubMeshIndex = subMeshIndex;
+				dc.InstanceCount++;
+			}
+
+			//if (CastShadowws)
+			//{
+			//	auto& dc = m_MeshShadowDrawList[meshKey];
+			//	dc.MaterialTable = nullptr;
+			//	dc.OverrideMaterial = renderMaterial;
+			//	dc.Mesh = mesh;
+			//	dc.SubMeshIndex = submeshIndex;
+			//	dc.InstanceCount++;
+			//}
+		}
+	}
+
 	void WorldRenderer::SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<MaterialTable> materialTable, uint32_t subMeshIndex, const glm::mat4& transform, bool CastShadows, const std::vector<glm::mat4>& boneTransforms )
 	{
 		PF_PROFILE_FUNC();
@@ -4142,6 +4267,67 @@ namespace Proof
 			dc.SubMeshIndex = subMeshIndex;
 			dc.InstanceCount++;
 			dc.OverrideMaterial = nullptr;
+		}
+	}
+
+	void WorldRenderer::SubmitDynamicMesh(Count<DynamicMesh> mesh, Count<RenderMaterial> renderMaterial,uint32_t subMeshIndex, const glm::mat4& transform, bool CastShadowws,const std::vector<glm::mat4>& boneTransforms)
+	{
+		PF_PROFILE_FUNC();
+		//PF_PROFILE_TAG("{}", mesh->GetName().c_str());
+		//TODO FASTER HASH FUNCTION FOR MESHKEY
+		PF_CORE_ASSERT(mesh->GetID(), "Mesh ID cannot be zero");
+
+
+		PF_CORE_ASSERT(!(renderMaterial->GetConfig().Shader->GetAllShaderMacroDefines().contains("PBR_SHADER_VERTEX_BASE") &&
+			renderMaterial->GetConfig().Shader->GetAllShaderMacroDefines().contains("PBR_SHADER_FRAGMENT_BASE")),
+			"Shader has to be a sub of PBR_SHADER_BASES");
+
+
+		AssetID meshID = mesh->GetID();
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		//for (uint32_t submeshIndex : mesh->GetSubMeshes())
+		{
+			const auto& subMesh = meshSource->GetSubMeshes().at(subMeshIndex);
+
+			glm::mat4 subMeshTransform = transform * mesh->GetTransform() * subMesh.Transform;
+
+			AssetID materialHandle = AssetID((uint64_t)renderMaterial.Get());
+			PF_CORE_ASSERT(materialHandle, "Render Material ID cannot be zero");
+
+			MeshKey meshKey = { meshID, materialHandle, subMeshIndex, false };
+			auto& transformStorage = (*m_CurTransformMap)[meshKey].Transforms.emplace_back();
+			m_TotalSubmeshesContext++;
+
+			transformStorage.Transform = subMeshTransform;
+
+			if ((*m_PrevTransformMap).find(meshKey) == (*m_PrevTransformMap).end())
+			{
+				(*m_PrevTransformMap)[meshKey] = (*m_CurTransformMap)[meshKey];
+			}
+
+			if (subMesh.IsRigged)
+			{
+				CopyToBoneTransformStorage(meshKey, meshSource, boneTransforms);
+			}
+			// geo pass
+			{
+				auto& dc = m_GeometryPassDynamicMeshInstancesDrawList[renderMaterial->GetConfig().Shader][meshKey];
+				dc.MaterialTable = nullptr;
+				dc.OverrideMaterial = renderMaterial;
+				dc.Mesh = mesh;
+				dc.SubMeshIndex = subMeshIndex;
+				dc.InstanceCount++;
+			}
+
+			//if (CastShadowws)
+			//{
+			//	auto& dc = m_MeshShadowDrawList[meshKey];
+			//	dc.MaterialTable = nullptr;
+			//	dc.OverrideMaterial = renderMaterial;
+			//	dc.Mesh = mesh;
+			//	dc.SubMeshIndex = submeshIndex;
+			//	dc.InstanceCount++;
+			//}
 		}
 	}
 
@@ -4291,6 +4477,8 @@ namespace Proof
 	}
 	WorldRenderer::GeometryInstanceRenderData WorldRenderer::CreateGeometryInstanceRenderData(Count<class Shader> shader)
 	{
+		PF_CORE_ASSERT(shader->GetAllShaderMacroDefines().contains("PBR_DRAW_DEPTH"));
+
 		GeometryInstanceRenderData instanceData;
 		bool renderDepth = true;
 		if (shader->GetAllShaderMacroDefines().at("PBR_DRAW_DEPTH") == std::to_string((int)GeometryInstanceRenderData::DepthDrawType::None))
@@ -4758,5 +4946,6 @@ namespace Proof
 		renderPass->SetInput("u_InputColor", m_GeometryPass->GetOutput(0));
 		renderPass->SetInput("u_InputDepth", m_PreDepthPass->GetOutput(0));
 		renderPass->AddGlobalInput(m_GlobalInputs);
+		renderPass->SetInput("FrameData",m_UBFrameBuffer);
 	}
 }

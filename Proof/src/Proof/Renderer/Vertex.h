@@ -7,6 +7,7 @@
 
 namespace Proof
 {
+
     struct TextParams
     {
         glm::vec4 Color{ 1.0f };

@@ -28,13 +28,12 @@ namespace FlappyBird
 		{
 			return m_State;
 		}
+
 		uint m_Score = 0;
 		public float ForwardSpeed = 2f;
 		public float MaxForwardSpeed = 10;
 		public float JumpForce = 5f;
-		public float IncreaseSpeedIntervalSeconds = 5;
-		float m_IncreaseSpeedTimer;
-		public float IncreaseSpeedValue = 0.25f;
+		public float AccelerationRate = 0.2f;
         public InputAction JumpAction;
         public InputAction ChangeCameraAction;
         RigidBodyComponent m_RigidBody;
@@ -47,7 +46,9 @@ namespace FlappyBird
 		public Entity[] TextCameras;
 		PlayerHUDComponent m_HudComponent;
 		private float m_WorldEndTimer = 5.0f;// seconds
-		[StructLayout(LayoutKind.Sequential)]
+        public UIPanel UIPanel;
+
+        [StructLayout(LayoutKind.Sequential)]
 
         public struct PlayerData
         {
@@ -78,7 +79,6 @@ namespace FlappyBird
 		{
             m_PlayerInputComponent = GetComponent<PlayerInputComponent>();
             m_HudComponent = GetComponent<PlayerHUDComponent>();
-			m_HudComponent.SetPanel(PlayerScorePanel);
             m_RigidBody = GetComponent<RigidBodyComponent>();
             TriggerEnterEvent += OnTriggerEnter;
             CollisionEnterEvent += OnCollisionEnter;
@@ -89,8 +89,6 @@ namespace FlappyBird
 			if (ChangeCameraAction != null)
 				m_PlayerInputComponent.BindAction(ChangeCameraAction, InteractionEvent.Completed, ChangeCamera);
 
-			m_IncreaseSpeedTimer = IncreaseSpeedIntervalSeconds;
-            m_HudComponent.SetText("0");
             PlayerData playerData = new PlayerData { Score = 100, Time = 12.5f };
 
 			PersistentDataStorage.SaveData("Score", 10);
@@ -103,16 +101,15 @@ namespace FlappyBird
 		{
 			if(m_RigidBody == null) return;
 
-			// ScoreEntity.GetComponent<TextComponent>().Text = m_Score.ToString();
-			/// TextCameras[m_CurrentCameraIndex].GetComponent<TextComponent>().Text = m_Score.ToString();
+            // ScoreEntity.GetComponent<TextComponent>().Text = m_Score.ToString();
+            /// TextCameras[m_CurrentCameraIndex].GetComponent<TextComponent>().Text = m_Score.ToString();
 
-			m_IncreaseSpeedTimer -= deltaTime;
-			if(m_IncreaseSpeedTimer <=0)  
-			{
-				IncreaseSpeed();
-				m_IncreaseSpeedTimer = IncreaseSpeedIntervalSeconds;
+            if (m_State == BirdState.Playing && ForwardSpeed < MaxForwardSpeed)
+            {
+                ForwardSpeed += AccelerationRate * deltaTime;
+                JumpForce += AccelerationRate * deltaTime; // optional scaling
             }
-			RotateBird();
+            RotateBird();
 
 			if (m_State == BirdState.Dead)
 				m_WorldEndTimer -= deltaTime;
@@ -120,11 +117,7 @@ namespace FlappyBird
 			if (m_WorldEndTimer <= 0)
 				World.Restart();
         }
-        void IncreaseSpeed()
-        {
-			ForwardSpeed += IncreaseSpeedValue;
-			JumpForce += IncreaseSpeedValue;
-        }
+     
         void OnTriggerEnter(Entity other)
 		{
 			if (other.Name == "ScoreIncreaseCollider")
@@ -132,7 +125,9 @@ namespace FlappyBird
 				m_Score++;
                 string textOutput = m_Score.ToString();
 
-                m_HudComponent.SetText(textOutput);
+                Variable var = m_HudComponent.GetRegistryVariable(3, UIPanel, "Score");
+				var.SetData(textOutput);
+
                 Log.Info($"Player Score now {m_Score}");
 			}
 		}
@@ -142,7 +137,7 @@ namespace FlappyBird
 			if (FracturedBird == null)
 				return;
 
-			Entity fractureBirdEntity = World.Instantiate(FracturedBird, GetComponent<TransformComponent>().Location);
+			Entity fractureBirdEntity = World.Instantiate(FracturedBird, GetComponent<RigidBodyComponent>().Location);
 
 			/*
 			fractureBirdEntity.Scale = Scale;

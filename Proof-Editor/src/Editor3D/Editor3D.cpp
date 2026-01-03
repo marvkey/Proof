@@ -531,10 +531,15 @@ namespace Proof
 
 		//if (m_ActiveWorld->m_CurrentState == WorldState::Play)
 		//	InputManager::OnEvent(e);
-		if (!ImGui::GetIO().WantTextInput)
+
+		if (Application::Get()->GetConfig().EnableImgui)
 		{
-			dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
+			if (!ImGui::GetIO().WantTextInput)
+			{
+				dispatcher.Dispatch<KeyClickedEvent>(PF_BIND_FN(Editore3D::OnKeyClicked));
+			}
 		}
+		
 
 
 		s_EditorData->ElevatedInputManager->OnEvent(e);
@@ -548,13 +553,15 @@ namespace Proof
 		}
 
 		
+		if (Application::Get()->GetConfig().EnableImgui)
+		{
+			AssetEditorPanel::OnEvent(e);
 
-		AssetEditorPanel::OnEvent(e);
+			//m_EditorCamera.OnEvent(e);
 
-		//m_EditorCamera.OnEvent(e);
-
-		s_EditorData->PanelManager->OnEvent(e);
-		s_EditorData->EditorWorkspaceManager->OnEvent(e);
+			s_EditorData->PanelManager->OnEvent(e);
+			s_EditorData->EditorWorkspaceManager->OnEvent(e);
+		}
 
 		
 	}

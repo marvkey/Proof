@@ -37,6 +37,8 @@
 #include "Proof/Renderer/DebugRenderer.h"
 #include "Proof/Scene/GameMode/LocalGameMode.h"
 #include "ScriptUtils.h"
+#include "Proof/Physics/Boids/BoidFlock.h"
+#include "Proof/Scene/Script.h"
 //(IMPORTPF)
 /*
 *WHEN PASSING A MONO TYPE MAKE SURE ITS A SRUCT BECAUSE WHEN ITS A CLASS IT GETS SOME UNDEFNIED BEHAVIOR
@@ -260,6 +262,25 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		PF_CORE_ASSERT(world, "world is nullptr");
 		world->Play();
 	}
+
+	static uint64_t World_CreateEntity(MonoString* name,Transform transform)
+	{
+		Count<World> world = ScriptEngine::GetWorldContext();
+		Entity entity  = world->CreateEntity(ScriptUtils::MonoStringToUTF8(name));
+		TransformComponent componet;
+		componet.Location = transform.Location;
+		componet.SetRotationEuler(glm::radians(transform.Rotation));
+		componet.Scale = transform.Scale;
+		entity.GetComponent<TransformComponent>() = componet;
+
+		return entity.GetUUID().Get();
+	}
+
+	static uint64_t World_CreateEntityFromEntity(uint64_t entityID,bool includeChildren = true)
+	{
+		SCRIPT_FUNC_ENTITY_CHECK_BASE();
+		return ScriptEngine::GetWorldContext()->CreateEntity(entity,includeChildren).GetUUID().Get();
+	}
 	//retutnrs entity ID
 	static uint64_t World_Instanciate(uint64_t prefabID, Transform transform)
 	{
@@ -324,25 +345,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		PF_CORE_ASSERT(world, "world is nullptr");
 		return world->HasEntity((UUID)ID);
 	}
-	static void World_ForEachEntityWith(MonoString* classFullName, MonoArray** theArray)
-	{
-		Count<World> world = ScriptEngine::GetWorldContext();
-		PF_CORE_ASSERT(world, "world is nullptr");
-
-		std::vector<uint64_t> objects;
-		std::string className = ScriptUtils::MonoStringToUTF8(classFullName);
-		#if 0
-		for (auto& [entityID, scripts] : ScriptEngine::EachEntityScript())
-		{
-			if (scripts.contains(className))
-				objects.emplace_back(entityID);
-		}
-		if (objects.size() == 0)
-			return;
-		*theArray = mono_array_new(ScriptEngine::GetDomain(), mono_get_uint64_class(), objects.size());
-		memcpy(mono_array_addr(*theArray, uint64_t, 0), objects.data(), objects.size() * sizeof(uint64_t));
-		#endif
-	}
+	
 	static void World_DeleteEntity(uint64_t entityID, bool deleteChildren, float time) 
 	{
 		Count<World> world = ScriptEngine::GetWorldContext();
@@ -390,6 +393,36 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		scriptWorld->AddInvoke(invokes);
 	}
+
+
+	static void World_GetEntitiesOfScriptType(MonoString* classFullName,MonoArray** theArray)
+	{
+		Count<World> world = ScriptEngine::GetWorldContext();
+		PF_CORE_ASSERT(world, "world is nullptr");
+		Count<ScriptWorld> scriptWorld = ScriptEngine::GetWorldContext()->GetScriptWorld();
+
+		const std::unordered_map<std::string, std::unordered_set<UUID>>& scriptsByType  = scriptWorld->GetScriptByType();
+
+		auto className = ScriptUtils::MonoStringToUTF8(classFullName);
+		if (!scriptsByType.contains(className))
+			return;
+
+		if (scriptsByType.at(className).size() == 0)
+			return;
+
+		auto& scritsIds  = scriptsByType.at(className);
+		MonoArray* result = ScriptUtils::ManagedArrayUtils::Create<uint64_t>(scritsIds.size());
+
+		uint32_t index = 0;
+
+		for (auto& id : scritsIds)
+		{
+			ScriptUtils::ManagedArrayUtils::SetValue(result, index, id.Get());
+			index++;
+		}
+
+		*theArray = result;
+	}
 	#pragma endregion
 	
 	#pragma region Entity
@@ -407,6 +440,13 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		});
 		if (objects.size() == 0)
 			return;
+
+		MonoArray* result = ScriptUtils::ManagedArrayUtils::Create<uint64_t>(objects.size());
+		for (uint32_t i = 0; i < objects.size(); i++)
+			ScriptUtils::ManagedArrayUtils::SetValue(result, i, objects[i]);
+
+		*theArray = result;
+
 		#if 0
 		*theArray = mono_array_new(ScriptEngine::GetDomain(), mono_get_uint64_class(), objects.size());
 		memcpy(mono_array_addr(*theArray, uint64_t, 0), objects.data(), objects.size() * sizeof(uint64_t));
@@ -497,6 +537,37 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		return ScriptGCManager::GetReferencedObject(gcHandle);
 	}
 
+
+	static MonoObject* AddScriptInstance(UUID entityID, MonoString* classFullName)
+	{
+		SCRIPT_FUNC_ENTITY_CHECK(nullptr);
+		//SCRIPT_FUNC_COMPONENT_CHECK(ScriptComponent,nullptr);
+		
+		Count<World> world = ScriptEngine::GetWorldContext();
+		auto scriptWorld = world->GetScriptWorld();
+
+		if (!entity.HasComponent<ScriptComponent>())
+			entity.AddComponent<ScriptComponent>();
+
+		auto scriptName = ScriptUtils::MonoStringToUTF8(classFullName);
+
+		if (scriptWorld->IsEntityScriptInstantiated(entity))
+		{
+			scriptWorld->ScriptEntityPushScript(entity, scriptName);
+		}
+		else
+		{
+			entity.GetComponent<ScriptComponent>().AddScript(scriptName );
+			scriptWorld->InstantiateScriptEntity(entity);
+		}
+
+		ScriptGCHandle gcHandle = scriptWorld->GetScriptInstance(entity, ScriptUtils::MonoStringToUTF8(classFullName));
+
+		if (gcHandle == nullptr)
+			return nullptr;
+
+		return ScriptGCManager::GetReferencedObject(gcHandle);
+	}
 	static void Entity_GetParent(uint64_t entityID, uint64_t* owenerId)
 	{
 		SCRIPT_FUNC_ENTITY_CHECK_VOID();
@@ -646,6 +717,26 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		* vec = entity.GetComponent<TransformComponent>().GetUpVector();
 	}
 
+	static void TransformComponent_SetForwardVector(uint64_t entityID, glm::vec3* vec)
+	{
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
+		entity.GetComponent<TransformComponent>().SetFowardVector(*vec);
+	}
+
+
+	static void TransformComponent_SetRightVector(uint64_t entityID, glm::vec3* vec)
+	{
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
+		entity.GetComponent<TransformComponent>().SetRightVector(*vec);
+
+	}
+
+	static void TransformComponent_SetUpVector(uint64_t entityID, glm::vec3* vec)
+	{
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
+		entity.GetComponent<TransformComponent>().SetUpVector(*vec);
+	}
+	
 	static void TransformComponent_GetTransform(uint64_t entityID, Transform* outTransform)
 	{
 		SCRIPT_FUNC_ENTITY_CHECK_VOID();
@@ -655,7 +746,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		outTransform->Scale = tc.Scale;
 	}
 
-	void TransformComponent_SetTransform(uint64_t entityID, Transform* inTransform)
+	static void TransformComponent_SetTransform(uint64_t entityID, Transform* inTransform)
 	{
 		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 
@@ -671,7 +762,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		tc.Scale = inTransform->Scale;
 	}
 
-	void TransformComponent_GetWorldSpaceTransform(uint64_t entityID, Transform* outTransform)
+	static void TransformComponent_GetWorldSpaceTransform(uint64_t entityID, Transform* outTransform)
 	{
 		SCRIPT_FUNC_ENTITY_CHECK_VOID();
 		Count<World> scene = ScriptEngine::GetWorldContext();
@@ -680,6 +771,23 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		outTransform->Rotation = glm::degrees(wt.GetRotationEuler());
 		outTransform->Scale = wt.Scale;
 	}
+
+	static void TransformComponent_GetWorldSpaceTransformMatrix(uint64_t entityID, glm::mat4* transform)
+	{
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
+		Count<World> scene = ScriptEngine::GetWorldContext();
+		glm::mat4 wt = scene->GetWorldSpaceTransform(entity);
+		*transform = wt;
+	}
+
+	static void TransformComponent_GetTransformMatrix(uint64_t entityID, glm::mat4* transform)
+	{
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
+		Count<World> scene = ScriptEngine::GetWorldContext();
+		glm::mat4 wt = entity.Transform();
+		*transform = wt;
+	}
+
 #pragma endregion 
 	
 	#pragma region TextComponent
@@ -1446,7 +1554,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		{
 			PF_ERROR("RigidBodyComponent.SetKinematicTarget - entity is not valid");
 			return;
-		}
+		} 
 
 		auto actor = GetPhysicsActor(entity);
 		if (!actor)
@@ -2799,6 +2907,16 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 	{
 		return Random::Real<double>(min, max);
 	}
+
+	static glm::vec3 Random_InsideUnitSphere()
+	{
+		return Random::InsideUnitSphere();
+	}
+
+	static glm::vec3 Random_UnitVector()
+	{
+		return Random::UnitVector();
+	}
 	#pragma endregion
 
 	#pragma region ChildComponent 
@@ -2868,7 +2986,76 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 		PF_ERROR("MeshComponent.SetVisible entity tag: {} ID: {}  does not conatin mesh Compoonent", entity.GetName(), entity.GetUUID());
 	}
+
+	static uint64_t MeshComponent_GetMesh(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(MeshComponent,0u);
+
+		if (entity.GetComponent<MeshComponent>().GetMesh()  == nullptr)
+			return uint64_t(0);
+
+		return entity.GetComponent<MeshComponent>().GetMesh()->GetID().Get();
+	}
+
+	static void MeshComponent_SetMesh(UUID entityID,AssetID meshID,bool takeMaterialTable)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(MeshComponent);
+
+		AssetKey<AssetType::Mesh> meshKey = meshID;
+		SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_VOID(meshKey,MeshComponent);
+
+		entity.GetComponent<MeshComponent>().SetMesh(meshID,takeMaterialTable);
+	}
 	#pragma endregion
+
+#pragma region DynamicMeshComponent
+
+#pragma endregion
+
+	static void DynamicMeshComponent_SetVisible(UUID entityID, bool visible)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(DynamicMeshComponent);
+		entity.GetComponent<DynamicMeshComponent>().Visible = visible;
+	}
+
+	static bool DynamicMeshComponent_GetVisible(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(DynamicMeshComponent,false);
+		return entity.GetComponent<DynamicMeshComponent>().Visible;
+	}
+
+	static AssetID DynamicMeshComponent_GetMesh(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(DynamicMeshComponent,0u);
+
+		if (entity.GetComponent<DynamicMeshComponent>().GetMesh()  == nullptr)
+			return AssetID(0);
+
+		return entity.GetComponent<DynamicMeshComponent>().GetMesh()->GetID();
+	}
+
+	static void DynamicMeshComponent_SetMesh(UUID entityID,AssetID meshID,bool takeMaterialTable)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(DynamicMeshComponent);
+
+		AssetKey<AssetType::Mesh> meshKey = meshID;
+		SCRIPT_FUNC_ENTITY_CHECK_ASSETKEY_VOID(meshKey,DynamicMeshComponent);
+
+		entity.GetComponent<DynamicMeshComponent>().SetMesh(meshID,takeMaterialTable);
+	}
+
+	static void DynamicMeshComponent_SetSubMeshIndex(UUID entityID, uint32_t index)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(DynamicMeshComponent);                                               
+		entity.GetComponent<DynamicMeshComponent>().SetSubMeshIndex(index);
+	}
+
+	static uint32_t DynamicMeshComponent_GetSubMeshIndex(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(DynamicMeshComponent,false);
+		return entity.GetComponent<DynamicMeshComponent>().GetSubMeshIndex();
+	}
+
 #pragma region MeshCollider
 
 	bool MeshCollider_IsStaticMesh(AssetID* meshHandle)
@@ -3472,6 +3659,39 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 	#pragma endregion 
 
+#pragma region BoidFlockComponent
+
+	static void BoidFlockComponent_AddBoid(UUID entityID,UUID addEntityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(BoidFlockComponent);
+
+		Entity newEntity = ScriptEngine::GetWorldContext()->TryGetEntityWithUUID(addEntityID);
+		if (!newEntity.IsValid())
+		{
+			PF_ERROR("BoidFlockComponent.AddBoid - added enitty is invalid");
+			return;
+		}
+		entity.GetComponent<BoidFlockComponent>().Flock->AddBoidEntity(addEntityID);
+	}
+
+	static void BoidFlockComponent_RemoveBoid(UUID entityID,UUID remveEntityId)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(BoidFlockComponent);
+		entity.GetComponent<BoidFlockComponent>().Flock->RemoveBoidEntity(remveEntityId);
+	}
+
+	static void BoidFlockComponent_SetSettings(UUID entityID,BoidFlockSettings* settings)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(BoidFlockComponent);
+		entity.GetComponent<BoidFlockComponent>().Flock->GetSettingsRef() = * settings;
+	}
+
+	static void BoidFlockComponent_GetSettings(UUID entityID,BoidFlockSettings* settings)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(BoidFlockComponent);
+		* settings = entity.GetComponent<BoidFlockComponent>().Flock->GetSettings();
+	}
+#pragma endregion	
 	#pragma region ParticleSystemComponent
 	static bool ParticleSystemComponent_HasParticleIndex(uint64_t entityID, uint32_t tableIndex)
 	{
@@ -3736,14 +3956,14 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		auto storageWeakCountIt = VariableSetStorage::GetAllStorageSets().find(variable.SetStorageHandle);
 		if (storageWeakCountIt == VariableSetStorage::GetAllStorageSets().end())
 		{
-			PF_ERROR("SetValue – No storage found with handle {}", variable.SetStorageHandle);
+			PF_ERROR("SetValue ï¿½ No storage found with handle {}", variable.SetStorageHandle);
 			return;
 		}
 
 		auto storageWeakCount = storageWeakCountIt->second;
 		if (!storageWeakCount.IsValid())
 		{
-			PF_ERROR("SetValue – Storage handle {} is invalid", variable.SetStorageHandle);
+			PF_ERROR("SetValue ï¿½ Storage handle {} is invalid", variable.SetStorageHandle);
 			return;
 		}
 
@@ -3751,7 +3971,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!storage->HasVariable(variable.VariableUUID))
 		{
-			PF_ERROR("SetValue – Variable UUID {} not found in storage {}", variable.VariableUUID, variable.SetStorageHandle);
+			PF_ERROR("SetValue ï¿½ Variable UUID {} not found in storage {}", variable.VariableUUID, variable.SetStorageHandle);
 			return;
 		}
 
@@ -3759,7 +3979,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (var->GetType() != (VariableTypes)variable.Type)
 		{
-			PF_ERROR("GetValue – Type mismatch for variable {}: expected {}, got {}",
+			PF_ERROR("GetValue ï¿½ Type mismatch for variable {}: expected {}, got {}",
 				variable.VariableUUID, EnumReflection::EnumString(var->GetType()), EnumReflection::EnumString((VariableTypes)variable.Type));
 			return;
 		}
@@ -3774,14 +3994,14 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		auto storageWeakCountIt = VariableSetStorage::GetAllStorageSets().find(variable.SetStorageHandle);
 		if (storageWeakCountIt == VariableSetStorage::GetAllStorageSets().end())
 		{
-			PF_ERROR("GetValue – No storage found with handle {}", variable.SetStorageHandle);
+			PF_ERROR("GetValue ï¿½ No storage found with handle {}", variable.SetStorageHandle);
 			return nullptr;
 		}
 
 		auto storageWeakCount = storageWeakCountIt->second;
 		if (!storageWeakCount.IsValid())
 		{
-			PF_ERROR("GetValue – Storage handle {} is invalid", variable.SetStorageHandle);
+			PF_ERROR("GetValue ï¿½ Storage handle {} is invalid", variable.SetStorageHandle);
 			return nullptr;
 		}
 
@@ -3789,7 +4009,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!storage->HasVariable(variable.VariableUUID))
 		{
-			PF_ERROR("GetValue – Variable UUID {} not found in storage {}", variable.VariableUUID, variable.SetStorageHandle);
+			PF_ERROR("GetValue ï¿½ Variable UUID {} not found in storage {}", variable.VariableUUID, variable.SetStorageHandle);
 			return nullptr;
 		}
 
@@ -3797,7 +4017,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (var->GetType() != (VariableTypes)variable.Type)
 		{
-			PF_ERROR("GetValue – Type mismatch for variable {}: expected {}, got {}",
+			PF_ERROR("GetValue ï¿½ Type mismatch for variable {}: expected {}, got {}",
 				variable.VariableUUID, EnumReflection::EnumString(var->GetType()), EnumReflection::EnumString((VariableTypes)variable.Type));
 			return nullptr;
 		}
@@ -3805,7 +4025,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		auto storagePtr = var->GetVariableStorage().As<PrimitiveVariableStorage>();
 		if (!storagePtr)
 		{
-			PF_ERROR("GetValue – Variable {} is not a PrimitiveVariableStorage", variable.VariableUUID);
+			PF_ERROR("GetValue ï¿½ Variable {} is not a PrimitiveVariableStorage", variable.VariableUUID);
 			return nullptr;
 		}
 
@@ -3838,7 +4058,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!playerHudComponent.HudTable->HasLayer(ScriptUtils::MonoStringToUTF8(name)))
 		{
-			PF_ERROR("PlayerHUDComponent.UITableGetLayerByName – entity '{}' does not contain layer named '{}'", entity.GetName(), ScriptUtils::MonoStringToUTF8(name));
+			PF_ERROR("PlayerHUDComponent.UITableGetLayerByName ï¿½ entity '{}' does not contain layer named '{}'", entity.GetName(), ScriptUtils::MonoStringToUTF8(name));
 			return ScriptFuncUILayer(false, -1);
 		}
 		UILayer& layer = *playerHudComponent.HudTable->FindLayerByName(ScriptUtils::MonoStringToUTF8(name));
@@ -3885,7 +4105,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstance – entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
+			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstance ï¿½ entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
 			return;
 		}
 
@@ -3894,7 +4114,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!uiPanelInstance)
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstance – entity '{}' layer {} does not contain panel {}", entity.GetName(), layerIndex, panel.GetAssetID());
+			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstance ï¿½ entity '{}' layer {} does not contain panel {}", entity.GetName(), layerIndex, panel.GetAssetID());
 			return;
 		}
 
@@ -3910,7 +4130,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstance – entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
+			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstance ï¿½ entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
 			return;
 		}
 
@@ -3919,7 +4139,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!uiPanelInstance)
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstance – entity '{}' layer {} does not contain panel {}", entity.GetName(), layerIndex);
+			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstance ï¿½ entity '{}' layer {} does not contain panel {}", entity.GetName(), layerIndex);
 			return ;
 		}
 		
@@ -3941,7 +4161,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerSetPanelInstanceVisible – entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
+			PF_ERROR("PlayerHUDComponent.UITableLayerSetPanelInstanceVisible ï¿½ entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
 			return;
 		}
 
@@ -3950,7 +4170,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!uiPanelInstance)
 		{
-			PF_ERROR("PlayerHUDComponent..UITableLayerSetPanelInstanceVisible – entity '{}' layer {} does not contain panel {}", entity.GetName(), layerIndex, panel.GetAssetID());
+			PF_ERROR("PlayerHUDComponent..UITableLayerSetPanelInstanceVisible ï¿½ entity '{}' layer {} does not contain panel {}", entity.GetName(), layerIndex, panel.GetAssetID());
 			return;
 		}
 
@@ -3967,7 +4187,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstanceVisible – entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
+			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstanceVisible ï¿½ entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
 			return false;
 		}
 
@@ -3976,7 +4196,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!uiPanelInstance)
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstanceVisible – panel {} not found in entity '{}' layer {}", panel.GetAssetID(), entity.GetName(), layerIndex);
+			PF_ERROR("PlayerHUDComponent.UITableLayerGetPanelInstanceVisible ï¿½ panel {} not found in entity '{}' layer {}", panel.GetAssetID(), entity.GetName(), layerIndex);
 			return false;
 		}
 
@@ -3995,7 +4215,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		std::string stringLayerName =  ScriptUtils::MonoStringToUTF8(layerName);
 		if (!playerHudComponent.HudTable->HasLayer(stringLayerName))
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerPushPanel – entity '{}' does not contain layer with name {}", entity.GetName(), stringLayerName);
+			PF_ERROR("PlayerHUDComponent.UITableLayerPushPanel ï¿½ entity '{}' does not contain layer with name {}", entity.GetName(), stringLayerName);
 			return;
 		}
 
@@ -4004,7 +4224,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!uiPanelInstance)
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerPushPanel – failed to push panel {} on entity '{}' layerName {}", panel.GetAssetID(), entity.GetName(), stringLayerName);
+			PF_ERROR("PlayerHUDComponent.UITableLayerPushPanel ï¿½ failed to push panel {} on entity '{}' layerName {}", panel.GetAssetID(), entity.GetName(), stringLayerName);
 			return;
 		}
 
@@ -4022,7 +4242,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerPushPanel – entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
+			PF_ERROR("PlayerHUDComponent.UITableLayerPushPanel ï¿½ entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
 			return;
 		}
 
@@ -4031,7 +4251,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!uiPanelInstance)
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerPushPanel – failed to push panel {} on entity '{}' layer {}", panel.GetAssetID(), entity.GetName(), layerIndex);
+			PF_ERROR("PlayerHUDComponent.UITableLayerPushPanel ï¿½ failed to push panel {} on entity '{}' layer {}", panel.GetAssetID(), entity.GetName(), layerIndex);
 			return;
 		}
 
@@ -4049,7 +4269,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerRemovePanel – entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
+			PF_ERROR("PlayerHUDComponent.UITableLayerRemovePanel ï¿½ entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
 			return;
 		}
 
@@ -4069,7 +4289,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		std::string stringLayerName = ScriptUtils::MonoStringToUTF8(layerName);
 		if (!playerHudComponent.HudTable->HasLayer(stringLayerName))
 		{
-			PF_ERROR("PlayerHUDComponent_UITableLayerRemovePanelByName – entity '{}' does not contain layer with name {}", entity.GetName(), stringLayerName);
+			PF_ERROR("PlayerHUDComponent_UITableLayerRemovePanelByName ï¿½ entity '{}' does not contain layer with name {}", entity.GetName(), stringLayerName);
 			return;
 		}
 
@@ -4088,7 +4308,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!playerHudComponent.HudTable->HasLayer(layerIndex))
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerPanelInstanceGetRegistryVariable – entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
+			PF_ERROR("PlayerHUDComponent.UITableLayerPanelInstanceGetRegistryVariable ï¿½ entity '{}' does not contain layer index {}", entity.GetName(), layerIndex);
 			return;
 		}
 
@@ -4097,13 +4317,13 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!uiPanelInstance)
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerPanelInstanceGetRegistryVariable – panel {} not found in entity '{}' layer {}", panel.GetAssetID(), entity.GetName(), layerIndex);
+			PF_ERROR("PlayerHUDComponent.UITableLayerPanelInstanceGetRegistryVariable ï¿½ panel {} not found in entity '{}' layer {}", panel.GetAssetID(), entity.GetName(), layerIndex);
 			return;
 		}
 
 		if (!uiPanelInstance->GetVariableRegistryInstance())
 		{
-			PF_ERROR("UITableLayerPanelGetRegistryVariable – panel {} on entity '{}' layer {} has no variable registry", panel.GetAssetID(), entity.GetName(), layerIndex);
+			PF_ERROR("UITableLayerPanelGetRegistryVariable ï¿½ panel {} on entity '{}' layer {} has no variable registry", panel.GetAssetID(), entity.GetName(), layerIndex);
 			return;
 		}
 
@@ -4111,7 +4331,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!uiPanelInstance->GetVariableRegistryInstance()->HasVariable(name))
 		{
-			PF_ERROR("UITableLayerPanelGetRegistryVariable – variable '{}' not found in panel {} on entity '{}' layer {}", name, panel.GetAssetID(), entity.GetName(), layerIndex);
+			PF_ERROR("UITableLayerPanelGetRegistryVariable ï¿½ variable '{}' not found in panel {} on entity '{}' layer {}", name, panel.GetAssetID(), entity.GetName(), layerIndex);
 			return;
 		}
 
@@ -4132,7 +4352,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!playerHudComponent.HudTable->HasLayer(stringLayerName))
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerPanelInstanceGetRegistryVariableByName – entity '{}' does not contain layer {}", entity.GetName(), stringLayerName);
+			PF_ERROR("PlayerHUDComponent.UITableLayerPanelInstanceGetRegistryVariableByName ï¿½ entity '{}' does not contain layer {}", entity.GetName(), stringLayerName);
 			return;
 		}
 
@@ -4141,13 +4361,13 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!uiPanelInstance)
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerPanelInstanceGetRegistryVariableByName – panel {} not found in entity '{}' layer {}", panel.GetAssetID(), entity.GetName(), stringLayerName);
+			PF_ERROR("PlayerHUDComponent.UITableLayerPanelInstanceGetRegistryVariableByName ï¿½ panel {} not found in entity '{}' layer {}", panel.GetAssetID(), entity.GetName(), stringLayerName);
 			return;
 		}
 
 		if (!uiPanelInstance->GetVariableRegistryInstance())
 		{
-			PF_ERROR("PlayerHUDComponent.UITableLayerPanelInstanceGetRegistryVariableByName – panel {} on entity '{}' layer {} has no variable registry", panel.GetAssetID(), entity.GetName(), stringLayerName);
+			PF_ERROR("PlayerHUDComponent.UITableLayerPanelInstanceGetRegistryVariableByName ï¿½ panel {} on entity '{}' layer {} has no variable registry", panel.GetAssetID(), entity.GetName(), stringLayerName);
 			return;
 		}
 
@@ -4155,7 +4375,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!uiPanelInstance->GetVariableRegistryInstance()->HasVariable(name))
 		{
-			PF_ERROR("PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariableByName – variable '{}' not found in panel {} on entity '{}' layer {}", name, panel.GetAssetID(), entity.GetName(), stringLayerName);
+			PF_ERROR("PlayerHUDComponent_UITableLayerPanelInstanceGetRegistryVariableByName ï¿½ variable '{}' not found in panel {} on entity '{}' layer {}", name, panel.GetAssetID(), entity.GetName(), stringLayerName);
 			return;
 		}
 
@@ -4285,6 +4505,50 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 
 #pragma endregion
+#pragma region ImmediateRenderer
+
+	static void ImmediateRenderer_SubmitMesh(AssetID meshID, AssetID materialID,glm::mat4* worldTransform, bool castShadow)
+	{
+		AssetKey<AssetType::Mesh> mesh(meshID);
+		AssetKey<AssetType::Material> material(materialID);
+
+		if (!mesh.IsValid())
+		{
+			PF_ENGINE_ERROR("{} Invalid mesh sent",SCRIPT_FUNC_GET_NAME);
+		}
+
+		if (!material.IsValid())
+		{
+			PF_ENGINE_ERROR("{} Invalid material sent",SCRIPT_FUNC_GET_NAME);
+		}
+
+		Count<World> world = ScriptEngine::GetWorldContext();
+		Count<ImmediateRenderer> immediateRenderer = world->GetImmediateRenderer();
+
+		immediateRenderer->SubmitMesh(mesh.GetAsset<Mesh>(),material.GetAsset<Material>()->GetRenderMaterial(),*worldTransform,castShadow);
+	}
+
+	static void ImmediateRenderer_SubmitDynamicMesh(AssetID meshID, AssetID materialID,uint32_t subMeshIndex,glm::mat4* worldTransform, bool castShadow)
+	{
+		AssetKey<AssetType::DynamicMesh> mesh(meshID);
+		AssetKey<AssetType::Material> material(materialID);
+
+		if (!mesh.IsValid())
+		{
+			PF_ENGINE_ERROR("{} Invalid mesh sent",SCRIPT_FUNC_GET_NAME);
+		}
+
+		if (!material.IsValid())
+		{
+			PF_ENGINE_ERROR("{} Invalid material sent",SCRIPT_FUNC_GET_NAME);
+		}
+
+		Count<World> world = ScriptEngine::GetWorldContext();
+		Count<ImmediateRenderer> immediateRenderer = world->GetImmediateRenderer();
+
+		immediateRenderer->SubmitDynamicMesh(mesh.GetAsset<DynamicMesh>(),material.GetAsset<Material>()->GetRenderMaterial(),subMeshIndex,*worldTransform,castShadow);
+	}
+#pragma endregion
 
 #pragma region ScriptFunc
 
@@ -4380,16 +4644,18 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		//World
 		{
 			PF_ADD_INTERNAL_CALL(World_Instanciate);
+			PF_ADD_INTERNAL_CALL(World_CreateEntity);
+			PF_ADD_INTERNAL_CALL(World_CreateEntityFromEntity);
 			PF_ADD_INTERNAL_CALL(World_IsEntityValid);
 			PF_ADD_INTERNAL_CALL(World_TryFindEntityByTag);
 			PF_ADD_INTERNAL_CALL(World_DeleteEntity);
 			PF_ADD_INTERNAL_CALL(World_GetDeltaTime);
-			PF_ADD_INTERNAL_CALL(World_ForEachEntityWith);
 			PF_ADD_INTERNAL_CALL(World_Restart);
 			PF_ADD_INTERNAL_CALL(World_OpenWorld);
 			PF_ADD_INTERNAL_CALL(World_Play);
 			PF_ADD_INTERNAL_CALL(World_Pause);
 			PF_ADD_INTERNAL_CALL(World_Invoke);
+			PF_ADD_INTERNAL_CALL(World_GetEntitiesOfScriptType);
 		}
 		//Entity 
 		{
@@ -4398,6 +4664,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(Entity_AddComponent);
 			PF_ADD_INTERNAL_CALL(GetScriptInstance);
 			PF_ADD_INTERNAL_CALL(GetScriptInstanceOfType);
+			PF_ADD_INTERNAL_CALL(AddScriptInstance);
 			PF_ADD_INTERNAL_CALL(Entity_GetParent);
 			PF_ADD_INTERNAL_CALL(Entity_GetChildren);
 			PF_ADD_INTERNAL_CALL(Entity_AddChild);
@@ -4425,9 +4692,14 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(TransformComponent_GetForwardVector);
 			PF_ADD_INTERNAL_CALL(TransformComponent_GetRightVector);
 			PF_ADD_INTERNAL_CALL(TransformComponent_GetUpVector);
+			PF_ADD_INTERNAL_CALL(TransformComponent_SetForwardVector);
+			PF_ADD_INTERNAL_CALL(TransformComponent_SetUpVector);
+			PF_ADD_INTERNAL_CALL(TransformComponent_SetRightVector);
 			PF_ADD_INTERNAL_CALL(TransformComponent_GetTransform);
 			PF_ADD_INTERNAL_CALL(TransformComponent_SetTransform);
 			PF_ADD_INTERNAL_CALL(TransformComponent_GetWorldSpaceTransform);
+			PF_ADD_INTERNAL_CALL(TransformComponent_GetWorldSpaceTransformMatrix);
+			PF_ADD_INTERNAL_CALL(TransformComponent_GetTransformMatrix);
 
 		}
 		//physics
@@ -4569,8 +4841,19 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		{
 			PF_ADD_INTERNAL_CALL(MeshComponent_GetVisible);
 			PF_ADD_INTERNAL_CALL(MeshComponent_SetVisible);
+			PF_ADD_INTERNAL_CALL(MeshComponent_GetMesh);
+			PF_ADD_INTERNAL_CALL(MeshComponent_SetMesh);
 		}
 
+		//DynamicMesh Component
+		{
+			PF_ADD_INTERNAL_CALL(DynamicMeshComponent_GetMesh);
+			PF_ADD_INTERNAL_CALL(DynamicMeshComponent_SetMesh);
+			PF_ADD_INTERNAL_CALL(DynamicMeshComponent_SetVisible);
+			PF_ADD_INTERNAL_CALL(DynamicMeshComponent_GetVisible);
+			PF_ADD_INTERNAL_CALL(DynamicMeshComponent_GetSubMeshIndex);
+			PF_ADD_INTERNAL_CALL(DynamicMeshComponent_SetSubMeshIndex);
+		}
 		//Mesh Base
 		{
 			PF_ADD_INTERNAL_CALL(MeshBase_GetMaterialByIndex);
@@ -4596,6 +4879,8 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(Random_RandomInt32);
 			PF_ADD_INTERNAL_CALL(Random_RandomFloat);
 			PF_ADD_INTERNAL_CALL(Random_RandomDouble);
+			PF_ADD_INTERNAL_CALL(Random_InsideUnitSphere);
+			PF_ADD_INTERNAL_CALL(Random_UnitVector);
 		}
 
 		//Player InputComponent
@@ -4654,6 +4939,14 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_GetParticles);
 		}
 
+		// Boid Flock Component
+		{
+			PF_ADD_INTERNAL_CALL(BoidFlockComponent_AddBoid);		
+			PF_ADD_INTERNAL_CALL(BoidFlockComponent_RemoveBoid);		
+			PF_ADD_INTERNAL_CALL(BoidFlockComponent_GetSettings);		
+			PF_ADD_INTERNAL_CALL(BoidFlockComponent_SetSettings);		
+		}
+
 		//persistent data storage
 		{
 			PF_ADD_INTERNAL_CALL(PersistentDataStorage_LoadData);
@@ -4671,7 +4964,12 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(DebugRenderer_DrawLine);
 			PF_ADD_INTERNAL_CALL(DebugRenderer_DrawRayLength);
 			PF_ADD_INTERNAL_CALL(DebugRenderer_DrawRay);
+		}
 
+		//Immediate Renderer
+		{
+			PF_ADD_INTERNAL_CALL(ImmediateRenderer_SubmitDynamicMesh);
+			PF_ADD_INTERNAL_CALL(ImmediateRenderer_SubmitMesh);
 		}
 	}
 }

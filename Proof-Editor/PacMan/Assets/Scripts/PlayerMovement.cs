@@ -44,7 +44,7 @@ namespace PacMan
             
             foreach (TurnDirection direction in Enum.GetValues(typeof(TurnDirection)))
             {
-                Vector4 color = new Vector4(0);
+                Vector4 color = new Vector4(0); 
                 Vector3 turnDirection = new Vector3(0);
                 Vector3 startLocation = Transform.Location;
                 switch (direction)
@@ -67,7 +67,7 @@ namespace PacMan
                 }
 
                 // Raycast in the turn direction
-                DebugRenderer.DrawRay(startLocation, turnDirection * RayDistance, color); // Debug ray
+               // DebugRenderer.DrawRay(startLocation, turnDirection * RayDistance, color); // Debug ray
             }
 
 
@@ -103,6 +103,7 @@ namespace PacMan
         // x > 0 fowrd x< 0 backwards
         void MoveForwardAndBackward(float x)
         {
+            
             if(x>0 && m_IsRotating == false)
                 m_RigidBody.Translate(Transform.Forward * MoveSpeed * x * World.GetDeltaTime());
             else if ( x < 0 && m_IsRotating == false)

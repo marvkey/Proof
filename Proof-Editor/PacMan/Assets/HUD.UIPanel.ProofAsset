@@ -1,0 +1,126 @@
+AssetType: UIPanel
+ID: 8869021020968417508
+VariableRegistry:
+  VariableRegistryID: 5288697150814558896
+  Variables:
+    - Name: Score
+      Type: Int
+      UUID: 17930072104892875527
+      Data: 0
+UIElements:
+  - UIElement: 12795911166431968960
+    UICoreComponent:
+      ElementID: 12795911166431968960
+      Name: HorizontalBox_00
+      UIElementType: HorizontalBox
+      Position: [-4.75, 0]
+      Rotation: [0, 0]
+      Size: [70, 70]
+      AnchorMinimum: [1, 0]
+      AnchorMaximum: [1, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 0
+      Children: [888722867998056687, 3835023492947211793]
+    UIHorizontalBoxComponent:
+      Spacing: 2
+      DrawBorders: false
+      BorderColor: [1, 1, 1, 1]
+      BorderThickness: 1
+  - UIElement: 17617016489154507981
+    UICoreComponent:
+      ElementID: 17617016489154507981
+      Name: HorizontalBox
+      UIElementType: HorizontalBox
+      Position: [0, 0]
+      Rotation: [0, 0]
+      Size: [70, 70]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 0
+      Children: [5735452891260518601, 9074210952272678628]
+    UIHorizontalBoxComponent:
+      Spacing: 1.29999995
+      DrawBorders: false
+      BorderColor: [1, 1, 1, 1]
+      BorderThickness: 1
+  - UIElement: 5735452891260518601
+    UICoreComponent:
+      ElementID: 5735452891260518601
+      Name: Text
+      UIElementType: Text
+      Position: [0, 0]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 17617016489154507981
+      Children: []
+    UITextComponent:
+      Text:
+        Value: "LIVES: "
+        BindedVariableID: 0
+      Color: [1, 0, 0, 1]
+      Kerning: 0
+      LineSpacing: 1
+  - UIElement: 3835023492947211793
+    UICoreComponent:
+      ElementID: 3835023492947211793
+      Name: Text_01
+      UIElementType: Text
+      Position: [-1.75, 0]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 12795911166431968960
+      Children: []
+    UITextComponent:
+      Text:
+        Value: 2000
+        BindedVariableID: 0
+      Color: [0, 0.311111212, 1, 1]
+      Kerning: 0
+      LineSpacing: 1
+  - UIElement: 9074210952272678628
+    UICoreComponent:
+      ElementID: 9074210952272678628
+      Name: ChildText
+      UIElementType: Text
+      Position: [2.29999995, 0]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 17617016489154507981
+      Children: []
+    UITextComponent:
+      Text:
+        Value: 5
+        BindedVariableID: 0
+      Color: [1, 0.688888907, 0, 1]
+      Kerning: 0
+      LineSpacing: 1
+  - UIElement: 888722867998056687
+    UICoreComponent:
+      ElementID: 888722867998056687
+      Name: Text_00
+      UIElementType: Text
+      Position: [-4.75, 0]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 12795911166431968960
+      Children: []
+    UITextComponent:
+      Text:
+        Value: "SCORE:"
+        BindedVariableID: 0
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1

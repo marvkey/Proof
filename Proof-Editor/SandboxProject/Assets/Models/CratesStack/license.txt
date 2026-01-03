@@ -1,0 +1,11 @@
+Model Information:
+* title:	Stack O' Crates [Free]
+* source:	https://sketchfab.com/3d-models/stack-o-crates-free-ef860e5c5c6241549f2e504256aaa256
+* author:	Hatty (https://sketchfab.com/Hatty53)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Stack O' Crates [Free]" (https://sketchfab.com/3d-models/stack-o-crates-free-ef860e5c5c6241549f2e504256aaa256) by Hatty (https://sketchfab.com/Hatty53) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

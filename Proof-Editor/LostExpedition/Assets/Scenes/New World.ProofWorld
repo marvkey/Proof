@@ -6,7 +6,7 @@ World:
         Tag: Empty Entity
         tags: []
       TransformComponent:
-        Location: [0, 3.16052961, 0]
+        Location: [0, 4.57371569, 0]
         Rotation: [0, 0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:

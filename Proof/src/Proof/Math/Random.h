@@ -1,6 +1,7 @@
 #pragma once
 #include <random>
 #include <numeric>
+#include <glm/glm.hpp>
 static	std::random_device s_RandomDevice;
 static	std::mt19937_64 s_RandomEngine64(s_RandomDevice());
 namespace Proof
@@ -24,6 +25,56 @@ namespace Proof
 		{
 			std::uniform_int_distribution<T> dist(minNumber, maxNumber);
 			return dist(s_RandomEngine64);
+		}
+
+	    //https://github.com/NVIDIA-Omniverse/PhysX/blob/5ca9f472105a90d70d957c243cb0ef36fe251a9f/physx/snippets/snippetpathtracing/SnippetPathTracing.cpp#L452
+		// Generates a random point inside a unit sphere (radius = 1).
+		// This uses rejection sampling — random points are generated in a cube [-1,1],
+		// and any that fall outside the sphere are discarded until a valid one is found.
+		// Equivalent to Unity's Random.insideUnitSphere and PhysX's RandomInUnitSphere.
+		inline static glm::vec3 InsideUnitSphere()
+		{
+			// Random float generator from -1.0 to 1.0 for each axis
+			std::uniform_real_distribution<float> U(-1.0f, 1.0f);
+
+			glm::vec3 p;
+
+			do
+			{
+				// Generate a random point in a cube [-1, 1]^3
+				p = { U(s_RandomEngine64), U(s_RandomEngine64), U(s_RandomEngine64) };
+
+				// glm::dot(p, p) gives x² + y² + z² = distance squared from origin
+				// If it's >= 1, the point lies outside the sphere → reject and retry
+			}
+			while (glm::dot(p, p) >= 1.0f); // p dot p is equal to magnituede^2 so if its magnitude is greater or equalt to 1
+
+			// Return a random point inside the unit sphere
+			return p;
+		}
+
+	    inline static glm::vec3 InsideSphere(float radius)
+		{
+		    return InsideUnitSphere() * radius;
+		}
+
+	    // https://github.com/NVIDIA-Omniverse/PhysX/blob/5ca9f472105a90d70d957c243cb0ef36fe251a9f/physx/snippets/snippetpathtracing/SnippetPathTracing.cpp#L461
+	    inline static glm::vec3 UnitVector()
+		{
+		    // Generates a random direction uniformly distributed on the surface of the unit sphere.
+		    // Uses the same logic as PhysX's RandomUnitVector 
+
+		    std::uniform_real_distribution<float> U(-1.0f, 1.0f);
+		    std::uniform_real_distribution<float> Angle(0.0f, 3.14159265358979323846264338327950288 *2.0f); // 2ppi
+
+		    const float z = U(s_RandomEngine64);              // Random height between -1 and 1
+		    const float a = Angle(s_RandomEngine64);          // Random angle around the Z axis
+		    const float r = sqrtf(1.0f - z * z);              // Radius at this z (circle cross-section)
+
+		    const float x = r * cosf(a);
+		    const float y = r * sinf(a);
+
+		    return glm::vec3(x, y, z);
 		}
 	};
 

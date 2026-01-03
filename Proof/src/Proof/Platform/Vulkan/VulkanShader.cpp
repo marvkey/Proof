@@ -465,7 +465,7 @@ namespace Proof
                 {
                     PF_ENGINE_TRACE("{} {}", num, line);
                     num++;
-                }
+                } 
                 if(m_InitialCompile)
                      PF_CORE_ASSERT(false);
                 

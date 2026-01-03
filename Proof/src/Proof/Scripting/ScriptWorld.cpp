@@ -287,6 +287,8 @@ namespace Proof
             }
         }
 
+        InternalPushScript(entity,classFullName);
+
         if (m_IsRuntime)
             return;
 
@@ -375,6 +377,7 @@ namespace Proof
         m_CallOnCreate.insert({ instanceHandle });
         //ScriptEngine::CallMethod(instanceHandle, "OnCreate");
 
+        InternalPushScript(entity,classFullName);
     }
     void ScriptWorld::ScriptEntityDeleteScript(Entity entity, const std::string& classFullName)
     {
@@ -413,6 +416,9 @@ namespace Proof
         int index = scriptComponent.GetScriptIndex(classFullName);
         if (index != -1)
             scriptComponent.ScriptMetadates.erase(scriptComponent.ScriptMetadates.begin() + index);
+
+        InternalDeleteScript(entity, classFullName);
+
     }
 
     void ScriptWorld::RuntimeScriptEntityDeleteScript(Entity entity, const std::string& classFullName)
@@ -442,6 +448,25 @@ namespace Proof
             if (m_EntityClassesStorage.at(entity.GetUUID()).Classes.contains(classFullName))
                 EditorScriptEntityDeleteScript(entity, classFullName);
         }
+
+        InternalDeleteScript(entity, classFullName);
+    }
+
+    void ScriptWorld::InternalPushScript(Entity entity, const std::string& classFullName)
+    {
+        m_ScriptByType[classFullName].insert(entity.GetUUID());
+    }
+
+    void ScriptWorld::InternalDeleteScript(Entity entity, const std::string& classFullName)
+    {
+        if (classFullName.empty())
+            return;
+
+        PF_CORE_ASSERT(m_ScriptByType[classFullName].contains(entity.GetUUID()));                        
+
+        if (GetEntityClass(entity,classFullName) == nullptr)     // does not conain entity  and checking if another instnace of the entity is held
+            m_ScriptByType[classFullName].erase(entity.GetUUID());
+
     }
 
     bool ScriptWorld::IsEntityScriptInstantiated(Entity entity)

@@ -103,6 +103,10 @@ namespace Proof
                 InternalCalls.TransformComponent_GetForwardVector(Entity.ID, out Proof.Vector3 foward);
                 return foward;
             }
+			set
+			{
+				InternalCalls.TransformComponent_SetForwardVector(Entity.ID, ref value);
+			}
 		}
         // local space
         public Proof.Vector3 Right
@@ -113,6 +117,10 @@ namespace Proof
                 InternalCalls.TransformComponent_GetRightVector(Entity.ID, out Proof.Vector3 foward);
                 return foward;
             }
+            set
+            {
+				InternalCalls.TransformComponent_SetRightVector(Entity.ID, ref value);
+            }
         }
         // local space
         public Proof.Vector3 Up
@@ -122,6 +130,10 @@ namespace Proof
 
                 InternalCalls.TransformComponent_GetUpVector(Entity.ID, out Proof.Vector3 foward);
                 return foward;
+            }
+            set
+            {
+                InternalCalls.TransformComponent_SetUpVector(Entity.ID, ref value);
             }
         }
 
@@ -174,6 +186,27 @@ namespace Proof
             // Update the rotation
             Rotation = currentRotation;
         }
+
+
+        public TransferMatrix4 WorldTransformMatrix
+        {
+	        get
+	        {
+		        InternalCalls.TransformComponent_GetWorldSpaceTransformMatrix(Entity.ID, out TransferMatrix4 matrix);
+				return matrix;
+	        }
+        }
+
+
+        public TransferMatrix4 TransformMatrix
+        {
+	        get
+	        {
+		        InternalCalls.TransformComponent_GetTransformMatrix(Entity.ID, out TransferMatrix4 matrix);
+				return matrix;
+	        }
+        }
+
 
     }
 
@@ -309,6 +342,64 @@ namespace Proof
 				InternalCalls.MeshComponent_SetVisible(Entity.ID, value);
 			}
 		}
+
+		public StaticMesh Mesh
+		{
+			get
+			{
+				return new StaticMesh( InternalCalls.MeshComponent_GetMesh(Entity.ID));
+			}
+
+			set
+			{
+				InternalCalls.MeshComponent_SetMesh(Entity.ID,value.ID ,true);
+			}
+		}
+	}
+
+    [RegisterCoreClassStruct]
+
+	public class DynamicMeshComponent : Component
+	{
+		public bool Visible
+		{
+			get
+			{
+				return InternalCalls.DynamicMeshComponent_GetVisible(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.DynamicMeshComponent_SetVisible(Entity.ID, value);
+			}
+		}
+
+		public uint SubMeshIndex
+		{
+			get
+			{
+				return InternalCalls.DynamicMeshComponent_GetSubMeshIndex(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.DynamicMeshComponent_SetSubMeshIndex(Entity.ID, value);
+			}
+		}
+
+		public DynamicMesh Mesh
+		{
+			get
+			{
+				return new DynamicMesh( InternalCalls.DynamicMeshComponent_GetMesh(Entity.ID));
+			}
+
+			set
+			{
+				InternalCalls.DynamicMeshComponent_SetMesh(Entity.ID,value.ID ,true);
+			}
+		}
+
+
+
 	}
     [RegisterCoreClassStruct]
 	public class PlayerHUDComponent : Component
@@ -813,5 +904,152 @@ namespace Proof
 
         
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct BoidFlockData
+    {
+	    // --- Core Movement ---
+	    public float MinSpeed;            // Prevents stalling
+	    public float MaxSpeed;            // Max chase/orbit speed
+	    public float MaxSteerForce;       // How sharp turns can be
+
+	    // --- Flocking Behavior ---
+	    public float PerceptionRadius;    // Sensing range for nearby boids
+	    public float AvoidanceRadius;     // Minimum distance between boids
+
+	    public float AlignWeight;         // Strength of alignment (same direction)
+	    public float CohesionWeight;      // Pull toward flock center
+	    public float SeperateWeight;      // Push away from close neighbors
+
+	    // --- Target / Following ---
+	    public float TargetWeight;        // Pull toward target
+	    public ulong TargetEntity;      // The entity being followed/orbited
+
+	    // --- Collision Avoidance ---
+	    public uint LayerID;
+	    public float BoundsRadius;
+	    public float AvoidCollisionWeight;
+	    public float CollisionAvoidDst;
+
+	    // --- Orbiting Behavior ---
+	    public bool Orbit;               // Enable orbiting mode
+	    public float OrbitRadius;         // Distance to maintain around target
+	    public float OrbitWandering;      // How much randomness/noise in orbit path
+    }
+    [RegisterCoreClassStruct]
+    public class BoidFlockComponent : Component
+    {
+	     private BoidFlockData m_Data; // persistent cached struct
+
+        private void SyncFromNative() => InternalCalls.BoidFlockComponent_GetSettings(Entity.ID, out m_Data);
+        private void SyncToNative() => InternalCalls.BoidFlockComponent_SetSettings(Entity.ID, ref m_Data);
+
+        // ============ All Properties ============
+
+        public float MinSpeed
+        {
+            get { SyncFromNative(); return m_Data.MinSpeed; }
+            set { SyncFromNative(); m_Data.MinSpeed = value; SyncToNative(); }
+        }
+
+        public float MaxSpeed
+        {
+            get { SyncFromNative(); return m_Data.MaxSpeed; }
+            set { SyncFromNative(); m_Data.MaxSpeed = value; SyncToNative(); }
+        }
+
+        public float PerceptionRadius
+        {
+            get { SyncFromNative(); return m_Data.PerceptionRadius; }
+            set { SyncFromNative(); m_Data.PerceptionRadius = value; SyncToNative(); }
+        }
+
+        public float AvoidanceRadius
+        {
+            get { SyncFromNative(); return m_Data.AvoidanceRadius; }
+            set { SyncFromNative(); m_Data.AvoidanceRadius = value; SyncToNative(); }
+        }
+
+        public float MaxSteerForce
+        {
+            get { SyncFromNative(); return m_Data.MaxSteerForce; }
+            set { SyncFromNative(); m_Data.MaxSteerForce = value; SyncToNative(); }
+        }
+
+        public float AlignWeight
+        {
+            get { SyncFromNative(); return m_Data.AlignWeight; }
+            set { SyncFromNative(); m_Data.AlignWeight = value; SyncToNative(); }
+        }
+
+        public float CohesionWeight
+        {
+            get { SyncFromNative(); return m_Data.CohesionWeight; }
+            set { SyncFromNative(); m_Data.CohesionWeight = value; SyncToNative(); }
+        }
+
+        public float SeperateWeight
+        {
+            get { SyncFromNative(); return m_Data.SeperateWeight; }
+            set { SyncFromNative(); m_Data.SeperateWeight = value; SyncToNative(); }
+        }
+
+        public float TargetWeight
+        {
+            get { SyncFromNative(); return m_Data.TargetWeight; }
+            set { SyncFromNative(); m_Data.TargetWeight = value; SyncToNative(); }
+        }
+
+        public uint LayerID
+        {
+            get { SyncFromNative(); return m_Data.LayerID; }
+            set { SyncFromNative(); m_Data.LayerID = value; SyncToNative(); }
+        }
+
+        public float BoundsRadius
+        {
+            get { SyncFromNative(); return m_Data.BoundsRadius; }
+            set { SyncFromNative(); m_Data.BoundsRadius = value; SyncToNative(); }
+        }
+
+        public float AvoidCollisionWeight
+        {
+            get { SyncFromNative(); return m_Data.AvoidCollisionWeight; }
+            set { SyncFromNative(); m_Data.AvoidCollisionWeight = value; SyncToNative(); }
+        }
+
+        public float CollisionAvoidDst
+        {
+            get { SyncFromNative(); return m_Data.CollisionAvoidDst; }
+            set { SyncFromNative(); m_Data.CollisionAvoidDst = value; SyncToNative(); }
+        }
+
+        public Entity Target
+        {
+	        get
+	        {
+		        SyncFromNative();
+		        Entity target = World.FindEntityByID(m_Data.TargetEntity);
+		        return target;
+	        }
+            set { SyncFromNative(); m_Data.TargetEntity = value.ID; SyncToNative(); }
+        }
+
+        // ============ Boid List Management ============
+
+        public void AddBoid(Entity entity)
+        {
+	        if(entity != null)
+				InternalCalls.BoidFlockComponent_AddBoid(Entity.ID, entity.ID);
+		        
+        }
+
+        public void RemoveBoid(Entity entity)
+        {
+	        if(entity != null)
+		        InternalCalls.BoidFlockComponent_RemoveBoid(Entity.ID, entity.ID);
+        }
+    }
+    
 }
 

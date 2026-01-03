@@ -323,7 +323,9 @@ void PBR_FinalOutput(vec3 directLighting, float shadowScale, vec3 IblEffect, vec
     else
     {
         finalColor = directLighting * shadowScale ;
+
     }
+    
     finalColor += CalculatePointLights(m_PBRParams.F0, PBR_Input.WorldPosition);
     finalColor += CalculateSpotLights(m_PBRParams.F0, PBR_Input.WorldPosition); //* sahdow
 
@@ -379,6 +381,7 @@ void PBR_FinalOutput(vec3 directLighting, float shadowScale, vec3 IblEffect, vec
 	out_Velocity = screenPosPrev - screenPosCur;
 
     out_FragColor = finalEndingCOlor;
+    //out_FragColor = vec4(pbrData.Albedo,1.0);
 }
 
 

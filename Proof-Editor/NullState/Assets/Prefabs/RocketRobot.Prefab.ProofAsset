@@ -1,0 +1,97 @@
+AssetType: Prefab
+ID: 4332363279821732544
+EntityOwner: 207920449735789110
+Entities:
+  - Entity: 207920449735789110
+    TagComponent:
+      Tag: RocketRobot
+      tags: []
+    TransformComponent:
+      Location: [40.4236641, -16.8008862, -58.2056656]
+      Rotation: [0, 0, 0]
+      Scale: [5, 5, 5]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: [10059838478169100595, 10505350063197281236]
+    ScriptComponent:
+      Scripts:
+        - Script: NullState.Turret
+          ScriptClassName: NullState.Turret
+          ScriptName: NullState.Turret
+          Fields:
+            - NameID: NullState.Turret.Muzzle
+              Type: Entity
+              Data: 12402776503988215509
+            - NameID: NullState.Turret.WaitTimeBeforeShoot
+              Type: Float
+              Data: 1
+            - NameID: NullState.Turret.Bullet
+              Type: Prefab
+              Data: 16587156431716427673
+            - NameID: NullState.Turret.Range
+              Type: Float
+              Data: 60
+            - NameID: NullState.Turret.RotationSpeed
+              Type: Float
+              Data: 5
+            - NameID: NullState.Turret.MuzzleFlash
+              Type: Prefab
+              Data: 6963299799565776090
+            - NameID: NullState.Turret.RocketTurret
+              Type: Bool
+              Data: true
+            - NameID: NullState.Turret.MuzzleFlashTime
+              Type: Float
+              Data: 0.5
+            - NameID: NullState.Turret.FireRate
+              Type: Float
+              Data: 5
+            - NameID: NullState.Turret.BulletSpeed
+              Type: Float
+              Data: 100
+            - NameID: NullState.Turret.RaySpreadAngle
+              Type: Float
+              Data: 5
+            - NameID: NullState.Turret.NumRays
+              Type: Int32
+              Data: 7
+    RigidBodyComponent:
+      Mass: 1
+      LinearDrag: 0.00999999978
+      PhysicsLayerID: 0
+      AngularDrag: 0.0500000007
+      Gravity: true
+      Type: Static
+      FreezeLocation: [false, false, false]
+      FreezeRotation: [false, false, false]
+      Kinematic: false
+      CollisionDetection: Discrete
+  - Entity: 10059838478169100595
+    TagComponent:
+      Tag: Muzzle
+      tags: []
+    TransformComponent:
+      Location: [0, 1.34039867, 0.475056291]
+      Rotation: [0, 0, 0]
+      Scale: [1, 0.200000003, 0.200000003]
+    HierarchyComponent:
+      ParentHandle: 207920449735789110
+      Children: []
+  - Entity: 10505350063197281236
+    TagComponent:
+      Tag: Mesh
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, -0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 207920449735789110
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 14094327721765858305
+      Visible: true
+      MaterialTable:
+        - Material: ""
+          AssetID: 14486622669096991682
+          Index: 0

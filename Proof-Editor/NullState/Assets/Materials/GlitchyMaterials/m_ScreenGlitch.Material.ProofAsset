@@ -2,6 +2,6 @@ AssetType: Material
 ID: 7976084304101403599
 ShaderName: ScreenGlitch
 u_MaterialUniform.GlitchAxis: [0.0500000007, 0.0299999993, 0.0500000007]
-u_MaterialUniform.GlitchStrength: 9
-u_MaterialUniform.TimeScalee: 1
+u_MaterialUniform.GlitchStrength: 0
+u_MaterialUniform.TimeScalee: 0
 u_GlitchNoise: 12400660277232460367

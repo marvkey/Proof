@@ -22,5 +22,13 @@ namespace Proof
         {
             Location = location; Rotation = rotation; Scale = scale;
         }
+        public override string ToString()
+        {
+            return $"Transform(" +
+                   $"Location: {Location}, " +
+                   $"Rotation: {Rotation}, " +
+                   $"Scale: {Scale})";
+        }
+
     }
 }

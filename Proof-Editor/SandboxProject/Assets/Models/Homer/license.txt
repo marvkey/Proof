@@ -1,0 +1,11 @@
+Model Information:
+* title:	Homer Simpson Fan Art Sculpt
+* source:	https://sketchfab.com/3d-models/homer-simpson-fan-art-sculpt-28747276e0cb44a49ca6b1e6a8246d53
+* author:	johnlabrada3D (https://sketchfab.com/johnlabrada3D)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Homer Simpson Fan Art Sculpt" (https://sketchfab.com/3d-models/homer-simpson-fan-art-sculpt-28747276e0cb44a49ca6b1e6a8246d53) by johnlabrada3D (https://sketchfab.com/johnlabrada3D) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

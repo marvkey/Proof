@@ -13,28 +13,21 @@
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Project/Project.h"
 #include "Mesh.h"
-#include "Prefab.h"
 #include "Proof/Scene/World.h"
-#include "Proof/Asset/AssetManager.h"
-#include "Proof/Scene/Material.h"
 #include "Proof/Scripting/ScriptWorld.h"
 #include "Proof/Scripting/ScriptField.h"
-#include "Proof/Scripting/ScriptFile.h"
 #include "Proof/Asset/SerializeCommon.h"
-
-#include "Proof/Scene/WaterSystem/WaterSystem.h"
+#include "Proof/Physics/Boids/BoidFlock.h"
 #include "Proof/Scene/WaterSystem/Water.h"
 #include "Proof/Scene/WaterSystem/GerstnerWave.h"
 #include "Proof/Scene/WaterSystem/FFTWave/FFTWave.h"
 #include "Proof/Scene/WaterSystem/FFTWave/FFTWaveRealistic.h"
 #include "Proof/Renderer/UIRenderer/UIPanel.h"
-#include "Proof/Utils/VariableSystem/Variable.h"
 #include "Proof/Renderer/ParticleSystem/ParticleSystem.h"
 #include "Proof/Input/ElevatedInputSystem/ElevatedPlayer.h"
 #include "Proof/Input/ElevatedInputSystem/InputBindingContext.h"
 #include "Proof/Animation/AnimationController.h"
 #include "Proof/Animation/Animation.h"
-#include "Material.h"
 #include "TerrainRenderer/TerrainRenderer.h"
 namespace Proof
 {
@@ -1109,6 +1102,52 @@ namespace Proof
 				out << YAML::EndMap; // buoyancyComponent
 			}
 		}
+
+		//BoidFlockCompnent
+		{
+			if (entity.HasComponent<BoidFlockComponent>())
+			{
+				Count<BoidFlock> boidFlock = entity.GetComponent<BoidFlockComponent>().Flock;
+				out << YAML::Key << "BoidFlockComponent";
+				out << YAML::BeginMap; //BoidFlockComponent
+				BoidFlockSettings settings = boidFlock->GetSettings();
+
+				out << YAML::Key <<"MinSpeed" << settings.MinSpeed;
+				out << YAML::Key <<"MaxSpeed" << settings.MaxSpeed;
+				out <<YAML::Key << "FacingMode" << EnumReflection::EnumString(settings.FacingMode);
+				out << YAML::Key <<"PerceptionRadius" << settings.PerceptionRadius;
+				out << YAML::Key <<"AvoidanceRadius" << settings.AvoidanceRadius;
+				out << YAML::Key <<"MaxSteerForce" << settings.MaxSteerForce;
+				
+				out << YAML::Key <<"AlignWeight" << settings.AlignWeight;
+				out << YAML::Key <<"CohesionWeight" << settings.CohesionWeight;
+				out << YAML::Key <<"SeperateWeight" << settings.SeperateWeight;
+				out << YAML::Key <<"TargetWeight" << settings.TargetWeight;
+
+
+				out << YAML::Key <<"BoundsRadius" << settings.BoundsRadius;
+				out << YAML::Key <<"AvoidCollisionWeight" << settings.AvoidCollisionWeight;
+				out << YAML::Key <<"CollisionAvoidDst" << settings.CollisionAvoidDst;
+				out << YAML::Key <<"TargetEntity" << settings.TargetEntity.Get();
+				
+				out << YAML::Key <<"LayerID" << settings.LayerID;
+
+				out << YAML::Key <<"Orbit" << settings.Orbit;
+				out << YAML::Key <<"OrbitRadius" << settings.OrbitRadius;
+				out << YAML::Key <<"OrbitWandering" << settings.OrbitWandering;
+
+				out << YAML::Key << "OrbitMinAngleRadians" << settings.OrbitMinAngleRadians;
+				out << YAML::Key << "OrbitMaxAngleRadians" << settings.OrbitMaxAngleRadians;
+				out << YAML::Key << "OrbitMinVerticalAngleRadians" << settings.OrbitMinVerticalAngleRadians;
+				out << YAML::Key << "OrbitMaxVerticalAngleRadians" << settings.OrbitMaxVerticalAngleRadians;
+				out << YAML::Key << "OrbitHorizontalSpeed" << settings.OrbitHorizontalSpeed;
+				out << YAML::Key << "OrbitVerticalSpeed" << settings.OrbitVerticalSpeed;
+				out << YAML::Key << "OrbitVerticalBobbing" << settings.OrbitVerticalBobbing;
+				
+				out << YAML::EndMap; //BoidFlockComponent
+				
+			}
+		}
 		out << YAML::EndMap; // entity
 	}
 
@@ -2160,6 +2199,53 @@ namespace Proof
 							}
 						}
 					}
+				}
+			}
+
+			// BoidFlockComponent
+			{
+				auto boidFlockComponent = entity["BoidFlockComponent"];
+
+				if (boidFlockComponent)
+				{
+					auto& bdfd = NewEntity.AddComponent<BoidFlockComponent>();
+
+					auto flock = bdfd.Flock;
+					BoidFlockSettings& settings = flock->GetSettingsRef();
+
+					settings.MinSpeed = boidFlockComponent["MinSpeed"].as<float>(settings.MinSpeed);
+					settings.MaxSpeed = boidFlockComponent["MaxSpeed"].as<float>(settings.MaxSpeed);
+					settings.FacingMode = EnumReflection::StringEnum<BoidFacingMode>(boidFlockComponent["SetFacingDirection"].as<std::string>( EnumReflection::EnumString(settings.FacingMode)));
+					settings.PerceptionRadius = boidFlockComponent["PerceptionRadius"].as<float>(settings.PerceptionRadius);
+					settings.AvoidanceRadius = boidFlockComponent["AvoidanceRadius"].as<float>(settings.AvoidanceRadius);
+					settings.MaxSteerForce = boidFlockComponent["MaxSteerForce"].as<float>(settings.MaxSteerForce);
+
+					settings.AlignWeight = boidFlockComponent["AlignWeight"].as<float>(settings.AlignWeight);
+					settings.CohesionWeight = boidFlockComponent["CohesionWeight"].as<float>(settings.CohesionWeight);
+					settings.SeperateWeight = boidFlockComponent["SeperateWeight"].as<float>(settings.SeperateWeight);
+					settings.TargetWeight = boidFlockComponent["TargetWeight"].as<float>(settings.TargetWeight);
+
+					settings.LayerID = boidFlockComponent["LayerID"].as<uint32_t>(settings.LayerID);
+
+
+					settings.BoundsRadius = boidFlockComponent["BoundsRadius"].as<float>(settings.BoundsRadius);
+					settings.AvoidCollisionWeight = boidFlockComponent["AvoidCollisionWeight"].as<float>(settings.AvoidCollisionWeight);
+					settings.CollisionAvoidDst = boidFlockComponent["CollisionAvoidDst"].as<float>(settings.CollisionAvoidDst);
+					
+
+					settings.TargetEntity = boidFlockComponent["TargetEntity"].as<uint64_t>(0);
+					settings.Orbit = boidFlockComponent["Orbit"].as<bool>(settings.Orbit);
+					settings.OrbitRadius = boidFlockComponent["OrbitRadius"].as<float>(settings.OrbitRadius);
+					settings.OrbitWandering = boidFlockComponent["OrbitWandering"].as<float>(settings.OrbitWandering);
+
+					settings.OrbitMinAngleRadians = boidFlockComponent["OrbitMinAngleRadians"].as<float>(settings.OrbitMinAngleRadians);
+					settings.OrbitMaxAngleRadians = boidFlockComponent["OrbitMaxAngleRadians"].as<float>(settings.OrbitMaxAngleRadians);
+					settings.OrbitMinVerticalAngleRadians = boidFlockComponent["OrbitMinVerticalAngleRadians"].as<float>(settings.OrbitMinVerticalAngleRadians);
+					settings.OrbitMaxVerticalAngleRadians = boidFlockComponent["OrbitMaxVerticalAngleRadians"].as<float>(settings.OrbitMaxVerticalAngleRadians);
+					settings.OrbitHorizontalSpeed = boidFlockComponent["OrbitHorizontalSpeed"].as<float>(settings.OrbitHorizontalSpeed);
+					settings.OrbitVerticalSpeed = boidFlockComponent["OrbitVerticalSpeed"].as<float>(settings.OrbitVerticalSpeed);
+					settings.OrbitVerticalBobbing = boidFlockComponent["OrbitVerticalBobbing"].as<float>(settings.OrbitVerticalBobbing);
+					
 				}
 			}
 		}

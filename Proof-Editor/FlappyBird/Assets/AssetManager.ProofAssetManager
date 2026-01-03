@@ -1,25 +1,16 @@
 Assets:
-  - Asset: 17819033342336243331
-    Type: InputBindingContext
-    Path: Input\PlayeInputContext.InputBindingContext.ProofAsset
   - Asset: 16034998859201702648
     Type: Material
     Path: Materials\m_White.Material.ProofAsset
+  - Asset: 17819033342336243331
+    Type: InputBindingContext
+    Path: Input\PlayeInputContext.InputBindingContext.ProofAsset
   - Asset: 21111461629328851
     Type: Material
     Path: Materials\m_Black.Material.ProofAsset
   - Asset: 1727338198408425826
     Type: World
     Path: Scenes\Level1.ProofWorld
-  - Asset: 14189394413535490778
-    Type: Texture
-    Path: Textures\rye_field_sunset_8k.hdr
-  - Asset: 14672714111568738449
-    Type: ScriptFile
-    Path: Scripts\BirdMovement.cs
-  - Asset: 3078368524365667147
-    Type: Mesh
-    Path: Meshes\FlappyBird.Mesh.ProofAsset
   - Asset: 1462782654630928778
     Type: MeshCollider
     Path: Collider\NewMeshCollider.MeshCollider.ProofAsset
@@ -29,42 +20,48 @@ Assets:
   - Asset: 16451095300668606735
     Type: Prefab
     Path: Prefabs\p_FracturedBird.Prefab.ProofAsset
+  - Asset: 14672714111568738449
+    Type: ScriptFile
+    Path: Scripts\BirdMovement.cs
+  - Asset: 3078368524365667147
+    Type: Mesh
+    Path: Meshes\FlappyBird.Mesh.ProofAsset
+  - Asset: 14189394413535490778
+    Type: Texture
+    Path: Textures\rye_field_sunset_8k.hdr
   - Asset: 17583959974702302579
     Type: MeshSourceFile
     Path: Models\FlappyBird\scene.gltf
   - Asset: 14119781984078702474
     Type: InputAction
     Path: Input\MovePlayer.InputAction.ProofAsset
-  - Asset: 4337114102758531292
-    Type: InputAction
-    Path: Input\ChangeCamera.InputAction.ProofAsset
   - Asset: 3152980911532530012
     Type: Texture
     Path: Textures\rye_field_sunset_2k.hdr
+  - Asset: 4337114102758531292
+    Type: InputAction
+    Path: Input\ChangeCamera.InputAction.ProofAsset
   - Asset: 17409813409522069563
     Type: Mesh
     Path: Meshes\Pipe.Mesh.ProofAsset
-  - Asset: 8358095728716913711
-    Type: ScriptFile
-    Path: Scripts\ObstacleSpawner.cs
   - Asset: 14283815715991822103
     Type: Texture
     Path: Textures\patchy grass\1K\Poliigon_GrassPatchyGround_4585_Roughness.jpg
-  - Asset: 35420920226295225
-    Type: UIPanel
-    Path: UI\UI_PlayerHud.UIPanel.ProofAsset
+  - Asset: 8358095728716913711
+    Type: ScriptFile
+    Path: Scripts\ObstacleSpawner.cs
   - Asset: 7121165998562327910
     Type: ScriptFile
     Path: Scripts\CameraFollow.cs
   - Asset: 15827902576410675130
     Type: Texture
     Path: Textures\checkerBoard.jpg
-  - Asset: 1236004275841040542
-    Type: MeshSourceFile
-    Path: Models\Pipe\scene.gltf
   - Asset: 14035903668724542506
     Type: Texture
     Path: Textures\base.png
+  - Asset: 1236004275841040542
+    Type: MeshSourceFile
+    Path: Models\Pipe\scene.gltf
   - Asset: 1212851388914407583
     Type: Texture
     Path: Textures\patchy grass\1K\Poliigon_GrassPatchyGround_4585_BaseColor.jpg
@@ -77,9 +74,6 @@ Assets:
   - Asset: 1279727863603567063
     Type: Material
     Path: Materials\m_Green.Material.ProofAsset
-  - Asset: 4420286282661007802
-    Type: UIPanel
-    Path: UI\New UI.UIPanel.ProofAsset
   - Asset: 6207420216174014905
     Type: Texture
     Path: Textures\patchy grass\Poliigon_GrassPatchyGround_4585_Preview1.png
@@ -101,3 +95,6 @@ Assets:
   - Asset: 17557257251425637366
     Type: DynamicMesh
     Path: Meshes\FracturedBird.DynamicMesh.ProofAsset
+  - Asset: 562114627404798443
+    Type: UIPanel
+    Path: UI\UI_PlayerHUD.UIPanel.ProofAsset

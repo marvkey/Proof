@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 6963299799565776090
-EntityOwner: 3802740064536461732
+EntityOwner: 5419977442795830106
 Entities:
-  - Entity: 3802740064536461732
+  - Entity: 5419977442795830106
     TagComponent:
       Tag: p_LazerMuzzleFlash
       tags: []

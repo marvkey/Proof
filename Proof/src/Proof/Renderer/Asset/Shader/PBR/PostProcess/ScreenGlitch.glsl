@@ -16,82 +16,73 @@ void Vertex(inout PostProcessVertexInput vertexInput)
 }
 
 #Fragment Shader
+
 #version 450 core
 #include <PBR/PostProcessShaderBase/PostProcess.Fragment.glsl>
 
-// can be empyt
 struct CustomInputData
 {
     float val1;
 };
 
-layout(location = CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_POST_PROCESS) in CustomInputData VertexInputdata;
+layout(location = CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_POST_PROCESS)
+in CustomInputData VertexInputdata;
 
 layout(set = 0, binding = 0) uniform sampler2D u_GlitchNoise;
 
 layout(push_constant) uniform Material
 {
-
-    vec3 GlitchAxis;
-    float GlitchStrength ;
-    float TimeScalee; // shoudl animate this not leave static has cool effect so maybe lerp betwewn 1 and 0
-
+    vec3  GlitchAxis;      // direction of glitch
+    float GlitchStrength;  // intensity
+    float TimeScalee;      // speed of oscillation
 } u_MaterialUniform;
 
-
-void oldGlitch(inout PostProcessFragmentInput fragmentInput)
-{
-/*
- vec2 uv = fragmentInput.UV;
-
-    // Pixelation amount (try 240.0 for strong blockiness)
-    float pixelSize = 240.0;
-    uv = floor(uv * pixelSize) / pixelSize;
-
-    // Small offset based on sin/cos glitch pattern
-    float glitchStrength = 0.003;
-
-    vec2 glitchOffsetR = uv + vec2(sin(uv.y * 100.0) * glitchStrength, 0.0);
-    vec2 glitchOffsetG = uv + vec2(0.0, cos(uv.x * 100.0) * glitchStrength);
-    vec2 glitchOffsetB = uv;
-
-    vec3 col;
-    col.r = texture(u_InputColor, glitchOffsetR).r;
-    col.g = texture(u_InputColor, glitchOffsetG).g;
-    col.b = texture(u_InputColor, glitchOffsetB).b;
-
-    fragmentInput.Color = vec3(col);
-    */
-}
-//https://www.youtube.com/watch?v=0NbOI8qG3Yg
 void Fragment(inout PostProcessFragmentInput fragmentInput)
 {
-      vec2 uv = fragmentInput.UV;
+    vec2 uv = fragmentInput.UV;
+    float time = u_FrameData.AppTimeSeconds;
 
-    // Scroll the noise texture over time
-    vec2 noiseUV = uv + vec2(u_FrameData.AppTimeSeconds * u_MaterialUniform.TimeScalee);
-    float noiseR = texture(u_GlitchNoise, fract(noiseUV)).r;
+    /* =========================
+       Oscillating time signal
+       ========================= */
+    float osc = sin(time * u_MaterialUniform.TimeScalee);
 
+    /* =========================
+       Stable noise sampling
+       (NO scrolling)
+       ========================= */
+    float noise = texture(u_GlitchNoise, uv * 4.0).r;
 
-    // adding more distortion
-    // this adds a lot more distorion
-    {
-        noiseR = noiseR -0.5;
-        noiseR *=2 * u_MaterialUniform.GlitchStrength; // when 0 no gltich when higher tahn 0 start to see gltich
-    }
- 
-    // Offset each channel using wrapped UVs
-    vec2 offsetR = fract(uv + vec2(noiseR * u_MaterialUniform.GlitchAxis.x, 0.0));
-    vec2 offsetG = fract(uv + vec2(noiseR * u_MaterialUniform.GlitchAxis.y, 0.0));
-    vec2 offsetB = fract(uv + vec2(0.0, noiseR * u_MaterialUniform.GlitchAxis.z));
+    // Center and sharpen noise
+    noise = (noise - 0.5) * 2.0;
+    noise *= osc * u_MaterialUniform.GlitchStrength;
 
-    float r = texture(u_InputColor, offsetR).r;
-    float g = texture(u_InputColor, offsetG).g;
-    float b = texture(u_InputColor, offsetB).b;
+    /* =========================
+       Directional offset
+       ========================= */
+    vec2 dir = normalize(u_MaterialUniform.GlitchAxis.xy + 0.0001);
+    vec2 offset = dir * noise;
 
-    fragmentInput.Color = vec3(r, g, b);
+    /* =========================
+       RGB channel split
+       ========================= */
+    vec2 uvR = fract(uv + offset * 1.2);
+    vec2 uvG = fract(uv + offset * 0.8);
+    vec2 uvB = fract(uv - offset * 1.0);
 
+    vec3 color;
+    color.r = texture(u_InputColor, uvR).r;
+    color.g = texture(u_InputColor, uvG).g;
+    color.b = texture(u_InputColor, uvB).b;
 
+    /* =========================
+       Optional glitch cuts
+       ========================= */
+    float cut = texture(u_GlitchNoise, uv * 2.5 + osc).r;
+    if (cut < 0.12)
+    discard;
+
+    fragmentInput.Color = color;
 }
 
 void PreEndFragment()

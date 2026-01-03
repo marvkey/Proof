@@ -1,5 +1,6 @@
 AssetType: Material
 ID: 5196314860968098635
+ShaderName: ProofPBR_Static
 AlbedoColour: [1, 0.874509811, 0]
 Roughness: 0.400000006
 Metallness: 0

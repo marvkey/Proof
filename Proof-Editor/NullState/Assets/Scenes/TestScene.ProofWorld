@@ -22,6 +22,85 @@ World:
         HosekWilkieTurbidity: 4
         HosekWilkieGroundReflectance: 0.100000001
         PreethamTurbidity: 4
+    - Entity: 12402776503988215509
+      TagComponent:
+        Tag: Muzzle
+        tags: []
+      TransformComponent:
+        Location: [0, 1.34039867, 0.475056291]
+        Rotation: [0, 0, 0]
+        Scale: [1, 0.200000003, 0.200000003]
+      HierarchyComponent:
+        ParentHandle: 9536796292876381641
+        Children: []
+    - Entity: 16189035043124429797
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [-81.7150726, -60, -59.7891273]
+        Rotation: [0, 0, 0]
+        Scale: [30, 86.0999985, 30]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 1263276587759243557
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 5750623861149869395
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [39.9961853, -60, -59.7891273]
+        Rotation: [0, 0, 0]
+        Scale: [30, 86.0999985, 30]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 1263276587759243557
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 11069687133292376840
       TagComponent:
         Tag: Player
@@ -94,22 +173,6 @@ World:
               - NameID: NullState.CharacterInput.IsRunningAction
                 Type: InputAction
                 Data: 9007542612317002724
-          - Script: NullState.HealthComponent
-            ScriptClassName: NullState.HealthComponent
-            ScriptName: NullState.HealthComponent
-            Fields:
-              - NameID: NullState.HealthComponent.MaxHealth
-                Type: Float
-                Data: 100
-              - NameID: NullState.HealthComponent.Health
-                Type: Float
-                Data: 100
-              - NameID: NullState.HealthComponent.DestoryIfHealthZero
-                Type: Bool
-                Data: false
-              - NameID: NullState.HealthComponent.BlockTakeDamage
-                Type: Bool
-                Data: false
           - Script: NullState.EntropyCompnent
             ScriptClassName: NullState.EntropyCompnent
             ScriptName: NullState.EntropyCompnent
@@ -132,6 +195,22 @@ World:
               - NameID: NullState.EntropyCompnent.SpeedGainMultiplier
                 Type: Float
                 Data: 0.0599999987
+          - Script: NullState.HealthComponent
+            ScriptClassName: NullState.HealthComponent
+            ScriptName: NullState.HealthComponent
+            Fields:
+              - NameID: NullState.HealthComponent.MaxHealth
+                Type: Float
+                Data: 100
+              - NameID: NullState.HealthComponent.Health
+                Type: Float
+                Data: 100
+              - NameID: NullState.HealthComponent.DestoryIfHealthZero
+                Type: Bool
+                Data: false
+              - NameID: NullState.HealthComponent.BlockTakeDamage
+                Type: Bool
+                Data: false
           - Script: NullState.CharacterHud
             ScriptClassName: NullState.CharacterHud
             ScriptName: NullState.CharacterHud
@@ -193,14 +272,14 @@ World:
                 VariableRegistry:
                   VariableRegistryID: 4407006815197224424
                   Variables:
-                    - Name: EntropyPercent
-                      Type: Float
-                      UUID: 9137722652652106186
-                      Data: 0
                     - Name: Heatlh
                       Type: String
                       UUID: 6591819751967894606
                       Data: 100%
+                    - Name: EntropyPercent
+                      Type: Float
+                      UUID: 9137722652652106186
+                      Data: 0
                     - Name: Entropy
                       Type: String
                       UUID: 1870280012868056734
@@ -209,85 +288,17 @@ World:
                       Type: String
                       UUID: 14099059887723628480
                       Data: 0
-    - Entity: 5750623861149869395
+    - Entity: 1034448653721098286
       TagComponent:
-        Tag: Cube
+        Tag: Head
         tags: []
       TransformComponent:
-        Location: [39.9961853, -60, -59.7891273]
+        Location: [0, 0.548291087, 0]
         Rotation: [0, 0, 0]
-        Scale: [30, 86.0999985, 30]
+        Scale: [1, 1, 1]
       HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 1263276587759243557
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 12402776503988215509
-      TagComponent:
-        Tag: Muzzle
-        tags: []
-      TransformComponent:
-        Location: [0, 1.34039867, 0.475056291]
-        Rotation: [0, 0, 0]
-        Scale: [1, 0.200000003, 0.200000003]
-      HierarchyComponent:
-        ParentHandle: 9536796292876381641
-        Children: []
-    - Entity: 16189035043124429797
-      TagComponent:
-        Tag: Cube
-        tags: []
-      TransformComponent:
-        Location: [-81.7150726, -60, -59.7891273]
-        Rotation: [0, 0, 0]
-        Scale: [30, 86.0999985, 30]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 1263276587759243557
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
+        ParentHandle: 11069687133292376840
+        Children: [4454438387438192492]
     - Entity: 12711164553762100324
       TagComponent:
         Tag: Cube
@@ -322,17 +333,6 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 1034448653721098286
-      TagComponent:
-        Tag: Head
-        tags: []
-      TransformComponent:
-        Location: [0, 0.548291087, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 11069687133292376840
-        Children: [4454438387438192492]
     - Entity: 4454438387438192492
       TagComponent:
         Tag: CameraPos
@@ -412,14 +412,14 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 634658376785033489
+    - Entity: 5410944756043792821
       TagComponent:
         Tag: Cube
         tags: []
       TransformComponent:
-        Location: [-0.100000001, -13.7843904, -36.6191406]
-        Rotation: [0.195476875, 0, 0]
-        Scale: [14.6000004, 1, 35.2000008]
+        Location: [0, -60, 0]
+        Rotation: [0, 0, 0]
+        Scale: [50, 86.0999985, 50]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
@@ -446,14 +446,14 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 5410944756043792821
+    - Entity: 634658376785033489
       TagComponent:
         Tag: Cube
         tags: []
       TransformComponent:
-        Location: [0, -60, 0]
-        Rotation: [0, 0, 0]
-        Scale: [50, 86.0999985, 50]
+        Location: [-0.100000001, -13.7843904, -36.6191406]
+        Rotation: [0.195476875, 0, 0]
+        Scale: [14.6000004, 1, 35.2000008]
       HierarchyComponent:
         ParentHandle: 0
         Children: []
@@ -684,7 +684,7 @@ World:
         Tag: Cube
         tags: []
       TransformComponent:
-        Location: [-4.52994823, -60, -583.211548]
+        Location: [-4.52994823, -60, -576.956482]
         Rotation: [0, 0, 0]
         Scale: [30, 86.0999985, 1000]
       HierarchyComponent:
@@ -713,6 +713,24 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 17186057980076418494
+      TagComponent:
+        Tag: LazerBulletMesh
+        tags: []
+      TransformComponent:
+        Location: [0, 0, -0.00018465519]
+        Rotation: [1.57079613, -0.0150634181, 0]
+        Scale: [0.666999996, 2.49153447, 0.580999792]
+      HierarchyComponent:
+        ParentHandle: 17220756548158986014
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 5948008084427186226
+            Index: 0
     - Entity: 12401774009600627367
       TagComponent:
         Tag: GameMode
@@ -733,40 +751,25 @@ World:
               - NameID: NullState.SceneVisualState.GlitchyMaterial
                 Type: Material
                 Data: 7976084304101403599
-    - Entity: 17186057980076418494
-      TagComponent:
-        Tag: LazerBulletMesh
-        tags: []
-      TransformComponent:
-        Location: [0, 0, -0.00018465519]
-        Rotation: [1.57079613, -0.0150634181, 0]
-        Scale: [0.666999996, 2.49153447, 0.580999792]
-      HierarchyComponent:
-        ParentHandle: 17220756548158986014
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 5948008084427186226
-            Index: 0
+          - Script: NullState.GameMode
+            ScriptClassName: NullState.GameMode
+            ScriptName: NullState.GameMode
+            Fields:
+              []
     - Entity: 8316614914334571953
       TagComponent:
         Tag: model
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
-        Rotation: [-1.57079613, 0, 0]
-        Scale: [100, 99.9999924, 99.9999924]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 4981746335806188666
         Children: []
-      DynamicMeshComponent:
-        DynamicMeshAssetPointerID: 16004910019884060136
-        CastShadow: true
+      MeshComponent:
+        MeshAssetPointerID: 14094327721765858305
         Visible: true
-        SubMeshIndex: 0
         MaterialTable:
           - Material: ""
             AssetID: 14486622669096991682
@@ -782,6 +785,67 @@ World:
       HierarchyComponent:
         ParentHandle: 4981746335806188666
         Children: []
+    - Entity: 665346912502671100
+      TagComponent:
+        Tag: BoidSpanwer
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: NullState.DroneSpawner
+            ScriptClassName: NullState.DroneSpawner
+            ScriptName: NullState.DroneSpawner
+            Fields:
+              - NameID: NullState.DroneSpawner.SpawnPos
+                Type: Entity
+                Data: 3078021129574581438
+              - NameID: NullState.DroneSpawner.SpawnRadius
+                Type: Float
+                Data: 10
+              - NameID: NullState.DroneSpawner.MinSpawnAmount
+                Type: Int32
+                Data: 2
+              - NameID: NullState.DroneSpawner.MaxSpawnAmount
+                Type: Int32
+                Data: 5
+              - NameID: NullState.DroneSpawner.Drone
+                Type: Prefab
+                Data: 12307540739497146649
+              - NameID: NullState.DroneSpawner.Target
+                Type: Entity
+                Data: 11069687133292376840
+      BoidFlockComponent:
+        MinSpeed: 20
+        MaxSpeed: 40
+        FacingMode: MovementDirection
+        PerceptionRadius: 6
+        AvoidanceRadius: 2
+        MaxSteerForce: 25
+        AlignWeight: 1.20000005
+        CohesionWeight: 0.800000012
+        SeperateWeight: 2
+        TargetWeight: 6
+        BoundsRadius: 0.5
+        AvoidCollisionWeight: 10
+        CollisionAvoidDst: 5
+        TargetEntity: 11069687133292376840
+        LayerID: 0
+        Orbit: true
+        OrbitRadius: 80
+        OrbitWandering: 0.100000001
+        OrbitMinAngleRadians: 0
+        OrbitMaxAngleRadians: 6.28318548
+        OrbitMinVerticalAngleRadians: 1.04719758
+        OrbitMaxVerticalAngleRadians: 1.57079637
+        OrbitHorizontalSpeed: 0.100000001
+        OrbitVerticalSpeed: 0.100000001
+        OrbitVerticalBobbing: 0.0500000007
     - Entity: 9536796292876381641
       TagComponent:
         Tag: RocketRobot
@@ -792,7 +856,7 @@ World:
         Scale: [5, 5, 5]
       HierarchyComponent:
         ParentHandle: 0
-        Children: [8678043847697124495, 12402776503988215509]
+        Children: [12402776503988215509, 3560485213073301778]
       ScriptComponent:
         Scripts:
           - Script: NullState.Turret
@@ -846,29 +910,9 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 8678043847697124495
-      TagComponent:
-        Tag: model
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [-1.57079613, 0, 0]
-        Scale: [100, 99.9999924, 99.9999924]
-      HierarchyComponent:
-        ParentHandle: 9536796292876381641
-        Children: []
-      DynamicMeshComponent:
-        DynamicMeshAssetPointerID: 16004910019884060136
-        CastShadow: true
-        Visible: true
-        SubMeshIndex: 0
-        MaterialTable:
-          - Material: ""
-            AssetID: 14486622669096991682
-            Index: 0
     - Entity: 2868991405597355834
       TagComponent:
-        Tag: Empty Entity
+        Tag: PostProcess
         tags: []
       TransformComponent:
         Location: [0, 0, 0]
@@ -880,9 +924,65 @@ World:
       PostProcessVolumeComponent:
         IsGlobal: true
         BoxSize: [1, 1, 1]
-        Enabled: true
+        Enabled: false
         Priority: 0
         MaterialTable:
           - Material: ""
             AssetID: 7976084304101403599
+            Index: 0
+    - Entity: 3078021129574581438
+      TagComponent:
+        Tag: SpawnPos
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 30.3762093]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+    - Entity: 14488800948888884349
+      TagComponent:
+        Tag: Systems
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: NullState.SystemMangers
+            ScriptClassName: NullState.SystemMangers
+            ScriptName: NullState.SystemMangers
+            Fields:
+              []
+          - Script: NullState.GlitchManager
+            ScriptClassName: NullState.GlitchManager
+            ScriptName: NullState.GlitchManager
+            Fields:
+              - NameID: NullState.GlitchManager.m_GlitchMaterials
+                Type: Material
+                Length: 1
+                Data:
+                  - 9981575571642197365
+    - Entity: 3560485213073301778
+      TagComponent:
+        Tag: Mesh
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 9536796292876381641
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 14094327721765858305
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 14486622669096991682
             Index: 0

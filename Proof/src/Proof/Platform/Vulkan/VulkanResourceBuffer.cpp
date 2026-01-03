@@ -218,6 +218,8 @@ namespace Proof{
 	}
 	Buffer VulkanStorageBuffer::GetDataRaw()
 	{
+		if (m_Size == 0 || m_StorageBuffer.Allocation == nullptr)
+			return Buffer();
 		Buffer buffer(m_Size);
 		void* vertexData;
 		vmaMapMemory(VulkanAllocator::GetVmaAllocator(), m_StorageBuffer.Allocation, &vertexData);

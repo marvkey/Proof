@@ -1,14 +1,12 @@
 AssetType: Material
 ID: 9981575571642197365
 ShaderName: ProofPBR_Glitchy
-AlbedoColour: [0.800000012, 0.800000012, 0.800000012]
-Roughness: 0.400000006
-Metallness: 0
-Emission: 0.400000006
-Tiling: [1, 1]
-NormalTextureToggle: false
-Offset: [0, 0]
-AlbedoTexture: 0
-NormalTexture: 0
-MetallicTexture: 0
-RoughnessTexture: 0
+u_MaterialUniform.Axis: [-1, 1, 0]
+u_MaterialUniform.Emission: 0
+u_MaterialUniform.FlickerDensity: 0.200000003
+u_MaterialUniform.FlickerRate: 0.5
+u_MaterialUniform.GlitchRate: 0.600000024
+u_MaterialUniform.GlitchScale: 0.0199999996
+u_NoiseTexVer: 5471588005917015338
+u_NoiseTexFrag: 5471588005917015338
+u_GlitchColorFrag: 13013495449842500942

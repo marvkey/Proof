@@ -2394,6 +2394,9 @@ namespace Proof::UI
 
     void SetInputEnabled(bool enabled)
     {
+        if (Application::Get()->GetConfig().EnableImgui == false)
+            return;
+
         auto& io = ImGui::GetIO();
 
         if (enabled)

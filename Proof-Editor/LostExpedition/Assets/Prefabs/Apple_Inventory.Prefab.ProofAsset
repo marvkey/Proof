@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 3120643860804007446
-EntityOwner: 8023783727301669606
+EntityOwner: 6862770419931717460
 Entities:
-  - Entity: 8023783727301669606
+  - Entity: 6862770419931717460
     TagComponent:
       Tag: Apple
       tags: []
@@ -26,9 +26,6 @@ Entities:
           ScriptClassName: LostExpedition.Food
           ScriptName: LostExpedition.Food
           Fields:
-            - NameID: LostExpedition.Food.HungerRestore
-              Type: Float
-              Data: 25
             - NameID: LostExpedition.Food.ItemName
               Type: String
               Data: ""

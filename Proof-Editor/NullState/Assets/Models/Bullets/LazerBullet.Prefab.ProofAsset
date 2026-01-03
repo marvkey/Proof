@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 17264578630111646164
-EntityOwner: 13955222777892492764
+EntityOwner: 2998008903794792003
 Entities:
-  - Entity: 13955222777892492764
+  - Entity: 2998008903794792003
     TagComponent:
       Tag: LazerBullet
       tags: []
@@ -12,7 +12,7 @@ Entities:
       Scale: [1, 1, 1]
     HierarchyComponent:
       ParentHandle: 0
-      Children: [15185923007858705429]
+      Children: [17979878982467020721]
     BoxColliderComponent:
       IsTrigger: true
       Center: [0, 0, 0]
@@ -29,7 +29,7 @@ Entities:
       FreezeRotation: [false, false, false]
       Kinematic: false
       CollisionDetection: Discrete
-  - Entity: 15185923007858705429
+  - Entity: 17979878982467020721
     TagComponent:
       Tag: LazerBulletMesh
       tags: []
@@ -38,7 +38,7 @@ Entities:
       Rotation: [1.57079637, -0, 0]
       Scale: [0.666999996, 2.49153447, 0.580999792]
     HierarchyComponent:
-      ParentHandle: 13955222777892492764
+      ParentHandle: 2998008903794792003
       Children: []
     MeshComponent:
       MeshAssetPointerID: 50

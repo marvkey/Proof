@@ -122,7 +122,7 @@ namespace Proof {
         constexpr int MIN_STACK_COUNT = 2;
         if (sectors < MIN_SECTOR_COUNT)
         {
-            PF_CORE_ASSERT(false, "secto count cannot be less than 3");
+            PF_CORE_ASSERT(false, "sector count cannot be less than 3");
             sectors = MIN_SECTOR_COUNT;
         }
         if (stacks < MIN_STACK_COUNT)

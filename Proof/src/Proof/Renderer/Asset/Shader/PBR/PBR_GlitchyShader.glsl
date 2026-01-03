@@ -1,49 +1,59 @@
+﻿
 #Vertex Shader
+
 #version 450
 #include <PBR/PBRShaderBases/PBR.Vertex.glsl>
 
-
 layout(push_constant) uniform Material
 {
-    vec3 Albedo;
-    float Metalness;
-
-    float Roughness;
+    float GlitchRate;  // e.g. 0.3
+    float GlitchScale; // e.g. 50
+    vec3 Axis;         // direction of glitch (e.g. vec3(0, 1, 0))
     float Emission;
-    bool EmissionOverrideColorToggle;
-    bool NormalTexToggle;
-
-    vec2 TextureTiling;
-    vec2 TextureOffset;
-
-    vec3 EmissionOverrideColor; // if EmissionOverrideColorToggle is equal to true then we will override the emission color
-
-    float GlitchRate; //0.5
-    float GlitchScale;//50
-
-    vec3 Axis;
-
+    float FlickerRate;
+    float FlickerDensity; // determines on vs off when closer to 0.9 rare usally off, closer to 0.1 usually on
 } u_MaterialUniform;
+
+layout(set = 0, binding = 5) uniform sampler2D u_NoiseTexVer;
+
+struct GlitShaderVertexOuput
+{
+    float GlitchRate;
+    float GlitchScale;
+    float FlickerRate;
+    float FlickerDensity;
+    vec3 Axis;
+    float Emission;
+};
+
+layout(location = CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_PBR) out GlitShaderVertexOuput OutPutData;
+float rand(float n){ return fract(sin(n) * 43758.5453123); }
+
+
 
 void Vertex(inout PBRVertexInput vertexinput)
 {
-   float time = u_FrameData.AppTimeSeconds;
+    // Use a high-frequency time for the "jitter" snap seen in the video
+    float time = u_FrameData.AppTimeSeconds * u_MaterialUniform.GlitchRate;
 
-    // base position
-    vec3 pos = vertexinput.VertexPosition;
+    // Sample noise based on Y-axis to create the "horizontal bands"
+    vec2 noiseUV = vec2(0.5, vertexinput.VertexPosition.y * 0.1 + time);
+    float noise = texture(u_NoiseTexVer, noiseUV).r;
 
-    // fake "digital noise" movement based on position & time
-    float wave = sin(dot(pos.xyz, vec3(12.3, 7.9, 5.5)) + time * u_MaterialUniform.GlitchRate * 8.0);
-    float wave2 = cos(dot(pos.xyz, vec3(8.1, 6.2, 9.3)) + time * u_MaterialUniform.GlitchRate * 5.5);
+    // Flip direction instantly to mimic digital "tearing"
+    float direction = (fract(sin(floor(time)) * 43758.5453) > 0.5) ? 1.0 : -1.0;
 
-    // combine the noise for more chaotic motion
-    float glitch = (wave + wave2) * 0.5 * (u_MaterialUniform.GlitchScale * 0.001);
-
-    // displace along normal and optional axis
-    pos += vertexinput.Normal * glitch;
-    pos += u_MaterialUniform.Axis * glitch * 0.5;
-
-    vertexinput.VertexPosition = pos;
+    // The "Bleed" Logic: Only push vertices where the noise is high
+    if (noise > 0.5) {
+        float strength = (noise - 0.5) * u_MaterialUniform.GlitchScale;
+        vertexinput.VertexPosition += u_MaterialUniform.Axis * strength * direction;
+    }
+    OutPutData.GlitchRate = u_MaterialUniform.GlitchRate;
+    OutPutData.GlitchScale = u_MaterialUniform.GlitchScale;
+    OutPutData.Axis = u_MaterialUniform.Axis;
+    OutPutData.FlickerDensity = u_MaterialUniform.FlickerDensity;
+    OutPutData.FlickerRate = u_MaterialUniform.FlickerRate;
+    OutPutData.Emission = u_MaterialUniform.Emission;
 }
 
 
@@ -51,50 +61,65 @@ void Vertex(inout PBRVertexInput vertexinput)
 #version 450 core
 #include <PBR/PBRShaderBases/PBR.Fragment.glsl>
 
-layout(set = 0, binding = 5) uniform sampler2D u_AlbedoMap;
-layout(set = 0, binding = 6) uniform sampler2D u_NormalMap;
-layout(set = 0, binding = 7) uniform sampler2D u_MetallicMap;
-layout(set = 0, binding = 8) uniform sampler2D u_RoughnessMap;
+
+#define PBR_DRAW_DEPTH_NONE      0   // Do not write depth (transparent or UI objects)
+#define PBR_DRAW_DEPTH_PREPASS   1   // Write depth in the depth pre-pass
+#define PBR_DRAW_DEPTH_OVERRIDE  2   // Write depth during main pass (used when displacement can't be replicated in pre-pass)
+
+
+#define PBR_DRAW_DEPTH PBR_DRAW_DEPTH_NONE  // Options: NONE, PREPASS, OVERRIDE
+
+// Function to convert a value to a rainbow spectrum
+vec3 spectrum(float offset) {
+    return cos(vec3(0, 2, 4) + offset) * 0.5 + 0.5;
+}
+layout(set = 0, binding = 6) uniform sampler2D u_NoiseTexFrag;
+layout(set = 0, binding = 7) uniform sampler2D u_GlitchColorFrag;
+
+
+struct GlitShaderVertexOuput
+{
+    float GlitchRate;
+    float GlitchScale;
+    float FlickerRate;
+    float FlickerDensity;
+    vec3 Axis;
+    float Emission;
+};
+layout(location = CUSTOM_OUTPUT_SLOT_VERTEX_FRAGMENT_PBR) in GlitShaderVertexOuput Input;
 
 void Fragment(inout PBRData pbrData)
 {
-/*
-   float time = u_FrameData.AppTimeSeconds;
+    float time = u_FrameData.AppTimeSeconds;
+    vec2 uv = PBR_Input.TexCoords;
 
-    vec2 texCoords = PBR_Input.TexCoords;
+    // 1. Noise Mask (Crucial for the "jagged/broken" look)
+    float noise = texture(u_NoiseTexFrag, uv + (time * Input.GlitchRate)).r;
 
-    // === RGB GLITCH CHANNEL OFFSET ===
-    float offset = sin(time * u_MaterialUniform.GlitchRate * 5.0 + texCoords.y * 20.0) * 0.005;
+    // 2. Fragment Discard: If noise is low, "cut a hole" in the mesh
+    // This makes the glitch look like broken data rather than a solid object.
+    if (noise < 0.2) discard;
 
-    vec3 albedoColor;
-    albedoColor.r = texture(u_AlbedoMap, texCoords + vec2(offset, 0.0)).r;
-    albedoColor.g = texture(u_AlbedoMap, texCoords).g;
-    albedoColor.b = texture(u_AlbedoMap, texCoords - vec2(offset, 0.0)).b;
+    // 3. Generate Rainbow based on Y position and Time
+    vec3 rainbow = spectrum(uv.y * 15.0 + time * 5.0);
 
-    // === FLICKER CUTOUT ===
-    float flicker = fract(sin(dot(texCoords, vec2(12.9898, 78.233))) * 43758.5453 + time * u_MaterialUniform.GlitchRate * 20.0);
-    if (flicker < 0.02)
-        discard; // randomly hides pixels for digital breakup
+    // 4. Flicker Effect
+    float flickerSpeed = time * Input.FlickerRate;
+    float flicker = step(Input.FlickerDensity, fract(sin(flickerSpeed) * 43758.5453));
 
-    // === STANDARD PBR SETUP ===
-    pbrData.Albedo = albedoColor * u_MaterialUniform.Albedo.rgb;
-    pbrData.Metallic = texture(u_MetallicMap, texCoords).r * u_MaterialUniform.Metalness;
-    pbrData.Roughness = texture(u_RoughnessMap, texCoords).r * u_MaterialUniform.Roughness;
+    // 5. THE FIX FOR WHITE GLOW:
+    // Keep Albedo dark so it doesn't wash out the color.
+    pbrData.Albedo = rainbow * 0.1;
 
-    if (u_MaterialUniform.NormalTexToggle)
-    {
-        pbrData.Normal = GetNormalFromMap(texture(u_NormalMap, texCoords), PBR_Input.TBN);
-    }
-    else
-    {
-        pbrData.Normal = normalize(PBR_Input.WorldNormals);
-    }
+    // Assign the rainbow to the COLOR of the emission
+    pbrData.EmissionColour = rainbow;
 
-    // === EMISSION ===
-    pbrData.Emission = albedoColor * u_MaterialUniform.Emission;
+    // Use the float to drive the "hotness" of the glow. 
+    // Start at 4.0. If it turns white, lower this value!
+    pbrData.Emission = 2.0* flicker;
 
-    pbrData.Alpha = texture(u_AlbedoMap, texCoords).a * u_MaterialUniform.Albedo.a;
-    */
+    // Remove realistic shading to keep the digital look
+    pbrData.Alpha = flicker;
 }
 
 void PreEndFragment()

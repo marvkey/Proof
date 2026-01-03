@@ -33,4 +33,40 @@ namespace Proof
         public static float LineWidth { set => InternalCalls.DebugRenderer_SetLineWidth(value); }
 
     }
+
+
+    public static class ImmediateRenderer
+    {
+        public static void DrawMesh(StaticMesh mesh, Material material,TransferMatrix4 transform, bool castShadow)
+        {
+            InternalCalls.ImmediateRenderer_SubmitMesh(mesh.ID.ToUInt64(), material.ID.ToUInt64(), ref transform, castShadow);
+        }
+
+        public static void DrawDynamicMesh(DynamicMesh mesh, Material material, uint subMeshIndex,TransferMatrix4 transform, bool castShadow)
+        {
+            InternalCalls.ImmediateRenderer_SubmitDynamicMesh(mesh.ID, material.ID, subMeshIndex,ref transform, castShadow);
+        }
+
+        public static void SubmitMeshComponent(MeshComponent meshComponent,Material material,TransferMatrix4 transform,bool castShadow)
+        {
+            if(meshComponent.Mesh != null)
+                DrawMesh(meshComponent.Mesh, material,transform,false);
+        }
+
+        public static void SubmitMeshComponent(MeshComponent meshComponent,Material material)
+        {
+            SubmitMeshComponent(meshComponent, material,meshComponent.Entity.WorldTransformMatrix,true);
+        }
+
+        public static void SubmitDynamicMeshComponent(DynamicMeshComponent dynamicMeshComponent,Material material,TransferMatrix4 transform,bool castShadow)
+        {
+            if(dynamicMeshComponent.Mesh != null)
+                DrawDynamicMesh(dynamicMeshComponent.Mesh,material,dynamicMeshComponent.SubMeshIndex,transform,castShadow);
+        }
+
+        public static void SubmitDynamicMeshComponent(DynamicMeshComponent dynamicMeshComponent,Material material)
+        {
+            DrawDynamicMesh(dynamicMeshComponent.Mesh,material,dynamicMeshComponent.SubMeshIndex,dynamicMeshComponent.Entity.WorldTransformMatrix,true);
+        }
+    }
 }

@@ -22,8 +22,7 @@
     <OutputPath>Binaries\ScriptApp\</OutputPath>
     <BaseIntermediateOutputPath>Intermediates\ScriptApp\Debug\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -35,8 +34,7 @@
     <OutputPath>Binaries\ScriptApp\</OutputPath>
     <BaseIntermediateOutputPath>Intermediates\ScriptApp\Release\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -48,8 +46,7 @@
     <OutputPath>Binaries\ScriptApp\</OutputPath>
     <BaseIntermediateOutputPath>Intermediates\ScriptApp\Dist\</BaseIntermediateOutputPath>
     <IntermediateOutputPath>$(BaseIntermediateOutputPath)</IntermediateOutputPath>
-    <DefineConstants>
-    </DefineConstants>
+    <DefineConstants></DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -93,11 +90,19 @@
     <Compile Include="Assets\Scripts\Character\CharacterMovement.cs" />
     <Compile Include="Assets\Scripts\Character\MoveCamera.cs" />
     <Compile Include="Assets\Scripts\DamageComponent.cs" />
+    <Compile Include="Assets\Scripts\Enemies\Drone.cs" />
+    <Compile Include="Assets\Scripts\Enemies\DroneSpawner.cs" />
     <Compile Include="Assets\Scripts\Enemies\HomingMissile.cs" />
     <Compile Include="Assets\Scripts\Enemies\Turret.cs" />
     <Compile Include="Assets\Scripts\EntropyComponent.cs" />
+    <Compile Include="Assets\Scripts\GameMode\GameMode.cs" />
     <Compile Include="Assets\Scripts\GameMode\SceneVisualState.cs" />
     <Compile Include="Assets\Scripts\HealthComponent.cs" />
+    <Compile Include="Assets\Scripts\Managers\GlitchManager.cs" />
+    <Compile Include="Assets\Scripts\Managers\SystemMangers.cs" />
+    <Compile Include="Assets\Scripts\Tasks\MemoryTask.cs" />
+    <Compile Include="Assets\Scripts\Tasks\TaskManager.cs" />
+    <Compile Include="Assets\Test\TestBoid.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ProofScriptCore\ProofScriptCore.csproj">

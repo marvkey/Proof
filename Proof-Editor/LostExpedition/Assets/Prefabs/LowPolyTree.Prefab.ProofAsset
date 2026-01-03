@@ -1,8 +1,8 @@
 AssetType: Prefab
 ID: 15638204258216792047
-EntityOwner: 13169992876487817471
+EntityOwner: 14434133794504759227
 Entities:
-  - Entity: 13169992876487817471
+  - Entity: 14434133794504759227
     TagComponent:
       Tag: LowPolyTree
       tags: []
@@ -12,8 +12,8 @@ Entities:
       Scale: [1, 1, 1]
     HierarchyComponent:
       ParentHandle: 0
-      Children: [10680151083361470895]
-  - Entity: 10680151083361470895
+      Children: [13879709845707382909]
+  - Entity: 13879709845707382909
     TagComponent:
       Tag: LowPolyTree
       tags: []
@@ -22,7 +22,7 @@ Entities:
       Rotation: [0, -0, 0]
       Scale: [0.150000006, 0.150000006, 0.150000006]
     HierarchyComponent:
-      ParentHandle: 13169992876487817471
+      ParentHandle: 14434133794504759227
       Children: []
     MeshComponent:
       MeshAssetPointerID: 14075414392747790104

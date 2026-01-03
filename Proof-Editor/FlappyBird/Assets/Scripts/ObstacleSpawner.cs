@@ -69,7 +69,7 @@ namespace FlappyBird
 			if(Bird ==null)
 				return false;
 
-			if(obstacle.Location.x > Bird.Location.x + 25)
+			if(obstacle.Location.x > Bird.Location.x + 50)
 			{
 				return true;
 			}

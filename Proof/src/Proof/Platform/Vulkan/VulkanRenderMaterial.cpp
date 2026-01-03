@@ -174,7 +174,7 @@ namespace Proof {
 		uint32_t writeOffset = decl->Offset;
 		uint32_t writeSize = data.Size;
 
-		// ?? Prevent buffer overflow
+		// Prevent buffer overflow
 		if (writeOffset + writeSize > bufferSize)
 		{
 			PF_EC_ERROR("Uniform write to '{}' would overflow buffer! Offset: {}, Size: {}, BufferSize: {}",

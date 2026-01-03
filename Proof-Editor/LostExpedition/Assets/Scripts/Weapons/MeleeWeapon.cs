@@ -60,7 +60,7 @@ namespace LostExpedition
             {
                 m_SwingTimer += dt;
                 float t = Math.Min(m_SwingTimer / SwingCooldown, 1f);
-                Transform.RotationQuat = Quaternion.SLerp(m_StartRot, m_EndRot, t);
+                Transform.RotationQuat = Quaternion.Slerp(m_StartRot, m_EndRot, t);
 
                 if (t >= 1f)
                 {
@@ -74,7 +74,7 @@ namespace LostExpedition
             {
                 m_SwingTimer += dt;
                 float t = Math.Min(m_SwingTimer / (SwingCooldown/2), 1f);
-                Transform.RotationQuat = Quaternion.SLerp(m_EndRot, m_StartRot, t);
+                Transform.RotationQuat = Quaternion.Slerp(m_EndRot, m_StartRot, t);
 
                 if (t >= 1f)
                 {

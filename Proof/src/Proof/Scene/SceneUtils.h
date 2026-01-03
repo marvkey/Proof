@@ -8,7 +8,7 @@ namespace Proof
 	struct Transform
 	{
 		glm::vec3 Location = glm::vec3(1);
-		glm::vec3 Rotation = glm::vec3(0);
+		glm::vec3 Rotation = glm::vec3(0); // deggrees
 		glm::vec3 Scale = glm::vec3(1);
 
         Transform() {};

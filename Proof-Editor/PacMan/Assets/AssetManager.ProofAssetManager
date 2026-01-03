@@ -17,15 +17,15 @@ Assets:
   - Asset: 13280932937859939048
     Type: MeshSourceFile
     Path: Models\Ghost\PinkGhost.fbx
-  - Asset: 1183667040280831393
-    Type: Material
-    Path: Materials\GhostMaterial\m_YellowGhost.Material.ProofAsset
-  - Asset: 3353567056187041584
-    Type: MeshSourceFile
-    Path: Models\Ghost\PacMan.fbx
   - Asset: 17434142070289377666
     Type: Material
     Path: Materials\GhostMaterial\m_GhostBluebody.Material.ProofAsset
+  - Asset: 3353567056187041584
+    Type: MeshSourceFile
+    Path: Models\Ghost\PacMan.fbx
+  - Asset: 1183667040280831393
+    Type: Material
+    Path: Materials\GhostMaterial\m_YellowGhost.Material.ProofAsset
   - Asset: 6110330914609793711
     Type: Mesh
     Path: Meshes\PacMan.Mesh.ProofAsset
@@ -116,6 +116,12 @@ Assets:
   - Asset: 15379209317904638741
     Type: Prefab
     Path: Prefabs\p_MapParent.Prefab.ProofAsset
-  - Asset: 12478878408537145294
+  - Asset: 5111907482357825035
+    Type: Texture
+    Path: HDR_white_dwarf_star_no_nebulae.hdr
+  - Asset: 8541610339807246931
     Type: Texture
     Path: ..\..\..\..\..\Desktop\Documents\Proof\Proof-Editor\PacMan3D\Assets\Models\PacManMap\source\pacman\nes_bldg_pacmanmaze_maze.png
+  - Asset: 8869021020968417508
+    Type: UIPanel
+    Path: HUD.UIPanel.ProofAsset

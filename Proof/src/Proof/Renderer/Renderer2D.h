@@ -103,6 +103,10 @@ namespace Proof {
 		void DrawQuad(const glm::mat4& transform, const glm::vec4& Color, const Count<Texture2D>& texture2D);
 	#endif
 
+		void DrawTriangle(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec4& color);
+
+		void DrawTriangle(const glm::vec3& p0, const glm::vec3& p1, const glm::vec3& p2, const glm::vec4& color, const Count<Texture2D>& texture);
+
 		void DrawQuad(glm::vec3 location, glm::vec3 size = { 1.0f,1.0f,1.0f }, const glm::vec4& Color = { 1,1,1,1 });
 		void DrawQuad(glm::vec3 location, glm::vec3 size, const glm::vec4& Color, Count<class Texture2D> texture);
 		void DrawRotatedQuad(const glm::vec3& Location, const glm::vec3& RotationRadians, const glm::vec3& Size, const glm::vec4& Color, const Count<Texture2D>& texture2D);
@@ -115,6 +119,7 @@ namespace Proof {
 		void DrawAABB(Count<class MeshBase> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		void DrawAABB(const class SubMesh& subMesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
 		void DrawAABBSubMeshes(Count<class MeshBase> mesh, const glm::mat4& transform, const glm::vec4& color = glm::vec4(1.0f));
+		void DrawCone(const glm::vec3& position, const glm::vec3& direction, float angle, float range, const glm::vec4& color, uint32_t segments = 16);
 
 		void DrawCylinder(glm::vec3 position, glm::vec3 rotationRadians, float height, float radius, glm::vec4 color = glm::vec4(1.0f), bool drawFromBase = true);
 		void DrawCapsule(glm::vec3 position, glm::vec3 rotationRadian, float height, float radius, glm::vec4 color = glm::vec4(1.0f));
