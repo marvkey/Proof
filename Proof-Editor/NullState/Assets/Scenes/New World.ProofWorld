@@ -22,6 +22,24 @@ World:
         HosekWilkieTurbidity: 4
         HosekWilkieGroundReflectance: 0.100000001
         PreethamTurbidity: 4
+    - Entity: 9925345329243634149
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [15.7662325, 0, -2.78001165]
+        Rotation: [1.39626336, 0.17453292, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 0.5
+        CastShadow: true
+        ShadowStrength: 0.5
+        CastSoftShadow: true
+        ShadowSoftness: 0.5
     - Entity: 2671228408305341888
       TagComponent:
         Tag: Wall
@@ -56,110 +74,6 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 9925345329243634149
-      TagComponent:
-        Tag: Directional Light
-        tags: []
-      TransformComponent:
-        Location: [15.7662325, 0, -2.78001165]
-        Rotation: [1.39626336, 0.17453292, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 0.5
-        CastShadow: true
-        ShadowStrength: 0.5
-        CastSoftShadow: true
-        ShadowSoftness: 0.5
-    - Entity: 5468734761493718405
-      TagComponent:
-        Tag: Wall
-        tags: []
-      TransformComponent:
-        Location: [7.9000001, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 19.2999992, 26.3999996]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 14486622669096991682
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 7607358181764641563
-      TagComponent:
-        Tag: BoidCmp
-        tags: []
-      TransformComponent:
-        Location: [-17.345829, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      ScriptComponent:
-        Scripts:
-          - Script: NullState.TestBoid
-            ScriptClassName: NullState.TestBoid
-            ScriptName: NullState.TestBoid
-            Fields:
-              - NameID: NullState.TestBoid.spawnCount
-                Type: Int32
-                Data: 4
-              - NameID: NullState.TestBoid.Prefab
-                Type: Prefab
-                Data: 8851702765656265123
-              - NameID: NullState.TestBoid.spawnRadius
-                Type: Float
-                Data: 10
-      BoidFlockComponent:
-        MinSpeed: 5
-        MaxSpeed: 20
-        FacingMode: MovementDirection
-        PerceptionRadius: 2.5
-        AvoidanceRadius: 8
-        MaxSteerForce: 3
-        AlignWeight: 1
-        CohesionWeight: 1
-        SeperateWeight: 1
-        TargetWeight: 8
-        BoundsRadius: 4
-        AvoidCollisionWeight: 10
-        CollisionAvoidDst: 10
-        TargetEntity: 60187776144755364
-        LayerID: 0
-        Orbit: false
-        OrbitRadius: 8
-        OrbitWandering: 0.5
-        OrbitMinAngleRadians: 0
-        OrbitMaxAngleRadians: 6.28318548
-        OrbitMinVerticalAngleRadians: 0
-        OrbitMaxVerticalAngleRadians: 3.14159274
-        OrbitHorizontalSpeed: 0.5
-        OrbitVerticalSpeed: 0.300000012
-        OrbitVerticalBobbing: 0.0500000007
     - Entity: 11285952917636538639
       TagComponent:
         Tag: RobotBot2
@@ -258,6 +172,92 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 7607358181764641563
+      TagComponent:
+        Tag: BoidCmp
+        tags: []
+      TransformComponent:
+        Location: [-17.345829, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      ScriptComponent:
+        Scripts:
+          - Script: NullState.TestBoid
+            ScriptClassName: NullState.TestBoid
+            ScriptName: NullState.TestBoid
+            Fields:
+              - NameID: NullState.TestBoid.spawnCount
+                Type: Int32
+                Data: 4
+              - NameID: NullState.TestBoid.Prefab
+                Type: Prefab
+                Data: 8851702765656265123
+              - NameID: NullState.TestBoid.spawnRadius
+                Type: Float
+                Data: 10
+      BoidFlockComponent:
+        MinSpeed: 5
+        MaxSpeed: 20
+        FacingMode: MovementDirection
+        PerceptionRadius: 2.5
+        AvoidanceRadius: 8
+        MaxSteerForce: 3
+        AlignWeight: 1
+        CohesionWeight: 1
+        SeperateWeight: 1
+        TargetWeight: 8
+        BoundsRadius: 4
+        AvoidCollisionWeight: 10
+        CollisionAvoidDst: 10
+        TargetEntity: 60187776144755364
+        LayerID: 0
+        Orbit: false
+        OrbitRadius: 8
+        OrbitWandering: 0.5
+        OrbitMinAngleRadians: 0
+        OrbitMaxAngleRadians: 6.28318548
+        OrbitMinVerticalAngleRadians: 0
+        OrbitMaxVerticalAngleRadians: 3.14159274
+        OrbitHorizontalSpeed: 0.5
+        OrbitVerticalSpeed: 0.300000012
+        OrbitVerticalBobbing: 0.0500000007
+    - Entity: 5468734761493718405
+      TagComponent:
+        Tag: Wall
+        tags: []
+      TransformComponent:
+        Location: [7.9000001, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 19.2999992, 26.3999996]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 14486622669096991682
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 11982263681211963581
       TagComponent:
         Tag: Plane
@@ -277,7 +277,7 @@ World:
             AssetID: 18245935877011124802
             Index: 0
       MeshColliderComponent:
-        ColliderID: 11126913859368094808
+        ColliderID: 17227551249547691047
         IsTrigger: false
         UseSharedShape: false
         PhysicsMaterialPointerID: 0
@@ -406,26 +406,6 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: true
         CollisionDetection: Discrete
-    - Entity: 2827428135620465501
-      TagComponent:
-        Tag: model
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [-1.57079613, 0, 0]
-        Scale: [100, 99.9999924, 99.9999924]
-      HierarchyComponent:
-        ParentHandle: 11285952917636538639
-        Children: []
-      DynamicMeshComponent:
-        DynamicMeshAssetPointerID: 16004910019884060136
-        CastShadow: true
-        Visible: true
-        SubMeshIndex: 0
-        MaterialTable:
-          - Material: ""
-            AssetID: 14486622669096991682
-            Index: 0
     - Entity: 12499449286596464192
       TagComponent:
         Tag: RobotBot2
@@ -490,6 +470,26 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 2827428135620465501
+      TagComponent:
+        Tag: model
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [-1.57079613, 0, 0]
+        Scale: [100, 99.9999924, 99.9999924]
+      HierarchyComponent:
+        ParentHandle: 11285952917636538639
+        Children: []
+      DynamicMeshComponent:
+        DynamicMeshAssetPointerID: 16004910019884060136
+        CastShadow: true
+        Visible: true
+        SubMeshIndex: 0
+        MaterialTable:
+          - Material: ""
+            AssetID: 14486622669096991682
+            Index: 0
     - Entity: 18018097211942423297
       TagComponent:
         Tag: model

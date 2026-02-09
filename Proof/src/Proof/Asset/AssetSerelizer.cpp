@@ -864,6 +864,7 @@ namespace Proof {
 			out << YAML::Key << "Size" << YAML::Value << coreComponent.Transform.Size;
 			out << YAML::Key << "AnchorMinimum" << YAML::Value << coreComponent.Transform.Anchor.Minimum;
 			out << YAML::Key << "AnchorMaximum" << YAML::Value << coreComponent.Transform.Anchor.Maximum;
+			SaveBindableVariable(out, "Visible", coreComponent.Visible);
 
 			out << YAML::Key << "PositionOffset" << YAML::Value << coreComponent.LayoutOffset.Position;
 
@@ -1011,6 +1012,10 @@ namespace Proof {
 					UIElementType elementType = EnumReflection::StringEnum<UIElementType>(coreComponent["UIElementType"].as<std::string>(" "));
 
 					newUIElement = uiPanel->Menu->CreateElement(name, id, elementType);
+					LoadBindableVariable(coreComponent, "Visible", newUIElement.GetComponent<UICoreComponent>().Visible,
+						uiPanel->VariableTable->GetVariableSetStorage());
+
+
 					UITransform& transform = newUIElement.GetComponent<UICoreComponent>().Transform;
 					transform.Position = coreComponent["Position"].as<glm::vec2>(transform.Position);
 					transform.Rotation = coreComponent["Rotation"].as<glm::vec2>(transform.Rotation);

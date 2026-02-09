@@ -96,6 +96,10 @@ ScriptImportSettings:
       ScriptName: NullState.HealthComponent
       Fields:
         []
+    - Script: NullState.NullVeil
+      ScriptName: NullState.NullVeil
+      Fields:
+        []
     - Script: NullState.MemoryInjection
       ScriptName: NullState.MemoryInjection
       Fields:

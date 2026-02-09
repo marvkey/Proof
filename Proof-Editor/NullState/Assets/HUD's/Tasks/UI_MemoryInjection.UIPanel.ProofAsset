@@ -1,0 +1,89 @@
+AssetType: UIPanel
+ID: 14526306299185462960
+VariableRegistry:
+  VariableRegistryID: 8427448244682202284
+  Variables:
+    []
+UIElements:
+  - UIElement: 7484197185865657730
+    UICoreComponent:
+      ElementID: 7484197185865657730
+      Name: Image
+      UIElementType: Image
+      Position: [0, 187]
+      Rotation: [0, 0]
+      Size: [1000, 500]
+      AnchorMinimum: [0.5, 0.5]
+      AnchorMaximum: [0.5, 0.5]
+      PositionOffset: [0, 0]
+      ParentHandle: 0
+      Children: []
+    UIImageComponent:
+      TintColor:
+        Value: [1, 1, 1, 1]
+        BindedVariableID: 0
+      Texture:
+        AssetID: 14801056609732067763
+        AssetType: Texture
+        BindedVariableID: 0
+  - UIElement: 11783583194372851115
+    UICoreComponent:
+      ElementID: 11783583194372851115
+      Name: VerticalBox
+      UIElementType: VerticalBox
+      Position: [0, -1.25]
+      Rotation: [0, 0]
+      Size: [1000, 75.5]
+      AnchorMinimum: [0.5, 0.5]
+      AnchorMaximum: [0.5, 0.5]
+      PositionOffset: [0, 0]
+      ParentHandle: 0
+      Children: [16734905733543584966, 3071652080693635511]
+    UIVerticalBoxComponent:
+      Spacing: -2
+      DrawBorders: false
+      BorderColor: [1, 1, 1, 1]
+      BorderThickness: 1
+  - UIElement: 16734905733543584966
+    UICoreComponent:
+      ElementID: 16734905733543584966
+      Name: ProgressBar
+      UIElementType: ProgressBar
+      Position: [0, -1.25]
+      Rotation: [0, 0]
+      Size: [1, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      PositionOffset: [0, 0]
+      ParentHandle: 11783583194372851115
+      Children: []
+    UIProggresBarComponent:
+      Proggress:
+        Value: 0.231999993
+        BindedVariableID: 0
+      FillColor:
+        Value: [0, 0.200000048, 1, 1]
+        BindedVariableID: 0
+      BackgroundColor:
+        Value: [1, 1, 1, 1]
+        BindedVariableID: 0
+  - UIElement: 3071652080693635511
+    UICoreComponent:
+      ElementID: 3071652080693635511
+      Name: Text
+      UIElementType: Text
+      Position: [0, -2.25]
+      Rotation: [0, 0]
+      Size: [0.100000001, 1]
+      AnchorMinimum: [0, 0]
+      AnchorMaximum: [0, 0]
+      PositionOffset: [-500, 0]
+      ParentHandle: 11783583194372851115
+      Children: []
+    UITextComponent:
+      Text:
+        Value: Estimated Time
+        BindedVariableID: 0
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1

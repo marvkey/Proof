@@ -47,7 +47,7 @@ namespace NullState
             return m_GlitchMaterials[Proof.Random.Int(0,m_GlitchMaterials.Length-1)];
         }
 
-        public void QueueGlitch(Entity e, float time = 5.0f,bool includeChildren = true)
+        public void QueueGlitch(Entity e, float time = 2.0f,bool includeChildren = true)
         {
             
              if(!Entity.IsValid(e))

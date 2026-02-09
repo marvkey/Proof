@@ -5,6 +5,10 @@ namespace NullState
 {
     public class MemoryInjection : Task
     {
+
+        public MemoryInjection() : base(TaskType.MemoryInjection)
+        {
+        }
         [ShowInEditor("InjectionRate")] float m_InjectionRate = 0.25f;
         float ProggressRate = 0.0f;
 
@@ -29,7 +33,10 @@ namespace NullState
     }
 
     public class TraceRemoval : Task
-    {
+    {        
+        public TraceRemoval() : base(TaskType.TraceRemoval)
+        {
+        }
         [ShowInEditor("CleanUpRate")] float m_CleanUpRate = 0.25f;
         [ShowInEditor("MInTraceLevel")] float m_MinTraceLevel = 0.0f;
         [ShowInEditor("MaxTraceLevel")] float m_MaxTraceLevel = 100.0f;

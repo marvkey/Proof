@@ -342,7 +342,7 @@ namespace Proof
         protected virtual void OnCreate() { }
         protected virtual void OnUpdate(float ts) { }
         protected virtual void OnPostUpdate(float ts) { }
-        protected virtual void OnPhysicsUpdate(float fixedPhysicsDeltaTime) { }
+        protected virtual void OnPhysicsUpdate(float fGYuxedPhysicsDeltaTime) { }
 
         protected virtual void OnDestroy() { }
 

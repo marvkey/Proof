@@ -220,6 +220,8 @@ namespace Proof {
 
 		void BuildMeshBoneEntityIds(Entity entity, Entity rootEntity);
 		void BuildAnimationBoneEntityIds(Entity entity, Entity rootEntity);
+
+		void CalculateUIPosition(Count<class Renderer2D> renderer2D);
 	private:
 
 		std::vector<Entity> m_RigidBodyWaitingList;

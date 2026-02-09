@@ -8,6 +8,7 @@
 #include "Proof/Utils/MultiUse.h"
 #include <glm/glm.hpp>
 #include <entt/entt.hpp>
+#include "Proof/Core/Delegate.h"
 namespace Proof
 {
 	enum class UIElementType
@@ -123,6 +124,14 @@ namespace Proof
 	{
 		glm::vec2 Position = { 0,0 };
 	};
+
+
+	struct OnScreenDrawTransform
+	{
+		glm::vec2 Position; // Top-left corner in pixels
+		glm::vec2 Size;     // Width and height in pixels
+		glm::mat4 FinalTransform;
+	};
 	struct UICoreComponent
 	{
 		const std::string& GetName()const
@@ -146,8 +155,12 @@ namespace Proof
 			return m_ParentID != 0;
 		}
 
+		BindableVariableBool Visible = true;
 
+		const OnScreenDrawTransform& GetScreenDrawTransform(){return m_DrawPosition;}
+		const OnScreenDrawTransform& GetScreenDrawTransform()const {return m_DrawPosition;}
 	private:
+		OnScreenDrawTransform m_DrawPosition;
 		std::string m_Name;
 		UIElementID m_ElementID;
 		std::vector<UIElementID> m_Children;
@@ -157,6 +170,7 @@ namespace Proof
 		friend class UIElement;
 		friend class UIRenderer;
 		friend class UIPanelAssetSerilizer;
+		friend class ElevatedUIRenderer;
 	};
 
 	struct UIImageComponent
@@ -164,11 +178,29 @@ namespace Proof
 		BindableVariableVec4 TintColor = glm::vec4{ 1.0f };
 		BindableStaticAssetKey Texture = StaticAssetKey(AssetType::Texture);
 	};
+
+	enum class UIButtonEvents
+	{
+		None = 0,
+		Click = 1,
+		Hovered = 2,
+	};
+
+	struct UIButtonEvent
+	{
+		UUID ButtonID;
+		std::string ButtonName;
+		UIButtonEvents Event = UIButtonEvents::None;
+	};
+
 	struct UIButtonComponent
 	{
 		BindableVariableVec4 TintColor =  glm::vec4{ 1.0f };
 		BindableStaticAssetKey Texture = StaticAssetKey(AssetType::Texture);
+
+		Delegate<bool(const UIButtonEvent&)> OnEvent;
 	};
+
 	struct UITextComponent
 	{
 		BindableVariableString Text = { "Text" };
@@ -182,6 +214,12 @@ namespace Proof
 
 		BindableVariableVec4 FillColor = glm::vec4{ 1.0f, 0.0f, 0.0f, 1.0f };
 		BindableVariableVec4 BackgroundColor = glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f };
+		const OnScreenDrawTransform& GetScreenFiledDrawTransform(){return m_FilledOnScreenDraw;}
+		const OnScreenDrawTransform& GetScreenFiledDrawTransform()const {return m_FilledOnScreenDraw;}
+	private:
+		OnScreenDrawTransform m_FilledOnScreenDraw;
+		friend class ElevatedUIRenderer;
+
 	};
 
 	struct UIPadding
@@ -286,6 +324,7 @@ namespace Proof
 		entt::registry m_Registry;
 		friend class UIElement;
 		friend class UIRenderer;
+		friend class ElevatedUIRenderer;
 	};
 
 	class UIElement

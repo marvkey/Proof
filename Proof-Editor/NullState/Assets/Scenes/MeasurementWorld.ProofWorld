@@ -1,0 +1,65 @@
+World:
+  ID: 7480378964359055392
+  Entities:
+    - Entity: 10894422331321613834
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [1.39626336, 0.17453292, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 5
+        CastShadow: false
+        ShadowStrength: 0.5
+        CastSoftShadow: false
+        ShadowSoftness: 0.5
+    - Entity: 15887568762656212183
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.0174532924, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [0, 0, 0]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 4518649275059714014
+      TagComponent:
+        Tag: LFloor
+        tags: []
+      TransformComponent:
+        Location: [32.2502823, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 1689664228837990100
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 1263276587759243557
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, -1, 0]
+        Size: [30, 2, 120]
+        PhysicsMaterialPointerID: 0

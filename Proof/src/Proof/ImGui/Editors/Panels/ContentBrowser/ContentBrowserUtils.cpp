@@ -17,7 +17,7 @@
 #include "Proof/Asset/AssetManager.h"
 #include <imgui.h>
 #include "imgui_internal.h"
-
+#include "Proof/Scene/Mesh.h"
 namespace Proof
 {
 	static char s_RenameBuffer[MAX_INPUT_BUFFER_LENGTH];
@@ -342,7 +342,14 @@ namespace Proof
 		else
 			m_DisplayName = m_FileName;
 	}
+	struct CreateMeshFromFolder
+	{
+		std::string CreateMeshFolder = "Meshes/";
+		CreateMeshFromFolder()
+		{
+		}
 
+	} t_CreateNewMeshPopupData;
 	void ContentBrowserItem::OnContextMenuOpen(CBItemActionResult& actionResult)
 	{
 		if (ImGui::MenuItem("Reload"))
@@ -368,6 +375,85 @@ namespace Proof
 
 		if (ImGui::MenuItem("Open Externally"))
 			actionResult.Set(ContentBrowserAction::OpenExternal, true);
+
+		if (GetType() == ItemType::Directory)
+		{
+
+			if (ImGui::MenuItem("Create Meshes"))
+			{
+				Count<ContentBrowserDirectory> dir = Count<ContentBrowserDirectory>((ContentBrowserDirectory*)this);
+				UI::ShowMessageBox("Create mesh from sub folder",[this,dir]()
+				{
+
+					UI::AttributeInputText("FolderCopyPath",t_CreateNewMeshPopupData.CreateMeshFolder);
+
+					auto path  =AssetManager::GetAssetFileSystemPath(dir->GetDirectoryInfo()->FilePath);
+					if (ImGui::Button("Create"))
+					{
+						for (const auto& entry : std::filesystem::recursive_directory_iterator(path))
+						{
+							if (entry.is_regular_file())
+							{
+							    std::filesystem::path fullPath = std::filesystem::absolute(entry.path());
+
+							    if (Utils::GetAssetTypeFromPath(fullPath) == AssetType::MeshSourceFile)
+							    {
+							        // destination root EXACTLY as user typed (ASSET-RELATIVE path, not absolute OS)
+							        std::filesystem::path dstRoot = t_CreateNewMeshPopupData.CreateMeshFolder;
+
+							        // source root folder name (e.g. "Parkour")
+							        std::filesystem::path sourceFolderName = path.filename();
+
+							        if (!AssetManager::HasAsset(fullPath))
+							        {
+							            AssetManager::NewAssetSource(fullPath, AssetType::MeshSourceFile);
+							        }
+
+							        Count<MeshSource> meshSource = AssetManager::GetAsset<MeshSource>(fullPath);
+							        Count<Mesh> mesh = Count<Mesh>::Create(meshSource);
+
+							        // relative path inside source folder (Walls/wall01.fbx)
+							        std::filesystem::path rel = std::filesystem::relative(fullPath, path);
+
+							        // destination folder (ASSET PATH):
+							        // Meshes / Parkour / Walls
+							        std::filesystem::path dstFolderAsset = dstRoot / sourceFolderName / rel.parent_path();
+
+							        // Create folders on disk using project asset dir mapping
+							        std::filesystem::path dstFolderFS = AssetManager::GetAssetFileSystemPath(dstFolderAsset);
+							        std::filesystem::create_directories(dstFolderFS);
+
+							        // create mesh asset path (ASSET PATH)
+							        std::filesystem::path meshAssetPathAsset =
+							            dstFolderAsset / (fullPath.stem().string() + Utils::GetAssetExtensionString(AssetType::Mesh));
+
+							        auto asset = mesh.As<Asset>();
+
+							        // Make unique (needs filesystem path)
+							        std::filesystem::path meshAssetPathFS = AssetManager::GetAssetFileSystemPath(meshAssetPathAsset);
+							        meshAssetPathFS = FileSystem::GenerateUniqueFileName(meshAssetPathFS);
+
+
+							        AssetManager::NewAsset(asset, meshAssetPathFS);
+							    }
+							}
+						}
+
+						t_CreateNewMeshPopupData = {};
+
+						ImGui::CloseCurrentPopup();
+					}
+					ImGui::SameLine();
+
+					if (ImGui::Button("Cancel"))
+					{
+						t_CreateNewMeshPopupData = {};
+						ImGui::CloseCurrentPopup();
+					}
+
+				});	
+			}
+		}
 		/*
 		if (AssetManager::HasAsset(m_ID))
 		{

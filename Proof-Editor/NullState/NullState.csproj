@@ -100,8 +100,11 @@
     <Compile Include="Assets\Scripts\HealthComponent.cs" />
     <Compile Include="Assets\Scripts\Managers\GlitchManager.cs" />
     <Compile Include="Assets\Scripts\Managers\SystemMangers.cs" />
+    <Compile Include="Assets\Scripts\PowerUps\NullVeil.cs" />
+    <Compile Include="Assets\Scripts\PowerUps\PowerUp.cs" />
     <Compile Include="Assets\Scripts\Tasks\MemoryTask.cs" />
-    <Compile Include="Assets\Scripts\Tasks\TaskManager.cs" />
+    <Compile Include="Assets\Scripts\Tasks\TaskManager\TaskHandler\TaskHandler.cs" />
+    <Compile Include="Assets\Scripts\Tasks\TaskManager\TaskManager.cs" />
     <Compile Include="Assets\Test\TestBoid.cs" />
   </ItemGroup>
   <ItemGroup>

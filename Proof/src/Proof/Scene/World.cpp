@@ -1659,6 +1659,11 @@ namespace Proof
 		}
 	}
 
+	void World::CalculateUIPosition(Count<class Renderer2D> renderer2D)
+	{
+			
+	}
+
 	Entity World::CreateEntity(Count<class DynamicMesh> mesh, bool generateCollider)
 	{
 		PF_CORE_ASSERT(mesh->GetID());
