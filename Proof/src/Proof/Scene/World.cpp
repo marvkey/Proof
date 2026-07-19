@@ -100,7 +100,7 @@ namespace Proof
 		PF_PROFILE_FUNC();
 		DeleteEntitiesfromQeue();
 		{
-			PF_PROFILE_FUNC("World::OnUpdateEditor - Particle OnUpdate");
+			PF_PROFILE_SCOPE_DYNAMIC("World::OnUpdateEditor - Particle OnUpdate");
 			/*
 			const auto& particleView = m_Registry.view<ParticleSystemComponent>();
 			for (auto entity : particleView)
@@ -375,8 +375,13 @@ namespace Proof
 					Entity entity(e, this);
 					auto [transformComponent, spotLight] = spotLights.get<TransformComponent, SpotLightComponent>(e);
 					auto transform = GetWorldSpaceTransformComponent(entity);
-					glm::vec3 direction = glm::normalize(glm::rotate(transform.GetRotation(), glm::vec3(1.0f, 0.0f, 0.0f)));
+					const glm::mat4 worldTransform =
+						  GetWorldSpaceTransform(entity);
 
+					// spotlight currently uses local +X as forward.
+					const glm::vec3 direction = glm::normalize(
+						glm::mat3(worldTransform) * glm::vec3(1.0f, 0.0f, 0.0f)
+					);
 					spotLightSceneData.SpotLights[spotLightIndex] =
 					{
 						transform.Location,
@@ -778,7 +783,13 @@ namespace Proof
 					const auto& spotLight = e.GetComponent<SpotLightComponent>();
 					TransformComponent worldTransformComp = GetWorldSpaceTransformComponent(e);
 
-					glm::vec3 direction = glm::normalize(glm::rotate(worldTransformComp.GetRotation(), glm::vec3(1.0f, 0.0f, 0.0f)));
+					const glm::mat4 worldTransform =
+							  GetWorldSpaceTransform(e);
+
+					// currently uses local +X as forward.
+					const glm::vec3 direction = glm::normalize(
+						glm::mat3(worldTransform) * glm::vec3(1.0f, 0.0f, 0.0f)
+					);
 					renderer2D->DrawCone(worldTransformComp.Location,direction,spotLight.Angle,spotLight.Range,Colors::Green,8);
 				}
 
@@ -1221,7 +1232,7 @@ namespace Proof
 		}
 		
 		{
-			PF_PROFILE_FUNC("World::OnUpdate PlayerInput")
+			PF_PROFILE_FUNC("World::OnUpdate PlayerInput");
 			auto view = m_Registry.view<PlayerInputComponent>();
 
 			for (auto e : view)

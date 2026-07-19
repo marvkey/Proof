@@ -1,0 +1,10 @@
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\KickUp\Intermediates\ScriptApp\Debug\KickUp.csproj.AssemblyReference.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\KickUp\Intermediates\ScriptApp\Debug\KickUp.csproj.CoreCompileInputs.cache
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\KickUp\Binaries\ScriptApp\KickUp.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\KickUp\Binaries\ScriptApp\KickUp.pdb
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\KickUp\Binaries\ScriptApp\ProofScriptCore.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\KickUp\Binaries\ScriptApp\System.Collections.Immutable.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\KickUp\Binaries\ScriptApp\ProofScriptCore.pdb
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\KickUp\Intermediates\ScriptApp\Debug\KickUp.csproj.Up2Date
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\KickUp\Intermediates\ScriptApp\Debug\KickUp.dll
+C:\Users\marvn\OneDrive\Documents\Proof\Proof-Editor\KickUp\Intermediates\ScriptApp\Debug\KickUp.pdb

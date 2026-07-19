@@ -7,6 +7,15 @@ using System.Threading.Tasks;
 
 namespace Proof
 {
+    public enum InputAxis
+    {
+        Horizontal,
+        Vertical,
+        //MouseX,
+        //MouseY,
+        //MouseScroll
+    }
+
     public enum MouseCursorMode
     {
 
@@ -39,6 +48,62 @@ namespace Proof
         public static bool IsMouseButtonPressed(MouseButton button)=>InternalCalls.Input_IsMouseButtonPressed((int)button);	
 		public static bool IsMouseButtonReleased(MouseButton button)=>InternalCalls.Input_IsMouseButtonPressed((int)button);
 		public static bool IsMouseButtonDoubleClicked(MouseButton button) => InternalCalls.Input_IsMouseButtonDoubleClicked((int)button);
+
+
+        private static float GetDigitalAxis( KeyBoardKey negativeKey, KeyBoardKey positiveKey)
+        {
+            bool negative = IsKeyPressed(negativeKey);
+            bool positive = IsKeyPressed(positiveKey);
+
+            if (negative == positive)
+                return 0.0f;
+
+            return positive ? 1.0f : -1.0f;
+        }
+
+        public static float GetAxisRaw(InputAxis axis)
+        {
+            switch (axis)
+            {
+                case InputAxis.Horizontal:
+                {
+                    float keyboard = GetDigitalAxis(
+                        KeyBoardKey.A,
+                        KeyBoardKey.D);
+
+                    float arrows = GetDigitalAxis(
+                        KeyBoardKey.LeftArrow,
+                        KeyBoardKey.RightArrow);
+
+                    return keyboard != 0.0f ? keyboard : arrows;
+                }
+
+                case InputAxis.Vertical:
+                {
+                    float keyboard = GetDigitalAxis(
+                        KeyBoardKey.S,
+                        KeyBoardKey.W);
+
+                    float arrows = GetDigitalAxis(
+                        KeyBoardKey.DownArrow,
+                        KeyBoardKey.UpArrow);
+
+                    return keyboard != 0.0f ? keyboard : arrows;
+                }
+
+                //case InputAxis.MouseX:
+                //    return InternalCalls.Input_GetMouseDeltaX();
+                //
+                //case InputAxis.MouseY:
+                //    return InternalCalls.Input_GetMouseDeltaY();
+                //
+                //case InputAxis.MouseScroll:
+                //    return InternalCalls.Input_GetMouseScroll();
+
+                default:
+                    return 0.0f;
+            }
+        }
 		
 	}
     [RegisterCoreClassStruct]

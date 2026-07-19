@@ -8,27 +8,27 @@ Assets:
   - Asset: 9602169324105281993
     Type: World
     Path: Scenes\TestScene.ProofWorld
-  - Asset: 18245935877011124802
-    Type: Material
-    Path: Materials\m_Blue.Material.ProofAsset
-  - Asset: 8120570200783876273
-    Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Orange\texture_03.png
-  - Asset: 13569084378200082806
-    Type: ScriptFile
-    Path: Scripts\HealthComponent.cs
-  - Asset: 10841917017730479294
-    Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Dark\texture_11.png
   - Asset: 10423665410370180105
     Type: InputAction
     Path: Inputs\CharacterMovement\IA_Rotate.InputAction.ProofAsset
-  - Asset: 8851702765656265123
-    Type: Prefab
-    Path: Prefabs\Bullet\LazerBullet\Cone.Prefab.ProofAsset
+  - Asset: 10841917017730479294
+    Type: Texture
+    Path: Textures\PrototypeTextures\PNG\Dark\texture_11.png
+  - Asset: 18245935877011124802
+    Type: Material
+    Path: Materials\m_Blue.Material.ProofAsset
+  - Asset: 13569084378200082806
+    Type: ScriptFile
+    Path: Scripts\HealthComponent.cs
+  - Asset: 8120570200783876273
+    Type: Texture
+    Path: Textures\PrototypeTextures\PNG\Orange\texture_03.png
   - Asset: 10865829555602001316
     Type: InputAction
     Path: Inputs\CharacterMovement\IA_Move.InputAction.ProofAsset
+  - Asset: 8851702765656265123
+    Type: Prefab
+    Path: Prefabs\Bullet\LazerBullet\Cone.Prefab.ProofAsset
   - Asset: 5471588005917015338
     Type: Texture
     Path: Images\PerlinNoise.png
@@ -44,18 +44,18 @@ Assets:
   - Asset: 17927917000335048738
     Type: PhysicsMaterial
     Path: PhysicsMaterial\pm_PlayerPhysics.PhysicsMaterial.ProofAsset
-  - Asset: 955979040150495302
-    Type: Texture
-    Path: Models\Futuristic robot Bot\texture_metallic.png
   - Asset: 17467884722688338254
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Red\texture_04.png
   - Asset: 11903875693727252191
     Type: Texture
     Path: Textures\neonMap.png
-  - Asset: 16004910019884060136
-    Type: DynamicMesh
-    Path: Meshes\New Folder\RobotBot2.DynamicMesh.ProofAsset
+  - Asset: 955979040150495302
+    Type: Texture
+    Path: Models\Futuristic robot Bot\texture_metallic.png
+  - Asset: 16587156431716427673
+    Type: Prefab
+    Path: Prefabs\Rocket.Prefab.ProofAsset
   - Asset: 17429647957325141902
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Orange\texture_04.png
@@ -65,18 +65,18 @@ Assets:
   - Asset: 10093794893949333075
     Type: Material
     Path: Materials\m_RedNeon.Material.ProofAsset
-  - Asset: 16587156431716427673
-    Type: Prefab
-    Path: Prefabs\Rocket.Prefab.ProofAsset
-  - Asset: 15531315088096953945
-    Type: Texture
-    Path: Models\Drone\textures\Material.006_diffuse.png
+  - Asset: 16004910019884060136
+    Type: DynamicMesh
+    Path: Meshes\New Folder\RobotBot2.DynamicMesh.ProofAsset
   - Asset: 4708296502983104032
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Light\texture_08.png
   - Asset: 17845486805074956028
     Type: Texture
     Path: Textures\neonMapRed.png
+  - Asset: 15531315088096953945
+    Type: Texture
+    Path: Models\Drone\textures\Material.006_diffuse.png
   - Asset: 989043063733889532
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Red\texture_05.png
@@ -92,45 +92,45 @@ Assets:
   - Asset: 9344205787060067317
     Type: MeshSourceFile
     Path: Models\Futuristic robot Bot\base_basic_shaded.fbx
-  - Asset: 8529638578393898363
-    Type: Texture
-    Path: Models\DroneFuture\textures\DefaultMaterial_Base_color.png
-  - Asset: 10261542693649744042
-    Type: Texture
-    Path: Models\Drone\textures\Material.015_diffuse.png
-  - Asset: 978350869184898524
-    Type: Texture
-    Path: Models\Futuristic robot Bot\shaded.png
+  - Asset: 14263213735333966676
+    Type: ScriptFile
+    Path: Scripts\DamageComponent.cs
   - Asset: 12643321861371348384
     Type: Mesh
     Path: Meshes\ProkorWorldModels\JumpHole\CrouchHole.Mesh.ProofAsset
   - Asset: 14807338079391251991
     Type: Texture
     Path: Models\Futuristic robot Bot\texture_normal.png
-  - Asset: 14263213735333966676
-    Type: ScriptFile
-    Path: Scripts\DamageComponent.cs
+  - Asset: 978350869184898524
+    Type: Texture
+    Path: Models\Futuristic robot Bot\shaded.png
+  - Asset: 8529638578393898363
+    Type: Texture
+    Path: Models\DroneFuture\textures\DefaultMaterial_Base_color.png
+  - Asset: 10261542693649744042
+    Type: Texture
+    Path: Models\Drone\textures\Material.015_diffuse.png
   - Asset: 7620776126739072031
     Type: Texture
     Path: Models\Futuristic robot Bot\texture_diffuse.png
-  - Asset: 2351820973351286623
-    Type: Texture
-    Path: Models\Futuristic robot Bot\texture_pbr.png
   - Asset: 7621234434249467823
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Green\texture_11.png
   - Asset: 7148630198553903098
     Type: Material
     Path: Materials\m_Rocket.Material.ProofAsset
+  - Asset: 2351820973351286623
+    Type: Texture
+    Path: Models\Futuristic robot Bot\texture_pbr.png
   - Asset: 9904556931666478505
     Type: Texture
     Path: Models\Futuristic robot Bot\texture_roughness.png
-  - Asset: 16405759186654434407
-    Type: DynamicMesh
-    Path: Meshes\New Folder\RobotBot.DynamicMesh.ProofAsset
   - Asset: 12400660277232460367
     Type: Texture
     Path: Images\glitch-texture-1.jpg
+  - Asset: 16405759186654434407
+    Type: DynamicMesh
+    Path: Meshes\New Folder\RobotBot.DynamicMesh.ProofAsset
   - Asset: 14486622669096991682
     Type: Material
     Path: Meshes\New Folder\m_RobotBot.Material.ProofAsset
@@ -149,21 +149,15 @@ Assets:
   - Asset: 13604995464265852117
     Type: Texture
     Path: Images\CharacterHud\HealthOutlineImage.png
-  - Asset: 1950940261512637703
-    Type: Texture
-    Path: Models\Drone\textures\Material.018_diffuse.png
   - Asset: 5411836519774396444
     Type: ParticleSystem
     Path: ParticleSystem\ps_RocketSmoke.ParticleSystem.ProofAsset
+  - Asset: 1950940261512637703
+    Type: Texture
+    Path: Models\Drone\textures\Material.018_diffuse.png
   - Asset: 724923881556054131
     Type: Texture
     Path: Images\SmokeParticlesystem.png
-  - Asset: 6345652403949462335
-    Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Green\texture_06.png
-  - Asset: 6623191527013799357
-    Type: Texture
-    Path: Models\Drone\textures\Material.009_specularGlossiness.png
   - Asset: 17959116245406618805
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Light\texture_02.png
@@ -173,6 +167,12 @@ Assets:
   - Asset: 9869168224563120581
     Type: MeshSourceFile
     Path: Models\Rocket\scene.gltf
+  - Asset: 6345652403949462335
+    Type: Texture
+    Path: Textures\PrototypeTextures\PNG\Green\texture_06.png
+  - Asset: 6623191527013799357
+    Type: Texture
+    Path: Models\Drone\textures\Material.009_specularGlossiness.png
   - Asset: 11358710558737543565
     Type: Mesh
     Path: Meshes\Rocket.Mesh.ProofAsset
@@ -209,87 +209,87 @@ Assets:
   - Asset: 671419289433263251
     Type: MeshSourceFile
     Path: Models\Drone\scene.gltf
-  - Asset: 7866513001105485212
-    Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Light\texture_12.png
   - Asset: 16784046416852032464
     Type: Texture
     Path: Models\Drone\textures\Material.001_diffuse.png
+  - Asset: 7866513001105485212
+    Type: Texture
+    Path: Textures\PrototypeTextures\PNG\Light\texture_12.png
   - Asset: 15611310432674875534
     Type: Texture
     Path: Models\DroneFuture\textures\DefaultMaterial_Mixed_AO.png
   - Asset: 5528791536284051188
     Type: Texture
     Path: Models\Drone\textures\Material.013_diffuse.png
-  - Asset: 10729087123050657331
-    Type: Texture
-    Path: Models\Drone\textures\Material.009_diffuse.png
   - Asset: 998612738806337063
     Type: Mesh
     Path: Meshes\ProkorWorldModels\Floor\XXLFloor.Mesh.ProofAsset
+  - Asset: 10729087123050657331
+    Type: Texture
+    Path: Models\Drone\textures\Material.009_diffuse.png
   - Asset: 15196113799356177743
     Type: Texture
     Path: Models\Drone\textures\Material.017_diffuse.png
   - Asset: 4958113743849962161
     Type: Texture
     Path: Models\Drone\textures\Material.020_diffuse.png
-  - Asset: 18079309955890004539
-    Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Dark\texture_02.png
   - Asset: 784384639054779730
     Type: Texture
     Path: Models\Drone\textures\Material.022_diffuse.png
+  - Asset: 18079309955890004539
+    Type: Texture
+    Path: Textures\PrototypeTextures\PNG\Dark\texture_02.png
   - Asset: 5974710913247827984
     Type: Mesh
     Path: Meshes\Drone.Mesh.ProofAsset
   - Asset: 11877075933518958755
     Type: Texture
     Path: Models\DroneFuture\textures\DefaultMaterial_Emissive.png
-  - Asset: 11153823734517650128
-    Type: Texture
-    Path: Models\DroneFuture\textures\DefaultMaterial_Height.png
   - Asset: 12009730275297971089
     Type: MeshSourceFile
     Path: Models\ProkorWorldModels\Floor\MFloor.glb
+  - Asset: 11153823734517650128
+    Type: Texture
+    Path: Models\DroneFuture\textures\DefaultMaterial_Height.png
   - Asset: 15289214756583400978
     Type: Texture
     Path: Models\DroneFuture\textures\DefaultMaterial_Metallic.png
   - Asset: 5220143863605419177
     Type: Texture
     Path: Models\DroneFuture\textures\DefaultMaterial_Roughness.png
-  - Asset: 718462954617213024
-    Type: Texture
-    Path: Models\DroneFuture\source\DronoSphere\print.png
   - Asset: 6886147024576059845
     Type: Material
     Path: Materials\Prototype\m_DarkProtptype.Material.ProofAsset
+  - Asset: 718462954617213024
+    Type: Texture
+    Path: Models\DroneFuture\source\DronoSphere\print.png
   - Asset: 16387496654589156182
     Type: Texture
     Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Base_color.png
   - Asset: 16843537044813924609
     Type: Texture
     Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Height.png
-  - Asset: 11477088556250181178
-    Type: Texture
-    Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Metallic.png
   - Asset: 1689664228837990100
     Type: Mesh
     Path: Meshes\ProkorWorldModels\Floor\LFloor.Mesh.ProofAsset
+  - Asset: 11477088556250181178
+    Type: Texture
+    Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Metallic.png
   - Asset: 12125327636136761240
     Type: Texture
     Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Mixed_AO.png
   - Asset: 3576836091183402335
     Type: Texture
     Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Normal.png
-  - Asset: 12052982116799935738
-    Type: Texture
-    Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Normal_DirectX.png
-  - Asset: 15382384043102591794
-    Type: Material
-    Path: Materials\m_DroneFuture.Material.ProofAsset
   - Asset: 4332363279821732544
     Type: Prefab
     Path: Prefabs\RocketRobot.Prefab.ProofAsset
+  - Asset: 15382384043102591794
+    Type: Material
+    Path: Materials\m_DroneFuture.Material.ProofAsset
+  - Asset: 12052982116799935738
+    Type: Texture
+    Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Normal_DirectX.png
   - Asset: 16367550496779679935
     Type: Texture
     Path: Models\DroneFuture\source\DronoSphere\tex\DefaultMaterial_Roughness.png
@@ -317,30 +317,30 @@ Assets:
   - Asset: 10010263703707667035
     Type: MeshSourceFile
     Path: Models\ProkorWorldModels\Ramps\20DegreeRamp.glb
-  - Asset: 15100187233888159728
-    Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Orange\texture_12.png
   - Asset: 5907222162749705996
     Type: MeshSourceFile
     Path: Models\ProkorWorldModels\Ramps\30DegreeRamp.glb
-  - Asset: 17422439391454560080
+  - Asset: 15100187233888159728
     Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Dark\texture_01.png
+    Path: Textures\PrototypeTextures\PNG\Orange\texture_12.png
   - Asset: 7480378964359055392
     Type: World
     Path: Scenes\MeasurementWorld.ProofWorld
+  - Asset: 17422439391454560080
+    Type: Texture
+    Path: Textures\PrototypeTextures\PNG\Dark\texture_01.png
   - Asset: 8720225046762302341
     Type: Mesh
     Path: Meshes\Parkour\Cover\LowCover.Mesh.ProofAsset
   - Asset: 5255323427261013727
     Type: MeshSourceFile
     Path: Models\ProkorWorldModels\Floor\XSFloor.glb
-  - Asset: 18392400941398026835
-    Type: MeshSourceFile
-    Path: Models\ProkorWorldModels\Floor\SFloor.glb
   - Asset: 5263636904550204877
     Type: Mesh
     Path: Meshes\ProkorWorldModels\Floor\XSFloor.Mesh.ProofAsset
+  - Asset: 18392400941398026835
+    Type: MeshSourceFile
+    Path: Models\ProkorWorldModels\Floor\SFloor.glb
   - Asset: 4144981286996387986
     Type: MeshSourceFile
     Path: Models\ProkorWorldModels\Floor\LFloor.glb
@@ -383,45 +383,45 @@ Assets:
   - Asset: 6095258312976735802
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Red\texture_12.png
-  - Asset: 4730659925148474531
-    Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Dark\texture_03.png
   - Asset: 10070481946804657981
     Type: Mesh
     Path: Meshes\ProkorWorldModels\Cover\LowCover.Mesh.ProofAsset
+  - Asset: 4730659925148474531
+    Type: Texture
+    Path: Textures\PrototypeTextures\PNG\Dark\texture_03.png
   - Asset: 4936366319389266949
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Dark\texture_05.png
   - Asset: 2123762465011488663
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Dark\texture_06.png
-  - Asset: 17435383890178104254
-    Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Red\texture_11.png
   - Asset: 8309055193193324820
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Dark\texture_07.png
-  - Asset: 14934428173846018273
+  - Asset: 17435383890178104254
     Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Light\texture_07.png
+    Path: Textures\PrototypeTextures\PNG\Red\texture_11.png
   - Asset: 7021156286531568041
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Dark\texture_08.png
-  - Asset: 11899319585541935226
+  - Asset: 14934428173846018273
     Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Purple\texture_01.png
+    Path: Textures\PrototypeTextures\PNG\Light\texture_07.png
   - Asset: 1780449256199551793
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Dark\texture_09.png
-  - Asset: 12417133235586847945
+  - Asset: 11899319585541935226
     Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Purple\texture_06.png
-  - Asset: 1765890354755178124
-    Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Green\texture_12.png
+    Path: Textures\PrototypeTextures\PNG\Purple\texture_01.png
   - Asset: 5692682284931847212
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Dark\texture_10.png
+  - Asset: 1765890354755178124
+    Type: Texture
+    Path: Textures\PrototypeTextures\PNG\Green\texture_12.png
+  - Asset: 12417133235586847945
+    Type: Texture
+    Path: Textures\PrototypeTextures\PNG\Purple\texture_06.png
   - Asset: 14717037909078538470
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Dark\texture_13.png
@@ -455,12 +455,12 @@ Assets:
   - Asset: 14577323933717888656
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Light\texture_04.png
-  - Asset: 13302542013687078358
-    Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Purple\texture_10.png
   - Asset: 16891743073129976817
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Light\texture_05.png
+  - Asset: 13302542013687078358
+    Type: Texture
+    Path: Textures\PrototypeTextures\PNG\Purple\texture_10.png
   - Asset: 9467402334189673286
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Light\texture_06.png
@@ -509,24 +509,24 @@ Assets:
   - Asset: 9360574985685821562
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Purple\texture_03.png
-  - Asset: 9682264165507772439
-    Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Red\texture_10.png
   - Asset: 8718467041122008754
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Purple\texture_04.png
+  - Asset: 9682264165507772439
+    Type: Texture
+    Path: Textures\PrototypeTextures\PNG\Red\texture_10.png
   - Asset: 6722371117743854453
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Purple\texture_05.png
   - Asset: 14827448729315550154
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Purple\texture_07.png
-  - Asset: 13035214421855496203
-    Type: Texture
-    Path: Textures\PrototypeTextures\PNG\Red\texture_13.png
   - Asset: 18098042710100523196
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Purple\texture_08.png
+  - Asset: 13035214421855496203
+    Type: Texture
+    Path: Textures\PrototypeTextures\PNG\Red\texture_13.png
   - Asset: 15336115966556801212
     Type: Texture
     Path: Textures\PrototypeTextures\PNG\Purple\texture_11.png

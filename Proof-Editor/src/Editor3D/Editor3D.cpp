@@ -58,12 +58,15 @@
 #include "Proof/ImGui/Editors/EditorWorkspace/ViewPortEditorWorkspace.h"
 #include "Proof/Renderer/Image.h"
 #include "Proof/Animation/Animation.h"
-
+#include "Proof/Renderer/GraphicsContext.h"
 #include "Proof/Input/ElevatedInputSystem/ElevatedInputDevices/ElevatedInputDeviceManager.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include "Proof/Platform/Vulkan/VulkanAllocator.h"
+#include "Proof/Renderer/GraphicsContext.h"
 
 #define SCENE_HIERARCHY_PANEL_ID "SceneHierarchyPanel"
 #define ECS_DEBUG_PANEL_ID "ECSDebugPanel"
@@ -1963,6 +1966,12 @@ namespace Proof
 		m_ActiveWorld->SetWorldTransitionCallback([this](AssetID id) { openNewWorld = true; newWorldID = id; });
 
 	}
+	std::string GetCPUName()
+	{
+		const char* cpuName = std::getenv("PROCESSOR_IDENTIFIER");
+
+		return cpuName ? std::string(cpuName) : std::string{};
+	}
 	void Editore3D::UI_StatisticsPanel()
 	{
 		if (!s_EditorData->ShowStatisticsPanel)
@@ -1980,28 +1989,60 @@ namespace Proof
 
 				if (ImGui::BeginTabItem("Renderer"))
 				{
-					//auto& caps = Renderer::GetCapabilities();
-					//ImGui::Text("Vendor: %s", caps.Vendor.c_str());
-					//ImGui::Text("Renderer: %s", caps.Device.c_str());
-					//ImGui::Text("Version: %s", caps.Version.c_str());
-					//ImGui::Separator();
-					ImGui::Text("Frame Time: %.2fms\n", FrameTime::GetFrameMS());
-					ImGui::Text("FPS: %.2fms\n", FrameTime::GetFrameFPS());
+					auto allocatorStats = VulkanAllocator::GetStats();
+					GPUInfo info = Renderer::GetGraphicsContext()->GetGPUInfo();
 
-					#if 0
-					if (RendererAPI::Current() == RendererAPIType::Vulkan)
-					{
-						GPUMemoryStats memoryStats = VulkanAllocator::GetStats();
-						std::string used = Utils::BytesToString(memoryStats.Used);
-						std::string free = Utils::BytesToString(memoryStats.Free);
-						ImGui::Text("Used VRAM: %s", used.c_str());
-						ImGui::Text("Free VRAM: %s", free.c_str());
-						ImGui::Text("Descriptor Allocs: %d", VulkanRenderer::GetDescriptorAllocationCount(Renderer::RT_GetCurrentFrameIndex()));
-					}
-					#endif
+					ImGui::Text("Renderer: %s", info.GraphicsAPI.c_str());
+					auto apiVersion = info.GetAPIVersionString();
+					ImGui::Text("RenderAPIVersion: %s", apiVersion.c_str());
+
+					auto cpuName = GetCPUName();
+					ImGui::Text("GPU: %s", info.Name.c_str());
+					ImGui::Separator();
+
+					GPUMemoryStats memoryStats = VulkanAllocator::GetStats();
+					std::string used = Utils::String::BytesToString(memoryStats.Used);
+					std::string free = Utils::String::BytesToString(memoryStats.Free);
+					ImGui::Text("Used VRAM: %s", used.c_str());
+					ImGui::Text("Free VRAM: %s", free.c_str());
+
+
+					ImGui::Separator();
+					ImGui::Text("Frame Time: %.2fms\n", FrameTime::GetFrameMS());
+					ImGui::Text("%.2f FPS\n", FrameTime::GetFrameFPS());
+
+					
 					bool vsync = app.GetWindow()->IsVsync();
 					if (ImGui::Checkbox("Vsync", &vsync))
 						app.GetWindow()->SetVsync(vsync);
+
+
+					if (UI::AttributeTreeNode("Lights") )
+					{
+						auto renderer = s_EditorData->PanelManager->GetPanel< WorldRendererPanel>(WORLD_RENDERER_PANEL_ID)->GetWorldRenderer();
+
+						auto lightStats = renderer->GetStats().LightSene;
+						ImGui::Text(fmt::format("EnvironmentLights: {}",lightStats.SkyLightCount).c_str());
+						ImGui::Text(fmt::format("DirectionalLights: {}",lightStats.DirectionalLightCount).c_str());
+						ImGui::Text(fmt::format("PointLights: {}",lightStats.PointLightCount).c_str());
+						ImGui::Text(fmt::format("SpotLights: {}",lightStats.SpotLightCount).c_str());
+						ImGui::Text(fmt::format("TotalLights: {}",
+							lightStats.SkyLightCount + lightStats.DirectionalLightCount + lightStats.PointLightCount +
+							lightStats.SpotLightCount).c_str());
+
+						ImGui::Separator();
+
+						ImGui::Text(fmt::format("Light Culling: {:.3f} ms", renderer->GetStats().Timers.LightCulling).c_str());
+
+						UI::EndTreeNode();
+					}
+
+
+					if (UI::AttributeTreeNode("Meshes",false))
+					{
+						UI::EndTreeNode();
+					}
+					
 
 					ImGui::EndTabItem();
 				}

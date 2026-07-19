@@ -51,7 +51,7 @@ namespace Proof{
 	void DebugMeshRenderer::EndContext()
 	{
 		PF_CORE_ASSERT(m_InContext == true, "Cannot end context if already n a context");
-		PF_PROFILE_FUNC()
+		PF_PROFILE_FUNC();
 		Draw();
 		m_Pipeline->Reset();
 

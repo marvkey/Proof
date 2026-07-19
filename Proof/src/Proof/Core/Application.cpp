@@ -228,11 +228,10 @@ namespace Proof {
 
         while (m_IsRunning == true && m_ApplicationShouldShutdown == false)
         {
-            PF_PROFILE_FRAME("MainThread");
 
             // render thread
             {
-                PF_PROFILE_FUNC("Wait");
+                PF_PROFILE_SCOPE_DYNAMIC("Wait");
                 Timer timer;
 
                 m_RenderThread.BlockUntilRenderComplete();
@@ -318,7 +317,7 @@ namespace Proof {
 
                 Renderer::BeginFrame();
                 {
-                    PF_PROFILE_FUNC("Application Layer::OnUpdate");
+                    PF_PROFILE_FUNCN("Application Layer::OnUpdate");
                     //PF_SCOPE_PERF("Application Layer::OnUpdate");
 
                     for (Count<Layer> layer : m_LayerStack->V_LayerStack)
@@ -340,6 +339,9 @@ namespace Proof {
             }
 
             m_Window->WindowUpdate();
+
+            FrameMark;
+
         }
 
         if (glfwWindowShouldClose((GLFWwindow*) m_Window->GetWindow()) == GLFW_TRUE)

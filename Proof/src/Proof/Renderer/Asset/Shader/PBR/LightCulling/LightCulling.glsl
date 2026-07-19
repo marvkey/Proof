@@ -1,273 +1,427 @@
 #Compute Shader
 #version 450 core
+
 #include <Common.glslh>
 #include <PBR/Lights.glslh>
 
-//https://github.com/InCloudsBelly/X2_RenderingEngine/blob/e7c349b70bd95af3ab673556cdb56cb2cc40b48e/Resources/Shaders/LightCulling.glsl
-//https://github.com/bcrusco/Forward-Plus-Renderer/blob/master/Forward-Plus/Forward-Plus/source/shaders/light_culling.comp.glsl
 layout(set = 1, binding = 0) uniform sampler2D u_DepthTexture;
 
-struct Frustum 
+struct Frustum
 {
-    vec4 Planes[6]; // Array to store the six frustum planes
-};
-struct Sphere
-{
-    vec3 Center;   // Center point.
-    float Radius;   // Radius.
+    vec4 Planes[6];
 };
 
-struct Cone
+float ScreenSpaceToViewSpaceDepth(float screenDepth)
 {
-    vec3 Tip;   // Cone tip.
-    float  Height;   // Height of the cone.
-    vec3 Direction;   // Direction of the cone.
-    float  Radius;   // bottom radius of the cone.
-};
+    float depthLinearizeMul = -u_Camera.Projection[3][2];
+    float depthLinearizeAdd =  u_Camera.Projection[2][2];
 
-bool IsConeInFrustum(Cone cone, Frustum frustum) 
-{
-   // Define the apex and base of the cone
-    vec3 apex = cone.Tip;
-    vec3 base = cone.Tip + cone.Height * cone.Direction;
-    
-    // Iterate over the frustum planes
-    for (int i = 0; i < 6; i++) 
-    {
-        vec3 normal = frustum.Planes[i].xyz;
-        float distanceToApex = dot(frustum.Planes[i], vec4(apex, 1.0));
-        float distanceToBase = dot(frustum.Planes[i], vec4(base, 1.0));
-
-        // Check if both apex and base are outside the frustum plane
-        if (distanceToApex < 0.0 && distanceToBase < 0.0) 
-        {
-            // The entire cone is outside this frustum plane.
-            return false;
-        }
-    }
-
-    // If the loop completes without returning, the cone is at least partially inside the frustum.
-    return true;
-}
-bool IsSphereInFrustum(Sphere sphere, Frustum frustum) 
-{
-	    for (int i = 0; i < 6; i++) 
-		{
-			float distance = dot(frustum.Planes[i], vec4(sphere.Center, 1.0));
-			if (distance < -sphere.Radius) 
-			{
-				// The sphere is completely outside this frustum plane.
-				return false;
-			}
-        }
-    return true;
-}
-bool IsSphereInsidePlane(Sphere sphere, vec4 plane)
-{
-    // Calculate the signed distance from the sphere center to the plane.
-    float distance = dot(vec4(sphere.Center, 1.0), plane);
-
-    // If the distance is greater than or equal to the negative radius, the sphere is inside the plane.
-    return distance >= -sphere.Radius;
-}
-float ScreenSpaceToViewSpaceDepth(const float screenDepth)
-{
-	float depthLinearizeMul = -u_Camera.Projection[3][2];
-	float depthLinearizeAdd = u_Camera.Projection[2][2];
-
-	return depthLinearizeMul / (screenDepth +depthLinearizeAdd );
+    return depthLinearizeMul /
+    (screenDepth + depthLinearizeAdd);
 }
 
 shared uint minDepthInt;
 shared uint maxDepthInt;
+
 shared uint visiblePointLightCount;
 shared uint visibleSpotLightCount;
-shared Frustum frustrumPlane;
+
+shared Frustum frustumPlanes;
+
 shared int visiblePointLightIndices[MAX_NUM_LIGHTS_PER_TILE];
 shared int visibleSpotLightIndices[MAX_NUM_LIGHTS_PER_TILE];
 
-layout (local_size_x = TILE_SIZE,local_size_y = TILE_SIZE) in;
+layout(
+local_size_x = TILE_SIZE,
+local_size_y = TILE_SIZE,
+local_size_z = 1
+) in;
+
 void main()
 {
+    const uint maxLightsPerTile =
+    uint(MAX_NUM_LIGHTS_PER_TILE);
 
-    ivec2 location = ivec2(gl_GlobalInvocationID.xy);
-    ivec2 itemID = ivec2(gl_LocalInvocationID.xy);
-    ivec2 tileID = ivec2(gl_WorkGroupID.xy);
-    ivec2 tileNumber = ivec2(gl_NumWorkGroups.xy);
-    uint index = tileID.y * tileNumber.x + tileID.x;
+    /*
+        Reserve the final position for -1.
 
-    // Initialize shared global values for depth and light count
-    if (gl_LocalInvocationIndex == 0)
+        For example, with 1024 entries:
+        0–1022 = light indices
+        1023   = -1 terminator
+    */
+    const uint maxStoredLightsPerTile =
+    maxLightsPerTile - 1u;
+
+    ivec2 pixelLocation = ivec2(gl_GlobalInvocationID.xy);
+    ivec2 tileID        = ivec2(gl_WorkGroupID.xy);
+    ivec2 tileCount     = ivec2(gl_NumWorkGroups.xy);
+
+    uint tileIndex =
+    uint(tileID.y * tileCount.x + tileID.x);
+
+    /*
+        Initialize values shared by this workgroup.
+    */
+    if (gl_LocalInvocationIndex == 0u)
     {
-		minDepthInt = 0xFFFFFFFF;
-		maxDepthInt = 0;
-		visiblePointLightCount = 0;
-		visibleSpotLightCount = 0;
+        minDepthInt = 0xFFFFFFFFu;
+        maxDepthInt = 0u;
+
+        visiblePointLightCount = 0u;
+        visibleSpotLightCount  = 0u;
     }
 
     barrier();
 
-        // Step 1: Calculate the minimum and maximum depth values (from the depth buffer) for this group's tile
-    vec2 tc = vec2(location) / u_ScreenData.FullResolution;
-    float linearDepth = ScreenSpaceToViewSpaceDepth(textureLod(u_DepthTexture, tc, 0).r);
+    /*
+        Clamp the pixel coordinate because the final workgroup can extend
+        beyond the actual screen resolution.
+    */
+    ivec2 screenResolution =
+    ivec2(u_ScreenData.FullResolution);
 
-    // Convert depth to uint so we can do atomic min and max comparisons between the threads
+    ivec2 safePixelLocation = clamp(
+    pixelLocation,
+    ivec2(0),
+    screenResolution - ivec2(1)
+    );
+
+    vec2 textureCoordinate =
+    (vec2(safePixelLocation) + vec2(0.5)) /
+    vec2(screenResolution);
+
+    /*
+        Find the minimum and maximum depth for this tile.
+    */
+    float sampledDepth = textureLod(
+    u_DepthTexture,
+    textureCoordinate,
+    0.0
+    ).r;
+
+    float linearDepth =
+    ScreenSpaceToViewSpaceDepth(sampledDepth);
+
     uint depthInt = floatBitsToUint(-linearDepth);
+
     atomicMin(minDepthInt, depthInt);
     atomicMax(maxDepthInt, depthInt);
 
     barrier();
-    if (gl_LocalInvocationIndex == 0)
+
+    /*
+        One invocation constructs the tile frustum.
+    */
+    if (gl_LocalInvocationIndex == 0u)
     {
-		// Convert the min and max across the entire tile back to float
-		float minDepth = uintBitsToFloat(minDepthInt);
-		float maxDepth = uintBitsToFloat(maxDepthInt);
+        float minDepth = uintBitsToFloat(minDepthInt);
+        float maxDepth = uintBitsToFloat(maxDepthInt);
 
-		// Steps based on tile sale
-		vec2 negativeStep = (2.0 * vec2(tileID)) / vec2(tileNumber);
-		vec2 positiveStep = (2.0 * vec2(tileID + ivec2(1, 1))) / vec2(tileNumber);
+        vec2 negativeStep =
+        (2.0 * vec2(tileID)) /
+        vec2(tileCount);
 
-		// Set up starting values for planes using steps and min and max z values
-		frustrumPlane.Planes[0] = vec4(1.0, 0.0, 0.0, 1.0 - negativeStep.x); // Left
-		frustrumPlane.Planes[1] = vec4(-1.0, 0.0, 0.0, -1.0 + positiveStep.x); // Right
-		frustrumPlane.Planes[2] = vec4(0.0, 1.0, 0.0, 1.0 - negativeStep.y); // Bottom
-		frustrumPlane.Planes[3] = vec4(0.0, -1.0, 0.0, -1.0 + positiveStep.y); // Top
-		frustrumPlane.Planes[4] = vec4(0.0, 0.0, -1.0, -minDepth); // Near
-		frustrumPlane.Planes[5] = vec4(0.0, 0.0, 1.0, maxDepth); // Far
+        vec2 positiveStep =
+        (2.0 * vec2(tileID + ivec2(1))) /
+        vec2(tileCount);
 
-		// Transform the first four planes
-		for (uint i = 0; i < 4; i++)
-		{
-		    frustrumPlane.Planes[i] *= u_Camera.ViewProjectionMatrix;
-		    frustrumPlane.Planes[i] /= length(frustrumPlane.Planes[i].xyz);
-		}
+        frustumPlanes.Planes[0] =
+        vec4(
+        1.0,
+        0.0,
+        0.0,
+        1.0 - negativeStep.x
+        );
 
-		// Transform the depth planes
-		frustrumPlane.Planes[4] *= u_Camera.View;
-		frustrumPlane.Planes[4] /= length(frustrumPlane.Planes[4].xyz);
-		frustrumPlane.Planes[5] *= u_Camera.View;
-		frustrumPlane.Planes[5] /= length(frustrumPlane.Planes[5].xyz);
+        frustumPlanes.Planes[1] =
+        vec4(
+        -1.0,
+        0.0,
+        0.0,
+        -1.0 + positiveStep.x
+        );
+
+        frustumPlanes.Planes[2] =
+        vec4(
+        0.0,
+        1.0,
+        0.0,
+        1.0 - negativeStep.y
+        );
+
+        frustumPlanes.Planes[3] =
+        vec4(
+        0.0,
+        -1.0,
+        0.0,
+        -1.0 + positiveStep.y
+        );
+
+        frustumPlanes.Planes[4] =
+        vec4(
+        0.0,
+        0.0,
+        -1.0,
+        -minDepth
+        );
+
+        frustumPlanes.Planes[5] =
+        vec4(
+        0.0,
+        0.0,
+        1.0,
+        maxDepth
+        );
+
+        /*
+            Transform the side planes.
+        */
+        for (uint i = 0u; i < 4u; ++i)
+        {
+            frustumPlanes.Planes[i] *=
+            u_Camera.ViewProjectionMatrix;
+
+            float planeLength =
+            length(frustumPlanes.Planes[i].xyz);
+
+            if (planeLength > 0.0)
+            {
+                frustumPlanes.Planes[i] /=
+                planeLength;
+            }
+        }
+
+        /*
+            Transform the near and far planes.
+        */
+        frustumPlanes.Planes[4] *= u_Camera.View;
+        frustumPlanes.Planes[5] *= u_Camera.View;
+
+        float nearPlaneLength =
+        length(frustumPlanes.Planes[4].xyz);
+
+        float farPlaneLength =
+        length(frustumPlanes.Planes[5].xyz);
+
+        if (nearPlaneLength > 0.0)
+        {
+            frustumPlanes.Planes[4] /=
+            nearPlaneLength;
+        }
+
+        if (farPlaneLength > 0.0)
+        {
+            frustumPlanes.Planes[5] /=
+            farPlaneLength;
+        }
     }
 
-	 // Step 3: Cull lights.
-    // Parallelize the threads against the lights now.
-    // Can handle 256 simultaniously. Anymore lights than that and additional passes are performed
-    const uint threadCount = TILE_SIZE * TILE_SIZE;
-	uint passCount = (u_LightData.PointLightCount + threadCount - 1) / threadCount;
-	for (uint i = 0; i < passCount; i++)
+    /*
+     
+
+        Every invocation must wait until invocation zero has finished
+        writing all six frustum planes.
+    */
+    barrier();
+
+    const uint threadCount =
+    uint(TILE_SIZE * TILE_SIZE);
+
+    /*
+        Cull all point lights in the scene.
+    */
+    uint pointLightCount =
+    uint(max(u_LightData.PointLightCount, 0));
+
+    uint pointLightPassCount =
+    (pointLightCount + threadCount - 1u) /
+    threadCount;
+
+    for (uint pass = 0u;
+    pass < pointLightPassCount;
+    ++pass)
     {
-	/*
-		// Get the lightIndex to test for this thread / pass. If the index is >= light count, then this thread can stop testing lights
-		uint lightIndex = i * threadCount + gl_LocalInvocationIndex;
-		if (lightIndex >= u_LightData.PointLightCount)
-		    break;
-			
-		Sphere sphere;
-		sphere.Center = s_PointLights.Lights[lightIndex].Position;
-		sphere.Radius = s_PointLights.Lights[lightIndex].Radius;
-		if(IsSphereInFrustum(sphere,frustrumPlane))
-		{
-			uint offset = atomicAdd(visiblePointLightCount, 1);
-			visiblePointLightIndices[offset] = int(lightIndex);
-		}
-		*/
+        uint lightIndex =
+        pass * threadCount +
+        gl_LocalInvocationIndex;
 
-		// Get the lightIndex to test for this thread / pass. If the index is >= light count, then this thread can stop testing lights
-		uint lightIndex = i * threadCount + gl_LocalInvocationIndex;
-		if (lightIndex >= u_LightData.PointLightCount)
-		    break;
+        if (lightIndex >= pointLightCount)
+        break;
 
-		vec4 position = vec4(s_PointLights.Lights[lightIndex].Position, 1.0f);
-		float radius = s_PointLights.Lights[lightIndex].Radius;
-		radius += radius * 0.3f;
+        PointLight light =
+        s_PointLights.Lights[lightIndex];
 
-		// Check if light radius is in frustum
-		float distance = 0.0;
-		for (uint j = 0; j < 6; j++)
-		{
-		    distance = dot(position, frustrumPlane.Planes[j]) + radius;
-		    if (distance <= 0.0) // No intersection
-				break;
-		}
+        vec4 lightPosition =
+        vec4(light.Position, 1.0);
 
-		// If greater than zero, then it is a visible light
-		if (distance > 0.0)
-		{
-		    // Add index to the shared array of visible indices
-		    uint offset = atomicAdd(visiblePointLightCount, 1);
-		    visiblePointLightIndices[offset] = int(lightIndex);
-		}
+        float radius =
+        max(light.Radius, 0.0);
+
+        radius *= 1.3;
+
+        bool intersectsTile = true;
+
+        for (uint planeIndex = 0u;
+        planeIndex < 6u;
+        ++planeIndex)
+        {
+            float distance =
+            dot(
+            lightPosition,
+            frustumPlanes.Planes[planeIndex]
+            ) + radius;
+
+            if (distance <= 0.0)
+            {
+                intersectsTile = false;
+                break;
+            }
+        }
+
+        if (intersectsTile)
+        {
+            /*
+                The atomic counter may become larger than the array,
+                but the array write is protected.
+            */
+            uint destination = atomicAdd(
+            visiblePointLightCount,
+            1u
+            );
+
+            if (destination < maxStoredLightsPerTile)
+            {
+                visiblePointLightIndices[destination] =
+                int(lightIndex);
+            }
+        }
     }
-	passCount = (u_LightData.SpotLightCount + threadCount - 1) / threadCount;
-	for (uint i = 0; i < passCount; i++)
-	{
-		uint lightIndex = i * threadCount + gl_LocalInvocationIndex;
-		if (lightIndex >= u_LightData.SpotLightCount)
-		    break;
-		SpotLight light =s_SpotLights.Lights[lightIndex];
-			float radius = light.Range;
-		// Check if light radius is in frustum
-		float distance = 0.0;
-		for (uint j = 0; j < 6; j++)
-		{
-			distance = dot(vec4(light.Position - light.Direction * (light.Range), 1.0), frustrumPlane.Planes[j]) + radius;
-			if (distance < 0.0) // No intersection
-				break;
-		}
 
-		// If greater than zero, then it is a visible light
-		if (distance > 0.0)
-		{
-			// Add index to the shared array of visible indices
-			uint offset = atomicAdd(visibleSpotLightCount, 1);
-			visibleSpotLightIndices[offset] = int(lightIndex);
-		} 
-		/*
-		float angleRadians = radians(light.Angle);
-		float coneRadius = tan( angleRadians/2 ) * light.Range;
+    /*
+        Cull all spotlights in the scene.
+    */
+    uint spotLightCount =
+    uint(max(u_LightData.SpotLightCount, 0));
 
-		Cone cone = {light.Position, light.Range,normalize(light.Direction),coneRadius};
+    uint spotLightPassCount =
+    (spotLightCount + threadCount - 1u) /
+    threadCount;
 
-		if(IsConeInFrustum(cone,frustrumPlane))
-		{
-			uint offset = atomicAdd(visibleSpotLightCount, 1);
-			visibleSpotLightIndices[offset] = int(lightIndex);
-		}
-		*/
-	}
-	barrier();
-
-    // One thread should fill the global light buffer
-    if (gl_LocalInvocationIndex == 0)
+    for (uint pass = 0u;
+    pass < spotLightPassCount;
+    ++pass)
     {
-		
-		const uint offset = index * MAX_NUM_LIGHTS_PER_TILE; // Determine position in global buffer
+        uint lightIndex =
+        pass * threadCount +
+        gl_LocalInvocationIndex;
 
-		for (uint i = 0; i < visiblePointLightCount; i++) 
-		{
-			s_PointLightIndexList.Indices[offset + i] = visiblePointLightIndices[i];
-		}
+        if (lightIndex >= spotLightCount)
+        break;
 
-		if (visiblePointLightCount != MAX_NUM_LIGHTS_PER_TILE)
-		{
-		    // Unless we have totally filled the entire array, mark it's end with -1
-		    // Final shader step will use this to determine where to stop (without having to pass the light count)
-			s_PointLightIndexList.Indices[offset + visiblePointLightCount] = -1;
-		}
+        SpotLight light =
+        s_SpotLights.Lights[lightIndex];
 
-		for (uint i = 0; i < visibleSpotLightCount; i++) 
-		{	
-			s_SpotLightIndexList.Indices[offset + i] = visibleSpotLightIndices[i];
-		}
+        float radius =
+        max(light.Range, 0.0);
 
-		if (visibleSpotLightCount != MAX_NUM_LIGHTS_PER_TILE)
-		{
-		    // Unless we have totally filled the entire array, mark it's end with -1
-		    // Final shader step will use this to determine where to stop (without having to pass the light count)
-			s_SpotLightIndexList.Indices[offset + visibleSpotLightCount] = -1;
-		}
+        vec3 sphereCenter =
+        light.Position -
+        light.Direction * light.Range;
 
-	}
+        bool intersectsTile = true;
 
+        for (uint planeIndex = 0u;
+        planeIndex < 6u;
+        ++planeIndex)
+        {
+            float distance =
+            dot(
+            vec4(sphereCenter, 1.0),
+            frustumPlanes.Planes[planeIndex]
+            ) + radius;
 
+            if (distance <= 0.0)
+            {
+                intersectsTile = false;
+                break;
+            }
+        }
+
+        if (intersectsTile)
+        {
+            uint destination = atomicAdd(
+            visibleSpotLightCount,
+            1u
+            );
+
+            if (destination < maxStoredLightsPerTile)
+            {
+                visibleSpotLightIndices[destination] =
+                int(lightIndex);
+            }
+        }
+    }
+
+    /*
+        Wait until every invocation has finished adding indices.
+    */
+    barrier();
+
+    /*
+        One invocation copies this tile's lists into the global buffers.
+    */
+    if (gl_LocalInvocationIndex == 0u)
+    {
+        uint globalTileOffset =
+        tileIndex * maxLightsPerTile;
+
+        /*
+            Clamp the counters because atomicAdd continues increasing
+            even after the shared array becomes full.
+        */
+        uint validPointLightCount = min(
+        visiblePointLightCount,
+        maxStoredLightsPerTile
+        );
+
+        uint validSpotLightCount = min(
+        visibleSpotLightCount,
+        maxStoredLightsPerTile
+        );
+
+        /*
+            Copy point-light indices.
+        */
+        for (uint i = 0u;
+        i < validPointLightCount;
+        ++i)
+        {
+            s_PointLightIndexList.Indices[
+            globalTileOffset + i
+            ] = visiblePointLightIndices[i];
+        }
+
+        /*
+            Always write a valid terminator inside this tile's section.
+        */
+        s_PointLightIndexList.Indices[
+        globalTileOffset + validPointLightCount
+        ] = -1;
+
+        /*
+            Copy spotlight indices.
+        */
+        for (uint i = 0u;
+        i < validSpotLightCount;
+        ++i)
+        {
+            s_SpotLightIndexList.Indices[
+            globalTileOffset + i
+            ] = visibleSpotLightIndices[i];
+        }
+
+        s_SpotLightIndexList.Indices[
+        globalTileOffset + validSpotLightCount
+        ] = -1;
+    }
 }

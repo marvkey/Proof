@@ -1,5 +1,9 @@
 ScriptImportSettings:
   Scripts:
+    - Script: SandboxProject.PointLightStressTest
+      ScriptName: SandboxProject.PointLightStressTest
+      Fields:
+        []
     - Script: SandboxProject.ScriptSpawner
       ScriptName: SandboxProject.ScriptSpawner
       Fields:
@@ -14,5 +18,27 @@ ScriptImportSettings:
         []
     - Script: AltoDemo.SceneController
       ScriptName: AltoDemo.SceneController
+      Fields:
+        []
+    - Script: Proof.CharacterInput
+      ScriptName: Proof.CharacterInput
+      Fields:
+        - NameID: Proof.CharacterInput.MoveAction
+          Type: InputAction
+          Data: 0
+        - NameID: Proof.CharacterInput.RotateAction
+          Type: InputAction
+          Data: 0
+        - NameID: Proof.CharacterInput.JumpAction
+          Type: InputAction
+          Data: 0
+        - NameID: Proof.CharacterInput.IsRunningAction
+          Type: InputAction
+          Data: 0
+        - NameID: Proof.CharacterInput.ActivateLightAction
+          Type: InputAction
+          Data: 0
+    - Script: Proof.CharacterMovement
+      ScriptName: Proof.CharacterMovement
       Fields:
         []

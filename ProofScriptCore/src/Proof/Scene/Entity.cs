@@ -156,10 +156,14 @@ namespace Proof
 			return InternalCalls.Entity_HasComponent(ID, componentType);
 		}
 
-        public bool AddComponent<T>() where T : Component, new()
+        public T AddComponent<T>() where T : Component, new()
         {
             Type componentType = typeof(T);
-            return InternalCalls.Entity_AddComponent(ID, componentType);
+
+            if(InternalCalls.Entity_AddComponent(ID, componentType) == true)
+                return GetComponent<T>();
+
+            return null;
         }
        
 

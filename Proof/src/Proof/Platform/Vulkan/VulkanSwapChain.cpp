@@ -498,7 +498,7 @@ namespace Proof
 
 		VkSubpassDependency deps[2]{};
 
-		// [0] EXTERNAL -> 0  (mirror pipeline’s first dep)
+		// [0] EXTERNAL -> 0  (mirror pipelineï¿½s first dep)
 		deps[0].srcSubpass = VK_SUBPASS_EXTERNAL;
 		deps[0].dstSubpass = 0;
 		deps[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
@@ -507,7 +507,7 @@ namespace Proof
 		deps[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 		deps[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-		// [1] 0 -> EXTERNAL  (mirror pipeline’s second dep)
+		// [1] 0 -> EXTERNAL  (mirror pipelineï¿½s second dep)
 		deps[1].srcSubpass = 0;
 		deps[1].dstSubpass = VK_SUBPASS_EXTERNAL;
 		deps[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -603,7 +603,7 @@ namespace Proof
 
 	void VulkanSwapChain::BeginFrame()
 	{
-		PF_PROFILE_FUNC("VulkanSwapChain::BeginFrame");
+		PF_PROFILE_FUNC();
 
 		PF_CORE_ASSERT(!m_InFrame, "Cannot start frame whe in one");
 		VkDevice device = VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice();

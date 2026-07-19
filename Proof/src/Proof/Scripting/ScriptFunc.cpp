@@ -3010,7 +3010,6 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 #pragma region DynamicMeshComponent
 
-#pragma endregion
 
 	static void DynamicMeshComponent_SetVisible(UUID entityID, bool visible)
 	{
@@ -3055,6 +3054,318 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		SCRIPT_FUNC_FUNCTION_CHECK(DynamicMeshComponent,false);
 		return entity.GetComponent<DynamicMeshComponent>().GetSubMeshIndex();
 	}
+#pragma endregion
+#pragma region DirectionalLightComponent
+
+	static glm::vec3 DirectionalLightComponent_GetColor(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(DirectionalLightComponent, glm::vec3(1.0f));
+		return entity.GetComponent<DirectionalLightComponent>().Color;
+	}
+
+	static void DirectionalLightComponent_SetColor(UUID entityID, glm::vec3 color)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(DirectionalLightComponent);
+		entity.GetComponent<DirectionalLightComponent>().Color = color;
+	}
+
+	static float DirectionalLightComponent_GetIntensity(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(DirectionalLightComponent, 0.0f);
+		return entity.GetComponent<DirectionalLightComponent>().Intensity;
+	}
+
+	static void DirectionalLightComponent_SetIntensity(UUID entityID, float intensity)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(DirectionalLightComponent);
+		entity.GetComponent<DirectionalLightComponent>().Intensity = intensity;
+	}
+
+	static bool DirectionalLightComponent_GetCastShadow(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(DirectionalLightComponent, false);
+		return entity.GetComponent<DirectionalLightComponent>().CastShadow;
+	}
+
+	static void DirectionalLightComponent_SetCastShadow(UUID entityID, bool castShadow)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(DirectionalLightComponent);
+		entity.GetComponent<DirectionalLightComponent>().CastShadow = castShadow;
+	}
+
+	static float DirectionalLightComponent_GetShadowStrength(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(DirectionalLightComponent, 0.0f);
+		return entity.GetComponent<DirectionalLightComponent>().ShadowStrength;
+	}
+
+	static void DirectionalLightComponent_SetShadowStrength(UUID entityID, float shadowStrength)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(DirectionalLightComponent);
+		entity.GetComponent<DirectionalLightComponent>().ShadowStrength = shadowStrength;
+	}
+
+	static bool DirectionalLightComponent_GetCastSoftShadow(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(DirectionalLightComponent, false);
+		return entity.GetComponent<DirectionalLightComponent>().CastSoftShadow;
+	}
+
+	static void DirectionalLightComponent_SetCastSoftShadow(UUID entityID, bool castSoftShadow)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(DirectionalLightComponent);
+		entity.GetComponent<DirectionalLightComponent>().CastSoftShadow = castSoftShadow;
+	}
+
+	static float DirectionalLightComponent_GetShadowSoftness(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(DirectionalLightComponent, 0.0f);
+		return entity.GetComponent<DirectionalLightComponent>().ShadowSoftness;
+	}
+
+	static void DirectionalLightComponent_SetShadowSoftness(UUID entityID, float shadowSoftness)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(DirectionalLightComponent);
+		entity.GetComponent<DirectionalLightComponent>().ShadowSoftness = shadowSoftness;
+	}
+
+#pragma endregion
+
+#pragma region PointLightComponent
+
+	static glm::vec3 PointLightComponent_GetColor(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(PointLightComponent, glm::vec3(1.0f));
+		return entity.GetComponent<PointLightComponent>().Color;
+	}
+
+	static void PointLightComponent_SetColor(UUID entityID, glm::vec3 color)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PointLightComponent);
+		entity.GetComponent<PointLightComponent>().Color = color;
+	}
+
+	static float PointLightComponent_GetIntensity(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(PointLightComponent, 0.0f);
+		return entity.GetComponent<PointLightComponent>().Intensity;
+	}
+
+	static void PointLightComponent_SetIntensity(UUID entityID, float intensity)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PointLightComponent);
+		entity.GetComponent<PointLightComponent>().Intensity = intensity;
+	}
+
+	static float PointLightComponent_GetMinRadius(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(PointLightComponent, 0.0f);
+		return entity.GetComponent<PointLightComponent>().MinRadius;
+	}
+
+	static void PointLightComponent_SetMinRadius(UUID entityID, float minRadius)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PointLightComponent);
+		entity.GetComponent<PointLightComponent>().MinRadius = minRadius;
+	}
+
+	static float PointLightComponent_GetRadius(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(PointLightComponent, 0.0f);
+		return entity.GetComponent<PointLightComponent>().Radius;
+	}
+
+	static void PointLightComponent_SetRadius(UUID entityID, float radius)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PointLightComponent);
+		entity.GetComponent<PointLightComponent>().Radius = radius;
+	}
+
+	static float PointLightComponent_GetFalloff(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(PointLightComponent, 0.0f);
+		return entity.GetComponent<PointLightComponent>().Falloff;
+	}
+
+	static void PointLightComponent_SetFalloff(UUID entityID, float falloff)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PointLightComponent);
+		entity.GetComponent<PointLightComponent>().Falloff = falloff;
+	}
+
+	static bool PointLightComponent_GetCastsShadows(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(PointLightComponent, false);
+		return entity.GetComponent<PointLightComponent>().CastsShadows;
+	}
+
+	static void PointLightComponent_SetCastsShadows(UUID entityID, bool castsShadows)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PointLightComponent);
+		entity.GetComponent<PointLightComponent>().CastsShadows = castsShadows;
+	}
+
+	static bool PointLightComponent_GetSoftShadows(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(PointLightComponent, false);
+		return entity.GetComponent<PointLightComponent>().SoftShadows;
+	}
+
+	static void PointLightComponent_SetSoftShadows(UUID entityID, bool softShadows)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PointLightComponent);
+		entity.GetComponent<PointLightComponent>().SoftShadows = softShadows;
+	}
+
+	static float PointLightComponent_GetShadowStrength(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(PointLightComponent, 0.0f);
+		return entity.GetComponent<PointLightComponent>().ShadowStrength;
+	}
+
+	static void PointLightComponent_SetShadowStrength(UUID entityID, float shadowStrength)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PointLightComponent);
+		entity.GetComponent<PointLightComponent>().ShadowStrength = shadowStrength;
+	}
+
+	static float PointLightComponent_GetShadowSoftness(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(PointLightComponent, 0.0f);
+		return entity.GetComponent<PointLightComponent>().ShadowSoftness;
+	}
+
+	static void PointLightComponent_SetShadowSoftness(UUID entityID, float shadowSoftness)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(PointLightComponent);
+		entity.GetComponent<PointLightComponent>().ShadowSoftness = shadowSoftness;
+	}
+
+#pragma endregion
+
+#pragma region SpotLightComponent
+
+	static glm::vec3 SpotLightComponent_GetColor(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(SpotLightComponent, glm::vec3(1.0f));
+		return entity.GetComponent<SpotLightComponent>().Color;
+	}
+
+	static void SpotLightComponent_SetColor(UUID entityID, glm::vec3 color)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(SpotLightComponent);
+		entity.GetComponent<SpotLightComponent>().Color = color;
+	}
+
+	static float SpotLightComponent_GetIntensity(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(SpotLightComponent, 0.0f);
+		return entity.GetComponent<SpotLightComponent>().Intensity;
+	}
+
+	static void SpotLightComponent_SetIntensity(UUID entityID, float intensity)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(SpotLightComponent);
+		entity.GetComponent<SpotLightComponent>().Intensity = intensity;
+	}
+
+	static float SpotLightComponent_GetRange(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(SpotLightComponent, 0.0f);
+		return entity.GetComponent<SpotLightComponent>().Range;
+	}
+
+	static void SpotLightComponent_SetRange(UUID entityID, float range)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(SpotLightComponent);
+		entity.GetComponent<SpotLightComponent>().Range = range;
+	}
+
+	static float SpotLightComponent_GetAngle(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(SpotLightComponent, 0.0f);
+		return entity.GetComponent<SpotLightComponent>().Angle;
+	}
+
+	static void SpotLightComponent_SetAngle(UUID entityID, float angle)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(SpotLightComponent);
+		entity.GetComponent<SpotLightComponent>().Angle = angle;
+	}
+
+	static float SpotLightComponent_GetAngleAttenuation(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(SpotLightComponent, 0.0f);
+		return entity.GetComponent<SpotLightComponent>().AngleAttenuation;
+	}
+
+	static void SpotLightComponent_SetAngleAttenuation(UUID entityID, float angleAttenuation)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(SpotLightComponent);
+		entity.GetComponent<SpotLightComponent>().AngleAttenuation = angleAttenuation;
+	}
+
+	static float SpotLightComponent_GetFalloff(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(SpotLightComponent, 0.0f);
+		return entity.GetComponent<SpotLightComponent>().Falloff;
+	}
+
+	static void SpotLightComponent_SetFalloff(UUID entityID, float falloff)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(SpotLightComponent);
+		entity.GetComponent<SpotLightComponent>().Falloff = falloff;
+	}
+
+	static bool SpotLightComponent_GetCastsShadows(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(SpotLightComponent, false);
+		return entity.GetComponent<SpotLightComponent>().CastsShadows;
+	}
+
+	static void SpotLightComponent_SetCastsShadows(UUID entityID, bool castsShadows)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(SpotLightComponent);
+		entity.GetComponent<SpotLightComponent>().CastsShadows = castsShadows;
+	}
+
+	static bool SpotLightComponent_GetSoftShadows(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(SpotLightComponent, false);
+		return entity.GetComponent<SpotLightComponent>().SoftShadows;
+	}
+
+	static void SpotLightComponent_SetSoftShadows(UUID entityID, bool softShadows)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(SpotLightComponent);
+		entity.GetComponent<SpotLightComponent>().SoftShadows = softShadows;
+	}
+
+	static float SpotLightComponent_GetShadowStrength(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(SpotLightComponent, 0.0f);
+		return entity.GetComponent<SpotLightComponent>().ShadowStrength;
+	}
+
+	static void SpotLightComponent_SetShadowStrength(UUID entityID, float shadowStrength)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(SpotLightComponent);
+		entity.GetComponent<SpotLightComponent>().ShadowStrength = shadowStrength;
+	}
+
+	static float SpotLightComponent_GetShadowSoftness(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(SpotLightComponent, 0.0f);
+		return entity.GetComponent<SpotLightComponent>().ShadowSoftness;
+	}
+
+	static void SpotLightComponent_SetShadowSoftness(UUID entityID, float shadowSoftness)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(SpotLightComponent);
+		entity.GetComponent<SpotLightComponent>().ShadowSoftness = shadowSoftness;
+	}
+
+#pragma endregion
 
 #pragma region MeshCollider
 
@@ -4853,6 +5164,90 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(DynamicMeshComponent_GetVisible);
 			PF_ADD_INTERNAL_CALL(DynamicMeshComponent_GetSubMeshIndex);
 			PF_ADD_INTERNAL_CALL(DynamicMeshComponent_SetSubMeshIndex);
+		}
+
+		// DirectionalLight Component
+		{
+			PF_ADD_INTERNAL_CALL(DirectionalLightComponent_GetColor);
+			PF_ADD_INTERNAL_CALL(DirectionalLightComponent_SetColor);
+
+			PF_ADD_INTERNAL_CALL(DirectionalLightComponent_GetIntensity);
+			PF_ADD_INTERNAL_CALL(DirectionalLightComponent_SetIntensity);
+
+			PF_ADD_INTERNAL_CALL(DirectionalLightComponent_GetCastShadow);
+			PF_ADD_INTERNAL_CALL(DirectionalLightComponent_SetCastShadow);
+
+			PF_ADD_INTERNAL_CALL(DirectionalLightComponent_GetShadowStrength);
+			PF_ADD_INTERNAL_CALL(DirectionalLightComponent_SetShadowStrength);
+
+			PF_ADD_INTERNAL_CALL(DirectionalLightComponent_GetCastSoftShadow);
+			PF_ADD_INTERNAL_CALL(DirectionalLightComponent_SetCastSoftShadow);
+
+			PF_ADD_INTERNAL_CALL(DirectionalLightComponent_GetShadowSoftness);
+			PF_ADD_INTERNAL_CALL(DirectionalLightComponent_SetShadowSoftness);
+		}
+
+		// PointLight Component
+		{
+			PF_ADD_INTERNAL_CALL(PointLightComponent_GetColor);
+			PF_ADD_INTERNAL_CALL(PointLightComponent_SetColor);
+
+			PF_ADD_INTERNAL_CALL(PointLightComponent_GetIntensity);
+			PF_ADD_INTERNAL_CALL(PointLightComponent_SetIntensity);
+
+			PF_ADD_INTERNAL_CALL(PointLightComponent_GetMinRadius);
+			PF_ADD_INTERNAL_CALL(PointLightComponent_SetMinRadius);
+
+			PF_ADD_INTERNAL_CALL(PointLightComponent_GetRadius);
+			PF_ADD_INTERNAL_CALL(PointLightComponent_SetRadius);
+
+			PF_ADD_INTERNAL_CALL(PointLightComponent_GetFalloff);
+			PF_ADD_INTERNAL_CALL(PointLightComponent_SetFalloff);
+
+			PF_ADD_INTERNAL_CALL(PointLightComponent_GetCastsShadows);
+			PF_ADD_INTERNAL_CALL(PointLightComponent_SetCastsShadows);
+
+			PF_ADD_INTERNAL_CALL(PointLightComponent_GetSoftShadows);
+			PF_ADD_INTERNAL_CALL(PointLightComponent_SetSoftShadows);
+
+			PF_ADD_INTERNAL_CALL(PointLightComponent_GetShadowStrength);
+			PF_ADD_INTERNAL_CALL(PointLightComponent_SetShadowStrength);
+
+			PF_ADD_INTERNAL_CALL(PointLightComponent_GetShadowSoftness);
+			PF_ADD_INTERNAL_CALL(PointLightComponent_SetShadowSoftness);
+		}
+
+		// SpotLight Component
+		{
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_GetColor);
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_SetColor);
+
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_GetIntensity);
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_SetIntensity);
+
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_GetRange);
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_SetRange);
+
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_GetAngle);
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_SetAngle);
+
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_GetAngleAttenuation);
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_SetAngleAttenuation);
+
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_GetFalloff);
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_SetFalloff);
+
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_GetCastsShadows);
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_SetCastsShadows);
+
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_GetSoftShadows);
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_SetSoftShadows);
+
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_GetShadowStrength);
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_SetShadowStrength);
+
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_GetShadowSoftness);
+			PF_ADD_INTERNAL_CALL(SpotLightComponent_SetShadowSoftness);
 		}
 		//Mesh Base
 		{

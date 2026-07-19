@@ -3,14 +3,14 @@ ID: 1151499359691892158
 VariableRegistry:
   VariableRegistryID: 4407006815197224424
   Variables:
-    - Name: EntropyPercent
-      Type: Float
-      UUID: 9137722652652106186
-      Data: 0
     - Name: Heatlh
       Type: String
       UUID: 6591819751967894606
       Data: 100.0%
+    - Name: EntropyPercent
+      Type: Float
+      UUID: 9137722652652106186
+      Data: 0
     - Name: Entropy
       Type: String
       UUID: 1870280012868056734
@@ -30,6 +30,9 @@ UIElements:
       Size: [47.75, 39]
       AnchorMinimum: [1, 0]
       AnchorMaximum: [0, 0]
+      Visible:
+        Value: true
+        BindedVariableID: 0
       PositionOffset: [0, 0]
       ParentHandle: 0
       Children: []
@@ -50,6 +53,9 @@ UIElements:
       Size: [15, 15]
       AnchorMinimum: [1, 0]
       AnchorMaximum: [1, 0]
+      Visible:
+        Value: true
+        BindedVariableID: 0
       PositionOffset: [0, 0]
       ParentHandle: 0
       Children: [7889330638142550447, 15452452396704783142]
@@ -58,6 +64,29 @@ UIElements:
       DrawBorders: false
       BorderColor: [1, 1, 1, 1]
       BorderThickness: 1
+  - UIElement: 10566175052143785747
+    UICoreComponent:
+      ElementID: 10566175052143785747
+      Name: SpeedText
+      UIElementType: Text
+      Position: [5.75, 63.75]
+      Rotation: [0, 0]
+      Size: [60, 60]
+      AnchorMinimum: [0, 1]
+      AnchorMaximum: [0, 1]
+      Visible:
+        Value: true
+        BindedVariableID: 0
+      PositionOffset: [0, 0]
+      ParentHandle: 0
+      Children: []
+    UITextComponent:
+      Text:
+        Value: "Speed: "
+        BindedVariableID: 0
+      Color: [1, 1, 1, 1]
+      Kerning: 0
+      LineSpacing: 1
   - UIElement: 7889330638142550447
     UICoreComponent:
       ElementID: 7889330638142550447
@@ -68,6 +97,9 @@ UIElements:
       Size: [17.75, 2]
       AnchorMinimum: [0, 0]
       AnchorMaximum: [0, 0]
+      Visible:
+        Value: true
+        BindedVariableID: 0
       PositionOffset: [0, 0]
       ParentHandle: 15321843124374654191
       Children: []
@@ -81,26 +113,6 @@ UIElements:
       BackgroundColor:
         Value: [0.0823529437, 0.223529413, 0.729411781, 0.411764711]
         BindedVariableID: 0
-  - UIElement: 10566175052143785747
-    UICoreComponent:
-      ElementID: 10566175052143785747
-      Name: SpeedText
-      UIElementType: Text
-      Position: [5.75, 63.75]
-      Rotation: [0, 0]
-      Size: [60, 60]
-      AnchorMinimum: [0, 1]
-      AnchorMaximum: [0, 1]
-      PositionOffset: [0, 0]
-      ParentHandle: 0
-      Children: []
-    UITextComponent:
-      Text:
-        Value: "Speed: "
-        BindedVariableID: 0
-      Color: [1, 1, 1, 1]
-      Kerning: 0
-      LineSpacing: 1
   - UIElement: 15452452396704783142
     UICoreComponent:
       ElementID: 15452452396704783142
@@ -111,6 +123,9 @@ UIElements:
       Size: [3.75, 3.5]
       AnchorMinimum: [0, 0]
       AnchorMaximum: [40.4000015, 0]
+      Visible:
+        Value: true
+        BindedVariableID: 0
       PositionOffset: [-115.400002, 27.6000004]
       ParentHandle: 15321843124374654191
       Children: []
@@ -118,26 +133,6 @@ UIElements:
       Text:
         Value: 0
         BindedVariableID: 1870280012868056734
-      Color: [1, 1, 1, 1]
-      Kerning: 0
-      LineSpacing: 1
-  - UIElement: 13435889437523538816
-    UICoreComponent:
-      ElementID: 13435889437523538816
-      Name: PlayerSpeed
-      UIElementType: Text
-      Position: [166.25, 63.75]
-      Rotation: [0, 0]
-      Size: [60, 60]
-      AnchorMinimum: [0, 1]
-      AnchorMaximum: [0, 1]
-      PositionOffset: [0, 0]
-      ParentHandle: 0
-      Children: []
-    UITextComponent:
-      Text:
-        Value: 0
-        BindedVariableID: 14099059887723628480
       Color: [1, 1, 1, 1]
       Kerning: 0
       LineSpacing: 1
@@ -151,6 +146,9 @@ UIElements:
       Size: [0.170000002, 0.270000011]
       AnchorMinimum: [0, 0]
       AnchorMaximum: [0, 0]
+      Visible:
+        Value: true
+        BindedVariableID: 0
       PositionOffset: [0, 0]
       ParentHandle: 951623175290927381
       Children: []
@@ -159,6 +157,29 @@ UIElements:
         Value: HEALTH
         BindedVariableID: 0
       Color: [0.0666666627, 0.481481433, 1, 1]
+      Kerning: 0
+      LineSpacing: 1
+  - UIElement: 13435889437523538816
+    UICoreComponent:
+      ElementID: 13435889437523538816
+      Name: PlayerSpeed
+      UIElementType: Text
+      Position: [166.25, 63.75]
+      Rotation: [0, 0]
+      Size: [60, 60]
+      AnchorMinimum: [0, 1]
+      AnchorMaximum: [0, 1]
+      Visible:
+        Value: true
+        BindedVariableID: 0
+      PositionOffset: [0, 0]
+      ParentHandle: 0
+      Children: []
+    UITextComponent:
+      Text:
+        Value: 0
+        BindedVariableID: 14099059887723628480
+      Color: [1, 1, 1, 1]
       Kerning: 0
       LineSpacing: 1
   - UIElement: 951623175290927381
@@ -171,6 +192,9 @@ UIElements:
       Size: [450, 256.25]
       AnchorMinimum: [0, 0]
       AnchorMaximum: [0, 0]
+      Visible:
+        Value: true
+        BindedVariableID: 0
       PositionOffset: [0, 0]
       ParentHandle: 0
       Children: [15688882969828126542, 4696386249627866605]
@@ -192,6 +216,9 @@ UIElements:
       Size: [0.119999997, 0.300000012]
       AnchorMinimum: [0, 0]
       AnchorMaximum: [0, 0]
+      Visible:
+        Value: true
+        BindedVariableID: 0
       PositionOffset: [0, 0]
       ParentHandle: 951623175290927381
       Children: []

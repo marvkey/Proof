@@ -349,7 +349,7 @@ namespace Proof {
 			// and our boyancy only adds one force per frame 
 			if (m_World->IsPlaying())
 			{
-				PF_PROFILE_SCOPE_DYNAMIC("Physics update Buoyancy Actors")
+				PF_PROFILE_SCOPE_DYNAMIC("Physics update Buoyancy Actors") ;
 					for (auto& [Id, actor] : m_BuoyancyActors)
 						actor->OnPhysicsUpdate(PhysicsEngine::GetSettings().PhysicsFixedDeltaTime);
 			}

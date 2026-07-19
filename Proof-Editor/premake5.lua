@@ -33,7 +33,7 @@ project "Proof-Editor"
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.physXfoundation}",
 		"%{IncludeDir.optick}",
-		"%{IncludeDir.tracey}",
+		"%{IncludeDir.tracy}",
 		"%{IncludeDir.magic_enum}",
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.FastNoise}",
@@ -48,7 +48,8 @@ project "Proof-Editor"
     filter "system:windows"
         systemversion "latest"
         defines {
-            "PF_PLATFORM_WINDOW64"
+            "PF_PLATFORM_WINDOW64",
+            
         }
        
 

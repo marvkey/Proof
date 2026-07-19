@@ -32,6 +32,9 @@ namespace Proof
 		std::pair<VkSampler, uint64_t> GetOrCreateSampler(VkSamplerCreateInfo samplerInfo);
 		void DeleteSampler(uint64_t samplerHash);
 		static uint32_t GetVulkanVersion() { return s_VulkanVersion; }
+
+        virtual GPUInfo GetGPUInfo();
+
 	private:
 		std::unordered_map<uint64_t, std::pair<uint32_t, VkSampler>> m_Samplers;
 

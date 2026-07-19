@@ -2922,7 +2922,7 @@ namespace Proof
 		Timer compositeTimer;
 		uint32_t frameIndex = Renderer::GetCurrentFrameInFlight();
 
-		//AmbientOcclusionPass();
+		AmbientOcclusionPass();
 		{
 
 			//PreConvolutePass();

@@ -4,7 +4,7 @@
 #include "Proof/Renderer/Texture.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Resources/ExternalCreations.h"
-#include "Proof/Scene/Mesh.h"
+#include "Proof/Scene/Mesh.h"                           
 #include "Proof/Scene/Prefab.h"
 #include "Proof/Scene/Entity.h"
 #include "Proof/Scene/World.h"

@@ -501,7 +501,7 @@ namespace Proof
     }
     void ScriptWorld::EditorDestroyEntityScript(Entity entity, bool clear)
     {
-        PF_PROFILE_FUNC()
+        PF_PROFILE_FUNC();
             if (!entity.HasComponent<ScriptComponent>())
                 return;
 

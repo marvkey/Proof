@@ -1,0 +1,4 @@
+AssetType: InputAction
+ID: 16592920119542302411
+OutputType: Vector2D
+OutputValueBehavior: Aggregate

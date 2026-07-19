@@ -1243,8 +1243,8 @@ namespace Proof {
 		TextureConfiguration cubeTextureConfig;
 		cubeTextureConfig.DebugName = "White Texture";
 		cubeTextureConfig.GenerateMips = true;
-		cubeTextureConfig.Height = 1;
-		cubeTextureConfig.Width = 1;
+		cubeTextureConfig.Height = 1024;
+		cubeTextureConfig.Width = 1024;
 		cubeTextureConfig.Storage = true;
 		cubeTextureConfig.Format = ImageFormat::RGBA;
 		//cubeTextureConfig.Wrap = TextureWrap::ClampEdge;

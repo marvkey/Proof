@@ -63,7 +63,7 @@ namespace Proof
 		PF_PROFILE_FUNC();
 
 		{
-			PF_PROFILE_SCOPE_DYNAMIC("Set Wave QueryID")
+			PF_PROFILE_SCOPE_DYNAMIC("Set Wave QueryID") ;
 			const glm::mat4 transform = m_PhysicsActor->GetTransform();
 
 			m_Entity.GetCurrentWorld()->ForEachEnitityWith<WaterComponent>([&](Entity e)

@@ -1,0 +1,6 @@
+ScriptImportSettings:
+  Scripts:
+    - Script: KickUp.CharacterMovement
+      ScriptName: KickUp.CharacterMovement
+      Fields:
+        []

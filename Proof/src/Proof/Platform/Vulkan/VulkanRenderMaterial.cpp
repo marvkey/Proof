@@ -323,7 +323,7 @@ namespace Proof {
 
 	void VulkanRenderMaterial::RT_Bind(Count<class VulkanRenderCommandBuffer> commandBuffer, Count<VulkanComputePass> computePass, bool onlyFragpushconstant)
 	{
-		PF_PROFILE_FUNC(fmt::format("{} RT_Bind Compute", m_Config.DebugName.c_str()).c_str());
+		PF_PROFILE_SCOPE_DYNAMIC(fmt::format("{} RT_Bind Compute", m_Config.DebugName.c_str()).c_str());
 
 		auto vk_Shader = m_Config.Shader.As<VulkanShader>();
 		m_DescritptorSetManager->RT_Bind();

@@ -1,0 +1,54 @@
+AssetType: Prefab
+ID: 12711342007329951460
+EntityOwner: 821476757763902432
+Entities:
+  - Entity: 821476757763902432
+    TagComponent:
+      Tag: Light
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0, 0, 0]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: [5567455137637583688, 3488070695083345975]
+  - Entity: 5567455137637583688
+    TagComponent:
+      Tag: Sky Light
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [0.034906581, 0.0174532905, -8.73247863e-11]
+      Scale: [1, 1, 1]
+    HierarchyComponent:
+      ParentHandle: 821476757763902432
+      Children: []
+    SkyLightComponent:
+      TintColor: [0.36728394, 0.521193445, 0.944444418]
+      SkyBoxLod: 0
+      MapRotation: 0
+      Intensity: 0.5
+      EnvironmentState: EnvironmentTexture
+      TextureDataImage: 3672851765682067428
+      HosekWilkieTurbidity: 4
+      HosekWilkieGroundReflectance: 0.100000001
+      PreethamTurbidity: 4
+  - Entity: 3488070695083345975
+    TagComponent:
+      Tag: Directional Light
+      tags: []
+    TransformComponent:
+      Location: [0, 0, 0]
+      Rotation: [1.39626324, 0.17453289, -1.5131036e-08]
+      Scale: [0.99999994, 0.99999994, 1]
+    HierarchyComponent:
+      ParentHandle: 821476757763902432
+      Children: []
+    DirectionalLightComponent:
+      Color: [0, 0.0232099388, 0.348148167]
+      Intensity: 1
+      CastShadow: false
+      ShadowStrength: 0.5
+      CastSoftShadow: true
+      ShadowSoftness: 0.5

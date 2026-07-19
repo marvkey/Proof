@@ -1,0 +1,22 @@
+AssetType: Prefab
+ID: 5852456796637616284
+EntityOwner: 15824143328119057571
+Entities:
+  - Entity: 15824143328119057571
+    TagComponent:
+      Tag: Proof
+      tags: []
+    TransformComponent:
+      Location: [0.586950004, 6.10833931, 2.08928013]
+      Rotation: [1.57079637, -0.869173944, 0]
+      Scale: [1.5, 0.100000001, 1.60000002]
+    HierarchyComponent:
+      ParentHandle: 0
+      Children: []
+    MeshComponent:
+      MeshAssetPointerID: 14514108685430737209
+      Visible: true
+      MaterialTable:
+        - Material: ""
+          AssetID: 13635081845488536444
+          Index: 0

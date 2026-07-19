@@ -1,0 +1,215 @@
+World:
+  ID: 17634884731139337489
+  Entities:
+    - Entity: 17487963634126513871
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [-0.366123646, -0.683250725, -4.8478055]
+        Rotation: [-0.137881011, 0.0785398185, 0.0226892792]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [0.633333325, 0.633333325, 0.633333325]
+        SkyBoxLod: 0
+        MapRotation: 21
+        Intensity: 0.699999988
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 1862418545495407159
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [0.00488159806, 9.76731014, 9.52400017]
+        Rotation: [1.57079637, 0, 0]
+        Scale: [20, 1, 20]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 3753138374564548584
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 9285905884584318024
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [0, -0.00140666962, 0]
+        Rotation: [0, 0, 0]
+        Scale: [20, 1, 20]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 8487265460049034576
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 4306443181047829626
+      TagComponent:
+        Tag: Sphere
+        tags: []
+      TransformComponent:
+        Location: [2.99007368, 3.22418571, -0.846220732]
+        Rotation: [0, 0, 0]
+        Scale: [5, 5, 5]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 51
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 10198564303501662331
+            Index: 0
+      SphereColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Radius: 0.5
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 3889581153174248080
+      TagComponent:
+        Tag: Cone
+        tags: []
+      TransformComponent:
+        Location: [-3.60862684, 2.06696486, -6.42635822]
+        Rotation: [0, 0, 0]
+        Scale: [3, 3, 3]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 13866412923197075697
+            Index: 0
+      MeshColliderComponent:
+        ColliderID: 3582403281385337672
+        IsTrigger: false
+        UseSharedShape: false
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 15585866503697791114
+      TagComponent:
+        Tag: Point Light
+        tags: []
+      TransformComponent:
+        Location: [2.82093143, 3.0246346, 6.67723751]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      PointLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+        MinRadius: 0
+        Radius: 5
+        Falloff: 1
+        CastsShadows: false
+        SoftShadows: false
+        ShadowStrength: 0.5
+        ShadowSoftness: 0.5
+    - Entity: 15911800899585176105
+      TagComponent:
+        Tag: Cone
+        tags: []
+      TransformComponent:
+        Location: [0, 1.20000005, 6.40376949]
+        Rotation: [0, 0, 0]
+        Scale: [5.25999975, 5.25999975, 5.25999975]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 54
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 4624657614690934252
+            Index: 0
+      MeshColliderComponent:
+        ColliderID: 3214489959640981969
+        IsTrigger: false
+        UseSharedShape: false
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete

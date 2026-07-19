@@ -1,12 +1,12 @@
 World:
   ID: 7330344338230132354
   Entities:
-    - Entity: 6133984128517576902
+    - Entity: 12997289574143005509
       TagComponent:
         Tag: Coin
         tags: [Gold Coin]
       TransformComponent:
-        Location: [-40.2000008, -1.5, -40.3470001]
+        Location: [-22.1870003, -1.47558594, -46.3470001]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -35,12 +35,12 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 12997289574143005509
+    - Entity: 6133984128517576902
       TagComponent:
         Tag: Coin
         tags: [Gold Coin]
       TransformComponent:
-        Location: [-22.1870003, -1.47558594, -46.3470001]
+        Location: [-40.2000008, -1.5, -40.3470001]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -84,12 +84,30 @@ World:
         TintColor: [1, 1, 1]
         SkyBoxLod: 0
         MapRotation: 0
-        Intensity: 1
+        Intensity: 0.5
         EnvironmentState: PreethamSky
         TextureDataImage: 0
         HosekWilkieTurbidity: 4
         HosekWilkieGroundReflectance: 0.100000001
         PreethamTurbidity: 4
+    - Entity: 1195290076119605216
+      TagComponent:
+        Tag: Directional Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [1.39626336, 0.17453292, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      DirectionalLightComponent:
+        Color: [1, 1, 1]
+        Intensity: 1
+        CastShadow: true
+        ShadowStrength: 0.5
+        CastSoftShadow: true
+        ShadowSoftness: 0.5
     - Entity: 14348602812685757481
       TagComponent:
         Tag: Coin
@@ -124,24 +142,6 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 1195290076119605216
-      TagComponent:
-        Tag: Directional Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [1.39626336, 0.17453292, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      DirectionalLightComponent:
-        Color: [1, 1, 1]
-        Intensity: 1
-        CastShadow: true
-        ShadowStrength: 0.5
-        CastSoftShadow: true
-        ShadowSoftness: 0.5
     - Entity: 17632463283705411261
       TagComponent:
         Tag: Coin
@@ -285,17 +285,6 @@ World:
       HierarchyComponent:
         ParentHandle: 0
         Children: [3637125495208284549, 2855932651292442039]
-    - Entity: 17316925400805307408
-      TagComponent:
-        Tag: CoinMap
-        tags: []
-      TransformComponent:
-        Location: [0, 6.0999999, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: [11915703814972360084, 1176504727194417697, 14352590063541701954, 6906775888967607013, 15454635768490579581, 1234670754563865090, 11932646226723887082, 8584324123102154204, 12021406570604182526, 5662485250557570404, 15785457292132118643, 17632463283705411261, 12501221717997351904, 14792949915280457107, 10460212140030732751, 4414425796058134245, 3221162882170653657, 18328570935172652843, 14466613342636632769, 2168865428950322434, 5877808465382545785, 5774288876017495807, 7898606639332626531, 16610173509134029029, 10598592754343234261, 2111011939510041586, 9905712191448200178, 2154768320820152958, 10516575555235427878, 14765142431270823855, 2346989693260159959, 17872624004560686798, 1359555245659259307, 14403048897625122283, 9459291764647197391, 7224690817765257909, 4553779693830741977, 12997289574143005509, 8988791906757860033, 270932887865326354, 1832228976277873999, 3679668425891045005, 7610018001071750128, 7305271138931938325, 14372697614427298548, 6133984128517576902, 17495830134507502415, 18376845494697321057, 10260528232250327926, 494759564525424196, 17206333000876784708, 464101354961914680, 10937230837903054468, 34009084659199807, 14521198743035982188, 50481895027611688, 14807809210245863059, 14427122240816155993, 1855453392261607355, 2535171295266383816]
     - Entity: 11932646226723887082
       TagComponent:
         Tag: Coin
@@ -330,6 +319,17 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 17316925400805307408
+      TagComponent:
+        Tag: CoinMap
+        tags: []
+      TransformComponent:
+        Location: [0, 6.0999999, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [11915703814972360084, 1176504727194417697, 14352590063541701954, 6906775888967607013, 15454635768490579581, 1234670754563865090, 11932646226723887082, 8584324123102154204, 12021406570604182526, 5662485250557570404, 15785457292132118643, 17632463283705411261, 12501221717997351904, 14792949915280457107, 10460212140030732751, 4414425796058134245, 3221162882170653657, 18328570935172652843, 14466613342636632769, 2168865428950322434, 5877808465382545785, 5774288876017495807, 7898606639332626531, 16610173509134029029, 10598592754343234261, 2111011939510041586, 9905712191448200178, 2154768320820152958, 10516575555235427878, 14765142431270823855, 2346989693260159959, 17872624004560686798, 1359555245659259307, 14403048897625122283, 9459291764647197391, 7224690817765257909, 4553779693830741977, 12997289574143005509, 8988791906757860033, 270932887865326354, 1832228976277873999, 3679668425891045005, 7610018001071750128, 7305271138931938325, 14372697614427298548, 6133984128517576902, 17495830134507502415, 18376845494697321057, 10260528232250327926, 494759564525424196, 17206333000876784708, 464101354961914680, 10937230837903054468, 34009084659199807, 14521198743035982188, 50481895027611688, 14807809210245863059, 14427122240816155993, 1855453392261607355, 2535171295266383816]
     - Entity: 17206333000876784708
       TagComponent:
         Tag: CoinFive
@@ -511,40 +511,6 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 17872624004560686798
-      TagComponent:
-        Tag: Coin
-        tags: [Gold Coin]
-      TransformComponent:
-        Location: [-34.1870003, -1.47558594, -52.3470001]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 17316925400805307408
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 5196314860968098635
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: true
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
     - Entity: 1359555245659259307
       TagComponent:
         Tag: Coin
@@ -579,80 +545,12 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 4965315594506533012
+    - Entity: 17872624004560686798
       TagComponent:
         Tag: Coin
         tags: [Gold Coin]
       TransformComponent:
-        Location: [-3, 9.53674316e-07, 1.90734863e-06]
-        Rotation: [0, -2.98023252e-07, 0]
-        Scale: [0.999999762, 1, 0.999999762]
-      HierarchyComponent:
-        ParentHandle: 14427122240816155993
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 5196314860968098635
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: true
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 1176504727194417697
-      TagComponent:
-        Tag: Coin
-        tags: [Gold Coin]
-      TransformComponent:
-        Location: [-25.1870003, -1.5, -21.3561974]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 17316925400805307408
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 5196314860968098635
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: true
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 14765142431270823855
-      TagComponent:
-        Tag: Coin
-        tags: [Gold Coin]
-      TransformComponent:
-        Location: [-40.1870003, -1.47558594, -52.3470001]
+        Location: [-34.1870003, -1.47558594, -52.3470001]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -749,12 +647,148 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 14765142431270823855
+      TagComponent:
+        Tag: Coin
+        tags: [Gold Coin]
+      TransformComponent:
+        Location: [-40.1870003, -1.47558594, -52.3470001]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17316925400805307408
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 5196314860968098635
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 4965315594506533012
+      TagComponent:
+        Tag: Coin
+        tags: [Gold Coin]
+      TransformComponent:
+        Location: [-3, 9.53674316e-07, 1.90734863e-06]
+        Rotation: [0, -2.98023252e-07, 0]
+        Scale: [0.999999762, 1, 0.999999762]
+      HierarchyComponent:
+        ParentHandle: 14427122240816155993
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 5196314860968098635
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 1176504727194417697
+      TagComponent:
+        Tag: Coin
+        tags: [Gold Coin]
+      TransformComponent:
+        Location: [-25.1870003, -1.5, -21.3561974]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17316925400805307408
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 5196314860968098635
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 14352590063541701954
       TagComponent:
         Tag: Coin
         tags: [Gold Coin]
       TransformComponent:
         Location: [-28.1870003, -1.5, -21.3561974]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17316925400805307408
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 5196314860968098635
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 15454635768490579581
+      TagComponent:
+        Tag: Coin
+        tags: [Gold Coin]
+      TransformComponent:
+        Location: [-31.1870003, -1.5, -24.3560009]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -817,12 +851,12 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 15454635768490579581
+    - Entity: 1234670754563865090
       TagComponent:
         Tag: Coin
         tags: [Gold Coin]
       TransformComponent:
-        Location: [-31.1870003, -1.5, -24.3560009]
+        Location: [-31.1870003, -1.5, -27.3560009]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -861,74 +895,6 @@ World:
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 494759564525424196
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 5196314860968098635
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: true
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 1234670754563865090
-      TagComponent:
-        Tag: Coin
-        tags: [Gold Coin]
-      TransformComponent:
-        Location: [-31.1870003, -1.5, -27.3560009]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 17316925400805307408
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 5196314860968098635
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: true
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 8584324123102154204
-      TagComponent:
-        Tag: Coin
-        tags: [Gold Coin]
-      TransformComponent:
-        Location: [-31.1870003, -1.5, -34.355999]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 17316925400805307408
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
@@ -993,6 +959,74 @@ World:
         tags: [Gold Coin]
       TransformComponent:
         Location: [-58.1870079, -1.47558594, -40.3470001]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17316925400805307408
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 5196314860968098635
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 8584324123102154204
+      TagComponent:
+        Tag: Coin
+        tags: [Gold Coin]
+      TransformComponent:
+        Location: [-31.1870003, -1.5, -34.355999]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17316925400805307408
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 5196314860968098635
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 12021406570604182526
+      TagComponent:
+        Tag: Coin
+        tags: [Gold Coin]
+      TransformComponent:
+        Location: [-34.1870003, -1.5, -34.355999]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -1089,40 +1123,6 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 12021406570604182526
-      TagComponent:
-        Tag: Coin
-        tags: [Gold Coin]
-      TransformComponent:
-        Location: [-34.1870003, -1.5, -34.355999]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 17316925400805307408
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 5196314860968098635
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: true
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
     - Entity: 15785457292132118643
       TagComponent:
         Tag: Coin
@@ -1163,40 +1163,6 @@ World:
         tags: [Gold Coin]
       TransformComponent:
         Location: [-46.1870003, -1.5, -34.355999]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 17316925400805307408
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 5196314860968098635
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: true
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 14792949915280457107
-      TagComponent:
-        Tag: Coin
-        tags: [Gold Coin]
-      TransformComponent:
-        Location: [-49.1870003, -1.5, -34.355999]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -1293,80 +1259,46 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 14792949915280457107
+      TagComponent:
+        Tag: Coin
+        tags: [Gold Coin]
+      TransformComponent:
+        Location: [-49.1870003, -1.5, -34.355999]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17316925400805307408
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 5196314860968098635
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 10460212140030732751
       TagComponent:
         Tag: Coin
         tags: [Gold Coin]
       TransformComponent:
         Location: [-52.1870003, -1.5, -34.355999]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 17316925400805307408
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 5196314860968098635
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: true
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 4414425796058134245
-      TagComponent:
-        Tag: Coin
-        tags: [Gold Coin]
-      TransformComponent:
-        Location: [-55.1870003, -1.5, -34.355999]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 17316925400805307408
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 5196314860968098635
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: true
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 2111011939510041586
-      TagComponent:
-        Tag: Coin
-        tags: [Gold Coin]
-      TransformComponent:
-        Location: [-49.1870003, -1.47558594, -52.3470001]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -1429,12 +1361,46 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 3221162882170653657
+    - Entity: 2111011939510041586
       TagComponent:
         Tag: Coin
         tags: [Gold Coin]
       TransformComponent:
-        Location: [-58.1870079, -1.47558594, -34.347332]
+        Location: [-49.1870003, -1.47558594, -52.3470001]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17316925400805307408
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 5196314860968098635
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 4414425796058134245
+      TagComponent:
+        Tag: Coin
+        tags: [Gold Coin]
+      TransformComponent:
+        Location: [-55.1870003, -1.5, -34.355999]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -1497,12 +1463,12 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 18328570935172652843
+    - Entity: 3221162882170653657
       TagComponent:
         Tag: Coin
         tags: [Gold Coin]
       TransformComponent:
-        Location: [-58.1870079, -1.47558594, -37.3470001]
+        Location: [-58.1870079, -1.47558594, -34.347332]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -1576,46 +1542,12 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 2168865428950322434
+    - Entity: 18328570935172652843
       TagComponent:
         Tag: Coin
         tags: [Gold Coin]
       TransformComponent:
-        Location: [-58.1870079, -1.47558594, -43.3470001]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 17316925400805307408
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 5196314860968098635
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: true
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 10516575555235427878
-      TagComponent:
-        Tag: Coin
-        tags: [Gold Coin]
-      TransformComponent:
-        Location: [-40.1870003, -1.47558594, -52.3470001]
+        Location: [-58.1870079, -1.47558594, -37.3470001]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -1684,6 +1616,74 @@ World:
         tags: [Gold Coin]
       TransformComponent:
         Location: [-22.1870003, -1.47558594, -43.3470001]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17316925400805307408
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 5196314860968098635
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 2168865428950322434
+      TagComponent:
+        Tag: Coin
+        tags: [Gold Coin]
+      TransformComponent:
+        Location: [-58.1870079, -1.47558594, -43.3470001]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17316925400805307408
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 5196314860968098635
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 10516575555235427878
+      TagComponent:
+        Tag: Coin
+        tags: [Gold Coin]
+      TransformComponent:
+        Location: [-40.1870003, -1.47558594, -52.3470001]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -1950,40 +1950,6 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 14403048897625122283
-      TagComponent:
-        Tag: Coin
-        tags: [Gold Coin]
-      TransformComponent:
-        Location: [-28.1870003, -1.47558594, -52.3470001]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 17316925400805307408
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 5196314860968098635
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: true
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
     - Entity: 3679668425891045005
       TagComponent:
         Tag: Coin
@@ -2018,12 +1984,12 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 9459291764647197391
+    - Entity: 14403048897625122283
       TagComponent:
         Tag: Coin
         tags: [Gold Coin]
       TransformComponent:
-        Location: [-25.1870003, -1.47558594, -52.3470001]
+        Location: [-28.1870003, -1.47558594, -52.3470001]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -2062,6 +2028,40 @@ World:
         Scale: [1, 1, 1]
       HierarchyComponent:
         ParentHandle: 17206333000876784708
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 5196314860968098635
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 9459291764647197391
+      TagComponent:
+        Tag: Coin
+        tags: [Gold Coin]
+      TransformComponent:
+        Location: [-25.1870003, -1.47558594, -52.3470001]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17316925400805307408
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
@@ -2222,40 +2222,6 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 11034660899113688013
-      TagComponent:
-        Tag: Coin
-        tags: [Gold Coin]
-      TransformComponent:
-        Location: [6, 0, 0]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 10937230837903054468
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 5196314860968098635
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: true
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
     - Entity: 17495830134507502415
       TagComponent:
         Tag: Coin
@@ -2290,16 +2256,16 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 18376845494697321057
+    - Entity: 11034660899113688013
       TagComponent:
         Tag: Coin
         tags: [Gold Coin]
       TransformComponent:
-        Location: [-40.2000008, -1.5, -46.3470001]
+        Location: [6, 0, 0]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
-        ParentHandle: 17316925400805307408
+        ParentHandle: 10937230837903054468
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
@@ -2334,6 +2300,40 @@ World:
         Scale: [0.999999762, 1, 0.999999762]
       HierarchyComponent:
         ParentHandle: 15683570686808321501
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 5196314860968098635
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 18376845494697321057
+      TagComponent:
+        Tag: Coin
+        tags: [Gold Coin]
+      TransformComponent:
+        Location: [-40.2000008, -1.5, -46.3470001]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17316925400805307408
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
@@ -2471,17 +2471,6 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 14521198743035982188
-      TagComponent:
-        Tag: CoinFive
-        tags: []
-      TransformComponent:
-        Location: [1, -1.5, -51.6660156]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 17316925400805307408
-        Children: [14089016591155520320, 14715854643653141741, 5140646008042552205, 16134090778403727156, 17187062451388901303]
     - Entity: 8417217692132825141
       TagComponent:
         Tag: Coin
@@ -2516,6 +2505,17 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 14521198743035982188
+      TagComponent:
+        Tag: CoinFive
+        tags: []
+      TransformComponent:
+        Location: [1, -1.5, -51.6660156]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 17316925400805307408
+        Children: [14089016591155520320, 14715854643653141741, 5140646008042552205, 16134090778403727156, 17187062451388901303]
     - Entity: 464101354961914680
       TagComponent:
         Tag: CoinFive
@@ -2561,6 +2561,17 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 2485863097622661832
+      TagComponent:
+        Tag: CoinFive
+        tags: []
+      TransformComponent:
+        Location: [4.0109992, 4.5999999, -25.7770042]
+        Rotation: [0, 1.57045102, 0]
+        Scale: [0.999999881, 1, 0.999999881]
+      HierarchyComponent:
+        ParentHandle: 1855453392261607355
+        Children: [12582361140114137715, 8029399190121810147, 90991761437745652, 1050776856863778044, 3145416548871327464]
     - Entity: 8971242713855935602
       TagComponent:
         Tag: Coin
@@ -2595,57 +2606,12 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 2485863097622661832
-      TagComponent:
-        Tag: CoinFive
-        tags: []
-      TransformComponent:
-        Location: [4.0109992, 4.5999999, -25.7770042]
-        Rotation: [0, 1.57045102, 0]
-        Scale: [0.999999881, 1, 0.999999881]
-      HierarchyComponent:
-        ParentHandle: 1855453392261607355
-        Children: [12582361140114137715, 8029399190121810147, 90991761437745652, 1050776856863778044, 3145416548871327464]
     - Entity: 16627176192979915967
       TagComponent:
         Tag: Coin
         tags: [Gold Coin]
       TransformComponent:
         Location: [0, 0, 0]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 464101354961914680
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 50
-        Visible: true
-        MaterialTable:
-          - Material: ""
-            AssetID: 5196314860968098635
-            Index: 0
-      BoxColliderComponent:
-        IsTrigger: true
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 0
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
-    - Entity: 11970759542453662757
-      TagComponent:
-        Tag: Coin
-        tags: [Gold Coin]
-      TransformComponent:
-        Location: [3, 0, 0]
         Rotation: [0, -0, 0]
         Scale: [1, 1, 1]
       HierarchyComponent:
@@ -2684,6 +2650,40 @@ World:
         Scale: [0.999999821, 1, 0.999999821]
       HierarchyComponent:
         ParentHandle: 2329945424389741873
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 5196314860968098635
+            Index: 0
+      BoxColliderComponent:
+        IsTrigger: true
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 11970759542453662757
+      TagComponent:
+        Tag: Coin
+        tags: [Gold Coin]
+      TransformComponent:
+        Location: [3, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 464101354961914680
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
@@ -2787,16 +2787,16 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 11708039723482206050
+    - Entity: 10390939185466881629
       TagComponent:
         Tag: Coin
         tags: [Gold Coin]
       TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, -0, 0]
-        Scale: [1, 1, 1]
+        Location: [2.99999809, 9.53674316e-07, -4.76837158e-07]
+        Rotation: [0, -1.78784859e-07, 0]
+        Scale: [0.999999821, 1, 0.999999821]
       HierarchyComponent:
-        ParentHandle: 10937230837903054468
+        ParentHandle: 2329945424389741873
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
@@ -2821,16 +2821,16 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
-    - Entity: 10390939185466881629
+    - Entity: 11708039723482206050
       TagComponent:
         Tag: Coin
         tags: [Gold Coin]
       TransformComponent:
-        Location: [2.99999809, 9.53674316e-07, -4.76837158e-07]
-        Rotation: [0, -1.78784859e-07, 0]
-        Scale: [0.999999821, 1, 0.999999821]
+        Location: [0, 0, 0]
+        Rotation: [0, -0, 0]
+        Scale: [1, 1, 1]
       HierarchyComponent:
-        ParentHandle: 2329945424389741873
+        ParentHandle: 10937230837903054468
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50

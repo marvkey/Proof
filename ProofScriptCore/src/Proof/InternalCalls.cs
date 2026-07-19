@@ -567,6 +567,168 @@ namespace Proof
         internal extern static uint DynamicMeshComponent_GetSubMeshIndex(ulong entityID);
 
         #endregion
+        #region DirectionalLightComponent
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static Vector3 DirectionalLightComponent_GetColor(ulong entityID);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void DirectionalLightComponent_SetColor(ulong entityID, Vector3 color);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float DirectionalLightComponent_GetIntensity(ulong entityID);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void DirectionalLightComponent_SetIntensity(ulong entityID, float intensity);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool DirectionalLightComponent_GetCastShadow(ulong entityID);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void DirectionalLightComponent_SetCastShadow(ulong entityID, bool castShadow);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float DirectionalLightComponent_GetShadowStrength(ulong entityID);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void DirectionalLightComponent_SetShadowStrength(ulong entityID, float shadowStrength);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static bool DirectionalLightComponent_GetCastSoftShadow(ulong entityID);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void DirectionalLightComponent_SetCastSoftShadow(ulong entityID, bool castSoftShadow);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static float DirectionalLightComponent_GetShadowSoftness(ulong entityID);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void DirectionalLightComponent_SetShadowSoftness(ulong entityID, float shadowSoftness);
+
+        #endregion
+
+		#region PointLightComponent
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static Vector3 PointLightComponent_GetColor(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void PointLightComponent_SetColor(ulong entityID, Vector3 color);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float PointLightComponent_GetIntensity(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void PointLightComponent_SetIntensity(ulong entityID, float intensity);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float PointLightComponent_GetMinRadius(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void PointLightComponent_SetMinRadius(ulong entityID, float minRadius);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float PointLightComponent_GetRadius(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void PointLightComponent_SetRadius(ulong entityID, float radius);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float PointLightComponent_GetFalloff(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void PointLightComponent_SetFalloff(ulong entityID, float falloff);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static bool PointLightComponent_GetCastsShadows(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void PointLightComponent_SetCastsShadows(ulong entityID, bool castsShadows);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static bool PointLightComponent_GetSoftShadows(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void PointLightComponent_SetSoftShadows(ulong entityID, bool softShadows);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float PointLightComponent_GetShadowStrength(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void PointLightComponent_SetShadowStrength(ulong entityID, float shadowStrength);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float PointLightComponent_GetShadowSoftness(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void PointLightComponent_SetShadowSoftness(ulong entityID, float shadowSoftness);
+
+		#endregion
+
+		#region SpotLightComponent
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static Vector3 SpotLightComponent_GetColor(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void SpotLightComponent_SetColor(ulong entityID, Vector3 color);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float SpotLightComponent_GetIntensity(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void SpotLightComponent_SetIntensity(ulong entityID, float intensity);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float SpotLightComponent_GetRange(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void SpotLightComponent_SetRange(ulong entityID, float range);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float SpotLightComponent_GetAngle(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void SpotLightComponent_SetAngle(ulong entityID, float angle);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float SpotLightComponent_GetAngleAttenuation(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void SpotLightComponent_SetAngleAttenuation(ulong entityID, float angleAttenuation);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float SpotLightComponent_GetFalloff(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void SpotLightComponent_SetFalloff(ulong entityID, float falloff);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static bool SpotLightComponent_GetCastsShadows(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void SpotLightComponent_SetCastsShadows(ulong entityID, bool castsShadows);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static bool SpotLightComponent_GetSoftShadows(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void SpotLightComponent_SetSoftShadows(ulong entityID, bool softShadows);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float SpotLightComponent_GetShadowStrength(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void SpotLightComponent_SetShadowStrength(ulong entityID, float shadowStrength);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static float SpotLightComponent_GetShadowSoftness(ulong entityID);
+
+		[MethodImplAttribute(MethodImplOptions.InternalCall)]
+		internal extern static void SpotLightComponent_SetShadowSoftness(ulong entityID, float shadowSoftness);
+
+		#endregion
+			
         #region PlayerInputComponent
 
         

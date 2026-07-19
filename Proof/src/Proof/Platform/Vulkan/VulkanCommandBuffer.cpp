@@ -218,11 +218,11 @@ namespace Proof
 			submitInfo.pSignalSemaphores = nullptr;
 			submitInfo.signalSemaphoreCount = 0;
 			{
-				PF_PROFILE_FUNC("ResetFences");
+				PF_PROFILE_SCOPE_DYNAMIC("ResetFences");
 				VK_CHECK_RESULT(vkResetFences(device, 1, &instance->m_WaitFences[frameIndex]));
 			}
 			{
-				PF_PROFILE_FUNC("vkQueueSubmit");
+				PF_PROFILE_SCOPE_DYNAMIC("vkQueueSubmit");
 				VK_CHECK_RESULT(vkQueueSubmit(VulkanRenderer::GetGraphicsContext()->GetDevice()->GetGraphicsQueue(), 1, &submitInfo, instance->m_WaitFences[frameIndex]));
 			}
 #if 0
@@ -276,7 +276,7 @@ namespace Proof
 			{
 				// waitign to see if we can start recording in these frame
 				{
-					PF_PROFILE_FUNC("WaitFences");
+					PF_PROFILE_SCOPE_DYNAMIC("WaitFences");
 					VK_CHECK_RESULT(vkWaitForFences(device, 1, &instance->m_WaitFences[frameIndex], VK_TRUE, UINT64_MAX));
 					
 				}

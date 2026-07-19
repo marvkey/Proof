@@ -1,0 +1,10 @@
+Assets:
+  - Asset: 429669858112294509
+    Type: Material
+    Path: Materials\m_Red.Material.ProofAsset
+  - Asset: 13388550311591456598
+    Type: World
+    Path: Scenes\TestScene.ProofWorld
+  - Asset: 1227944824617570451
+    Type: PhysicsMaterial
+    Path: Physics\Materials\pm_Ball.PhysicsMaterial.ProofAsset

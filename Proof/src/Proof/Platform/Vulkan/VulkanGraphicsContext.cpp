@@ -280,8 +280,58 @@ namespace Proof
 			m_Samplers.erase(samplerHash);
 		}
 	}
-	
-	#if 0 
+
+	GPUInfo VulkanGraphicsContext::GetGPUInfo()
+	{
+
+		auto device = GetDevice();
+		VkPhysicalDeviceProperties properties = device->GetPhysicalDevice()->GetProperties();
+		GPUInfo info{};
+
+		info.Name =  std::string(properties.deviceName);
+		info.DriverVersion = properties.driverVersion;
+		info.VendorID = properties.vendorID;
+		info.DeviceID = properties.deviceID;
+
+		info.GraphicsAPI = "Vulkan";
+
+		info.APIVersion.Major = VK_API_VERSION_MAJOR(properties.apiVersion);
+		info.APIVersion.Minor = VK_API_VERSION_MINOR(properties.apiVersion);
+		info.APIVersion.Patch = VK_API_VERSION_PATCH(properties.apiVersion);
+
+		info.MaxBoundResourceSets =
+			properties.limits.maxBoundDescriptorSets;
+
+		info.MinimumConstantBufferAlignment =
+			properties.limits.minUniformBufferOffsetAlignment;
+
+		switch (properties.deviceType)
+		{
+		case VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+			info.Type = GPUType::Integrated;
+			break;
+
+		case VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+			info.Type = GPUType::Discrete;
+			break;
+
+		case VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+			info.Type = GPUType::Virtual;
+			break;
+
+		case VK_PHYSICAL_DEVICE_TYPE_CPU:
+			info.Type = GPUType::CPU;
+			break;
+
+		default:
+			info.Type = GPUType::Unknown;
+			break;
+		}
+
+		return info;
+	}
+
+#if 0 
 	static const std::vector<const char*> s_ValidationLayers = { "VK_LAYER_KHRONOS_validation" };
 	static const std::vector<const char*> s_DeviceExtensions = { VK_KHR_MULTIVIEW_EXTENSION_NAME,VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 	static const std::vector<const char*> s_InstanceExtension = { VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME };

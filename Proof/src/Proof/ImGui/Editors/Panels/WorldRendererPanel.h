@@ -10,6 +10,11 @@ namespace Proof
 		void SetContext(const Count<class WorldRenderer>& context) { m_WorldRenderer = context; }
 
 		void OnImGuiRender(const char* dsiplayName, bool& isOpen)override;
+		Count<class WorldRenderer> GetWorldRenderer()
+		{
+			return m_WorldRenderer;
+		};
+
 	protected:
 		Count<class WorldRenderer> m_WorldRenderer;
 	};

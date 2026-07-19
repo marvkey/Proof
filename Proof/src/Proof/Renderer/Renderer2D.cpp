@@ -289,7 +289,7 @@ namespace Proof {
 
 	void Renderer2D::BeginContext(const glm::mat4& projection, const glm::mat4& view, const Vector& Position, Renderer2DContextSettings contextSettings,bool clearFrameBuffer)
 	{
-		PF_PROFILE_FUNC()
+		PF_PROFILE_FUNC();
 		m_Camera = CameraData{ projection,view,Position };
 		//CameraData camera = CameraData{ glm::mat4(1),glm::mat4(1)};
 
@@ -1383,7 +1383,7 @@ namespace Proof {
 		
 		if (m_QuadIndexCount > 0) // nothing to draw
 		{
-			PF_PROFILE_FUNC("Renderer2D::Quad Draw");
+			PF_PROFILE_SCOPE_DYNAMIC("Renderer2D::Quad Draw");
 			
 			Timer quadTime;
 
@@ -1412,7 +1412,7 @@ namespace Proof {
 		}
 		if (m_TextIndexCount > 0)
 		{
-			PF_PROFILE_FUNC("Renderer2D::String Draw");
+			PF_PROFILE_SCOPE_DYNAMIC("Renderer2D::String Draw");
 
 			Timer textTime;
 
@@ -1441,7 +1441,7 @@ namespace Proof {
 
 		if (m_LineIndexCount > 0)
 		{
-			PF_PROFILE_FUNC("Renderer2D::Line Draw");
+			PF_PROFILE_SCOPE_DYNAMIC("Renderer2D::Line Draw");
 
 			Timer lineTime;
 
@@ -1478,7 +1478,7 @@ namespace Proof {
 
 		if (m_PointIndexCount > 0)
 		{
-			PF_PROFILE_FUNC("Renderer2D::PointDraw");
+			PF_PROFILE_SCOPE_DYNAMIC("Renderer2D::PointDraw");
 
 			Count<RenderPass> pointPass = m_ContextSettings.RenderOnTop == true ? m_PointonTopRenderPass : m_PointRenderPass;
 

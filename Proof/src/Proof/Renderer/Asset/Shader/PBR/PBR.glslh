@@ -117,6 +117,8 @@ float GaSchlickGGX(float cosLi, float NdotV, float roughness)
 
 int GetPointLightBufferIndex(int i)
 {
+
+    
 	ivec2 tileID = ivec2(gl_FragCoord.xy) / ivec2(16);
 	uint index = tileID.y * u_LightData.LightCullingWorkGroups.x + tileID.x;
 
@@ -142,13 +144,19 @@ vec3 CalculatePointLights(in vec3 F0, vec3 worldPos)
 {
 	vec3 result = vec3(0.0);
 
-
 	for(int i = 0; i <  u_LightData.PointLightCount; i++) 
 	{
 		int lightIndex = GetPointLightBufferIndex(i);
 		if (lightIndex == -1)
 			break;
 
+
+        // Prevent invalid access into the scene point-light buffer.
+        if (lightIndex < 0 ||
+            lightIndex >= u_LightData.PointLightCount)
+        {
+            continue;
+        }
 		PointLight light = s_PointLights.Lights[lightIndex];
 
 		if(light.Intensity <= 0)
@@ -193,6 +201,7 @@ vec3 CalculatePointLights(in vec3 F0, vec3 worldPos)
 
 int GetSpotLightBufferIndex(int i)
 {
+        
 	ivec2 tileID = ivec2(gl_FragCoord.xy) / ivec2(16);
 	uint index = tileID.y * u_LightData.LightCullingWorkGroups.x + tileID.x;
 

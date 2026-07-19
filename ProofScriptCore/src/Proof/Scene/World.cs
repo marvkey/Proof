@@ -76,6 +76,11 @@ namespace Proof
             return new Entity(InternalCalls.World_CreateEntity(name,transform));
         }
 
+        public static Entity CreateEntity(string name)
+        {
+            return new Entity(InternalCalls.World_CreateEntity(name,new Transform()));
+        }
+
         public static Entity CreateEntity(string name,Entity parent)
         {
             if(Entity.IsValid(parent))

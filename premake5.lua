@@ -30,13 +30,14 @@ IncludeDir["PhysX"] = "%{wks.location}/Proof/vendor/PhysX/include"
 IncludeDir["mono"] = "%{wks.location}/Proof/vendor/mono/include"
 IncludeDir["magic_enum"] = "%{wks.location}/Proof/vendor/magic_enum/include"
 IncludeDir["optick"] = "%{wks.location}/Proof/vendor/optick/src"
-IncludeDir["tracey"] = "%{wks.location}/Proof/vendor/tracy/public"
+IncludeDir["tracy"] = "%{wks.location}/Proof/vendor/tracy/public"
 IncludeDir["entt"] = "%{wks.location}/Proof/vendor/entt"
 IncludeDir["FastNoise"] = "%{wks.location}/Proof/vendor/FastNoise"
 IncludeDir["ktx"] = "%{wks.location}/Proof/vendor/ktx"
 IncludeDir["msdfgen"] = "%{wks.location}/Proof/vendor/msdf-atlas-gen/msdfgen"
 IncludeDir["msdf_atlas_gen"] = "%{wks.location}/Proof/vendor/msdf-atlas-gen"
 IncludeDir["MiniAudio"] = "%{wks.location}/Proof/vendor/MiniAudio"
+
 
 LibraryDir = {}
 LibraryDir["ProofOuputDir"] =  "%{wks.location}/Proof/bin/".. OutputDirectory .. "/Proof"
@@ -82,6 +83,7 @@ group "ExternalDependencies"
 	include "Proof/vendor/SPIRV-Cross"
 	include "Proof/vendor/shaderc"
 	include "Proof/vendor/msdf-atlas-gen"
+	include "Proof/vendor/tracy"
 group ""
 
 group "Dependencies"

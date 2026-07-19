@@ -38,7 +38,7 @@ namespace Proof
 		float ShadowStrength = 0.5f;// 0.0 to 1.0 how dark sahdow is
 		float ShadowSoftness = 0.5f;//how soft the shadow is from 0.0 to 1.0f
 	};
-	struct alignas(16) SpotLight
+	struct alignas(16) SpotLight 
 	{
 		glm::vec3 Location{ 0 };
 		float Intensity = 1.0f; // Range: 0.0 to positive infinity.

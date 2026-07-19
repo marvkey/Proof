@@ -105,7 +105,7 @@ void main()
 	color = ACESTonemap(color);
 	color = GammaCorrect(color.rgb, gamma);
 
-	const float exposure = 0.8f;
+	const float exposure = 0.8f;                    
 	color *= exposure;
 	out_FragColor = vec4(color, 1.0);
 

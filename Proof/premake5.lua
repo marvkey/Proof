@@ -56,7 +56,7 @@ project "Proof"
 		"%{IncludeDir.fmt}",
 		"%{IncludeDir.PhysX}",
 		"%{IncludeDir.optick}",
-		"%{IncludeDir.tracey}",
+		"%{IncludeDir.tracy}",
 		"%{IncludeDir.magic_enum}",
 		"%{IncludeDir.mono}",
 		"%{IncludeDir.ktx}",
@@ -81,6 +81,7 @@ project "Proof"
 		"ProofPhysics",
 		"OptickCore.lib",
 		"SPIRV-Cross",
+		"tracy",
 		--"ProofScriptCore",
 		"msdf-atlas-gen",
 		"%{Library.Vulkan}",
@@ -98,7 +99,7 @@ project "Proof"
 		"Ws2_32.lib",
 		"Winmm.lib",
 		"Version.lib",
-		"Bcrypt.lib"
+		"Bcrypt.lib",
 	}
 
     defines {
@@ -121,7 +122,8 @@ project "Proof"
 	filter "system:windows"
 		systemversion "latest"
 		defines {
-			"PF_PLATFORM_WINDOW64"
+			"PF_PLATFORM_WINDOW64",
+			
 		}
 	
 
@@ -132,7 +134,8 @@ project "Proof"
 		defines{
 			"PF_ENABLE_ASSERT",
 			"PF_ENABLE_DEBUG",
-			"PF_TRACK_MEMORY"
+			"PF_TRACK_MEMORY",
+			
 		}
 		links
 		{
@@ -148,7 +151,10 @@ project "Proof"
 			"PF_ENABLE_ASSERT",
 			"PF_ENABLE_DEBUG",
 			"NDEBUG",
-			"PF_TRACK_MEMORY"
+			"PF_TRACK_MEMORY",
+			"TRACY_ENABLE",
+			"TRACY_ON_DEMAND",
+			--"TRACY_CALLSTACK=10",
 		}
 		links
 		{
@@ -161,6 +167,10 @@ project "Proof"
 		runtime "Release"
 		defines{
 			"NDEBUG",
+			"TRACY_ENABLE",
+			"TRACY_ON_DEMAND",
+			--"TRACY_CALLSTACK=10",
+		
 		}
 		links
 		{

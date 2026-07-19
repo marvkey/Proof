@@ -1,0 +1,36 @@
+AssetType: InputBindingContext
+ID: 18165880868946475700
+InputBindings:
+  - InputActionID: 4749269391048898301
+    KeyBindings:
+      - InputKeyBindingType: Bundle
+        InputKeyBindingBundleName: ""
+        InputKeyBundleKeys:
+          - InputKeyBindingBundleType: PositiveX
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: D
+          - InputKeyBindingBundleType: NegativeX
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: A
+          - InputKeyBindingBundleType: PositiveY
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: W
+          - InputKeyBindingBundleType: NegativeY
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: S
+          - InputKeyBindingBundleType: PositiveZ
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: Invalid
+          - InputKeyBindingBundleType: NegativeZ
+            InputKeySettings:
+              InputKeyBindingType: Key
+              InputKeyName: Invalid
+  - InputActionID: 16592920119542302411
+    KeyBindings:
+      - InputKeyBindingType: Key
+        InputKeyName: MouseMoveAxisXY

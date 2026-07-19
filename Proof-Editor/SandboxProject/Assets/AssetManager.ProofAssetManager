@@ -68,6 +68,9 @@ Assets:
   - Asset: 6209785345244531942
     Type: Texture
     Path: HdrMaps\qwantani_puresky_4k.hdr
+  - Asset: 12163517648419704364
+    Type: Material
+    Path: Videos\GameEngineP2\Materials\Plastic1.Material.ProofAsset
   - Asset: 22939415785848343
     Type: Texture
     Path: HdrMaps\syferfontein_18d_clear_puresky_4k.hdr
@@ -131,6 +134,9 @@ Assets:
   - Asset: 7888382545053606714
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\10381718147657362067.jpg
+  - Asset: 14652430770816519807
+    Type: Texture
+    Path: Videos\GameEngineP2\Textures\Poliigon_BrickReclaimedRunning_7787\2K\Poliigon_BrickReclaimedRunning_7787_Roughness.jpg
   - Asset: 17693646131168664489
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\10388182081421875623.jpg
@@ -158,9 +164,6 @@ Assets:
   - Asset: 4452809211143330653
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\12501374198249454378.jpg
-  - Asset: 5068643207735314210
-    Type: Texture
-    Path: ..\..\..\..\..\..\..\S.A.M_Studio\Desktop\Project Car\Dodge\Texturing\Wheel.001.png
   - Asset: 3471092537680981683
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\13196865903111448057.jpg
@@ -233,9 +236,18 @@ Assets:
   - Asset: 15621592644097797435
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7441062115984513793.jpg
+  - Asset: 12752819754227790113
+    Type: Texture
+    Path: Videos\GameEngineP2\Textures\metal_0081_2k_B8PrvY\metal_0081_metallic_2k.jpg
   - Asset: 13353594874833611684
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\2411100444841994089.jpg
+  - Asset: 7336170953208436756
+    Type: Material
+    Path: Videos\GameEngineP2\Materials\m_MetalScratch.Material.ProofAsset
+  - Asset: 16145298180280464837
+    Type: Material
+    Path: Videos\GameEngineP2\Materials\Metal1.Material.ProofAsset
   - Asset: 11153328229602569010
     Type: Texture
     Path: TexturesMaps\brick-wall-bl\brick-wall_height.png
@@ -317,12 +329,18 @@ Assets:
   - Asset: 5630738706352049544
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\5061699253647017043.png
+  - Asset: 7580976931717052599
+    Type: Texture
+    Path: Videos\GameEngineP2\Textures\metal_0081_2k_B8PrvY\metal_0081_ao_2k.jpg
   - Asset: 18185679048645522199
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\5792855332885324923.jpg
   - Asset: 10993537085001931807
     Type: Texture
     Path: TexturesMaps\red-brick2-ue\red-bricks2_metallness.png
+  - Asset: 5625068886402152545
+    Type: Texture
+    Path: Videos\GameEngineP2\Textures\metal_0081_2k_B8PrvY\metal_0081_color_2k.jpg
   - Asset: 13994665151775855675
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\5823059166183034438.jpg
@@ -365,6 +383,9 @@ Assets:
   - Asset: 9402057604116084995
     Type: Texture
     Path: firetexture.jpg
+  - Asset: 9033476137370825663
+    Type: World
+    Path: Videos\GameEngineP2\Scenes\TestMaterials.ProofWorld
   - Asset: 16486385080097726734
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\7645212358685992005.jpg
@@ -389,6 +410,9 @@ Assets:
   - Asset: 10543059324507882372
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8503262930880235456.jpg
+  - Asset: 15858623572566571683
+    Type: Texture
+    Path: Videos\GameEngineP2\Textures\Poliigon_BrickReclaimedRunning_7787\Poliigon_BrickReclaimedRunning_7787_Preview1.png
   - Asset: 16594873667283709996
     Type: Texture
     Path: Models\glTF-Sample-Models-2.0-Sponza\glTF\8747919177698443163.jpg
@@ -431,6 +455,9 @@ Assets:
   - Asset: 3650405502933676885
     Type: Material
     Path: Materials\RED.Material.ProofAsset
+  - Asset: 4022013288844055390
+    Type: Texture
+    Path: Videos\GameEngineP2\Textures\Poliigon_BrickReclaimedRunning_7787\2K\Poliigon_BrickReclaimedRunning_7787_Normal.png
   - Asset: 14202276880939290672
     Type: Texture
     Path: fireSheet5x5_alpha.png
@@ -442,7 +469,7 @@ Assets:
     Path: MeshCollider\images.jpg
   - Asset: 1701136218347989778
     Type: World
-    Path: Scenes\Youtube.ProofWorld
+    Path: Videos\GameEngineP2\Youtube.ProofWorld
   - Asset: 5412365953404524970
     Type: PhysicsMaterial
     Path: PhysicsMaterial\BouncyMaterial.PhysicsMaterial.ProofAsset
@@ -470,6 +497,9 @@ Assets:
   - Asset: 9906847331754832331
     Type: Material
     Path: Materials\Metallic.Material.ProofAsset
+  - Asset: 5852456796637616284
+    Type: Prefab
+    Path: Prefab\Proof.Prefab.ProofAsset
   - Asset: 11909005084848941008
     Type: Texture
     Path: Models\Cerberus_by_Andrew_Maximov\Textures\Cerberus_R.tga
@@ -482,6 +512,9 @@ Assets:
   - Asset: 16934749894547704971
     Type: Texture
     Path: Models\Cerberus_by_Andrew_Maximov\Textures\Raw\Cerberus_N.tga
+  - Asset: 12711342007329951460
+    Type: Prefab
+    Path: Videos\GameEngineP2\Scenes\p_1 million light (Dir and Skylight).Prefab.ProofAsset
   - Asset: 9543004713831253960
     Type: Texture
     Path: Models\Cerberus_by_Andrew_Maximov\Textures\Cerberus_A.tga
@@ -503,9 +536,6 @@ Assets:
   - Asset: 5921384776833615366
     Type: Texture
     Path: TexturesMaps\brick-wall-bl\brick-wall_albedo.png
-  - Asset: 16962195204824404614
-    Type: Texture
-    Path: ..\..\..\..\..\..\..\S.A.M_Studio\Desktop\Project Car\Dodge\Texturing\Dodge.png
   - Asset: 3743909219085228446
     Type: Texture
     Path: TexturesMaps\brick-wall-bl\brick-wall_ao.png
@@ -530,6 +560,9 @@ Assets:
   - Asset: 3605007682410639877
     Type: Material
     Path: Mesh\New Material (01).Material.ProofAsset
+  - Asset: 18258579749002979698
+    Type: Texture
+    Path: Videos\GameEngineP2\Textures\Poliigon_BrickReclaimedRunning_7787\2K\Poliigon_BrickReclaimedRunning_7787_Metallic.jpg
   - Asset: 1389422389927926979
     Type: Texture
     Path: TexturesMaps\heavily-rusted-metal-ue\heavily-rusted-metal_normal-dx.png
@@ -554,6 +587,9 @@ Assets:
   - Asset: 1446855481558706326
     Type: Texture
     Path: TexturesMaps\rustediron1-alt2-bl\rustediron2_metallic.png
+  - Asset: 15991664590045315288
+    Type: World
+    Path: Videos\GameEngineP2\Scenes\1 millionPointLights.ProofWorld
   - Asset: 9472538844411650397
     Type: Texture
     Path: TexturesMaps\rustediron1-alt2-bl\rustediron2_normal.png
@@ -572,6 +608,9 @@ Assets:
   - Asset: 6904243976423466514
     Type: Texture
     Path: TexturesMaps\smooth-temple-blocks-bl\smooth-temple-blocks_metallic.png
+  - Asset: 12017388851219402776
+    Type: Texture
+    Path: Videos\GameEngineP2\Textures\Poliigon_BrickReclaimedRunning_7787\2K\Poliigon_BrickReclaimedRunning_7787_BaseColor.jpg
   - Asset: 7942068813126966082
     Type: Texture
     Path: TexturesMaps\smooth-temple-blocks-bl\smooth-temple-blocks_roughness.png
@@ -674,6 +713,12 @@ Assets:
   - Asset: 2620091165981058035
     Type: Texture
     Path: Models\SponzaObj\textures\sponza_curtain_blue_diff.tga
+  - Asset: 10198564303501662331
+    Type: Material
+    Path: Videos\GameEngineP2\Materials\m_Red.Material.ProofAsset
+  - Asset: 4749269391048898301
+    Type: InputAction
+    Path: Videos\GameEngineP2\Input\MoveAction.InputAction.ProofAsset
   - Asset: 12478145299765894482
     Type: Texture
     Path: Models\SponzaObj\textures\sponza_curtain_green_diff.tga
@@ -767,6 +812,9 @@ Assets:
   - Asset: 13074881362054657412
     Type: Material
     Path: MeshResources\glTF\Sponza UnnamedMaterial (20).Material.ProofAsset
+  - Asset: 1879836698856050583
+    Type: Texture
+    Path: Videos\GameEngineP2\Textures\metal_0081_2k_B8PrvY\metal_0081_preview.jpg
   - Asset: 16830375870238810582
     Type: Material
     Path: MeshResources\glTF\Sponza UnnamedMaterial (21).Material.ProofAsset
@@ -794,6 +842,9 @@ Assets:
   - Asset: 13252143450707935609
     Type: Material
     Path: MeshResources\SponzaObj\column_c.Material.ProofAsset
+  - Asset: 4462681758806898933
+    Type: Texture
+    Path: Videos\GameEngineP2\Textures\metal_0081_2k_B8PrvY\metal_0081_roughness_2k.jpg
   - Asset: 13515107201408677400
     Type: Material
     Path: MeshResources\glTF\Sponza UnnamedMaterial (25).Material.ProofAsset
@@ -803,6 +854,9 @@ Assets:
   - Asset: 8953990813333612089
     Type: Material
     Path: MeshResources\SponzaObj\Material__57.Material.ProofAsset
+  - Asset: 8366494235448746177
+    Type: Texture
+    Path: Videos\GameEngineP2\Textures\metal_0081_2k_B8PrvY\metal_0081_normal_opengl_2k.png
   - Asset: 17567963664327202448
     Type: Material
     Path: MeshResources\SponzaObj\bricks.Material.ProofAsset
@@ -857,6 +911,9 @@ Assets:
   - Asset: 1038065123750893823
     Type: Texture
     Path: Models\Batman\textures\T_M_MED_Cavern_Armored_Body_N.png
+  - Asset: 11821324665790055145
+    Type: Material
+    Path: Videos\GameEngineP2\Materials\m_Brick.Material.ProofAsset
   - Asset: 5013333249053124386
     Type: Texture
     Path: Models\vampire\textures\Vampire_emission.png
@@ -965,6 +1022,9 @@ Assets:
   - Asset: 16231440029557774105
     Type: Texture
     Path: Models\crates2\textures\Wood_Box_low_DefaultMaterial_Metallic.png
+  - Asset: 5515488731894081404
+    Type: World
+    Path: Videos\GameEngineP2\Scenes\RandomEdits.ProofWorld
   - Asset: 11632790137224404845
     Type: Texture
     Path: Models\crates2\textures\Wood_Box_low_DefaultMaterial_Normal.png
@@ -986,3 +1046,27 @@ Assets:
   - Asset: 12029109414341551967
     Type: Material
     Path: Meshes\m_Football.Material.ProofAsset
+  - Asset: 3672851765682067428
+    Type: Texture
+    Path: HdrMaps\qwantani_dusk_2_puresky_4k.hdr
+  - Asset: 9193904333707896280
+    Type: Texture
+    Path: Videos\GameEngineP2\Textures\metal_0081_2k_B8PrvY\metal_0081_height_2k.png
+  - Asset: 1346880607337985169
+    Type: Texture
+    Path: Videos\GameEngineP2\Textures\metal_0081_2k_B8PrvY\metal_0081_normal_directx_2k.png
+  - Asset: 18165880868946475700
+    Type: InputBindingContext
+    Path: Videos\GameEngineP2\Input\CharacterInputBinding.InputBindingContext.ProofAsset
+  - Asset: 7361712566939631874
+    Type: MeshCollider
+    Path: Videos\GameEngineP2\SponzaCollider.MeshCollider.ProofAsset
+  - Asset: 16592920119542302411
+    Type: InputAction
+    Path: Videos\GameEngineP2\Input\RotateAction.InputAction.ProofAsset
+  - Asset: 5472736935325690645
+    Type: InputAction
+    Path: Videos\GameEngineP2\Input\LightAction.InputAction.ProofAsset
+  - Asset: 17634884731139337489
+    Type: World
+    Path: Videos\GameEngineP2\Scenes\TestLightGrid.ProofWorld

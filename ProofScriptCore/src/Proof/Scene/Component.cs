@@ -397,9 +397,317 @@ namespace Proof
 				InternalCalls.DynamicMeshComponent_SetMesh(Entity.ID,value.ID ,true);
 			}
 		}
+	}
 
+	[RegisterCoreClassStruct]
+	public class DirectionalLightComponent : Component
+	{
+		public Vector3 Color
+		{
+			get
+			{
+				return InternalCalls.DirectionalLightComponent_GetColor(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.DirectionalLightComponent_SetColor(Entity.ID, value);
+			}
+		}
 
+		public float Intensity
+		{
+			get
+			{
+				return InternalCalls.DirectionalLightComponent_GetIntensity(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.DirectionalLightComponent_SetIntensity(Entity.ID, value);
+			}
+		}
 
+		public bool CastShadow
+		{
+			get
+			{
+				return InternalCalls.DirectionalLightComponent_GetCastShadow(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.DirectionalLightComponent_SetCastShadow(Entity.ID, value);
+			}
+		}
+
+		public float ShadowStrength
+		{
+			get
+			{
+				return InternalCalls.DirectionalLightComponent_GetShadowStrength(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.DirectionalLightComponent_SetShadowStrength(Entity.ID, value);
+			}
+		}
+
+		public bool CastSoftShadow
+		{
+			get
+			{
+				return InternalCalls.DirectionalLightComponent_GetCastSoftShadow(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.DirectionalLightComponent_SetCastSoftShadow(Entity.ID, value);
+			}
+		}
+
+		public float ShadowSoftness
+		{
+			get
+			{
+				return InternalCalls.DirectionalLightComponent_GetShadowSoftness(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.DirectionalLightComponent_SetShadowSoftness(Entity.ID, value);
+			}
+		}
+	}
+	[RegisterCoreClassStruct]
+	public class PointLightComponent : Component
+	{
+		public Vector3 Color
+		{
+			get
+			{
+				return InternalCalls.PointLightComponent_GetColor(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.PointLightComponent_SetColor(Entity.ID, value);
+			}
+		}
+
+		public float Intensity
+		{
+			get
+			{
+				return InternalCalls.PointLightComponent_GetIntensity(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.PointLightComponent_SetIntensity(Entity.ID, value);
+			}
+		}
+
+		public float MinRadius
+		{
+			get
+			{
+				return InternalCalls.PointLightComponent_GetMinRadius(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.PointLightComponent_SetMinRadius(Entity.ID, value);
+			}
+		}
+
+		public float Radius
+		{
+			get
+			{
+				return InternalCalls.PointLightComponent_GetRadius(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.PointLightComponent_SetRadius(Entity.ID, value);
+			}
+		}
+
+		public float Falloff
+		{
+			get
+			{
+				return InternalCalls.PointLightComponent_GetFalloff(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.PointLightComponent_SetFalloff(Entity.ID, value);
+			}
+		}
+
+		public bool CastsShadows
+		{
+			get
+			{
+				return InternalCalls.PointLightComponent_GetCastsShadows(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.PointLightComponent_SetCastsShadows(Entity.ID, value);
+			}
+		}
+
+		public bool SoftShadows
+		{
+			get
+			{
+				return InternalCalls.PointLightComponent_GetSoftShadows(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.PointLightComponent_SetSoftShadows(Entity.ID, value);
+			}
+		}
+
+		public float ShadowStrength
+		{
+			get
+			{
+				return InternalCalls.PointLightComponent_GetShadowStrength(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.PointLightComponent_SetShadowStrength(Entity.ID, value);
+			}
+		}
+
+		public float ShadowSoftness
+		{
+			get
+			{
+				return InternalCalls.PointLightComponent_GetShadowSoftness(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.PointLightComponent_SetShadowSoftness(Entity.ID, value);
+			}
+		}
+	}
+
+	[RegisterCoreClassStruct]
+	public class SpotLightComponent : Component
+	{
+		public Vector3 Color
+		{
+			get
+			{
+				return InternalCalls.SpotLightComponent_GetColor(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.SpotLightComponent_SetColor(Entity.ID, value);
+			}
+		}
+
+		public float Intensity
+		{
+			get
+			{
+				return InternalCalls.SpotLightComponent_GetIntensity(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.SpotLightComponent_SetIntensity(Entity.ID, value);
+			}
+		}
+
+		public float Range
+		{
+			get
+			{
+				return InternalCalls.SpotLightComponent_GetRange(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.SpotLightComponent_SetRange(Entity.ID, value);
+			}
+		}
+
+		public float Angle
+		{
+			get
+			{
+				return InternalCalls.SpotLightComponent_GetAngle(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.SpotLightComponent_SetAngle(Entity.ID, value);
+			}
+		}
+
+		public float AngleAttenuation
+		{
+			get
+			{
+				return InternalCalls.SpotLightComponent_GetAngleAttenuation(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.SpotLightComponent_SetAngleAttenuation(Entity.ID, value);
+			}
+		}
+
+		public float Falloff
+		{
+			get
+			{
+				return InternalCalls.SpotLightComponent_GetFalloff(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.SpotLightComponent_SetFalloff(Entity.ID, value);
+			}
+		}
+
+		public bool CastsShadows
+		{
+			get
+			{
+				return InternalCalls.SpotLightComponent_GetCastsShadows(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.SpotLightComponent_SetCastsShadows(Entity.ID, value);
+			}
+		}
+
+		public bool SoftShadows
+		{
+			get
+			{
+				return InternalCalls.SpotLightComponent_GetSoftShadows(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.SpotLightComponent_SetSoftShadows(Entity.ID, value);
+			}
+		}
+
+		public float ShadowStrength
+		{
+			get
+			{
+				return InternalCalls.SpotLightComponent_GetShadowStrength(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.SpotLightComponent_SetShadowStrength(Entity.ID, value);
+			}
+		}
+
+		public float ShadowSoftness
+		{
+			get
+			{
+				return InternalCalls.SpotLightComponent_GetShadowSoftness(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.SpotLightComponent_SetShadowSoftness(Entity.ID, value);
+			}
+		}
 	}
     [RegisterCoreClassStruct]
 	public class PlayerHUDComponent : Component

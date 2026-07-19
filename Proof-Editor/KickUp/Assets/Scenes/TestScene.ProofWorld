@@ -1,0 +1,123 @@
+World:
+  ID: 13388550311591456598
+  Entities:
+    - Entity: 5581422250505980468
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.0174532924, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 17393210109358241538
+      TagComponent:
+        Tag: Cube
+        tags: []
+      TransformComponent:
+        Location: [0, -2.0999999, 0]
+        Rotation: [0, 0, 0]
+        Scale: [11.1000004, 1, 7.19999981]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 50
+        Visible: true
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 0
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
+    - Entity: 558319490768963278
+      TagComponent:
+        Tag: Ball
+        tags: []
+      TransformComponent:
+        Location: [0, 3.71443415, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 51
+        Visible: true
+        MaterialTable:
+          - Material: ""
+            AssetID: 429669858112294509
+            Index: 0
+      ScriptComponent:
+        Scripts:
+          - Script: KickUp.CharacterMovement
+            ScriptClassName: KickUp.CharacterMovement
+            ScriptName: KickUp.CharacterMovement
+            Fields:
+              - NameID: KickUp.CharacterMovement.moveForce
+                Type: Float
+                Data: 12
+              - NameID: KickUp.CharacterMovement.maxSpeed
+                Type: Float
+                Data: 12
+              - NameID: KickUp.CharacterMovement.brakeStrength
+                Type: Float
+                Data: 8
+              - NameID: KickUp.CharacterMovement.Camera
+                Type: Entity
+                Data: 4263541673648185323
+      SphereColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Radius: 0.5
+        PhysicsMaterialPointerID: 1227944824617570451
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Dynamic
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: ContinuousSpeculative
+    - Entity: 4263541673648185323
+      TagComponent:
+        Tag: Camera
+        tags: []
+      TransformComponent:
+        Location: [0, 1.73935318, 9.58316803]
+        Rotation: [-0.335103214, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      CameraComponent:
+        NearPlane: 0.300000012
+        FarPlane: 1000
+        FOV: 45
+        UseLocalRotation: false
+        ActiveForRendering: true

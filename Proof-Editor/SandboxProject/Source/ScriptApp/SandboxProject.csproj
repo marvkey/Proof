@@ -84,6 +84,12 @@
     <Reference Include="System.Data.Entity" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\..\Assets\Script\CharacterInput.cs">
+      <Link>Assets\Script\CharacterInput.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Script\CharacterMovement.cs">
+      <Link>Assets\Script\CharacterMovement.cs</Link>
+    </Compile>
     <Compile Include="..\..\Assets\Script\Demos\AltoAdventures\PlayerCamera.cs">
       <Link>Assets\Script\Demos\AltoAdventures\PlayerCamera.cs</Link>
     </Compile>
@@ -92,6 +98,9 @@
     </Compile>
     <Compile Include="..\..\Assets\Script\Demos\AltoAdventures\SceneController.cs">
       <Link>Assets\Script\Demos\AltoAdventures\SceneController.cs</Link>
+    </Compile>
+    <Compile Include="..\..\Assets\Script\PointLightStressTest.cs">
+      <Link>Assets\Script\PointLightStressTest.cs</Link>
     </Compile>
     <Compile Include="..\..\Assets\Script\ScriptSpawner.cs">
       <Link>Assets\Script\ScriptSpawner.cs</Link>
