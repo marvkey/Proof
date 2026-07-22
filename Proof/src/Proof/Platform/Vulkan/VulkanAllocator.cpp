@@ -100,6 +100,11 @@ namespace Proof
         vmaUnmapMemory(VulkanAllocator::GetVmaAllocator(), allocation);
     }
 
+    void VulkanAllocator::InvalidateMemory(VmaAllocation allocation, VkDeviceSize offset, VkDeviceSize size)
+    {
+        vmaInvalidateAllocation(GetVmaAllocator(), allocation, offset, size);
+    }
+
     void VulkanAllocator::Init(Count<class VulkanDevice> device)
     {
         s_Data = pnew VulkanAllocatorData();

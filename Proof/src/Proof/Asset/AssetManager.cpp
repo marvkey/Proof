@@ -387,13 +387,31 @@ namespace Proof
 		return s_AssetManagerData->Assets.contains(ID);
 	}
 	
-	void AssetManager::UnloadAsset(AssetID ID) 
+	bool AssetManager::TryUnloadAsset(AssetID ID) 
 	{
-		PF_ASSERT(false, "Funciton not ready");
+		PF_CORE_ASSERT(HasAsset(ID), "Asset Manager does not have ID");
 
-		PF_ASSERT(HasAsset(ID) == false, "Asset Manager does not have ID");
-		auto& AssetInfo = s_AssetManagerData->Assets[ID].Info;
-		auto asset = s_AssetManagerData->Assets[ID].Asset;
+		auto& container = s_AssetManagerData->Assets.at(ID);
+		auto& info = container.Info;
+
+		if (info.State != AssetState::Ready)
+			return false;
+
+		if (info.RuntimeAsset || IsDefaultAsset(ID))
+			return false;
+
+		if (!container.Asset)
+			return false;
+
+		if (container.Asset.GetStrongCount() > 1)
+			return false;
+
+		PF_ENGINE_TRACE("Unloading asset: {}", info.Path.string());
+
+		container.Asset = nullptr;
+		info.State = AssetState::Unloaded;
+
+		return true;
 	}
 
 	

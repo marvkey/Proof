@@ -239,6 +239,162 @@ namespace Proof
 
 	}
 
+	void VulkanRenderer::BlitImage(Count<RenderCommandBuffer> commandBuffer, Count<Image2D> sourceImage,
+		Count<Image2D> destinationImage)
+	{
+		
+		Renderer::Submit([commandBuffer, src = sourceImage.As<VulkanImage2D>(), dst = destinationImage.As<VulkanImage2D>()]
+		{
+			PF_CORE_ASSERT(commandBuffer && src && dst);
+
+			VkCommandBuffer vulkanCommandBuffer = commandBuffer.As<VulkanRenderCommandBuffer>()->GetActiveCommandBuffer();
+
+			const auto& srcSpecification = src->GetSpecification();
+			const auto& dstSpecification = dst->GetSpecification();
+
+			PF_CORE_ASSERT(!Utils::IsDepthFormat(srcSpecification.Format), "BlitImage currently only supports color images");
+			PF_CORE_ASSERT(!Utils::IsDepthFormat(dstSpecification.Format), "BlitImage currently only supports color images");
+
+			VkImage srcImage = src->GetinfoRef().ImageAlloc.Image;
+			VkImage dstImage = dst->GetinfoRef().ImageAlloc.Image;
+
+			glm::uvec2 srcSize = { src->GetSize().x, src->GetSize().y };
+			glm::uvec2 dstSize = { dst->GetSize().x, dst->GetSize().y };
+
+			VkImageLayout srcImageLayout = src->GetDescriptorInfoVulkan().imageLayout;
+			VkImageLayout dstInitialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			VkImageLayout dstFinalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+			PF_CORE_ASSERT(srcImageLayout != VK_IMAGE_LAYOUT_UNDEFINED, "Blit source image cannot have an undefined layout");
+
+			VkImageMemoryBarrier srcToTransfer{};
+			srcToTransfer.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			srcToTransfer.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+			srcToTransfer.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			srcToTransfer.oldLayout = srcImageLayout;
+			srcToTransfer.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			srcToTransfer.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcToTransfer.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcToTransfer.image = srcImage;
+			srcToTransfer.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			srcToTransfer.subresourceRange.baseMipLevel = 0;
+			srcToTransfer.subresourceRange.levelCount = 1;
+			srcToTransfer.subresourceRange.baseArrayLayer = 0;
+			srcToTransfer.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(
+				vulkanCommandBuffer,
+				VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				0,
+				0, nullptr,
+				0, nullptr,
+				1, &srcToTransfer
+			);
+
+			VkImageMemoryBarrier dstToTransfer{};
+			dstToTransfer.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			dstToTransfer.srcAccessMask = 0;
+			dstToTransfer.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			dstToTransfer.oldLayout = dstInitialLayout;
+			dstToTransfer.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			dstToTransfer.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			dstToTransfer.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			dstToTransfer.image = dstImage;
+			dstToTransfer.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			dstToTransfer.subresourceRange.baseMipLevel = 0;
+			dstToTransfer.subresourceRange.levelCount = 1;
+			dstToTransfer.subresourceRange.baseArrayLayer = 0;
+			dstToTransfer.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(
+				vulkanCommandBuffer,
+				VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				0,
+				0, nullptr,
+				0, nullptr,
+				1, &dstToTransfer
+			);
+
+			VkImageBlit region{};
+			region.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			region.srcSubresource.mipLevel = 0;
+			region.srcSubresource.baseArrayLayer = 0;
+			region.srcSubresource.layerCount = 1;
+			region.srcOffsets[0] = { 0, 0, 0 };
+			region.srcOffsets[1] = { (int32_t)srcSize.x, (int32_t)srcSize.y, 1 };
+
+			region.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			region.dstSubresource.mipLevel = 0;
+			region.dstSubresource.baseArrayLayer = 0;
+			region.dstSubresource.layerCount = 1;
+			region.dstOffsets[0] = { 0, 0, 0 };
+			region.dstOffsets[1] = { (int32_t)dstSize.x, (int32_t)dstSize.y, 1 };
+
+			vkCmdBlitImage(
+				vulkanCommandBuffer,
+				srcImage,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+				dstImage,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+				1,
+				&region,
+				VK_FILTER_NEAREST
+			);
+
+			VkImageMemoryBarrier srcFromTransfer{};
+			srcFromTransfer.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			srcFromTransfer.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			srcFromTransfer.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+			srcFromTransfer.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			srcFromTransfer.newLayout = srcImageLayout;
+			srcFromTransfer.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcFromTransfer.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			srcFromTransfer.image = srcImage;
+			srcFromTransfer.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			srcFromTransfer.subresourceRange.baseMipLevel = 0;
+			srcFromTransfer.subresourceRange.levelCount = 1;
+			srcFromTransfer.subresourceRange.baseArrayLayer = 0;
+			srcFromTransfer.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(
+				vulkanCommandBuffer,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+				0,
+				0, nullptr,
+				0, nullptr,
+				1, &srcFromTransfer
+			);
+
+			VkImageMemoryBarrier dstFromTransfer{};
+			dstFromTransfer.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			dstFromTransfer.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			dstFromTransfer.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			dstFromTransfer.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			dstFromTransfer.newLayout = dstFinalLayout;
+			dstFromTransfer.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			dstFromTransfer.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			dstFromTransfer.image = dstImage;
+			dstFromTransfer.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			dstFromTransfer.subresourceRange.baseMipLevel = 0;
+			dstFromTransfer.subresourceRange.levelCount = 1;
+			dstFromTransfer.subresourceRange.baseArrayLayer = 0;
+			dstFromTransfer.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(
+				vulkanCommandBuffer,
+				VK_PIPELINE_STAGE_TRANSFER_BIT,
+				VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+				0,
+				0, nullptr,
+				0, nullptr,
+				1, &dstFromTransfer
+			);
+		});
+	}
+
 	void VulkanRenderer::PushSetCubeMapImage(Count<class TextureCube> cube, Count<class Texture2D> texture)
 	{
 		Count<ComputePipeline> computePipeline;

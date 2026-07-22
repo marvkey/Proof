@@ -290,6 +290,7 @@ namespace Proof
         const std::vector<uint32_t>& GetSubMeshes()const { return m_SubMeshes; };
         void SetSubMeshes(const std::vector<uint32_t>& submeshes = {});
         bool HasSubMesh(uint32_t subMeshIndex);
+        AABB GetBoundingBox() const;
 
     private:
         Count<MeshSource> m_MeshSource;
@@ -323,6 +324,8 @@ namespace Proof
 
         const std::vector<uint32_t>& GetSubMeshes()const { return m_SubMeshes; };
         bool HasSubMesh(uint32_t subMeshIndex);
+
+        AABB GetBoundingBox() const;
     private:
         std::string m_Name;
         std::vector<uint32_t> m_SubMeshes;

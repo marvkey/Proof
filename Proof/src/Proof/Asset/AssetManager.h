@@ -232,7 +232,7 @@ namespace Proof
 		// an assetSource for each needed asset
 		static void GenerateAllSourceAssets();
 		static bool LoadAsset(AssetID ID);
-		static void UnloadAsset(AssetID ID);
+		static bool TryUnloadAsset(AssetID ID);
 		static void SaveAsset(AssetID Id);
 
 		static const std::unordered_map<AssetID, AssetContainer>& GetAssets();

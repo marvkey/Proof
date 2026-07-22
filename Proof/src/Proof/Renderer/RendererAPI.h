@@ -27,6 +27,7 @@ namespace Proof {
 		inline static Renderer::API GetAPI() { return ActiveAPI; }
 		virtual void ClearImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> image, glm::vec4 clearColor) = 0 ;
 		virtual void CopyImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> sourceImage, Count<Image2D> destinationImage) = 0;
+		virtual void BlitImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> sourceImage, Count<Image2D> destinationImage) = 0;
 
 
 	private:

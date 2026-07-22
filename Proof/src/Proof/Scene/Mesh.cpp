@@ -214,6 +214,8 @@ namespace Proof
             const std::string materialname = material->Name.empty() ? "UnnamedMaterial" : material->Name;
             AssetManager::CreateRuntimeAsset(AssetManager::CreateID(), material, materialname);
         }
+
+        m_SubMeshes.front().BoundingBox = m_BoundingBox;
     }
 
     void MeshSource::Reset(const std::string& name, const std::vector<Vertex>& vertices, const std::vector<Index>& indices, const std::vector<SubMesh>& subMeshes, const std::vector<MeshNode>& nodes, Count<MaterialTable> materials,AABB boundingBox)
@@ -240,6 +242,8 @@ namespace Proof
             const std::string materialname = material->Name.empty() ? "UnnamedMaterial" : material->Name;
             AssetManager::CreateRuntimeAsset(AssetManager::CreateID(),asset, materialname);
         }
+
+        m_SubMeshes.front().BoundingBox = m_BoundingBox;
     }
 
     bool MeshSource::NodeHasSubMesh(uint32_t nodeIndex, uint32_t subMeshIndex)
@@ -457,6 +461,37 @@ namespace Proof
         return std::find(m_SubMeshes.begin(), m_SubMeshes.end(), subMeshIndex) != m_SubMeshes.end();
     }
 
+    AABB Mesh::GetBoundingBox() const
+    {
+        PF_PROFILE_FUNC();
+        PF_CORE_ASSERT(m_MeshSource);
+        PF_CORE_ASSERT(!m_SubMeshes.empty());
+
+        const auto& sourceSubMeshes = m_MeshSource->GetSubMeshes();
+
+        PF_CORE_ASSERT(m_SubMeshes[0] < sourceSubMeshes.size());
+
+        AABB boundingBox = sourceSubMeshes[m_SubMeshes[0]].BoundingBox;
+
+        if (m_SubMeshes.size() == 1)
+            return boundingBox;
+
+        for (size_t i = 1; i < m_SubMeshes.size(); i++)
+        {
+            uint32_t subMeshIndex = m_SubMeshes[i];
+
+            if (subMeshIndex >= sourceSubMeshes.size())
+                continue;
+
+            const AABB& currentBoundingBox = sourceSubMeshes[subMeshIndex].BoundingBox;
+
+            boundingBox.Min = glm::min(boundingBox.Min, currentBoundingBox.Min);
+            boundingBox.Max = glm::max(boundingBox.Max, currentBoundingBox.Max);
+        }
+
+        return boundingBox;
+    }
+
     DynamicMesh::DynamicMesh(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes)
         :m_MeshSource(meshSource)
 
@@ -515,6 +550,37 @@ namespace Proof
     bool DynamicMesh::HasSubMesh(uint32_t subMeshIndex)
     {
         return std::find(m_SubMeshes.begin(), m_SubMeshes.end(), subMeshIndex) != m_SubMeshes.end();
+    }
+
+    AABB DynamicMesh::GetBoundingBox() const
+    {
+        PF_PROFILE_FUNC();
+        PF_CORE_ASSERT(m_MeshSource);
+        PF_CORE_ASSERT(!m_SubMeshes.empty());
+
+        const auto& sourceSubMeshes = m_MeshSource->GetSubMeshes();
+
+        PF_CORE_ASSERT(m_SubMeshes[0] < sourceSubMeshes.size());
+
+        AABB boundingBox = sourceSubMeshes[m_SubMeshes[0]].BoundingBox;
+
+        if (m_SubMeshes.size() == 1)
+            return boundingBox;
+
+        for (size_t i = 1; i < m_SubMeshes.size(); i++)
+        {
+            uint32_t subMeshIndex = m_SubMeshes[i];
+
+            if (subMeshIndex >= sourceSubMeshes.size())
+                continue;
+
+            const AABB& currentBoundingBox = sourceSubMeshes[subMeshIndex].BoundingBox;
+
+            boundingBox.Min = glm::min(boundingBox.Min, currentBoundingBox.Min);
+            boundingBox.Max = glm::max(boundingBox.Max, currentBoundingBox.Max);
+        }
+
+        return boundingBox;
     }
 
 

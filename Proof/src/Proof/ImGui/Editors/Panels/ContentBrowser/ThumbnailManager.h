@@ -43,7 +43,6 @@ namespace  Proof
         void GenerateMeshThumbnail(Count<class Mesh>  mesh);
         void GenerateDynamicMeshThumbnail(Count<class DynamicMesh>  mesh);
         void GenerateMaterialThumbnail(Count<class Material> material);
-
         void FrameCameraToBounds(const struct AABB bounds);
     private:
 
@@ -71,10 +70,17 @@ namespace  Proof
         void RegenerateThumbnail(AssetID assetID); // only for saved asset liek material or mesh that needs to be regeneritead
 
     private:
+        void CacheThumbnail(AssetID thumbnailAssetID,Count<Texture2D> thumbnail);
+        Count<Texture2D> LoadCachedThumbnail(AssetID assetID, const std::filesystem::path& thumbnailPath);
+        std::filesystem::path GetThumbnailCachePath(AssetID assetID) const ;
+
+    private:
 
         std::unordered_map<AssetID, AssetThumbnail> m_AssetThumbnails;
         std::queue<AssetID> m_ThumbnailQueue;
         Count<AssetThumbnailRenderer> m_ThumbnailRenderer;
+        AssetID m_PendingCacheAssetID = 0;
+        Count<Texture2D> m_PendingCacheTexture;
 
         AssetThumbnail m_CurrentThumbnail;
         friend class ContentBrowserPanel;

@@ -154,9 +154,14 @@ namespace Proof
 		Build();
 	}
 
-	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config, Count<Image2D> image)
+	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config, Count<Image2D> image, bool copyImage)
 		:m_Config(config), m_RenderSampler(image->GetSampler().As<VulkanRenderSampler>())
 	{
+		if (!copyImage)
+		{
+			m_Image = image;
+			return;
+		}
 
 		ImageConfiguration imageConfig;
 		imageConfig.Format = m_Config.Format;
@@ -166,8 +171,10 @@ namespace Proof
 		imageConfig.DebugName = m_Config.DebugName + " ImageTexture";
 		imageConfig.Usage = ImageUsage::Attachment;
 
+		
 
 		m_Image = Image2D::Create(imageConfig,m_RenderSampler);
+
         Renderer::CopyImage(Renderer::GetRendererCommandBuffer(), image,m_Image);
 		//render Thread
 		//Build();

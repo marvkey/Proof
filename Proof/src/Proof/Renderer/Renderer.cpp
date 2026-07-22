@@ -1150,6 +1150,12 @@ namespace Proof {
 		s_RendererAPI->CopyImage(renderCommandBuffer, sourceImage,destinationImage);
 	}
 
+	void Renderer::BlitImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> sourceImage,
+		Count<Image2D> destinationImage)
+	{
+			s_RendererAPI->BlitImage(renderCommandBuffer, sourceImage, destinationImage);
+	}
+
 	CommandQueue& Renderer::GetRenderCommandQueue()
 	{
 		return *s_CommandQueue[s_RenderCommandQueueSubmissionIndex];

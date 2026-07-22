@@ -65,13 +65,13 @@ namespace Proof
 		return nullptr;
 	}
 
-	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config, Count<class Image2D>image)
+	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config, Count<class Image2D>image,bool copyImage)
 	{
 		switch (Renderer::GetAPI())
 		{
 		case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!"); return nullptr;
 		case Renderer::API::OpenGL: return nullptr;
-		case Renderer::API::Vulkan: return Count<VulkanTexture2D>::Create(config, image);
+		case Renderer::API::Vulkan: return Count<VulkanTexture2D>::Create(config, image,copyImage);
 		}
 		return nullptr;
 	}

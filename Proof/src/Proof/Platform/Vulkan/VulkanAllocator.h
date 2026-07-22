@@ -36,6 +36,9 @@ namespace Proof
 		static GPUMemoryStats GetStats();
 		static void DumpStats();
 		void UnmapMemory(VmaAllocation allocation);
+
+		void InvalidateMemory(VmaAllocation allocation, VkDeviceSize offset = 0, VkDeviceSize size = VK_WHOLE_SIZE);
+
 	private:
 		static void Init(Count<class VulkanDevice> device);
 		static void ShutDown();

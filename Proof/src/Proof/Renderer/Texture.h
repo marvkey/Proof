@@ -58,7 +58,7 @@ namespace Proof
 
 		static Count<Texture2D> Create(const TextureConfiguration& config, const std::filesystem::path& path, Count<class RenderSampler> sampler = SamplerFactory::GetTrilinear());
 		static Count<Texture2D> Create(const TextureConfiguration& config, Buffer data, Count<class RenderSampler> sampler = SamplerFactory::GetTrilinear());
-		static Count<Texture2D> Create(const TextureConfiguration& config, Count<class Image2D>image);
+		static Count<Texture2D> Create(const TextureConfiguration& config, Count<class Image2D>image,bool CopyImage = true);
 
 		virtual void GenerateMips() = 0;
 

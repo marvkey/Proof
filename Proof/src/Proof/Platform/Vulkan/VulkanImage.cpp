@@ -777,58 +777,112 @@ namespace Proof {
 
 	Buffer VulkanImage2D::GetStoredDataAsBuffer()
 	{
-		if (m_ImageData.Size != 0)
-			return Buffer::Copy(m_ImageData);
+		PF_PROFILE_FUNC();
+
+		const VkDeviceSize bufferSize = Utils::GetImageMemorySize(m_Specification.Format, m_Specification.Width, m_Specification.Height);
 
 		Buffer buffer;
-		buffer.Allocate(Utils::GetImageMemorySize(m_Specification.Format, m_Specification.Width, m_Specification.Height));
+		buffer.Allocate(bufferSize);
 
-		VkBufferCreateInfo bufferCreateInfo = {};
+		VkBufferCreateInfo bufferCreateInfo{};
 		bufferCreateInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-		bufferCreateInfo.size = Utils::GetImageMemorySize(m_Specification.Format, m_Specification.Width, m_Specification.Height); 
-		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT; // Buffer is a transfer destination
+		bufferCreateInfo.size = bufferSize;
+		bufferCreateInfo.usage = VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 		bufferCreateInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-		VulkanBuffer stagingBuffer;
+		VulkanBuffer stagingBuffer{};
 
+		VulkanAllocator allocator("VulkanImage2D::GetStoredDataAsBuffer");
+		allocator.AllocateBuffer(bufferCreateInfo, VMA_MEMORY_USAGE_GPU_TO_CPU, stagingBuffer);
 
-		VulkanAllocator allocator("VulkanTexture2D::GetStoredDataAsBuffer");
-		allocator.AllocateBuffer(bufferCreateInfo, VMA_MEMORY_USAGE_CPU_ONLY, stagingBuffer);
+		VkCommandBuffer commandBuffer = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
 
-		VkCommandBuffer cmdBuffer = VulkanRenderer::GetGraphicsContext()->GetDevice()->GetCommandBuffer(true);
+		VkImageLayout previousLayout = GetDescriptorInfoVulkan().imageLayout;
+		VkImageAspectFlags aspectMask = Utils::IsDepthFormat(m_Specification.Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+
+		VkImageSubresourceRange subresourceRange{};
+		subresourceRange.aspectMask = aspectMask;
+		subresourceRange.baseMipLevel = 0;
+		subresourceRange.levelCount = 1;
+		subresourceRange.baseArrayLayer = 0;
+		subresourceRange.layerCount = 1;
 
 		{
-			VkImageSubresourceRange subresourceRange = {};
-			subresourceRange.aspectMask = Utils::IsDepthFormat(m_Specification.Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-			subresourceRange.baseMipLevel = 0;
-			subresourceRange.levelCount = m_Specification.Mips;
-			subresourceRange.baseArrayLayer = 0;
-			subresourceRange.layerCount = m_Specification.Layers;
+			VkImageMemoryBarrier barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			barrier.oldLayout = previousLayout;
+			barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.image = m_Info.ImageAlloc.Image;
+			barrier.subresourceRange = subresourceRange;
 
+			vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 		}
-		VkBufferImageCopy region = {};
-		region.bufferOffset = 0;
-		region.bufferRowLength = 0;  // Tightly packed
-		region.bufferImageHeight = 0;
 
-		region.imageSubresource.aspectMask = Utils::IsDepthFormat(m_Specification.Format) ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		VkBufferImageCopy region{};
+		region.bufferOffset = 0;
+		region.bufferRowLength = 0;
+		region.bufferImageHeight = 0;
+		region.imageSubresource.aspectMask = aspectMask;
 		region.imageSubresource.mipLevel = 0;
 		region.imageSubresource.baseArrayLayer = 0;
-		region.imageSubresource.layerCount = m_Specification.Layers;
-
+		region.imageSubresource.layerCount = 1;
 		region.imageOffset = { 0, 0, 0 };
 		region.imageExtent = { m_Specification.Width, m_Specification.Height, 1 };
 
-		vkCmdCopyImageToBuffer(cmdBuffer, m_Info.ImageAlloc.Image, GetDescriptorInfoVulkan().imageLayout, stagingBuffer.Buffer, 1, &region);
+		vkCmdCopyImageToBuffer(commandBuffer, m_Info.ImageAlloc.Image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, stagingBuffer.Buffer, 1, &region);
 
-		auto* mappedData = allocator.MapMemory<uint8_t>(stagingBuffer.Allocation);
-		if (mappedData) {
-			// Copy data from mapped memory to local buffer, or directly work with mappedData
-			memcpy(buffer.Data, mappedData, static_cast<size_t>(bufferCreateInfo.size));
-			allocator.UnmapMemory(stagingBuffer.Allocation);
+		{
+			VkBufferMemoryBarrier barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			barrier.dstAccessMask = VK_ACCESS_HOST_READ_BIT;
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.buffer = stagingBuffer.Buffer;
+			barrier.offset = 0;
+			barrier.size = bufferSize;
+
+			vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_HOST_BIT, 0, 0, nullptr, 1, &barrier, 0, nullptr);
 		}
 
-		VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(cmdBuffer);
+		{
+			VkImageMemoryBarrier barrier{};
+			barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			barrier.dstAccessMask = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT;
+			barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			barrier.newLayout = previousLayout;
+			barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			barrier.image = m_Info.ImageAlloc.Image;
+			barrier.subresourceRange = subresourceRange;
+
+			vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+		}
+
+		VulkanRenderer::GetGraphicsContext()->GetDevice()->FlushCommandBuffer(commandBuffer);
+
+		// Use your allocator wrapper's equivalent of vmaInvalidateAllocation().
+		allocator.InvalidateMemory(stagingBuffer.Allocation, 0, bufferSize);
+
+		uint8_t* mappedData = allocator.MapMemory<uint8_t>(stagingBuffer.Allocation);
+
+		if (mappedData)
+		{
+			memcpy(buffer.Data, mappedData, (size_t)bufferSize);
+			allocator.UnmapMemory(stagingBuffer.Allocation);
+		}
+		else
+		{
+			PF_ENGINE_ERROR("Failed to map image readback buffer");
+			buffer.Release();
+		}
+
+		allocator.DestroyBuffer(stagingBuffer);
 
 		return buffer;
 	}
