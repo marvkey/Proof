@@ -46,6 +46,17 @@ namespace Proof
 			panelData.Panel->OnImGuiRender(panelData.Name,panelData.IsOpen);
 		}
 	}
+
+	void PanelManager::OnUpdate(FrameTime dt)
+	{
+		for (auto& [id, panelData] : m_Panels)
+		{
+			if (!panelData.IsOpen)
+				continue;
+			panelData.Panel->OnUpdate(dt);
+		}
+	}
+
 	void PanelManager::OnEvent(Event& e)
 	{
 		for (const auto& [id, panelData] : m_Panels)

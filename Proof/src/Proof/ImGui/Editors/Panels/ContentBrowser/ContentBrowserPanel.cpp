@@ -28,6 +28,25 @@
 #include "Proof/ImGui/Editors/AssetEditors/AssetEditor.h"
 #include "Proof/Utils/StringUtils.h"
 #include "Proof/Project/Project.h"
+#include "Proof/Renderer/WorldRenderer.h"
+
+#include "Proofprch.h"
+#include "Proof/Renderer/Renderer.h"
+#include "Proof/Scene/Entity.h"
+#include "Proof/Renderer/WorldRenderer.h"
+#include "Proof/Renderer/ParticleSystem/ParticleSystem.h"
+#include "Proof/Asset/AssetManager.h"
+#include "Proof/Core/FrameTime.h"
+#include "Proof/Core/Application.h"
+#include "Proof/ImGui/UI.h"
+#include "Proof/ImGui/UiUtilities.h"
+#include "Proof/ImGui/UIHandlers.h"
+
+#include "Proof/Renderer/Image.h"
+#include "Proof/Renderer/Texture.h"
+
+#include <ImSequencer.h>
+
 //https://github.com/Ant-Play/Ant/blob/2dab7c0362f017911df9090b1608ec4b81ad1f2c/AntPlay/src/Panels/ContentBrowserPanel.cpp
 namespace Proof
 {
@@ -47,6 +66,7 @@ namespace Proof
 		FileSystem::AddFileSystemChangedCallback(std::bind(&Proof::ContentBrowserPanel::OnFileSystemChanged, &panel, std::placeholders::_1));
 
 		memset(m_SearchBuffer, 0, MAX_INPUT_BUFFER_LENGTH);
+		m_ThumbnailManager = Count<AssetThumbnailManager>::Create();
 	}
 	void ContentBrowserPanel::OnEvent(Event& e)
 	{
@@ -433,7 +453,24 @@ namespace Proof
 
 		ImGui::End();
 
+		if (ImGui::Begin("CheckTHumbnails"))
+		{
 
+			UI::Image(m_ThumbnailManager->m_ThumbnailRenderer->m_Renderer->GetFinalPassImage(), ImVec2{ ImGui::GetContentRegionAvail().x ,ImGui::GetContentRegionAvail().y }, ImVec2{ 0,1 }, ImVec2{ 1,0 });
+
+			for (auto [assetID,thumbnail] : m_ThumbnailManager->m_AssetThumbnails)
+			{
+				if (thumbnail.Texture != nullptr)
+					UI::Image(thumbnail.Texture,{30,30});
+			}
+		}
+		ImGui::End();
+
+	}
+
+	void ContentBrowserPanel::OnUpdate(FrameTime dt)
+	{
+		m_ThumbnailManager->OnUpdate(dt);
 	}
 
 	static bool s_ActivateSearchWidget = false;
@@ -1366,5 +1403,10 @@ namespace Proof
 			SelectionManager::Select(SelectionContext::ContentBrowser, handle);
 			break;
 		}
+	}
+
+	Count<Texture2D> ContentBrowserPanel::GetAssetThumbnail(AssetID assetID)
+	{
+		return m_ThumbnailManager->GetThumbnail(assetID);
 	}
 }

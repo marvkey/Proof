@@ -23,6 +23,7 @@ namespace Proof
 
 		void RemovePanel(const char* strID);
 		void OnImGuiRender();
+		void OnUpdate(FrameTime dt);
 		void OnEvent(class Event& e);
 		void SetWorldContext(const Count<class World>& context);
 		template<typename TPanel>

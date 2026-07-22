@@ -606,7 +606,7 @@ namespace Proof
 	}
 	void EditorCamera::Recalculate() 
 	{
-		SetPerspectiveProjectionMatrix(m_FovDeg, m_Width, m_Height, m_NearPlane, m_FarPlane, m_Position, m_Direction);
+		SetPerspectiveProjectionMatrix(m_FovDeg, (float)m_Width, (float)m_Height, m_NearPlane, m_FarPlane, m_Position, m_Direction);
 	}
 
 	/// <summary>

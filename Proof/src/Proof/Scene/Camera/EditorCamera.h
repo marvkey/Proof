@@ -258,6 +258,7 @@ namespace Proof
 
 		float GetPitch() const { return m_Pitch; }
 		float GetYaw() const { return m_Yaw; }
+
 	private:
 		void UpdateProjection();
 		void UpdateView();

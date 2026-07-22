@@ -101,6 +101,7 @@ namespace Proof
 		VulkanTexture2D(const TextureConfiguration& config, Buffer buffer,Count< RenderSampler> sampler);
 		VulkanTexture2D(const std::filesystem::path& path, const TextureConfiguration& config, Count< RenderSampler> sampler);
 		VulkanTexture2D(const TextureConfiguration& config, Count<RenderSampler> sampler);
+		VulkanTexture2D(const TextureConfiguration& config,Count<Image2D> image);
 		virtual ~VulkanTexture2D();
 
 		virtual Count<Image2D> GetImage() { return m_Image; };

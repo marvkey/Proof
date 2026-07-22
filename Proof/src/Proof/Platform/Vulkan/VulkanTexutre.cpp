@@ -153,6 +153,26 @@ namespace Proof
 		//render Thread
 		Build();
 	}
+
+	VulkanTexture2D::VulkanTexture2D(const TextureConfiguration& config, Count<Image2D> image)
+		:m_Config(config), m_RenderSampler(image->GetSampler().As<VulkanRenderSampler>())
+	{
+
+		ImageConfiguration imageConfig;
+		imageConfig.Format = m_Config.Format;
+		imageConfig.Width = m_Config.Width;
+		imageConfig.Height = m_Config.Height;
+		imageConfig.Mips = m_Config.GenerateMips ? Utils::GetMipLevelCount(m_Config.Width, m_Config.Height) : 1;
+		imageConfig.DebugName = m_Config.DebugName + " ImageTexture";
+		imageConfig.Usage = ImageUsage::Attachment;
+
+
+		m_Image = Image2D::Create(imageConfig,m_RenderSampler);
+        Renderer::CopyImage(Renderer::GetRendererCommandBuffer(), image,m_Image);
+		//render Thread
+		//Build();
+	}
+
 	void VulkanTexture2D::SetData(Buffer buffer)
 	{
 		Release();

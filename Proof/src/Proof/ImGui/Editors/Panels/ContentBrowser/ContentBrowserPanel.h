@@ -6,6 +6,8 @@
 #include <map>
 #include <functional>
 #include <mutex>
+
+#include "ThumbnailManager.h"
 #define MAX_INPUT_BUFFER_LENGTH 128
 namespace Proof
 {
@@ -149,6 +151,8 @@ namespace Proof
 		ContentBrowserPanel();
 
 		void OnImGuiRender(const char* dsiplayName, bool& isOpen);
+
+		void OnUpdate(FrameTime dt);
 		static ContentBrowserPanel& Get();
 		ContentBrowserItemList& GetCurrentItems() { return m_CurrentItems; }
 		Count<DirectoryInfo> GetDirectory(const std::filesystem::path& filepath) const;
@@ -168,6 +172,7 @@ namespace Proof
 		}
 		void OnFileSystemChanged(const std::vector<FileSystemChangedEvent>& events);
 
+		Count<Texture2D> GetAssetThumbnail(AssetID assetID);
 	protected:
 		virtual void OnEvent(Event& e) override;
 		virtual void SetWorldContext(const Count<class World>& world) override { m_WorldContext = world; }
@@ -251,6 +256,6 @@ namespace Proof
 			return asset;
 		}
 
-
+		Count<AssetThumbnailManager> m_ThumbnailManager;
 	};
 }

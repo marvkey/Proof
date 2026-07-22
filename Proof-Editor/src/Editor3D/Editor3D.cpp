@@ -681,7 +681,7 @@ namespace Proof
 
 		s_EditorData->ElevatedInputManager->OnUpdate(DeltaTime);
 
-
+		s_EditorData->PanelManager->OnUpdate(DeltaTime);
 		if (s_PlayWorldData != nullptr)
 		{
 			//	Mouse::SetCursorMode(CursorMode::Locked);

@@ -65,6 +65,17 @@ namespace Proof
 		return nullptr;
 	}
 
+	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config, Count<class Image2D>image)
+	{
+		switch (Renderer::GetAPI())
+		{
+		case Renderer::API::None: PF_CORE_ASSERT(false, "RENDERER:API None is not a default value!"); return nullptr;
+		case Renderer::API::OpenGL: return nullptr;
+		case Renderer::API::Vulkan: return Count<VulkanTexture2D>::Create(config, image);
+		}
+		return nullptr;
+	}
+
 	Count<Texture2D> Texture2D::Create(const TextureConfiguration& config, SamplerWrap wrap, SamplerFilter filter)
 	{
 

@@ -61,15 +61,9 @@ namespace Proof
 
 		Count<Texture2D> temporaryIcon = nullptr;
 
-		if (AssetManager::HasAsset(m_ID))
+		if (GetType() == ItemType::Asset)
 		{
-			if (AssetManager::GetAssetInfo(m_ID).Type == AssetType::Texture)
-			{
-				if (AssetManager::IsAssetLoaded(m_ID))
-				{
-					temporaryIcon = AssetManager::GetAsset<Texture2D>(m_ID);
-				}
-			}
+			temporaryIcon = ContentBrowserPanel::Get().GetAssetThumbnail(m_ID);
 		}
 		UI::DrawButtonImage(temporaryIcon ? temporaryIcon : m_Icon, IM_COL32(255, 255, 255, 225),
 			IM_COL32(255, 255, 255, 255),

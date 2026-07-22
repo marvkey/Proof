@@ -10,6 +10,7 @@ namespace Proof{
 		virtual ~Panel() {};
 		Panel() {};
 		virtual void OnImGuiRender(const char* dsiplayName,bool& isOpen) = 0;
+		virtual void OnUpdate(FrameTime dt){}
 		virtual void SetWorldContext(const Count<class World>& world) {}
 		virtual void OnEvent(class Event& e) {}
 		friend class Editore3D;
