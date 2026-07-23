@@ -63,7 +63,8 @@ namespace Proof
 
 		if (GetType() == ItemType::Asset)
 		{
-			temporaryIcon = ContentBrowserPanel::Get().GetAssetThumbnail(m_ID);
+			temporaryIcon = ContentBrowserPanel::Get().GetAssetThumbnail(m_ID);     
+	
 		}
 		UI::DrawButtonImage(temporaryIcon ? temporaryIcon : m_Icon, IM_COL32(255, 255, 255, 225),
 			IM_COL32(255, 255, 255, 255),
@@ -268,17 +269,17 @@ namespace Proof
 					if (m_JustSelected)
 						m_JustSelected = false;
 
-						if (!isSelected)
-						{
-							result.Set(ContentBrowserAction::Selected, true);
-							m_JustSelected = true;
-						}
+					if (!isSelected)
+					{
+						result.Set(ContentBrowserAction::Selected, true);
+						m_JustSelected = true;
+					}
 
-						if (!Input::IsKeyHold(KeyBoardKey::LeftControl) && !Input::IsKeyHold(KeyBoardKey::LeftShift) && m_JustSelected)
-							result.Set(ContentBrowserAction::ClearSelections, true);
+					if (!Input::IsKeyHold(KeyBoardKey::LeftControl) && !Input::IsKeyHold(KeyBoardKey::LeftShift) && m_JustSelected)
+						result.Set(ContentBrowserAction::ClearSelections, true);
 
-						if (Input::IsKeyHold(KeyBoardKey::LeftShift))
-							result.Set(ContentBrowserAction::SelectToHere, true);
+					if (Input::IsKeyHold(KeyBoardKey::LeftShift))
+						result.Set(ContentBrowserAction::SelectToHere, true);
 				}
 			}
 		}
@@ -388,48 +389,48 @@ namespace Proof
 						{
 							if (entry.is_regular_file())
 							{
-							    std::filesystem::path fullPath = std::filesystem::absolute(entry.path());
+								std::filesystem::path fullPath = std::filesystem::absolute(entry.path());
 
-							    if (Utils::GetAssetTypeFromPath(fullPath) == AssetType::MeshSourceFile)
-							    {
-							        // destination root EXACTLY as user typed (ASSET-RELATIVE path, not absolute OS)
-							        std::filesystem::path dstRoot = t_CreateNewMeshPopupData.CreateMeshFolder;
+								if (Utils::GetAssetTypeFromPath(fullPath) == AssetType::MeshSourceFile)
+								{
+									// destination root EXACTLY as user typed (ASSET-RELATIVE path, not absolute OS)
+									std::filesystem::path dstRoot = t_CreateNewMeshPopupData.CreateMeshFolder;
 
-							        // source root folder name (e.g. "Parkour")
-							        std::filesystem::path sourceFolderName = path.filename();
+									// source root folder name (e.g. "Parkour")
+									std::filesystem::path sourceFolderName = path.filename();
 
-							        if (!AssetManager::HasAsset(fullPath))
-							        {
-							            AssetManager::NewAssetSource(fullPath, AssetType::MeshSourceFile);
-							        }
+									if (!AssetManager::HasAsset(fullPath))
+									{
+										AssetManager::NewAssetSource(fullPath, AssetType::MeshSourceFile);
+									}
 
-							        Count<MeshSource> meshSource = AssetManager::GetAsset<MeshSource>(fullPath);
-							        Count<Mesh> mesh = Count<Mesh>::Create(meshSource);
+									Count<MeshSource> meshSource = AssetManager::GetAsset<MeshSource>(fullPath);
+									Count<Mesh> mesh = Count<Mesh>::Create(meshSource);
 
-							        // relative path inside source folder (Walls/wall01.fbx)
-							        std::filesystem::path rel = std::filesystem::relative(fullPath, path);
+									// relative path inside source folder (Walls/wall01.fbx)
+									std::filesystem::path rel = std::filesystem::relative(fullPath, path);
 
-							        // destination folder (ASSET PATH):
-							        // Meshes / Parkour / Walls
-							        std::filesystem::path dstFolderAsset = dstRoot / sourceFolderName / rel.parent_path();
+									// destination folder (ASSET PATH):
+									// Meshes / Parkour / Walls
+									std::filesystem::path dstFolderAsset = dstRoot / sourceFolderName / rel.parent_path();
 
-							        // Create folders on disk using project asset dir mapping
-							        std::filesystem::path dstFolderFS = AssetManager::GetAssetFileSystemPath(dstFolderAsset);
-							        std::filesystem::create_directories(dstFolderFS);
+									// Create folders on disk using project asset dir mapping
+									std::filesystem::path dstFolderFS = AssetManager::GetAssetFileSystemPath(dstFolderAsset);
+									std::filesystem::create_directories(dstFolderFS);
 
-							        // create mesh asset path (ASSET PATH)
-							        std::filesystem::path meshAssetPathAsset =
-							            dstFolderAsset / (fullPath.stem().string() + Utils::GetAssetExtensionString(AssetType::Mesh));
+									// create mesh asset path (ASSET PATH)
+									std::filesystem::path meshAssetPathAsset =
+										dstFolderAsset / (fullPath.stem().string() + Utils::GetAssetExtensionString(AssetType::Mesh));
 
-							        auto asset = mesh.As<Asset>();
+									auto asset = mesh.As<Asset>();
 
-							        // Make unique (needs filesystem path)
-							        std::filesystem::path meshAssetPathFS = AssetManager::GetAssetFileSystemPath(meshAssetPathAsset);
-							        meshAssetPathFS = FileSystem::GenerateUniqueFileName(meshAssetPathFS);
+									// Make unique (needs filesystem path)
+									std::filesystem::path meshAssetPathFS = AssetManager::GetAssetFileSystemPath(meshAssetPathAsset);
+									meshAssetPathFS = FileSystem::GenerateUniqueFileName(meshAssetPathFS);
 
 
-							        AssetManager::NewAsset(asset, meshAssetPathFS);
-							    }
+									AssetManager::NewAsset(asset, meshAssetPathFS);
+								}
 							}
 						}
 
@@ -653,4 +654,3 @@ namespace Proof
 		}
 	}
 }
-

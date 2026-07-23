@@ -62,7 +62,7 @@ namespace Proof {
 		static void ClearImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<class Image2D> image, glm::vec4 clearColor = { 0,0,0,0 });
 		static void ClearRenderPassOutput(Count<RenderCommandBuffer> renderCommandBuffer, Count<class RenderPass> pass,uint32_t output);
 		static void CopyImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> sourceImage, Count<Image2D> destinationImage);
-		static void BlitImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> sourceImage, Count<Image2D> destinationImage);
+		static void BlitImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> sourceImage, Count<Image2D> destinationImage,bool flipY = false);
 
 		static uint32_t GetCurrentFrameInFlight();
 		static uint32_t RT_GetCurrentFrameInFlight();

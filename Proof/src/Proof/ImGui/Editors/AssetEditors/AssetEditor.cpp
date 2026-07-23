@@ -189,6 +189,17 @@ namespace Proof
 		//m_TitleAndId = newTitle + "###" + m_Id;
 	}
 
+	void AssetEditorPanel::SaveAllAssets()
+	{
+		for (auto& kv : s_Editors)
+		{
+			for (auto& [id, panel] : kv.second)
+			{
+				panel->Save();
+			}
+		}
+	}
+
 	void AssetEditorPanel::RegisterDefaultEditors()
 	{
 		RegisterEditor(AssetType::Material);

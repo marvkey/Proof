@@ -2,7 +2,10 @@
 #include "Proof/Asset/Asset.h"
 #include "Proof/Scene/Camera/EditorCamera.h"
 #include <queue>
+#include <stack>
 #include <unordered_map>
+
+#include "Proof/Scene/Entity.h"
 
 namespace  Proof
 {
@@ -29,34 +32,31 @@ namespace  Proof
         High = 512,
         Extreme = 1024
     };
-    class AssetThumbnailRenderer : public RefCounted
+    class AssetThumbnailRenderer  : public RefCounted
     {
     public:
         AssetThumbnailRenderer();
-        void GenerateThumbnail(AssetID assetID);
-        void OnUpdate(FrameTime dt);
 
-        Count<Texture2D> GetLastThumbnail();
-        AssetID GetLastThumbnailID() const;
+        Count<class Texture2D> GenerateThumbnail(AssetID assetID, FrameTime dt);
+        void ClearPreview();
 
     private:
-        void GenerateMeshThumbnail(Count<class Mesh>  mesh);
-        void GenerateDynamicMeshThumbnail(Count<class DynamicMesh>  mesh);
+        Entity PreparePreviewEntity();
+
+        void GenerateMeshThumbnail(Count<Mesh> mesh);
+        void GenerateDynamicMeshThumbnail(Count<DynamicMesh> mesh);
         void GenerateMaterialThumbnail(Count<class Material> material);
-        void FrameCameraToBounds(const struct AABB bounds);
+        void FrameCameraToBounds(const struct AABB bounds, float dstMultipler =0.6f);
+
     private:
-
-        ThumbnailSize m_ThumbnailSize = ThumbnailSize::Medium;
-        Count<class WorldRenderer> m_Renderer;
-        Count<class World> m_World;
-		EditorCamera m_Camera;
-
-        AssetID m_CurrentThumbnailID;
-        AssetID m_LastThumbnailID;
+        Count<World> m_World;
+        Count<WorldRenderer> m_Renderer;
+        EditorCamera m_Camera;
+        float m_ThumbnailSize = 256.0f;
         friend class ContentBrowserPanel;
-        friend class AssetThumbnailManager;
     };
 
+  
    
     class AssetThumbnailManager : public RefCounted
     {
@@ -67,7 +67,6 @@ namespace  Proof
 
         Count<class Texture2D> GetThumbnail(AssetID assetID);
 
-        void RegenerateThumbnail(AssetID assetID); // only for saved asset liek material or mesh that needs to be regeneritead
 
     private:
         void CacheThumbnail(AssetID thumbnailAssetID,Count<Texture2D> thumbnail);
@@ -77,12 +76,12 @@ namespace  Proof
     private:
 
         std::unordered_map<AssetID, AssetThumbnail> m_AssetThumbnails;
-        std::queue<AssetID> m_ThumbnailQueue;
+        std::stack<AssetID> m_ThumbnailQueue;
         Count<AssetThumbnailRenderer> m_ThumbnailRenderer;
         AssetID m_PendingCacheAssetID = 0;
         Count<Texture2D> m_PendingCacheTexture;
 
-        AssetThumbnail m_CurrentThumbnail;
+        bool m_PreviewCleared = false;
         friend class ContentBrowserPanel;
     };
 }

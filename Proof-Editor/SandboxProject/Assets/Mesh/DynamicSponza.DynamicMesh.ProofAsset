@@ -1,4 +1,7 @@
 AssetType: DynamicMesh
 ID: 5183635011300566460
 AssetSource: 13564261338370398344
+Translation: [0, 0, 0]
+RotationDeg: [0, 0, 0]
+Scale: 1
 SubMeshes: []

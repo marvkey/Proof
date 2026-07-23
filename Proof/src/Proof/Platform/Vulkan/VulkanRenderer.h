@@ -38,7 +38,7 @@ namespace Proof
 		virtual void EndCommandBuffer(Count<class RenderCommandBuffer> commandBuffer)override;
 		virtual void ClearImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<class Image2D> image, glm::vec4 clearColor);
 		virtual void CopyImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> sourceImage, Count<Image2D> destinationImage);
-		virtual void BlitImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> sourceImage, Count<Image2D> destinationImage) ;
+		virtual void BlitImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> sourceImage, Count<Image2D> destinationImage,bool flipY)override ;
 
 		virtual ~VulkanRenderer() {};
 

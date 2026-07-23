@@ -1151,9 +1151,9 @@ namespace Proof {
 	}
 
 	void Renderer::BlitImage(Count<RenderCommandBuffer> renderCommandBuffer, Count<Image2D> sourceImage,
-		Count<Image2D> destinationImage)
+		Count<Image2D> destinationImage,bool flipY )
 	{
-			s_RendererAPI->BlitImage(renderCommandBuffer, sourceImage, destinationImage);
+			s_RendererAPI->BlitImage(renderCommandBuffer, sourceImage, destinationImage,flipY);
 	}
 
 	CommandQueue& Renderer::GetRenderCommandQueue()

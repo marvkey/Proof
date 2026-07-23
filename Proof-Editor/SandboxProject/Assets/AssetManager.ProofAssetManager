@@ -923,6 +923,9 @@ Assets:
   - Asset: 17060776473028672473
     Type: Texture
     Path: Models\vampire\textures\Vampire_diffuse.png
+  - Asset: 1485498394544217197
+    Type: Texture
+    Path: ..\..\..\..\..\..\..\S.A.M_Studio\Desktop\Project Car\Dodge\Texturing\Dodge.png
   - Asset: 17000789463879794493
     Type: World
     Path: Scenes\New World (02).ProofWorld
@@ -941,6 +944,9 @@ Assets:
   - Asset: 4623808136090387581
     Type: World
     Path: Scenes\sponza.ProofWorld
+  - Asset: 18267081513399858645
+    Type: Texture
+    Path: ..\..\..\..\..\..\..\Mattie\Desktop\Blender Files\slide-bg.jpg
   - Asset: 5511696431678642687
     Type: Texture
     Path: Models\backpack\ao.jpg
@@ -1061,6 +1067,9 @@ Assets:
   - Asset: 7361712566939631874
     Type: MeshCollider
     Path: Videos\GameEngineP2\SponzaCollider.MeshCollider.ProofAsset
+  - Asset: 14757329165829666445
+    Type: Texture
+    Path: ..\..\..\..\..\..\..\S.A.M_Studio\Desktop\Project Car\Dodge\Texturing\Wheel.001.png
   - Asset: 16592920119542302411
     Type: InputAction
     Path: Videos\GameEngineP2\Input\RotateAction.InputAction.ProofAsset
@@ -1070,3 +1079,6 @@ Assets:
   - Asset: 17634884731139337489
     Type: World
     Path: Videos\GameEngineP2\Scenes\TestLightGrid.ProofWorld
+  - Asset: 12322090546552753243
+    Type: Texture
+    Path: ..\..\..\..\..\..\..\Mattie\Desktop\Blender Files\TYRE.jpg

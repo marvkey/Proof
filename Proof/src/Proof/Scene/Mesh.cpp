@@ -464,30 +464,38 @@ namespace Proof
     AABB Mesh::GetBoundingBox() const
     {
         PF_PROFILE_FUNC();
-        PF_CORE_ASSERT(m_MeshSource);
-        PF_CORE_ASSERT(!m_SubMeshes.empty());
 
         const auto& sourceSubMeshes = m_MeshSource->GetSubMeshes();
 
         PF_CORE_ASSERT(m_SubMeshes[0] < sourceSubMeshes.size());
+        PF_CORE_ASSERT(m_MeshSource);
 
-        AABB boundingBox = sourceSubMeshes[m_SubMeshes[0]].BoundingBox;
-
-        if (m_SubMeshes.size() == 1)
-            return boundingBox;
-
-        for (size_t i = 1; i < m_SubMeshes.size(); i++)
+        if (m_SubMeshes.size()  == sourceSubMeshes.size())
         {
-            uint32_t subMeshIndex = m_SubMeshes[i];
+            return m_MeshSource->GetBoundingBox();
+        }
+        AABB boundingBox{};
+        bool foundSubMesh = false;
 
-            if (subMeshIndex >= sourceSubMeshes.size())
+        for (uint32_t subMeshIndex = 0; subMeshIndex < sourceSubMeshes.size(); subMeshIndex++)
+        {
+            if (!Utils::Contains(m_SubMeshes, subMeshIndex))
                 continue;
 
             const AABB& currentBoundingBox = sourceSubMeshes[subMeshIndex].BoundingBox;
 
+            if (!foundSubMesh)
+            {
+                boundingBox = currentBoundingBox;
+                foundSubMesh = true;
+                continue;
+            }
+
             boundingBox.Min = glm::min(boundingBox.Min, currentBoundingBox.Min);
             boundingBox.Max = glm::max(boundingBox.Max, currentBoundingBox.Max);
         }
+
+        PF_CORE_ASSERT(foundSubMesh, "Mesh contains no valid submeshes");
 
         return boundingBox;
     }
@@ -555,30 +563,38 @@ namespace Proof
     AABB DynamicMesh::GetBoundingBox() const
     {
         PF_PROFILE_FUNC();
-        PF_CORE_ASSERT(m_MeshSource);
-        PF_CORE_ASSERT(!m_SubMeshes.empty());
 
         const auto& sourceSubMeshes = m_MeshSource->GetSubMeshes();
 
         PF_CORE_ASSERT(m_SubMeshes[0] < sourceSubMeshes.size());
+        PF_CORE_ASSERT(m_MeshSource);
 
-        AABB boundingBox = sourceSubMeshes[m_SubMeshes[0]].BoundingBox;
-
-        if (m_SubMeshes.size() == 1)
-            return boundingBox;
-
-        for (size_t i = 1; i < m_SubMeshes.size(); i++)
+        if (m_SubMeshes.size()  == sourceSubMeshes.size())
         {
-            uint32_t subMeshIndex = m_SubMeshes[i];
+            return m_MeshSource->GetBoundingBox();
+        }
+        AABB boundingBox{};
+        bool foundSubMesh = false;
 
-            if (subMeshIndex >= sourceSubMeshes.size())
+        for (uint32_t subMeshIndex = 0; subMeshIndex < sourceSubMeshes.size(); subMeshIndex++)
+        {
+            if (!Utils::Contains(m_SubMeshes, subMeshIndex))
                 continue;
 
             const AABB& currentBoundingBox = sourceSubMeshes[subMeshIndex].BoundingBox;
 
+            if (!foundSubMesh)
+            {
+                boundingBox = currentBoundingBox;
+                foundSubMesh = true;
+                continue;
+            }
+
             boundingBox.Min = glm::min(boundingBox.Min, currentBoundingBox.Min);
             boundingBox.Max = glm::max(boundingBox.Max, currentBoundingBox.Max);
         }
+
+        PF_CORE_ASSERT(foundSubMesh, "Mesh contains no valid submeshes");
 
         return boundingBox;
     }

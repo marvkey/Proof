@@ -659,8 +659,9 @@ namespace Proof
 			scerelizer.SerilizeText(Application::Get()->GetProject()->GetAssetFileSystemPath(assetInfo.Path).string());
 		}
 		Save();
+		AssetManager::SaveAssetManager();
+		AssetEditorPanel::SaveAllAssets();
 		AssetEditorPanel::UnregisterAllEditors();
-		AssetManager::SaveAllAssets();
 		EditorResources::Unizilize();
 		FileSystem::StopWatching();
 		FileSystem::ClearFileSystemChangedCallbacks();
@@ -1903,8 +1904,8 @@ namespace Proof
 
 		{
 			ScopeTimer scopeTime(fmt::format("AssetManager Saved"));
-			AssetManager::SaveAllAssets();
-			//AssetManager::SaveAssetManager();
+			AssetManager::SaveAssetManager();
+			AssetEditorPanel::SaveAllAssets();   // if we save all aasset loaded even not changed our asset thumbnail re rendres everything very annoying
 		}
 
 		ProjectSerilizer serilizer(Application::Get()->GetProject().Get());

@@ -13,13 +13,19 @@
 #include "Proof/Scene/Material.h"
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Utils/ContainerUtils.h"
-#include"../vendor/stb_image_write.h"
+
+#include "../vendor/stb_image_write.h"
 
 namespace Proof
 {
-    static const std::vector<AssetType> SupportedThumbnailTypes = { AssetType::Mesh, AssetType::Material, AssetType::DynamicMesh, AssetType::Texture };
+    static const std::vector<AssetType> SupportedThumbnailTypes =
+    {
+        AssetType::Mesh,
+        AssetType::Material,
+        AssetType::DynamicMesh
+    };
 
-    bool IsThumbnailOutdated(const std::filesystem::path& assetPath, const std::filesystem::path& thumbnailPath) 
+    bool IsThumbnailOutdated(const std::filesystem::path& assetPath, const std::filesystem::path& thumbnailPath)
     {
         std::error_code error;
 
@@ -42,7 +48,6 @@ namespace Proof
         return assetWriteTime > thumbnailWriteTime;
     }
 
-
     AssetThumbnailRenderer::AssetThumbnailRenderer()
     {
         m_World = Count<World>::Create();
@@ -55,34 +60,22 @@ namespace Proof
         light.AddComponent<DirectionalLightComponent>();
         light.GetComponent<TransformComponent>().SetRotationEuler(glm::vec3(80.0f, 10.0f, 0.0f));
 
-        Entity mesh = m_World->CreateEntity("Mesh");
+        m_World->CreateEntity("Mesh");
         m_Camera.SetFOV(45.0f);
     }
 
-    void AssetThumbnailRenderer::OnUpdate(FrameTime dt)
+    Count<Texture2D> AssetThumbnailRenderer::GenerateThumbnail(AssetID assetID, FrameTime dt)
     {
         PF_PROFILE_FUNC();
+        PF_CORE_ASSERT(AssetManager::HasAsset(assetID));
+        uint32_t size = (uint32_t)m_ThumbnailSize;
 
-        uint32_t size = (uint32_t) m_ThumbnailSize;
         m_Camera.SetViewportSize(size, size);
         m_Camera.SetActive(false);
         m_Camera.Recalculate();
 
-		m_Renderer->SetViewportSize(size, size);
+        m_Renderer->SetViewportSize(size, size);
 
-        m_World->OnUpdateEditor(dt);
-        m_World->OnRenderEditor(m_Renderer, dt, m_Camera);
-
-        // The render submitted this frame belongs to this asset.
-        m_LastThumbnailID = m_CurrentThumbnailID;
-    }
-
-    void AssetThumbnailRenderer::GenerateThumbnail(AssetID assetID)
-    {
-        PF_PROFILE_FUNC();
-        PF_CORE_ASSERT(AssetManager::HasAsset(assetID));
-
-        m_CurrentThumbnailID = assetID;
 
         AssetType type = AssetManager::GetAssetInfo(assetID).Type;
 
@@ -90,124 +83,121 @@ namespace Proof
         {
             case AssetType::Mesh:
                 GenerateMeshThumbnail(AssetManager::GetAsset<Mesh>(assetID));
-            break;
+                break;
 
             case AssetType::Material:
                 GenerateMaterialThumbnail(AssetManager::GetAsset<Material>(assetID));
-            break;
+                break;
 
             case AssetType::DynamicMesh:
                 GenerateDynamicMeshThumbnail(AssetManager::GetAsset<DynamicMesh>(assetID));
-            break;
-
-            case AssetType::Texture:
-            // skikp
-
-                //GenerateTextureThumbnail(AssetManager::GetAsset<Texture2D>(assetID));
-            break;
+                break;
 
             default:
-                PF_CORE_ASSERT(false);
-            break;
-
+                PF_CORE_ASSERT(false, "Unsupported thumbnail asset type");
+                return nullptr;
         }
-        // Set up or replace the mesh/material/asset preview entity here.
-        // Do not call OnRenderEditor here.
-    }
-
-    Count<Texture2D> AssetThumbnailRenderer::GetLastThumbnail()
-    {
-        PF_PROFILE_FUNC();
-
-        if (m_LastThumbnailID == 0 || !AssetManager::HasAsset(m_LastThumbnailID))
-            return EditorResources::FileIcon;
-
-        if (AssetManager::GetAssetInfo(m_LastThumbnailID).Type == AssetType::Texture)
-        {
-            TextureConfiguration configuration;
-            configuration.DebugName = "Texture Thumbnail";
-            configuration.Format = ImageFormat::RGBA;
-            configuration.Width = (uint32_t)m_ThumbnailSize;
-            configuration.Height = (uint32_t)m_ThumbnailSize;
-
-            return Texture2D::Create(configuration);
-        }
-
+        m_World->OnUpdateEditor(dt);
+        m_World->OnRenderEditor(m_Renderer, dt, m_Camera);
+        
 
         ImageConfiguration imageConfiguration;
-        imageConfiguration.DebugName = AssetManager::GetAssetInfo(m_LastThumbnailID).GetName() + " Thumbnail Image";
+        imageConfiguration.DebugName = AssetManager::GetAssetInfo(assetID).GetName() + " Thumbnail Image";
         imageConfiguration.Transfer = true;
         imageConfiguration.Format = ImageFormat::RGBA;
         imageConfiguration.Usage = ImageUsage::Texture;
-        imageConfiguration.Width = (uint32_t)m_ThumbnailSize;
-        imageConfiguration.Height = (uint32_t)m_ThumbnailSize;
+        imageConfiguration.Width = size;
+        imageConfiguration.Height = size;
 
         Count<Image2D> thumbnailImage = Image2D::Create(imageConfiguration);
 
-        TextureConfiguration configuration;
-        configuration.DebugName = AssetManager::GetAssetInfo(m_LastThumbnailID).GetName() + " Thumbnail Image";
-        configuration.Format = ImageFormat::RGBA;
-        configuration.Width = (uint32_t)m_ThumbnailSize;
-        configuration.Height = (uint32_t)m_ThumbnailSize;
-        Count<Texture2D> thumbnail = Texture2D::Create(configuration,thumbnailImage,false);
+        TextureConfiguration textureConfiguration;
+        textureConfiguration.DebugName = AssetManager::GetAssetInfo(assetID).GetName() + " Thumbnail";
+        textureConfiguration.Format = ImageFormat::RGBA;
+        textureConfiguration.Width = size;
+        textureConfiguration.Height = size;
 
-        Renderer::BlitImage(Renderer::GetRendererCommandBuffer(), m_Renderer->GetFinalPassImage(), thumbnail->GetImage());
+        Count<Texture2D> thumbnail = Texture2D::Create(textureConfiguration, thumbnailImage, false);
 
-      //  Renderer::BlitImage(Renderer::GetRendererCommandBuffer(), m_Renderer->GetFinalPassImage(), thumbnail->GetImage());
-
+        Renderer::BlitImage(Renderer::GetRendererCommandBuffer(), m_Renderer->GetFinalPassImage(), thumbnailImage,true);
 
         return thumbnail;
     }
 
-    AssetID AssetThumbnailRenderer::GetLastThumbnailID() const
+    Entity AssetThumbnailRenderer::PreparePreviewEntity()
     {
-        return m_LastThumbnailID;
+        PF_PROFILE_FUNC();
+
+        Entity entity = m_World->TryGetEntityByTag("Mesh");
+
+        if (entity)
+            m_World->DeleteEntity(entity);
+
+        return m_World->CreateEntity("Mesh");
     }
 
-    void AssetThumbnailRenderer::GenerateMeshThumbnail(Count<class Mesh> mesh)
+    void AssetThumbnailRenderer::ClearPreview()
     {
-        Entity ent = m_World->TryGetEntityByTag("Mesh");
-        m_World->DeleteEntity(ent);
-        ent = m_World->CreateEntity("Mesh");
+        PF_PROFILE_FUNC();
 
-        ent.AddComponent<MeshComponent>().SetMesh(mesh->GetID());
+        Entity entity = m_World->TryGetEntityByTag("Mesh");
 
-        AABB boudingBox = mesh->GetBoundingBox();
-        FrameCameraToBounds(boudingBox);
-                                                  
+        if (entity)
+            m_World->DeleteEntity(entity);
+
+        m_World->CreateEntity("Mesh");
     }
 
-    void AssetThumbnailRenderer::GenerateDynamicMeshThumbnail(Count<class DynamicMesh> mesh)
+    void AssetThumbnailRenderer::GenerateMeshThumbnail(Count<Mesh> mesh)
     {
-        Entity ent = m_World->TryGetEntityByTag("Mesh");
-        m_World->DeleteEntity(ent);
-        ent = m_World->CreateEntity("Mesh");
+        PF_PROFILE_FUNC();
+        PF_CORE_ASSERT(mesh);
 
-        ent.AddComponent<DynamicMeshComponent>().SetMesh(mesh->GetID());
-        AABB boudingBox = mesh->GetBoundingBox();
+        Entity entity = PreparePreviewEntity();
 
-        FrameCameraToBounds(boudingBox);
+        auto& meshComponent = entity.AddComponent<MeshComponent>();
+        meshComponent.SetMesh(mesh->GetID());
+
+
+        FrameCameraToBounds(mesh->GetBoundingBox(),0.9f);
     }
 
-    void AssetThumbnailRenderer::GenerateMaterialThumbnail(Count<class Material> material)
+    void AssetThumbnailRenderer::GenerateDynamicMeshThumbnail(Count<DynamicMesh> mesh)
     {
-        Entity ent = m_World->TryGetEntityByTag("Mesh");
-        m_World->DeleteEntity(ent);
-        ent = m_World->CreateEntity("Mesh");
+        PF_PROFILE_FUNC();
+        PF_CORE_ASSERT(mesh);
 
-        ent.AddComponent<MeshComponent>().SetMesh((uint64_t)DefaultRuntimeAssets::Sphere);
+        Entity entity = PreparePreviewEntity();
 
-        auto mesh = ent.GetComponent<MeshComponent>().GetMesh();
-        ent.GetComponent<MeshComponent>().MaterialTable->SetMaterial(0, material);
+        auto& meshComponent = entity.AddComponent<DynamicMeshComponent>();
+        meshComponent.SetMesh(mesh->GetID());
 
-        AABB boudingBox = mesh->GetBoundingBox();
-        FrameCameraToBounds(boudingBox);
+        FrameCameraToBounds(mesh->GetBoundingBox(),0.9f);
     }
 
-    
-
-    void AssetThumbnailRenderer::FrameCameraToBounds(const struct AABB bounds)
+    void AssetThumbnailRenderer::GenerateMaterialThumbnail(Count<Material> material)
     {
+        PF_PROFILE_FUNC();
+        PF_CORE_ASSERT(material);
+
+        Entity entity = PreparePreviewEntity();
+
+        auto& meshComponent = entity.AddComponent<MeshComponent>();
+        meshComponent.SetMesh((uint64_t)DefaultRuntimeAssets::Sphere);
+
+        Count<Mesh> sphere = meshComponent.GetMesh();
+
+        PF_CORE_ASSERT(sphere);
+
+        meshComponent.MaterialTable->SetMaterial(0, material);
+
+        FrameCameraToBounds(sphere->GetBoundingBox());
+    }
+
+    void AssetThumbnailRenderer::FrameCameraToBounds(const AABB bounds, float distnaceMultipler )
+    {
+        PF_PROFILE_FUNC();
+
         glm::vec3 center = (bounds.Min + bounds.Max) * 0.5f;
 
         std::array<glm::vec3, 8> corners =
@@ -246,7 +236,7 @@ namespace Proof
             distance = glm::max(distance, glm::max(horizontalDistance, verticalDistance));
         }
 
-        distance *= 0.60f;
+        distance *= distnaceMultipler ;
 
         glm::vec3 cameraPosition = center - forward * distance;
         glm::vec3 cameraDirection = glm::normalize(center - cameraPosition);
@@ -254,7 +244,6 @@ namespace Proof
         m_Camera.SetPosition(cameraPosition);
         m_Camera.SetDirection(cameraDirection);
         m_Camera.Recalculate();
-    
     }
 
     AssetThumbnailManager::AssetThumbnailManager()
@@ -264,98 +253,110 @@ namespace Proof
 
     void AssetThumbnailManager::OnUpdate(FrameTime dt)
     {
-
-        
         PF_PROFILE_FUNC();
 
-        // The blit was submitted during the previous frame.
-        // It is now safe to read the RGBA8 thumbnail and save it.
+        // Finish disk caching for the thumbnail generated last frame.
         if (m_PendingCacheAssetID != 0)
         {
             AssetID assetID = m_PendingCacheAssetID;
-
-            if (AssetManager::HasAsset(assetID) && m_PendingCacheTexture)
-            {
-                AssetThumbnail& thumbnail = m_AssetThumbnails[assetID];
-                thumbnail.AssetID = assetID;
-                thumbnail.Texture = m_PendingCacheTexture;
-
-                if (thumbnail.Status != AssetThumbnailStatus::Queued)
-                    thumbnail.Status = AssetThumbnailStatus::Ready;
-
-               CacheThumbnail (assetID, m_PendingCacheTexture);
-            }
-            else
-            {
-                m_AssetThumbnails.erase(assetID);
-            }
+            Count<Texture2D> texture = m_PendingCacheTexture;
 
             m_PendingCacheAssetID = 0;
             m_PendingCacheTexture = nullptr;
-        }
 
-        // The scene render for this asset completed during the previous frame.
-        // Submit the RGBA32F -> RGBA8 blit, but do not read it yet.
-        if (m_CurrentThumbnail.AssetID != 0 && m_ThumbnailRenderer->GetLastThumbnailID() == m_CurrentThumbnail.AssetID)
-        {
-            AssetID completedAssetID = m_CurrentThumbnail.AssetID;
+            auto iterator = m_AssetThumbnails.find(assetID);
 
-            if (AssetManager::HasAsset(completedAssetID))
+            if (!AssetManager::HasAsset(assetID) || iterator == m_AssetThumbnails.end() || !texture)
             {
-                Count<Texture2D> texture = m_ThumbnailRenderer->GetLastThumbnail();
-
-                if (texture)
-                {
-                    m_PendingCacheAssetID = completedAssetID;
-                    m_PendingCacheTexture = texture;
-                }
+                m_AssetThumbnails.erase(assetID);
             }
             else
             {
-                m_AssetThumbnails.erase(completedAssetID);
-            }
+                AssetThumbnail& thumbnail = iterator->second;
 
-            m_CurrentThumbnail = {};
+                // Do not overwrite a newer regeneration request.
+                if (thumbnail.Status != AssetThumbnailStatus::Queued)
+                {
+                    // The texture was already assigned when it was generated.
+                    thumbnail.Status = AssetThumbnailStatus::Ready;
+                    CacheThumbnail(assetID, texture);
+                }
+            }
         }
 
-        // Configure exactly one new asset for this frame's thumbnail render.
-        if (m_CurrentThumbnail.AssetID == 0 && !m_ThumbnailQueue.empty())
+        // Generate no more than one thumbnail this frame.
+        if (!m_ThumbnailQueue.empty())
         {
-            AssetID assetID = m_ThumbnailQueue.front();
+            AssetID assetID = m_ThumbnailQueue.top();
             m_ThumbnailQueue.pop();
 
             if (!AssetManager::HasAsset(assetID))
             {
                 m_AssetThumbnails.erase(assetID);
+                return;
             }
-            else
+
+            auto iterator = m_AssetThumbnails.find(assetID);
+
+            if (iterator == m_AssetThumbnails.end())
+                return;
+
+            AssetThumbnail& thumbnail = iterator->second;
+
+            // Ignore stale duplicate entries.
+            if (thumbnail.Status != AssetThumbnailStatus::Queued)
+                return;
+
+            thumbnail.AssetID = assetID;
+
+            const AssetInfo& assetInfo = AssetManager::GetAssetInfo(assetID);
+            std::filesystem::path assetPath = AssetManager::GetAssetFileSystemPath(assetInfo.Path);
+            std::filesystem::path thumbnailPath = GetThumbnailCachePath(assetID);
+
+            // Load from disk when the cache exists and is still valid.
+            if (!IsThumbnailOutdated(assetPath, thumbnailPath))
             {
-                AssetThumbnail& thumbnail = m_AssetThumbnails[assetID];
-                thumbnail.AssetID = assetID;
-                thumbnail.Status = AssetThumbnailStatus::Rendering;
+                Count<Texture2D> cachedThumbnail = LoadCachedThumbnail(assetID, thumbnailPath);
 
-                m_CurrentThumbnail = thumbnail;
-                m_ThumbnailRenderer->GenerateThumbnail(assetID);
+                if (cachedThumbnail)
+                {
+                    thumbnail.Texture = cachedThumbnail;
+                    thumbnail.Status = AssetThumbnailStatus::Ready;
+                    return;
+                }
             }
-        }
 
-        m_ThumbnailRenderer->OnUpdate(dt);
-    }
+            // Cache is missing, outdated or failed to load.
+            thumbnail.Status = AssetThumbnailStatus::Rendering;
 
-    void AssetThumbnailManager::RegenerateThumbnail(AssetID assetID)
-    {
-        PF_PROFILE_FUNC();
-        PF_CORE_ASSERT(AssetManager::HasAsset(assetID));
+            Count<Texture2D> generatedThumbnail =
+                m_ThumbnailRenderer->GenerateThumbnail(assetID, dt);
 
-        AssetThumbnail& thumbnail = m_AssetThumbnails[assetID];
-        thumbnail.AssetID = assetID;
+            if (!generatedThumbnail)
+            {
+                thumbnail.Status = AssetThumbnailStatus::Queued;
+                m_ThumbnailQueue.push(assetID);
+                return;
+            }
 
-        if (thumbnail.Status == AssetThumbnailStatus::Queued)
+            // Make the generated texture visible immediately.
+            thumbnail.Texture = generatedThumbnail;
+            thumbnail.Status = AssetThumbnailStatus::Rendering;
+
+            // Cache it on the next update.
+            m_PendingCacheAssetID = assetID;
+            m_PendingCacheTexture = generatedThumbnail;
+
+            m_PreviewCleared = false;
             return;
-
-        thumbnail.Status = AssetThumbnailStatus::Queued;
-        m_ThumbnailQueue.push(assetID);
+        }
+        if (m_PendingCacheAssetID == 0 && !m_PreviewCleared)
+        {
+            m_ThumbnailRenderer->ClearPreview();
+            m_PreviewCleared = true;
+        }
     }
+
 
     void AssetThumbnailManager::CacheThumbnail(AssetID thumbnailAssetID, Count<Texture2D> thumbnail)
     {
@@ -365,7 +366,11 @@ namespace Proof
             return;
 
         const AssetInfo& assetInfo = AssetManager::GetAssetInfo(thumbnailAssetID);
-        std::filesystem::path directory = Project::GetActive()->GetCacheDirectory() / "AssetThumbnails" / EnumReflection::EnumString(assetInfo.Type);
+
+        std::filesystem::path directory =
+            Project::GetActive()->GetCacheDirectory() /
+            "AssetThumbnails" /
+            EnumReflection::EnumString(assetInfo.Type);
 
         std::error_code error;
         std::filesystem::create_directories(directory, error);
@@ -376,25 +381,38 @@ namespace Proof
             return;
         }
 
-        std::filesystem::path thumbnailPath = directory / (std::to_string((uint64_t)thumbnailAssetID) + ".png");
+        std::filesystem::path thumbnailPath =
+            directory / (std::to_string((uint64_t)thumbnailAssetID) + ".png");
+
         const TextureConfiguration& configuration = thumbnail->GetSpecification();
 
         PF_CORE_ASSERT(configuration.Format == ImageFormat::RGBA, "Thumbnail cache only supports RGBA8");
 
         uint32_t width = configuration.Width;
         uint32_t height = configuration.Height;
-        Buffer pixels = thumbnail->GetImage()->GetStoredDataAsBuffer();
         size_t expectedSize = (size_t)width * (size_t)height * 4;
+
+        Buffer pixels = thumbnail->GetImage()->GetStoredDataAsBuffer();
 
         if (!pixels.Data || pixels.Size < expectedSize)
         {
             PF_ENGINE_ERROR("Unable to read thumbnail pixels for asset: {}", thumbnailAssetID);
+            pixels.Release();
             return;
         }
 
-        stbi_flip_vertically_on_write(1);
+        stbi_flip_vertically_on_write(0);
 
-        int result = stbi_write_png(thumbnailPath.string().c_str(), (int)width, (int)height, 4, pixels.Data, (int)width * 4);
+        int result = stbi_write_png(
+            thumbnailPath.string().c_str(),
+            (int)width,
+            (int)height,
+            4,
+            pixels.Data,
+            (int)width * 4
+        );
+
+        pixels.Release();
 
         if (result == 0)
         {
@@ -403,23 +421,22 @@ namespace Proof
         }
 
         PF_ENGINE_TRACE("Cached thumbnail: {}", thumbnailPath.string());
-
-        pixels.Release();
     }
 
-    Count<Texture2D> AssetThumbnailManager::LoadCachedThumbnail(AssetID assetID,
-        const std::filesystem::path& thumbnailPath)
+    Count<Texture2D> AssetThumbnailManager::LoadCachedThumbnail(AssetID assetID, const std::filesystem::path& thumbnailPath)
     {
         PF_PROFILE_FUNC();
 
-        if (!std::filesystem::exists(thumbnailPath))
+        std::error_code error;
+
+        if (!std::filesystem::exists(thumbnailPath, error) || error)
             return nullptr;
 
         TextureConfiguration configuration;
         configuration.DebugName = AssetManager::GetAssetInfo(assetID).GetName() + " Cached Thumbnail";
         configuration.Format = ImageFormat::RGBA;
 
-        Count<Texture2D> thumbnail = Texture2D::Create(configuration,thumbnailPath);
+        Count<Texture2D> thumbnail = Texture2D::Create(configuration, thumbnailPath);
 
         if (!thumbnail)
             PF_ENGINE_ERROR("Failed to load cached thumbnail: {}", thumbnailPath.string());
@@ -441,7 +458,6 @@ namespace Proof
 
     Count<Texture2D> AssetThumbnailManager::GetThumbnail(AssetID assetID)
     {
-       
         PF_PROFILE_FUNC();
         PF_CORE_ASSERT(AssetManager::HasAsset(assetID));
 
@@ -450,17 +466,9 @@ namespace Proof
         if (!Utils::Contains(SupportedThumbnailTypes, assetInfo.Type))
             return EditorResources::FileIcon;
 
-        if (assetInfo.Type == AssetType::Texture)
-        {
-            if (AssetManager::IsAssetLoaded(assetID))
-                return AssetManager::GetAsset<Texture2D>(assetID);
-
-            return EditorResources::FileIcon;
-        }
-
-        std::filesystem::path assetPath = AssetManager::GetAssetFileSystemPath(assetInfo.Path);
-        std::filesystem::path thumbnailPath = GetThumbnailCachePath(assetID);
-        bool outdated = IsThumbnailOutdated(assetPath, thumbnailPath);
+        // Returning an already loaded texture is safe.
+        if (assetInfo.Type == AssetType::Texture && AssetManager::IsAssetLoaded(assetID))
+            return AssetManager::GetAsset<Texture2D>(assetID);
 
         auto iterator = m_AssetThumbnails.find(assetID);
 
@@ -468,42 +476,30 @@ namespace Proof
         {
             AssetThumbnail& thumbnail = iterator->second;
 
-            if (outdated &&
-                thumbnail.Status != AssetThumbnailStatus::Queued &&
-                thumbnail.Status != AssetThumbnailStatus::Rendering)
+            // Timestamp checking is okay here because it does not submit renderer work.
+            if (thumbnail.Status == AssetThumbnailStatus::Ready)
             {
-                thumbnail.Status = AssetThumbnailStatus::Queued;
-                m_ThumbnailQueue.push(assetID);
+                std::filesystem::path assetPath = AssetManager::GetAssetFileSystemPath(assetInfo.Path);
+                std::filesystem::path thumbnailPath = GetThumbnailCachePath(assetID);
+
+                if (IsThumbnailOutdated(assetPath, thumbnailPath))
+                {
+                    thumbnail.Status = AssetThumbnailStatus::Queued;
+                    m_ThumbnailQueue.push(assetID);
+                    m_PreviewCleared = false;
+                }
             }
 
-            if (thumbnail.Texture)
-                return thumbnail.Texture;
-
-            return EditorResources::FileIcon;
+            return thumbnail.Texture ? thumbnail.Texture : EditorResources::FileIcon;
         }
 
         AssetThumbnail thumbnail;
         thumbnail.AssetID = assetID;
-
-        if (!outdated)
-        {
-            Count<Texture2D> cachedThumbnail = LoadCachedThumbnail(assetID, thumbnailPath);
-
-            if (cachedThumbnail)
-            {
-                thumbnail.Texture = cachedThumbnail;
-                thumbnail.Status = AssetThumbnailStatus::Ready;
-
-                m_AssetThumbnails.emplace(assetID, thumbnail);
-
-                return cachedThumbnail;
-            }
-        }
-
         thumbnail.Status = AssetThumbnailStatus::Queued;
 
         m_AssetThumbnails.emplace(assetID, thumbnail);
         m_ThumbnailQueue.push(assetID);
+        m_PreviewCleared = false;
 
         return EditorResources::FileIcon;
     }

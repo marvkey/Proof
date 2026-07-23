@@ -367,7 +367,7 @@ namespace Proof {
     }
     void Application::Save()
     {
-        AssetManager::SaveAllAssets();
+        //AssetManager::SaveAllAssets();
 
     }
 }

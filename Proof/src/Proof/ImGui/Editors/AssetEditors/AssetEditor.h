@@ -92,6 +92,8 @@ namespace Proof
 			s_Editors[type] = {};
 		}
 
+
+		static void SaveAllAssets();
 	private:
 		static void RegisterDefaultEditors();
 		static void UnregisterAllEditors();
