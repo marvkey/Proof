@@ -17,6 +17,7 @@
 #include "Proof/Asset/AssetManager.h"
 #include <imgui.h>
 #include "imgui_internal.h"
+#include "Proof/Renderer/Colors.h"
 #include "Proof/Scene/Mesh.h"
 namespace Proof
 {
@@ -58,7 +59,7 @@ namespace Proof
 		const bool isSelected = SelectionManager::IsSelected(SelectionContext::ContentBrowser, m_ID);
 
 		ImGui::InvisibleButton("##thumbnailButton", ImVec2{ thumbnailSize, thumbnailSize });
-
+		const bool isHovered = ImGui::IsItemHovered();
 		Count<Texture2D> temporaryIcon = nullptr;
 
 		if (GetType() == ItemType::Asset)
@@ -70,7 +71,7 @@ namespace Proof
 			IM_COL32(255, 255, 255, 255),
 			IM_COL32(255, 255, 255, 255),
 			UI::RectExpanded(UI::GetItemRect(), -6.0f, -6.0f));
-
+		
 		// Info Panel
 		//-----------
 
@@ -89,6 +90,42 @@ namespace Proof
 		};
 
 		UI::ShiftCursor(edgeOffset, edgeOffset);
+		const ImVec2 infoPanelMin =
+			ImGui::GetCursorScreenPos() - ImVec2(edgeOffset, edgeOffset);
+
+		const ImVec2 infoPanelMax =
+			infoPanelMin + ImVec2(thumbnailSize, infoPanelHeight);
+
+		const ImU32 infoPanelColour =
+			isSelected
+				? IM_COL32(32, 60, 96, 255)     // Selected
+				: isHovered
+					? IM_COL32(29, 41, 61, 255)  // Hovered
+					: IM_COL32(22, 29, 43, 255); // Normal
+
+		const ImU32 infoPanelBorder =
+			isSelected
+				? IM_COL32(83, 153, 235, 190)
+				: IM_COL32(255, 255, 255, 16);
+
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+		drawList->AddRectFilled(
+			infoPanelMin,
+			infoPanelMax,
+			infoPanelColour,
+			6.0f,
+			ImDrawFlags_RoundCornersBottom
+		);
+
+		drawList->AddRect(
+			infoPanelMin,
+			infoPanelMax,
+			infoPanelBorder,
+			6.0f,
+			ImDrawFlags_RoundCornersBottom,
+			1.0f);
+
 
 		if (m_Type == ItemType::Directory)
 		{
@@ -120,7 +157,7 @@ namespace Proof
 			}
 		}
 		else
-		{
+		{                                     
 			ImGui::BeginVertical((std::string("InfoPanel") + m_DisplayName).c_str(), ImVec2(thumbnailSize - edgeOffset * 3.0f, infoPanelHeight - edgeOffset));
 			{
 				ImGui::BeginHorizontal("label", ImVec2(0.0f, 0.0f));
@@ -143,7 +180,7 @@ namespace Proof
 				ImGui::EndHorizontal();
 			}
 			ImGui::Spring();
-#if 0
+#if 1
 			if (displayAssetType)
 			{
 				UI::ShiftCursorX(edgeOffset);
@@ -151,16 +188,27 @@ namespace Proof
 				ImGui::Spring();
 				{
 					const AssetInfo& metadata = AssetManager::GetAssetInfo(m_ID);
-					std::string& assetType = Utils::String::ToUpper(Utils::AssetTypeToString(metadata.Type));
-					UI::ScopedColour textColour(ImGuiCol_Text, Colours::Theme::textDarker);
+					std::string assetType = Utils::String::ToUpper(EnumReflection::EnumString(metadata.Type));
+					UI::ScopedColour textColour(
+						ImGuiCol_Text,
+						isSelected
+							? ImVec4(0.58f, 0.78f, 1.00f, 1.00f)
+							: ImVec4(0.47f, 0.66f, 0.91f, 1.00f)
+					);
 					if (thumbnailSize < 128)
 					{
-						UI::Fonts::PushFont("ExtraSmall");
+
+						ImGui::PushFont(UI::Font::LightFont);
 					}
 					else
-						UI::Fonts::PushFont("Small");
+					{
+						ImGui::PushFont(UI::Font::LightFont);
+
+					}
 					ImGui::TextUnformatted(assetType.c_str());
-					UI::Fonts::PopFont();
+
+
+					ImGui::PopFont();
 				}
 				ImGui::EndHorizontal();
 

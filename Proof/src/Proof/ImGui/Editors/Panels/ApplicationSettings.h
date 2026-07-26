@@ -9,7 +9,7 @@ namespace Proof
 
 		//---------- Content Browser ------------
 		bool ContentBrowserShowAssetTypes = true;
-		int ContentBrowserThumbnailSize = 100;
+		int ContentBrowserThumbnailSize = 128;
 
 		//---------- AntPlay ------------
 		bool AdvancedMode = false;

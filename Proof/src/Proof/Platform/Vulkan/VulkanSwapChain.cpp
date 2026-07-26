@@ -593,7 +593,7 @@ namespace Proof
 
 	void VulkanSwapChain::Resize(uint32_t width, uint32_t height)
 	{
-		PF_ENGINE_WARN("Renderer {}", "VulkanSwapChain::OnResize");
+		PF_ENGINE_WARN("Renderer {}  width {} height {}", "VulkanSwapChain::OnResize", width, height);
 
 		VkDevice device = VulkanGraphicsContext::Get()->GetDevice()->GetVulkanDevice();
 		vkDeviceWaitIdle(device);

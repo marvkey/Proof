@@ -91,6 +91,14 @@ namespace Proof
 		int bEnabled = 0;
 	};
 
+	struct alignas(16) UBCollision
+	{
+		int bEnabled = false;
+
+
+	};
+
+
 	struct SBParticleEmitterSettings
 	{
 		UBParticleEmission Emission = {};

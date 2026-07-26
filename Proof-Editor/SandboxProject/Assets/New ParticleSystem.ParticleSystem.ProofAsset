@@ -14,7 +14,11 @@ Emitters:
       FadeOutSpeed: 0.5
       EmitterPrevPosition: [0, 0, 0]
     Bursts:
-      []
+      - StartTime: 0.439999998
+        Count: 460
+        Cycles: 1
+        Interval: 0.519999981
+        Probability: 0.330000013
     Emission:
       ParticlesPerSecond: 100
       ParticlesPerDistance: 0

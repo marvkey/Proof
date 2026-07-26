@@ -380,12 +380,19 @@ namespace Proof
 		PF_CORE_ASSERT(HasAsset(ID), "ID does not exist");
 		auto info = GetAssetInfo(ID);
 		return info.State == AssetState::Ready;
-		return false;
 	}
 	bool AssetManager::HasAsset(AssetID ID) {
 		if (ID == 0)return false;
 		return s_AssetManagerData->Assets.contains(ID);
 	}
+
+	void UnloadMesh(Count<MeshSource> meshSource)
+	{
+		auto materialTable = meshSource->GetMaterials();
+		
+		
+	}
+
 	
 	bool AssetManager::TryUnloadAsset(AssetID ID) 
 	{
@@ -397,7 +404,7 @@ namespace Proof
 		if (info.State != AssetState::Ready)
 			return false;
 
-		if (info.RuntimeAsset || IsDefaultAsset(ID))
+		if (IsDefaultAsset(ID))
 			return false;
 
 		if (!container.Asset)
@@ -410,6 +417,11 @@ namespace Proof
 
 		container.Asset = nullptr;
 		info.State = AssetState::Unloaded;
+
+		if (info.RuntimeAsset)
+			s_AssetManagerData->Assets.erase(ID);
+
+
 
 		return true;
 	}

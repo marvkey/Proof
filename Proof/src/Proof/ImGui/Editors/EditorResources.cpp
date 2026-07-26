@@ -10,10 +10,26 @@ namespace Proof {
 		InsertIcon = Texture2D::Create(TextureConfiguration("InsertIcon"), "Resources/Icons/Insert.png");
 
 		CheckerBoardWhiteGrey = Texture2D::Create(TextureConfiguration("WhiteAndGreyCheckerBoard"), "Assets/Textures/WhiteAndGreyCheckerBoard.png");
-		FolderIcon = Texture2D::Create(TextureConfiguration("FolderIcon"), "Resources/Icons/ContentBrowser/FolderIcon.png");
-		FileIcon = Texture2D::Create(TextureConfiguration("FIleIcon"), "Resources/Icons/ContentBrowser/FileIcon.png");
+		FolderIcon = Texture2D::Create(TextureConfiguration("FolderIcon"), "Resources/Icons/ContentBrowser/AssetIcons/Folder.png");
+		FileIcon = Texture2D::Create(TextureConfiguration("FIleIcon"), "Resources/Icons/ContentBrowser/AssetIcons/DefaultFile.png");
 		BackArrowIcon = Texture2D::Create(TextureConfiguration("BackArrowIcon"), "Resources/Icons/ContentBrowser/BackArrow.png");
 		FowardArrowIcon = Texture2D::Create(TextureConfiguration("FowardArrowIcon"), "Resources/Icons/ContentBrowser/FowardArrow.png");
+
+
+		AnimationThumbnailIcon = Texture2D::Create(TextureConfiguration("AnimationThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/Animation.png");
+		AnimationControllerThumbnailIcon = Texture2D::Create(TextureConfiguration("AnimationControllerThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/AnimationController.png");
+		AudioThumbnailIcon = Texture2D::Create(TextureConfiguration("AudioThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/Audio.png");
+		FontThumbnailIcon = Texture2D::Create(TextureConfiguration("FontThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/Font.png");
+		InputActionThumbnailIcon = Texture2D::Create(TextureConfiguration("InputActionThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/InputAction.png");
+		InputBindingContextThumbnailIcon = Texture2D::Create(TextureConfiguration("InputBindingContextThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/InputBindingContext.png");
+		MeshColliderThumbnailIcon = Texture2D::Create(TextureConfiguration("MeshColliderThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/MeshCollider.png");
+		ParticleSystemThumbnailIcon = Texture2D::Create(TextureConfiguration("ParticleSystemThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/ParticleSystem.png");
+		PMatThumbnailIcon = Texture2D::Create(TextureConfiguration("PMatThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/PMat.png");
+		PrefabThumbnailIcon = Texture2D::Create(TextureConfiguration("PrefabThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/Prefab.png");
+		ScriptFileThumbnailIcon = Texture2D::Create(TextureConfiguration("ScriptFileThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/ScriptFile.png");
+		SkeletonThumbnailIcon = Texture2D::Create(TextureConfiguration("SkeletonThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/Skeleton.png");
+		UIThumbnailIcon = Texture2D::Create(TextureConfiguration("UIThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/UI.png");
+		WorldThumbnailIcon = Texture2D::Create(TextureConfiguration("WorldThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/World.png");
 
 		// view port
 		//light

@@ -16,7 +16,22 @@ namespace Proof
 		static inline Count<class Texture2D> FileIcon;
 		static inline Count<class Texture2D> BackArrowIcon;
 		static inline Count<class Texture2D> FowardArrowIcon;
-		
+
+		static inline Count<class Texture2D> AnimationThumbnailIcon;
+		static inline Count<class Texture2D> AnimationControllerThumbnailIcon;
+		static inline Count<class Texture2D> AudioThumbnailIcon;
+		static inline Count<class Texture2D> FontThumbnailIcon;
+		static inline Count<class Texture2D> InputActionThumbnailIcon;
+		static inline Count<class Texture2D> InputBindingContextThumbnailIcon;
+		static inline Count<class Texture2D> MeshColliderThumbnailIcon;
+		static inline Count<class Texture2D> ParticleSystemThumbnailIcon;
+		static inline Count<class Texture2D> PMatThumbnailIcon;
+		static inline Count<class Texture2D> PrefabThumbnailIcon;
+		static inline Count<class Texture2D> ScriptFileThumbnailIcon;
+		static inline Count<class Texture2D> SkeletonThumbnailIcon;
+		static inline Count<class Texture2D> UIThumbnailIcon;
+		static inline Count<class Texture2D> WorldThumbnailIcon;
+
 		//light
 		static inline Count<Texture2D> SkyLightIcon;
 		static inline Count<Texture2D> DirectionalLightIcon;

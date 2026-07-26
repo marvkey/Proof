@@ -1,7 +1,7 @@
 AssetType: Material
 ID: 17573016932066549848
 ShaderName: ProofPBRTransparent_Static
-AlbedoColour: [1, 0, 0]
+AlbedoColour: [0.641129017, 0.255934566, 0.255934566]
 Roughness: 0.400000006
 Metallness: 0
 Emission: 0

@@ -31,6 +31,38 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 7385458479241855565
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.034906581, 0.0174532905, -8.73247863e-11]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 4116280147991087964
+        Children: []
+      SkyLightComponent:
+        TintColor: [0.651851892, 0.736954927, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 4
+    - Entity: 4116280147991087964
+      TagComponent:
+        Tag: p_1 million light (Dir and Skylight)
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0, 0, 0]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: [7385458479241855565, 16024034647656492215]
     - Entity: 16461985675399467375
       TagComponent:
         Tag: contorl light
@@ -77,38 +109,6 @@ World:
         Center: [0, 5, 0]
         Size: [25, 13, 13]
         PhysicsMaterialPointerID: 0
-    - Entity: 4116280147991087964
-      TagComponent:
-        Tag: p_1 million light (Dir and Skylight)
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0, 0, 0]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: [7385458479241855565, 16024034647656492215]
-    - Entity: 7385458479241855565
-      TagComponent:
-        Tag: Sky Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0.034906581, 0.0174532905, -8.73247863e-11]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 4116280147991087964
-        Children: []
-      SkyLightComponent:
-        TintColor: [0.651851892, 0.736954927, 1]
-        SkyBoxLod: 0
-        MapRotation: 0
-        Intensity: 1
-        EnvironmentState: PreethamSky
-        TextureDataImage: 0
-        HosekWilkieTurbidity: 4
-        HosekWilkieGroundReflectance: 0.100000001
-        PreethamTurbidity: 4
     - Entity: 17585591863870512189
       TagComponent:
         Tag: Proof

@@ -1,27 +1,6 @@
 World:
   ID: 7107588826582919816
   Entities:
-    - Entity: 1588504503923654943
-      TagComponent:
-        Tag: Sky Light
-        tags: []
-      TransformComponent:
-        Location: [0, 0, 0]
-        Rotation: [0.0349065848, 0.387463093, 0.331612557]
-        Scale: [1, 1, 1]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      SkyLightComponent:
-        TintColor: [1, 1, 1]
-        SkyBoxLod: 0
-        MapRotation: 0
-        Intensity: 1
-        EnvironmentState: PreethamSky
-        TextureDataImage: 0
-        HosekWilkieTurbidity: 4
-        HosekWilkieGroundReflectance: 0.100000001
-        PreethamTurbidity: 2.76699996
     - Entity: 12192612615812504970
       TagComponent:
         Tag: Cone4
@@ -35,6 +14,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 54
+        Visible: true
       BoxColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
@@ -91,6 +71,27 @@ World:
         Visible: true
         UseLocalRotation: false
         RenderInViewSpace: false
+    - Entity: 1588504503923654943
+      TagComponent:
+        Tag: Sky Light
+        tags: []
+      TransformComponent:
+        Location: [0, 0, 0]
+        Rotation: [0.0349065848, 0.387463093, 0.331612557]
+        Scale: [1, 1, 1]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      SkyLightComponent:
+        TintColor: [1, 1, 1]
+        SkyBoxLod: 0
+        MapRotation: 0
+        Intensity: 1
+        EnvironmentState: PreethamSky
+        TextureDataImage: 0
+        HosekWilkieTurbidity: 4
+        HosekWilkieGroundReflectance: 0.100000001
+        PreethamTurbidity: 2.76699996
     - Entity: 15271352550714979197
       TagComponent:
         Tag: Player
@@ -104,6 +105,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 51
+        Visible: true
         MaterialTable:
           - Material: ""
             AssetID: 6372025309156190288
@@ -146,6 +148,36 @@ World:
         FreezeRotation: [false, false, false]
         Kinematic: false
         CollisionDetection: Discrete
+    - Entity: 18405729394699475211
+      TagComponent:
+        Tag: Cone
+        tags: []
+      TransformComponent:
+        Location: [-7.4505806e-09, -7.86999989, -16.8799992]
+        Rotation: [-0.436332375, 0, 0]
+        Scale: [1, 0.99999994, 0.99999994]
+      HierarchyComponent:
+        ParentHandle: 0
+        Children: []
+      MeshComponent:
+        MeshAssetPointerID: 54
+        Visible: true
+      BoxColliderComponent:
+        IsTrigger: false
+        Center: [0, 0, 0]
+        Size: [1, 1, 1]
+        PhysicsMaterialPointerID: 13091815555637216436
+      RigidBodyComponent:
+        Mass: 1
+        LinearDrag: 0.00999999978
+        PhysicsLayerID: 0
+        AngularDrag: 0.0500000007
+        Gravity: true
+        Type: Static
+        FreezeLocation: [false, false, false]
+        FreezeRotation: [false, false, false]
+        Kinematic: false
+        CollisionDetection: Discrete
     - Entity: 4913334159009506177
       TagComponent:
         Tag: Directional Light
@@ -164,35 +196,6 @@ World:
         ShadowStrength: 0.5
         CastSoftShadow: true
         ShadowSoftness: 0.5
-    - Entity: 18405729394699475211
-      TagComponent:
-        Tag: Cone
-        tags: []
-      TransformComponent:
-        Location: [-7.4505806e-09, -7.86999989, -16.8799992]
-        Rotation: [-0.436332375, 0, 0]
-        Scale: [1, 0.99999994, 0.99999994]
-      HierarchyComponent:
-        ParentHandle: 0
-        Children: []
-      MeshComponent:
-        MeshAssetPointerID: 54
-      BoxColliderComponent:
-        IsTrigger: false
-        Center: [0, 0, 0]
-        Size: [1, 1, 1]
-        PhysicsMaterialPointerID: 13091815555637216436
-      RigidBodyComponent:
-        Mass: 1
-        LinearDrag: 0.00999999978
-        PhysicsLayerID: 0
-        AngularDrag: 0.0500000007
-        Gravity: true
-        Type: Static
-        FreezeLocation: [false, false, false]
-        FreezeRotation: [false, false, false]
-        Kinematic: false
-        CollisionDetection: Discrete
     - Entity: 16387893667173194073
       TagComponent:
         Tag: Ground
@@ -206,6 +209,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 50
+        Visible: true
       BoxColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
@@ -267,6 +271,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 54
+        Visible: true
       BoxColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
@@ -296,6 +301,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 54
+        Visible: true
       BoxColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
@@ -325,6 +331,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 54
+        Visible: true
       BoxColliderComponent:
         IsTrigger: false
         Center: [0, 0, 0]
@@ -354,6 +361,7 @@ World:
         Children: []
       MeshComponent:
         MeshAssetPointerID: 18348114341737718825
+        Visible: true
       MeshColliderComponent:
         ColliderID: 4045629147041952936
         IsTrigger: false

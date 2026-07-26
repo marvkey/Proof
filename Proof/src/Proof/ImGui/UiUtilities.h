@@ -10,6 +10,12 @@ namespace Proof
 }
 namespace Proof::UI
 {
+	namespace Font
+	{
+		inline ImFont* ExtraLightFont = nullptr;
+		inline ImFont* LightFont = nullptr;
+		inline ImFont* BoldFont = nullptr;
+	}
 	namespace Draw {
 		//=========================================================================================
 		/// Lines

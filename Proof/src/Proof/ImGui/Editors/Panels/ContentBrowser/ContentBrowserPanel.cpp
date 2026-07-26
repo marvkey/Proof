@@ -452,7 +452,7 @@ namespace Proof
 		}
 
 		ImGui::End();
-
+		#if 0
 		if (ImGui::Begin("CheckTHumbnails"))
 		{
 
@@ -465,7 +465,7 @@ namespace Proof
 			}
 		}
 		ImGui::End();
-
+		#endif
 	}
 
 	void ContentBrowserPanel::OnUpdate(FrameTime dt)

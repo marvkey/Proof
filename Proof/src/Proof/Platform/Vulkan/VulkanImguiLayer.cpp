@@ -12,6 +12,7 @@
 #include "VulkanTexutre.h"
 #include "Vulkan.h"
 #include "VulkanCommandBuffer.h"
+#include  "Proof/ImGui/UiUtilities.h"
 #include "VulkanCommandBuffer.h"
 #include "VulkanDevice.h"
 #include "Vulkan.h"
@@ -53,7 +54,9 @@ namespace Proof {
 		//io.ConfigFlags |= ImGuiConfigFlags_IsTouchScreen;
 
 		/* for fonts got to cherno video from 8 mINute on making editor look GOOd*/
-		io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Bold.ttf", 18.0f);
+		UI::Font::BoldFont =  io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Bold.ttf", 18.0f);
+		UI::Font::LightFont = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Light.ttf", 14.0f);
+		UI::Font::ExtraLightFont = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-ExtraLight.ttf", 11.0f);
 		io.FontDefault = io.Fonts->AddFontFromFileTTF("Assets/Fonts/Poppins/Poppins-Regular.ttf", 17.0f);
 
 		SetDarkTheme();

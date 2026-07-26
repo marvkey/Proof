@@ -15,6 +15,7 @@
 #include "Proof/Utils/ContainerUtils.h"
 
 #include "../vendor/stb_image_write.h"
+#include "Proof/Renderer/AssetThumbnailGenerator.h"
 
 namespace Proof
 {
@@ -22,7 +23,9 @@ namespace Proof
     {
         AssetType::Mesh,
         AssetType::Material,
-        AssetType::DynamicMesh
+        AssetType::DynamicMesh,
+        AssetType::Texture,
+        AssetType::MeshSourceFile,
     };
 
     bool IsThumbnailOutdated(const std::filesystem::path& assetPath, const std::filesystem::path& thumbnailPath)
@@ -92,7 +95,24 @@ namespace Proof
             case AssetType::DynamicMesh:
                 GenerateDynamicMeshThumbnail(AssetManager::GetAsset<DynamicMesh>(assetID));
                 break;
+             case AssetType::Texture:
+                 {
+                     TextureConfiguration textureConfiguration;
+                     textureConfiguration.DebugName = AssetManager::GetAssetInfo(assetID).GetName() + " Thumbnail";
+                     textureConfiguration.Format = ImageFormat::RGBA;
+                     textureConfiguration.Width = size;
+                     textureConfiguration.Height = size;
 
+                    Count<Texture2D> thumbnail = Texture2D::Create(textureConfiguration, AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(assetID).Path));
+
+                    return  thumbnail;
+                 }
+
+            case AssetType::MeshSourceFile:
+                 {
+                    GenerateMeshSource(AssetManager::GetAsset<MeshSource>(assetID));
+                 }
+            break;
             default:
                 PF_CORE_ASSERT(false, "Unsupported thumbnail asset type");
                 return nullptr;
@@ -194,6 +214,23 @@ namespace Proof
         FrameCameraToBounds(sphere->GetBoundingBox());
     }
 
+    void AssetThumbnailRenderer::GenerateMeshSource(Count<class MeshSource> meshSource)
+    {
+        PF_PROFILE_FUNC();
+
+
+        Count<Mesh> mesh = Count<Mesh>::Create(meshSource);
+        AssetManager::CreateRuntimeAsset(mesh);
+        PF_CORE_ASSERT(mesh);
+
+        Entity entity = PreparePreviewEntity();
+
+        auto& meshComponent = entity.AddComponent<MeshComponent>();
+        meshComponent.SetMesh(mesh->GetID());
+
+        FrameCameraToBounds(mesh->GetBoundingBox(),0.9f);
+    }
+
     void AssetThumbnailRenderer::FrameCameraToBounds(const AABB bounds, float distnaceMultipler )
     {
         PF_PROFILE_FUNC();
@@ -280,6 +317,8 @@ namespace Proof
                     // The texture was already assigned when it was generated.
                     thumbnail.Status = AssetThumbnailStatus::Ready;
                     CacheThumbnail(assetID, texture);
+
+                     AssetManager::TryUnloadAsset(assetID);
                 }
             }
         }
@@ -386,7 +425,6 @@ namespace Proof
 
         const TextureConfiguration& configuration = thumbnail->GetSpecification();
 
-        PF_CORE_ASSERT(configuration.Format == ImageFormat::RGBA, "Thumbnail cache only supports RGBA8");
 
         uint32_t width = configuration.Width;
         uint32_t height = configuration.Height;
@@ -441,6 +479,9 @@ namespace Proof
         if (!thumbnail)
             PF_ENGINE_ERROR("Failed to load cached thumbnail: {}", thumbnailPath.string());
 
+
+        PF_ENGINE_TRACE("Success  load cached thumbnail: {}", thumbnailPath.string());
+
         return thumbnail;
     }
 
@@ -456,6 +497,32 @@ namespace Proof
             (std::to_string((uint64_t)assetID) + ".png");
     }
 
+    Count<Texture2D> GetTextureFile(AssetType type)
+    {
+        switch (type)
+        {
+            case AssetType::World: return EditorResources::WorldThumbnailIcon;
+            case AssetType::PhysicsMaterial: return EditorResources::PMatThumbnailIcon;
+            case AssetType::Font: return EditorResources::FontThumbnailIcon;
+            case AssetType::Prefab: return EditorResources::PrefabThumbnailIcon;
+            case AssetType::UIPanel: return EditorResources::UIThumbnailIcon;
+            case AssetType::ParticleSystem: return EditorResources::ParticleSystemThumbnailIcon;
+            case AssetType::Audio: return EditorResources::AudioThumbnailIcon;
+            case AssetType::MeshCollider: return EditorResources::MeshColliderThumbnailIcon;
+            case AssetType::ScriptFile: return EditorResources::ScriptFileThumbnailIcon;
+            case AssetType::InputAction: return EditorResources::InputActionThumbnailIcon;
+            case AssetType::InputBindingContext: return EditorResources::InputBindingContextThumbnailIcon;
+            case AssetType::Skeleton: return EditorResources::SkeletonThumbnailIcon;
+            case AssetType::Animation: return EditorResources::AnimationThumbnailIcon;
+            case AssetType::AnimationController: return EditorResources::AnimationControllerThumbnailIcon;
+            default:
+                break;
+        }
+
+        PF_ENGINE_WARN("Thumbnails AssetImage not implemented: {}", EnumReflection::EnumString(type));
+        return EditorResources::FileIcon;
+
+    }
     Count<Texture2D> AssetThumbnailManager::GetThumbnail(AssetID assetID)
     {
         PF_PROFILE_FUNC();
@@ -464,7 +531,7 @@ namespace Proof
         const AssetInfo& assetInfo = AssetManager::GetAssetInfo(assetID);
 
         if (!Utils::Contains(SupportedThumbnailTypes, assetInfo.Type))
-            return EditorResources::FileIcon;
+            return GetTextureFile(assetInfo.Type);
 
         // Returning an already loaded texture is safe.
         if (assetInfo.Type == AssetType::Texture && AssetManager::IsAssetLoaded(assetID))

@@ -46,13 +46,14 @@ namespace  Proof
         void GenerateMeshThumbnail(Count<Mesh> mesh);
         void GenerateDynamicMeshThumbnail(Count<DynamicMesh> mesh);
         void GenerateMaterialThumbnail(Count<class Material> material);
+        void GenerateMeshSource(Count<class MeshSource> mesh);
         void FrameCameraToBounds(const struct AABB bounds, float dstMultipler =0.6f);
 
     private:
         Count<World> m_World;
         Count<WorldRenderer> m_Renderer;
         EditorCamera m_Camera;
-        float m_ThumbnailSize = 256.0f;
+        float m_ThumbnailSize = (float)ThumbnailSize::Medium;
         friend class ContentBrowserPanel;
     };
 
