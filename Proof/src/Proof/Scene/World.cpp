@@ -485,7 +485,7 @@ namespace Proof
 						terrainComponent.Terrain->Render(worldRenderer);
 				}
 			}
-
+#if 0
 			const auto& particleView = m_Registry.view<ParticleSystemComponent>();
 			for (auto entity : particleView)
 			{
@@ -498,6 +498,7 @@ namespace Proof
 				}
 
 			}
+#endif
 		}
 		{
 			// immediate rendere

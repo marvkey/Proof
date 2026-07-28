@@ -8,7 +8,7 @@ namespace Proof
 	struct alignas(16) SBParticleInitalState
 	{
 		float Duration = 5;
-		int bLooping = 1;
+		int bLooping = 1;	
 		float StartLifetime = 5.0f;
 		float StartSpeed = 5.0f;
 

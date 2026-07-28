@@ -16,7 +16,7 @@ layout(std430, binding=1) coherent restrict buffer ParticleInitialState
 
     vec3 StartSize;
     float GravityModifier;
-
+                                                
     vec4 StartColor;
 
     vec3 EmitterPosition;

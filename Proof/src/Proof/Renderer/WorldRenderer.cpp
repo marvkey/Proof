@@ -2032,7 +2032,7 @@ namespace Proof
 		return m_ShadowDebugPass->GetTargetFrameBuffer()->GetOutput(0).As<Image2D>();
 	}
 
-	void WorldRenderer::SubmitParticleEmitter(Count<class ParticleEmitter> emiter)
+	void WorldRenderer::SubmitParticleEmitter(Count<class ParticleEmitterInstance> emiter)
 	{
 		if (m_Emitters.contains(emiter))
 			return;
@@ -4903,12 +4903,12 @@ namespace Proof
 			}
 
 			m_ParticleRenderPass->SetInput("s_Particles", emiter->m_SBParticlesBuffer);
-			m_ParticleRenderPass->SetInput("u_Texture", emiter->Texture.IsValid() ? emiter->Texture.GetAsset<Texture2D>() : Renderer::GetWhiteTexture());
+			m_ParticleRenderPass->SetInput("u_Texture", emiter->m_Emitter->Texture.IsValid() ? emiter->m_Emitter->Texture.GetAsset<Texture2D>() : Renderer::GetWhiteTexture());
 			Renderer::BeginRenderPass(m_CommandBuffer, m_ParticleRenderPass);
 
 			const uint32_t vertexCount = 6; // POINT_LIST
 			//const uint32_t instanceCount = m_NumParticles;
-			const uint32_t instanceCount = emiter->GetParticleCount();
+			const uint32_t instanceCount = emiter->m_Emitter->GetParticleCount();
 
 			quadVertexBuffer->Bind(m_CommandBuffer);
 			quadIndexBuffer->Bind(m_CommandBuffer);

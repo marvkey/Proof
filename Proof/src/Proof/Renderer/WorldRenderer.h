@@ -212,7 +212,7 @@ namespace Proof
 
 		Count <RenderPass> GetPreDepthRenderPass() { return m_PreDepthPass; }
 
-		void SubmitParticleEmitter(Count<class ParticleEmitter> emiter);
+		void SubmitParticleEmitter(Count<class ParticleEmitterInstance> emiter);
 
 		void SubmitPostProcessMaterial(Count<class Material> material);
 	public:
@@ -487,7 +487,7 @@ namespace Proof
 		Count<ComputePass> m_ParticleUpdateComputePass;
 		Count<RenderPass> m_ParticleRenderPass;
 
-		std::unordered_set<Count<class ParticleEmitter>> m_Emitters;
+		std::unordered_set<Count<class ParticleEmitterInstance>> m_Emitters;
 
 		std::unordered_map<Count<class Shader>, Count<class RenderPass>> m_PostProcessPasses;
 	private:

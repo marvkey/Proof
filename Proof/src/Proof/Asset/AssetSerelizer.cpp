@@ -508,7 +508,7 @@ namespace Proof {
 
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(particleSystem->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << particleSystem->GetID();
-
+		  /*
 		// Serialize emitters
 		out << YAML::Key << "Emitters" << YAML::Value << YAML::BeginSeq; // emitters
 		for (size_t i = 0; i < particleSystem->GetEmitterCount(); ++i)
@@ -598,7 +598,7 @@ namespace Proof {
 			out << YAML::EndMap; // emitter
 		}
 		out << YAML::EndSeq; // emitters
-
+			   */
 		out << YAML::EndMap; // particle system
 
 		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
@@ -615,13 +615,14 @@ namespace Proof {
 		Count<ParticleSystem> particleSystem = Count<ParticleSystem>::Create();
 		SetID(assetData, particleSystem);
 
+#if 0
 		if (!data["Emitters"])
 			return particleSystem;
 
 		for (const auto& emitterNode : data["Emitters"])
 		{
 			Count<ParticleEmitter> emitter;
-
+			 /*
 			if (emitterNode["MaxParticles"])
 			{
 				uint32_t maxParticles = emitterNode["MaxParticles"].as<uint32_t>();
@@ -629,7 +630,7 @@ namespace Proof {
 			}
 			else
 				emitter = Count<ParticleEmitter>::Create();
-
+			*/
 
 			// Initial State
 			auto& init = emitter->ParticleInitialState;
@@ -717,9 +718,9 @@ namespace Proof {
 			uint64_t texID = emitterNode["TextureID"] ? emitterNode["TextureID"].as<uint64_t>() : 0;
 			emitter->Texture = AssetKey<AssetType::Texture>( texID);
 
-			particleSystem->AddEmitter(emitter);
+			//particleSystem->AddEmitter(emitter);
 		}
-
+		#endif
 		return particleSystem;
 	}
 	template<class T, VariableTypes VT>

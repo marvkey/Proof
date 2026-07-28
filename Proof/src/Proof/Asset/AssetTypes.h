@@ -37,7 +37,8 @@ namespace Proof
 		Skeleton,
 		Animation,
 		AnimationController,
-		EnvironmentMap
+		EnvironmentMap ,
+		ParticleEmitter,
 	};
 	enum class AssetState 
 	{

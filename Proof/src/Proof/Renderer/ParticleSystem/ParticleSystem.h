@@ -14,6 +14,14 @@ namespace Proof
 	class ComputePass;
 	class RenderCommandBuffer;
 
+	enum class ParticleSystemState
+	{
+		None,
+		Play,
+		Pause,
+		End
+	};
+
 	struct alignas(16) Particle
 	{
 		glm::vec3 Position = glm::vec3(0,0,0);
@@ -30,8 +38,8 @@ namespace Proof
 	struct ParticleBurst 
 	{
 		float StartTime;     // seconds, emitter-local time
-		uint32_t   Count = 50;         // how many to spawn per burst
-		uint32_t   Cycles = 1;    // how many times to repeat (1 = once)
+		uint32_t  Count = 50;         // how many to spawn per burst
+		uint32_t  Cycles = 1;    // how many times to repeat (1 = once)
 		float Interval = 0;  // seconds between repeats (0 = all at startTime)
 		float Probability = 1.0f; // optional: 0..1 to randomly trigger
 	};
@@ -47,40 +55,54 @@ namespace Proof
 		Count<ComputePass> m_ParticleUpdateComputePass;
 	};
 
-	struct ParticleEmitterConfig
-	{
-		std::string Name;
-		AssetKey<AssetType::Texture> Texture;
-		SBParticleInitalState ParticleInitialState;
-		SBParticleEmitterSettings ParticleEmitterSettings;
-		std::vector< ParticleBurst> Bursts;
-	private:
-	};
-
-
-
-	class ParticleEmitter : public RefCounted
+	class ParticleEmitter : public Asset
 	{
 	public:
-		ParticleEmitter(uint32_t maxParticles = 100);
-		ParticleEmitter(Count<ParticleEmitter> emitter);
-		void OnUpdate(float dt, const Transform& transform, Count<ComputePass> cmdPass);
+
+
+		ParticleEmitter();
+		ASSET_CLASS_TYPE(ParticleEmitter);
+
+		uint32_t GetParticleCount()
+		{
+			return m_MaxParticles;
+		}
+
+		std::vector< ParticleBurst> Bursts;
+		AssetKey<AssetType::Texture> Texture;
 
 		SBParticleInitalState ParticleInitialState;
 		SBParticleEmitterSettings ParticleEmitterSettings;
 
-		uint32_t GetParticleCount();
-		void ResetMaxParticles(uint32_t size);
 
+	private:
+		uint32_t m_MaxParticles = 0;
+		friend class ParticleEmitterInstance;
+
+	};
+
+	class ParticleEmitterInstance : public RefCounted
+	{
+	public:
+		ParticleEmitterInstance(Count<ParticleEmitter> emitter);
+		void OnUpdate(float dt, const Transform& transform, Count<ComputePass> cmdPass);
 		SBParticleTrackableData GetTrackableData();
-		AssetKey<AssetType::Texture> Texture;
-
 		bool ShouldRender();
 
-		std::vector< ParticleBurst> Bursts;
+		void SyncWithParticleEmitter();
+
+		void Play(bool restart = true);
+		void Pause();
+		void Stop();
+
 	private:
+		void Reset(uint32_t maxParticles);
+
+	private:
+
+		ParticleSystemState m_State;
+		uint32_t m_MaxParticles = 0;  
 		float m_ParticleAccumulator = 0.0f;
-		uint32_t m_MaxParticles = 0;
 		glm::vec3 m_CurrentPos = glm::vec3(0.0f), m_PrevPos = glm::vec3(0.0f);
 
 		float m_Time = 0.0f;
@@ -90,128 +112,159 @@ namespace Proof
 		Count<class StorageBuffer> m_SBParticleEmitterSettingsBuffer; // storage cause of align 
 		Count<class StorageBuffer> m_SBTrackableData; // storage cause of align comptue shader will edit this
 		Count<class StorageBuffer> m_SBPerDrawData; // storage cause of align comptue shader will edit this
+
+		Count<ParticleEmitter> m_Emitter;
 		friend class WorldRenderer;
 	};
 
-#if 0
-	class NewParticleEmitter : public RefCounted
+
+	struct ParticleSystemEmitterClip 
 	{
-	public:
-		NewParticleEmitter(Count< ParticleSystem> particleSystem, const ParticleEmitterConfig& config,uint32_t maxParticles = 1000,UUID32 ID  = UUID32());
-		NewParticleEmitter(Count<NewParticleEmitter> emitter);
-
-		uint32_t GetParticleCount();
-		void ResetMaxParticles(uint32_t size);
-		SBParticleTrackableData GetTrackableData();
-	private:
-		ParticleEmitterConfig& m_Config;
-		UUID32 m_ID;
-		friend class ParticleSystem;
-		friend class WorldRenderer;
-	};
-
-	class ParticleEmitterTimelineInstance : public RefCounted
-	{
-		float StartTime;
-		float EndTime;
-		ParticleEmitterTimelineInstance(Count<NewParticleEmitter> emitter);
-
-	private:
-		Count<class ParticleEmitter> m_Emitter;
-	};
-
-	class ParticleEmitterInstance : public RefCounted
-	{
-	public:
-		void OnUpdate(float dt, const Transform& transform, Count<ComputePass> cmdPass);
-		ParticleEmitterInstance(Count<NewParticleEmitter> emitter);
-
-	private:
-		glm::vec3 m_CurrentPos = glm::vec3(0.0f), m_PrevPos = glm::vec3(0.0f);
-		Count<class StorageBuffer> m_SBParticlesBuffer;
-		Count<class StorageBuffer> m_SBParticleParticleInitalState; // storage cause of aling
-		Count<class StorageBuffer> m_SBParticleEmitterSettingsBuffer; // storage cause of align 
-		Count<class StorageBuffer> m_SBTrackableData; // storage cause of align comptue shader will edit this
-		Count<class StorageBuffer> m_SBPerDrawData; // storage cause of align comptue shader will edit this
-	};
-
-
-	class ParticleTimelineLayer
-	{
-	public:
-		std::string Name;
-		std::vector<ParticleEmitterTimelineInstance> Emitters;
-		bool bEnabled = true;
-
-		void AddEmitter(const Count<NewParticleEmitter>& emitter, float startTime, float endTime, bool loop = false)
+		ParticleSystemEmitterClip(AssetKey<AssetType::ParticleEmitter> emitter)
+			:Emitter(emitter)
 		{
-			Emitters.push_back({ emitter, startTime, endTime, loop });
+			
 		}
 
-		void Update(float currentTime, float dt, const Transform& transform, Count<ComputePass> computePass)
+		ParticleSystemEmitterClip()
 		{
-			if (!bEnabled) return;
+			
+		}
+		AssetKey<AssetType::ParticleEmitter> Emitter;
+		float StartTime = 0.0f;
+		bool Looping = false;
+	};
+							 
+	struct ParticleSystemTrack 
+	{
+		ParticleSystemTrack()
+		{
+			
+		}
 
-			for (auto& entry : Emitters)
+		ParticleSystemTrack(const ParticleSystemTrack& track)
+		{
+			Emitter = track.Emitter;
+			Clips = track.Clips;
+
+		}
+
+		AssetKey<AssetType::ParticleEmitter> Emitter;
+		std::vector<ParticleSystemEmitterClip> Clips;
+	};
+
+	struct ParticleSystemTrackInstance
+	{
+		ParticleSystemTrackInstance()
+		{
+			
+		}
+
+
+		ParticleSystemTrackInstance(const ParticleSystemTrack& track)
+		{
+			  if (!track.Emitter.IsValid())
+				return;
+
+			Emitter = track.Emitter;
+			for (auto clip : track.Clips)
 			{
-				if (entry.IsActive(currentTime))
-				{
-					if (!entry.Emitter->Instance)
-						entry.Emitter->Instance = Count<ParticleEmitterInstance>::Create(entry.Emitter);
+				EmitterClipInstance  instnace;
+				instnace.Clip  = clip;
+				instnace.Emitter = Count<ParticleEmitterInstance>::Create(track.Emitter.GetAsset<ParticleEmitter>());
+			}
+			
+		}
 
-					entry.Emitter->Instance->OnUpdate(dt, transform, computePass);
-				}
+		AssetKey<AssetType::ParticleEmitter> Emitter;
+		struct EmitterClipInstance
+		{
+			EmitterClipInstance()
+			{
+				
+			}
+			ParticleSystemEmitterClip Clip;
+			Count<ParticleEmitterInstance> Emitter;
+		};
+
+		std::vector<EmitterClipInstance> EmitterClips;
+	};
+
+
+	class ParticleSystemTimeline : public RefCounted
+	{
+		public:
+
+		ParticleSystemTimeline()
+		{
+			
+		}
+
+		ParticleSystemTimeline(Count<ParticleSystemTimeline> timeline)
+		{
+			for (auto& [id, track] : timeline->m_Tracks)
+			{
+				AssetKey<AssetType::ParticleEmitter> emitter = id;
+				
+				if (!emitter.IsValid())
+					continue;
+
+				m_Tracks[id] = track; // copy track
+				
 			}
 		}
+
+		const std::unordered_map<AssetID, ParticleSystemTrack>& GetTracks(){return m_Tracks;};
+		const std::unordered_map<AssetID, ParticleSystemTrack>& GetTracks()const {return m_Tracks;};
+
+		private:
+		std::unordered_map<AssetID, ParticleSystemTrack> m_Tracks;
+
+
+		friend class ParticleSystemTimelineInstance;
 	};
 
-	class ParticleTimelineLayerManager : public RefCounted
+
+	class ParticleSystemTimelineInstance : public RefCounted
 	{
-	public:
-		void AddLayer(const std::string& name)
+		public:
+		ParticleSystemTimelineInstance(Count<ParticleSystemTimeline> timeline)
+			:m_Timeline(timeline)
 		{
-			if (m_Layers.find(name) == m_Layers.end())
-				m_Layers[name] = ParticleTimelineLayer{ name };
+			SyncWithParticleTimeline();
 		}
 
-		void AddEmitterToLayer(const std::string& layerName, const Count<NewParticleEmitter>& emitter, float startTime, float endTime, bool loop = false)
+		ParticleSystemTimelineInstance(Count<ParticleSystemTimelineInstance> timeline)
+			:m_Timeline(timeline->m_Timeline)
 		{
-			AddLayer(layerName);
-			m_Layers[layerName].AddEmitter(emitter, startTime, endTime, loop);
+			SyncWithParticleTimeline();
 		}
 
-		void UpdateAll(float currentTime, float dt, const Transform& transform, Count<ComputePass> computePass)
+
+		void SyncWithParticleTimeline()
 		{
-			for (auto& [_, layer] : m_Layers)
+			if (m_Timeline == nullptr)
 			{
-				layer.Update(currentTime, dt, transform, computePass);
+				return;
+			}
+
+			m_Tracks.clear();
+			for (auto& [id, track] : m_Timeline->m_Tracks)
+			{
+				AssetKey<AssetType::ParticleEmitter> emitter = id;
+				if (!emitter.IsValid())
+					continue;;
+
+				m_Tracks[id] = ParticleSystemTrackInstance(track);
 			}
 		}
 
-		void SetLayerEnabled(const std::string& name, bool enabled)
-		{
-			if (m_Layers.find(name) != m_Layers.end())
-				m_Layers[name].bEnabled = enabled;
-		}
+		const std::unordered_map<AssetID, ParticleSystemTrackInstance>& GetTracks(){return m_Tracks;};
 
 	private:
-		std::unordered_map<std::string, ParticleTimelineLayer> m_Layers;
-	};
-
-
-#endif
-	enum class ParticleSystemState
-	{
-		None,
-		Play,
-		Pause,
-		End
-	};
-
-	struct ParticleSystemSequencer
-	{
-		std::unordered_set<UUID> Emitters;
-		
+		Count<ParticleSystemTimeline> m_Timeline;
+		std::unordered_map<AssetID, ParticleSystemTrackInstance> m_Tracks;
+		friend class ParticleSystemInstance;
 	};
 
 
@@ -220,62 +273,11 @@ namespace Proof
 	public:
 		ParticleSystem() {};
 		ASSET_CLASS_TYPE(ParticleSystem);
-		// Create a new emitter and return a reference to it
-		Count<ParticleEmitter> CreateEmitter()
-		{
-			auto emitter = Count<ParticleEmitter>::Create(); // assuming Count<T>::New() or equivalent constructor
-			m_Emmiters.push_back(emitter);
-			return emitter;
-		}
 
-		void AddEmitter(Count<ParticleEmitter> emitter)
-		{
-			m_Emmiters.push_back(emitter);
-		}
-		// Get emitter by index
-		Count<ParticleEmitter> GetEmitter(size_t index) const
-		{
-			if (index < m_Emmiters.size())
-				return m_Emmiters[index];
-			return nullptr;
-		}
-
-		// Remove emitter by index
-		void RemoveEmitter(size_t index)
-		{
-			if (index < m_Emmiters.size())
-				m_Emmiters.erase(m_Emmiters.begin() + index);
-		}
-
-		// Get number of emitters
-		size_t GetEmitterCount() const
-		{
-			return m_Emmiters.size();
-		}
-		// State control
-		void Play()
-		{
-			m_State = ParticleSystemState::Play;
-		}
-
-		void Pause()
-		{
-			m_State = ParticleSystemState::Pause;
-		}
-
-		void Stop()
-		{
-			m_State = ParticleSystemState::End;
-		}
-
-		ParticleSystemState GetState() const
-		{
-			return m_State;
-		}
+		Count<ParticleSystemTimeline> GetTimeline(){return m_Timeline;};
 
 	private:
-		std::vector<Count<ParticleEmitter>> m_Emmiters;
-		ParticleSystemState m_State;
+		Count<ParticleSystemTimeline> m_Timeline;
 	};
 
 	class ParticleSystemInstance : public RefCounted
@@ -284,25 +286,40 @@ namespace Proof
 		ParticleSystemInstance(Count<ParticleSystem> system)
 			: m_ParticleSystem(system)
 		{
-			SyncWithParicleSystem();
+			SyncWithParticleSystem();
 		}
-		ParticleSystemInstance();
 		ParticleSystemInstance(Count< ParticleSystemInstance> instnace);
+		ParticleSystemInstance()
+		{
+			
+		}
+
 
 		Count<ParticleSystem> GetParticleSystem() const { return m_ParticleSystem; }
-		void SyncWithParicleSystem();
+		void SyncWithParticleSystem();
 
 		void OnUpdate(float dt, const Transform& transform, Count<ComputePass> cmdPass);
 
-		const std::vector<Count<ParticleEmitter>>& GetEmitters()
-		{
-			return m_Emmiters;
-		};
-
 		void SetParticleSystem(Count<ParticleSystem> system);
+
+		// State control
+		void Play(bool restart = true);
+		void Pause();
+		void Stop();
+
+		ParticleSystemState GetState() const
+		{
+			return m_State;
+		}
+
+		Count<ParticleSystemTimelineInstance> GetTimeline(){return m_Timeline;};
+
 	private:
+
+		float m_Time = 0.0f;
+		float m_PrevTime = 0.0f;
 		Count<ParticleSystem> m_ParticleSystem;
-		std::vector<Count<ParticleEmitter>> m_Emmiters;
+		Count<ParticleSystemTimelineInstance> m_Timeline;
 		ParticleSystemState m_State;
 
 		friend class ParticleSystemEditorPanel;

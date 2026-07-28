@@ -75,6 +75,7 @@ namespace Proof
 		if (!m_World)return;
 
 		Entity particleEntity = m_World->TryGetEntityByTag("Particle");
+		/*
 		if(particleEntity.IsValid())
 		{
 			if(particleEntity.GetComponent<ParticleSystemComponent>().ParticleSytemInstance->m_Emmiters.empty())
@@ -89,6 +90,8 @@ namespace Proof
 		m_World->OnRenderEditor(m_WorldRenderer, deltaTime, m_Camera, [&](Count<WorldRenderer> renderer) {
 			renderer->SubmitParticleEmitter(m_ParticleSystem->GetEmitter(0));
 			});
+			   */
+
 
 		//m_ParticleSystem->GetEmitter(0)->OnUpdate((float)deltaTime, Transform());
 		m_SaveTimer -= deltaTime;
@@ -119,7 +122,7 @@ namespace Proof
 		UI::ScopedStyleVar padding(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 
 		ImGui::Begin("Main Winodw");
-
+		/*
 
 		if (m_ParticleSystem->GetEmitterCount() == 0)
 		{
@@ -328,7 +331,7 @@ namespace Proof
 			ImGui::EndChild();
 		}
 
-		/*
+		
 		static std::vector<ParticleTimelineEvent> event = { ParticleTimelineEvent()};
 		ParticleSequencerInterface sequencer;
 		sequencer.Events = &event;
@@ -339,7 +342,7 @@ namespace Proof
 		static int firstFrame = 0;
 
 		ImSequencer::Sequencer(&sequencer, &currentFrame, &expanded, &selected, &firstFrame, ImSequencer::SEQUENCER_EDIT_ALL);
-		*/
+		   */
 
 		ImGui::End();
 
@@ -396,7 +399,7 @@ namespace Proof
 			world->ForEachEnitityWith<ParticleSystemComponent>([&](Entity e)
 			{
 				if(e.GetComponent<ParticleSystemComponent>().ParticleSytemInstance->GetParticleSystem() == m_ParticleSystem)
-					e.GetComponent<ParticleSystemComponent>().ParticleSytemInstance->SyncWithParicleSystem();
+					e.GetComponent<ParticleSystemComponent>().ParticleSytemInstance->SyncWithParticleSystem();
 			});
 
 		}

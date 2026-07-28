@@ -24,7 +24,7 @@ namespace Proof
                 * glm::toMat4(glm::quat(Rotation))
                 * glm::scale(glm::mat4(1.0f), Scale);
         }
-        std::string ToString();
+        std::string ToString();         
 
 	};
 

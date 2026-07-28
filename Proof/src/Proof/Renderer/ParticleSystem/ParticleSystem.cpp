@@ -76,31 +76,24 @@ namespace Proof
         return nullptr;
     }
 
-    
-	ParticleEmitter::ParticleEmitter(uint32_t maxParticles) :
-        m_ParticleAccumulator(0)
-	{
-        ResetMaxParticles(maxParticles);
-	}
-    ParticleEmitter::ParticleEmitter(Count<ParticleEmitter> otherEmitter)
-        :
-        m_ParticleAccumulator(0)
+    ParticleEmitter::ParticleEmitter()
     {
-        ParticleInitialState = otherEmitter->ParticleInitialState;
-        ParticleEmitterSettings = otherEmitter->ParticleEmitterSettings;
-        Texture = otherEmitter->Texture;
-        Bursts = otherEmitter->Bursts;
-
-        ResetMaxParticles(otherEmitter->m_MaxParticles);
     }
-    void ParticleEmitter::OnUpdate(float dt, const Transform& transform, Count<ComputePass> cmdPass)
+
+    ParticleEmitterInstance::ParticleEmitterInstance(Count<ParticleEmitter> otherEmitter)
+        :
+        m_ParticleAccumulator(0), m_Emitter(otherEmitter)
+    {
+        SyncWithParticleEmitter();
+    }
+    void ParticleEmitterInstance::OnUpdate(float dt, const Transform& transform, Count<ComputePass> cmdPass)
     {
         uint32_t burstSpawn = 0;
 #if 1
         m_PrevTime = m_Time;
         m_Time += dt;
 
-        for (const ParticleBurst& b : Bursts) {
+        for (const ParticleBurst& b :  m_Emitter->Bursts) {
             // For each cycle, check if its burst time lies in (prevTime, time]
             for (int i = 0; i < b.Cycles; ++i) 
             {
@@ -119,17 +112,17 @@ namespace Proof
         {
             m_CurrentPos = transform.Location;
             m_PrevPos = transform.Location;
-            ParticleInitialState.EmitterPosition = transform.Location;
-            ParticleInitialState.EmitterPrevPosition = transform.Location;
+            m_Emitter->ParticleInitialState.EmitterPosition = transform.Location;
+            m_Emitter->ParticleInitialState.EmitterPrevPosition = transform.Location;
         }
 
         m_CurrentPos = transform.Location;
-        ParticleInitialState.EmitterPosition = transform.Location;
+        m_Emitter->ParticleInitialState.EmitterPosition = transform.Location;
 
-        m_SBParticleEmitterSettingsBuffer->SetData(Buffer(&ParticleEmitterSettings, sizeof(SBParticleEmitterSettings)));
-        m_SBParticleParticleInitalState->SetData(Buffer(&ParticleInitialState, sizeof(SBParticleInitalState)));
+        m_SBParticleEmitterSettingsBuffer->SetData(Buffer(&m_Emitter->ParticleEmitterSettings, sizeof(SBParticleEmitterSettings)));
+        m_SBParticleParticleInitalState->SetData(Buffer(&m_Emitter->ParticleInitialState, sizeof(SBParticleInitalState)));
 
-        m_ParticleAccumulator +=float(ParticleEmitterSettings.Emission.ParticlesPerSecond) * dt;
+        m_ParticleAccumulator +=float(m_Emitter->ParticleEmitterSettings.Emission.ParticlesPerSecond) * dt;
 
         int toSpawn = static_cast<int>(floor(m_ParticleAccumulator));
         m_ParticleAccumulator -= toSpawn;
@@ -150,21 +143,20 @@ namespace Proof
         cmdPass->SetInput("PerDrawData", m_SBPerDrawData);
 
         int workGroupSize = 512;
-        int numGroups = (GetParticleCount() + workGroupSize - 1) / workGroupSize;
+        int numGroups = (m_Emitter->GetParticleCount() + workGroupSize - 1) / workGroupSize;
         cmdPass->Dispatch(numGroups, 1, 1);
 
 
         m_PrevPos = transform.Location;
-        ParticleInitialState.EmitterPrevPosition = transform.Location;
+        m_Emitter->ParticleInitialState.EmitterPrevPosition = transform.Location;
     }
 
-    uint32_t ParticleEmitter::GetParticleCount()
-    {
-        return m_MaxParticles;
-    }
 
-    void ParticleEmitter::ResetMaxParticles(uint32_t size)
+    void ParticleEmitterInstance::Reset(uint32_t size)
     {
+        bool sizeChanged = false;
+        if (m_MaxParticles != size)
+            sizeChanged = true;
         m_MaxParticles = size;
 
         // inital setigns for trackable data
@@ -181,21 +173,24 @@ namespace Proof
         {
             // when resize basically reeintialing whoel thing
 
-            std::vector<Particle> pool; pool.resize(m_MaxParticles);
-            m_SBParticlesBuffer->Resize(Buffer(pool.data(), m_MaxParticles * sizeof(Particle)));
-            m_SBTrackableData->SetData(Buffer(&trackableData, sizeof(SBParticleTrackableData)));
+                std::vector<Particle> pool; pool.resize(m_MaxParticles);
+                m_SBParticlesBuffer->Resize(Buffer(pool.data(), m_MaxParticles * sizeof(Particle)));
+                m_SBTrackableData->SetData(Buffer(&trackableData, sizeof(SBParticleTrackableData)));
+           
             return;
         }
 
         std::vector<Particle> pool; pool.resize(m_MaxParticles);
         m_SBParticlesBuffer = StorageBuffer::Create(Buffer(pool.data(),m_MaxParticles * sizeof(Particle)));
-        m_SBParticleEmitterSettingsBuffer = StorageBuffer::Create(Buffer(&ParticleEmitterSettings, sizeof(SBParticleEmitterSettings)));
-        m_SBParticleParticleInitalState = StorageBuffer::Create(Buffer(&ParticleInitialState, sizeof(SBParticleInitalState)));
+        m_SBParticleEmitterSettingsBuffer = StorageBuffer::Create(Buffer(&m_Emitter->ParticleEmitterSettings, sizeof(SBParticleEmitterSettings)));
+        m_SBParticleParticleInitalState = StorageBuffer::Create(Buffer(&m_Emitter->ParticleInitialState, sizeof(SBParticleInitalState)));
         m_SBTrackableData = StorageBuffer::Create(Buffer(&trackableData, sizeof(SBParticleTrackableData)));
         m_SBPerDrawData = StorageBuffer::Create(sizeof(SBParticlePerDrawState));
     }
 
-    SBParticleTrackableData ParticleEmitter::GetTrackableData()
+    
+
+    SBParticleTrackableData ParticleEmitterInstance::GetTrackableData()
     {
         PF_PROFILE_FUNC();
         Buffer buffer = m_SBTrackableData->GetDataRaw();
@@ -206,41 +201,70 @@ namespace Proof
         return data;
     }
 
-    bool ParticleEmitter::ShouldRender()
+    void ParticleEmitterInstance::SyncWithParticleEmitter()
     {
-        return true;
+        Reset(m_Emitter->GetParticleCount());
     }
-  
 
-    ParticleSystemInstance::ParticleSystemInstance()
+    void ParticleEmitterInstance::Play(bool restart)
+    {
+        m_State = ParticleSystemState::Play;
+
+        if (restart)
+            Reset(m_MaxParticles);
+    }
+
+    void ParticleEmitterInstance::Pause()
+    {
+            
+    }
+
+    void ParticleEmitterInstance::Stop()
     {
     }
+
 
     ParticleSystemInstance::ParticleSystemInstance(Count< ParticleSystemInstance> instnace)
     {
         m_ParticleSystem = instnace->m_ParticleSystem;
-
-		SyncWithParicleSystem();
+		SyncWithParticleSystem();
     }
 
-    void ParticleSystemInstance::SyncWithParicleSystem()
+    void ParticleSystemInstance::SyncWithParticleSystem()
     {
         if (m_ParticleSystem == nullptr)
-            return;
-
-        m_Emmiters.clear();
-        m_State = ParticleSystemState::None;
-
-        for (int i = 0; i < m_ParticleSystem->GetEmitterCount(); i++)
         {
-			m_Emmiters.push_back(Count<ParticleEmitter>::Create(m_ParticleSystem->GetEmitter(i)));
+            m_Timeline = nullptr;
+            return;
         }
+
+        m_Timeline = Count<ParticleSystemTimelineInstance>::Create(m_ParticleSystem->GetTimeline());
+        m_State = ParticleSystemState::None;
     }
 
     void ParticleSystemInstance::OnUpdate(float dt, const Transform& transform, Count<ComputePass> cmdPass)
     {
-        for(auto e : m_Emmiters)
-			e->OnUpdate(dt, transform, cmdPass);
+
+        m_PrevTime = m_Time;
+        m_Time += dt;
+        for(auto& [id,track] : m_Timeline->m_Tracks)
+        {
+            AssetKey<AssetType::ParticleSystem> emmiter = id;
+            if (!emmiter.IsValid())
+                return;
+
+            for (auto& emitterClip : track.EmitterClips)
+            {
+
+                const float startTime = emitterClip.Clip.StartTime;
+
+                //if (m_PrevTime < startTime && m_Time >= startTime)
+                //    emitterClip.Emitter->Play(true);
+
+                if (m_Time >= startTime)
+                    emitterClip.Emitter->OnUpdate(dt, transform, cmdPass);
+            }
+        }
     }
 
     void ParticleSystemInstance::SetParticleSystem(Count<ParticleSystem> system)
@@ -248,13 +272,26 @@ namespace Proof
         if (system == nullptr)
         {
             m_ParticleSystem = nullptr;
-            m_Emmiters.clear();
 			m_State = ParticleSystemState::None;
         }
 
         m_ParticleSystem = system;
 
-		SyncWithParicleSystem();
+		SyncWithParticleSystem();
     }
 
+    void ParticleSystemInstance::Play(bool restart)
+    {
+
+    }
+
+    void ParticleSystemInstance::Pause()
+    {
+
+    }
+
+    void ParticleSystemInstance::Stop()
+    {
+
+    }
 }
