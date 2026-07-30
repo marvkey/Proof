@@ -172,16 +172,16 @@ namespace Proof
 
 	}
 
-	ParticleSystemComponent::ParticleSystemComponent(const ParticleSystemComponent& other)
+	ParticleEffectComponent::ParticleEffectComponent(const ParticleEffectComponent& other)
 	{
-		ParticleSytemInstance = Count<class ParticleSystemInstance>::Create(other.ParticleSytemInstance);
+		ParticleEffect = Count<class ParticleEffect>::Create(other.ParticleEffect);
 		//if (other.ParticleHandlerTable)
 		//	ParticleHandlerTable = Count<class ParticleHandlerTable>::CreateFrom(other.ParticleHandlerTable);
 	}
 
-	ParticleSystemComponent::ParticleSystemComponent()
+	ParticleEffectComponent::ParticleEffectComponent()
 	{
-		ParticleSytemInstance = Count<class ParticleSystemInstance>::Create();
+		ParticleEffect = Count<class ParticleEffect>::Create();
 	}
 
 	PlayerHUDComponent::PlayerHUDComponent(const PlayerHUDComponent& other)

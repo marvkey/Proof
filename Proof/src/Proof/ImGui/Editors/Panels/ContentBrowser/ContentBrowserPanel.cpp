@@ -316,6 +316,9 @@ namespace Proof
 								if(ImGui::MenuItem("AnimationController"))
 									CreateAsset<AnimationController>("New AnimationController");
 
+								if (ImGui::MenuItem("ParticleEmitter"))
+									CreateAsset<ParticleEmitter>("New ParticleEmitter");
+
 								if (ImGui::MenuItem("ParticleSystem"))
 									CreateAsset<ParticleSystem>("New ParticleSystem");
 

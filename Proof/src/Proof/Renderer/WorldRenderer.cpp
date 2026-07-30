@@ -4884,12 +4884,14 @@ namespace Proof
 		}
 
 
-		for (auto emiter : m_Emitters)
+		for (auto& emiter : m_Emitters)
 		{
+			if (emiter->m_State == ParticleSystemState::Play)
 			{
-				/*
+				
 				m_ParticleUpdateComputePass->SetInput("s_Particles", emiter->m_SBParticlesBuffer);
-				m_ParticleUpdateComputePass->SetInput("ParticleInitialState", emiter->m_SBParticleParticleInitalState);
+				m_ParticleUpdateComputePass->SetInput("ParticleInitialState", emiter->m_SBParticleParticleInitialState);
+				m_ParticleUpdateComputePass->SetInput("ParticleInstanceState", emiter->m_SBParticleParticleInstanceState);
 				m_ParticleUpdateComputePass->SetInput("EmitterSettings", emiter->m_SBParticleEmitterSettingsBuffer);
 				m_ParticleUpdateComputePass->SetInput("TrackableData", emiter->m_SBTrackableData);
 				m_ParticleUpdateComputePass->SetInput("PerDrawData", emiter->m_SBPerDrawData);
@@ -4899,7 +4901,7 @@ namespace Proof
 				int numGroups = (emiter->GetParticleCount() + workGroupSize - 1) / workGroupSize;
 				m_ParticleUpdateComputePass->Dispatch(numGroups, 1, 1);
 				Renderer::EndComputePass(m_ParticleUpdateComputePass);
-				*/
+				
 			}
 
 			m_ParticleRenderPass->SetInput("s_Particles", emiter->m_SBParticlesBuffer);

@@ -66,6 +66,7 @@ namespace Proof
 			s_AssetManagerData->AssetSerilizer[AssetType::Animation] = CreateSpecial<AnimationSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::Skeleton] = CreateSpecial<SkeletonSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::AnimationController] = CreateSpecial<AnimationControllerSerializer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::ParticleEmitter] = CreateSpecial<ParticleEmitterSerilizer>();
 		}
 
 		{

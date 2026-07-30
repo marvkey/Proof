@@ -803,32 +803,32 @@ namespace Proof
         #endregion
 
 
-        #region ParticleSystemComponent
+        #region ParticleEffectComponent
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool ParticleSystemComponent_HasParticleIndex(ulong entityID, uint tableIndex);
+        internal extern static bool ParticleEffectComponent_HasParticleIndex(ulong entityID, uint tableIndex);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool ParticleSystemComponent_ParticleIndexHasParticle(ulong entityID, uint tableIndex);
+        internal extern static bool ParticleEffectComponent_ParticleIndexHasParticle(ulong entityID, uint tableIndex);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static bool ParticleSystemComponent_GetVisible(ulong entityID, uint tableIndex);
+        internal extern static bool ParticleEffectComponent_GetVisible(ulong entityID, uint tableIndex);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void ParticleSystemComponent_SetVisible(ulong entityID, uint tableIndex, ref bool visible);
+        internal extern static void ParticleEffectComponent_SetVisible(ulong entityID, uint tableIndex, ref bool visible);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void ParticleSystemComponent_Play(ulong entityID, uint tableIndex);
+        internal extern static void ParticleEffectComponent_Play(ulong entityID, uint tableIndex);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void ParticleSystemComponent_Pause(ulong entityID, uint tableIndex);
+        internal extern static void ParticleEffectComponent_Pause(ulong entityID, uint tableIndex);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void ParticleSystemComponent_End(ulong entityID, uint tableIndex);
+        internal extern static void ParticleEffectComponent_End(ulong entityID, uint tableIndex);
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void ParticleSystemComponent_Restart(ulong entityID, uint tableIndex);
+        internal extern static void ParticleEffectComponent_Restart(ulong entityID, uint tableIndex);
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static int ParticleSystemComponent_GetState(ulong entityID, uint tableIndex);
+        internal extern static int ParticleEffectComponent_GetState(ulong entityID, uint tableIndex);
         
         //returns all particle indexes
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
-        internal extern static void ParticleSystemComponent_GetParticles(ulong entityID, ref uint[] types);
+        internal extern static void ParticleEffectComponent_GetParticles(ulong entityID, ref uint[] types);
         #endregion
 
         #region AssetID

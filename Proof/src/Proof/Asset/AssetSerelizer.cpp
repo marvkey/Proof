@@ -500,111 +500,224 @@ namespace Proof {
 
 		return prefab;
 	}
+
+	void ParticleEmitterSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
+	{
+
+		Count<ParticleEmitter> emitter = asset.As<ParticleEmitter>();
+
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(emitter->GetAssetType());
+		out << YAML::Key << "ID" << YAML::Value << emitter->GetID();
+		out << YAML::Key << "MaxParticles" << YAML::Value << emitter->GetParticleCount();
+
+		const auto& init = emitter->ParticleInitialState;
+		out << YAML::Key << "InitialState" << YAML::Value << YAML::BeginMap;
+		out << YAML::Key << "Duration" << YAML::Value << init.Duration;
+		out << YAML::Key << "StartLifetime" << YAML::Value << init.StartLifetime;
+		out << YAML::Key << "StartSpeed" << YAML::Value << init.StartSpeed;
+		out << YAML::Key << "StartSize" << YAML::Value << init.StartSize;
+		out << YAML::Key << "GravityModifier" << YAML::Value << init.GravityModifier;
+		out << YAML::Key << "StartColor" << YAML::Value << init.StartColor;
+		out << YAML::Key << "FadeOutSpeed" << YAML::Value << init.FadeOutSpeed;
+		out << YAML::EndMap;
+
+		out << YAML::Key << "Bursts" << YAML::Value << YAML::BeginSeq;
+		for (const auto& burst : emitter->Bursts)
+		{
+			out << YAML::BeginMap;
+			out << YAML::Key << "StartTime" << YAML::Value << burst.StartTime;
+			out << YAML::Key << "Count" << YAML::Value << burst.Count;
+			out << YAML::Key << "Cycles" << YAML::Value << burst.Cycles;
+			out << YAML::Key << "Interval" << YAML::Value << burst.Interval;
+			out << YAML::Key << "Probability" << YAML::Value << burst.Probability;
+			out << YAML::EndMap;
+		}
+		out << YAML::EndSeq;
+
+		const auto& settings = emitter->ParticleEmitterSettings;
+
+		out << YAML::Key << "Emission" << YAML::Value << YAML::BeginMap;
+		out << YAML::Key << "ParticlesPerSecond" << YAML::Value << settings.Emission.ParticlesPerSecond;
+		out << YAML::Key << "ParticlesPerDistance" << YAML::Value << settings.Emission.ParticlesPerDistance;
+		out << YAML::EndMap;
+
+		out << YAML::Key << "Shape" << YAML::Value << YAML::BeginMap;
+		out << YAML::Key << "Shape" << YAML::Value << settings.Shape.Shape;
+		out << YAML::Key << "RandomizeDirection" << YAML::Value << settings.Shape.RandomizeDirection;
+		out << YAML::Key << "SpherizeDirection" << YAML::Value << settings.Shape.SpherizeDirection;
+		out << YAML::Key << "RandomizePosition" << YAML::Value << settings.Shape.RandomizePosition;
+		out << YAML::Key << "bEnabled" << YAML::Value << settings.Shape.bEnabled;
+		out << YAML::Key << "ConeRadius" << YAML::Value << settings.Shape.ConeRadius;
+		out << YAML::Key << "ConeAngleDegrees" << YAML::Value << settings.Shape.ConeAngleDegrees;
+		out << YAML::Key << "SphereRadius" << YAML::Value << settings.Shape.SphereRadius;
+		out << YAML::EndMap;
+
+		out << YAML::Key << "VelocityOverLifeTime" << YAML::Value << YAML::BeginMap;
+		out << YAML::Key << "Linear" << YAML::Value << settings.VelocityOverLifeTime.Linear;
+		out << YAML::Key << "SpeedModifier" << YAML::Value << settings.VelocityOverLifeTime.SpeedModifier;
+		out << YAML::Key << "Orbital" << YAML::Value << settings.VelocityOverLifeTime.Orbital;
+		out << YAML::Key << "Radial" << YAML::Value << settings.VelocityOverLifeTime.Radial;
+		out << YAML::Key << "Offset" << YAML::Value << settings.VelocityOverLifeTime.Offset;
+		out << YAML::Key << "bEnabled" << YAML::Value << settings.VelocityOverLifeTime.bEnabled;
+		out << YAML::EndMap;
+
+		out << YAML::Key << "ColorOverLifeTime" << YAML::Value << YAML::BeginMap;
+		out << YAML::Key << "bEnabled" << YAML::Value << settings.ColorOverLifeTime.bEnabled;
+		out << YAML::Key << "FinalColor" << YAML::Value << settings.ColorOverLifeTime.FinalColor;
+		out << YAML::EndMap;
+
+		out << YAML::Key << "SizeOverLifeTime" << YAML::Value << YAML::BeginMap;
+		out << YAML::Key << "FinalSize" << YAML::Value << settings.SizeOverlifeTime.FinalSize;
+		out << YAML::Key << "bEnabled" << YAML::Value << settings.SizeOverlifeTime.bEnabled;
+		out << YAML::EndMap;
+
+		out << YAML::Key << "TextureID" << YAML::Value << (emitter->Texture.IsValid() ? (uint64_t)emitter->Texture.GetAssetID() : 0);
+
+		out << YAML::EndMap;
+
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		stream << out.c_str();
+		stream.close();
+		
+		
+	}
+
+	Count<class Asset> ParticleEmitterSerilizer::TryLoadAsset(const AssetInfo& assetData) const
+	{
+		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		if (!data["AssetType"])
+			return nullptr;
+
+		Count<ParticleEmitter> emitter = Count<ParticleEmitter>::Create();
+		SetID(assetData, emitter);
+
+		if (data["MaxParticles"])
+			emitter->m_MaxParticles = (data["MaxParticles"].as<uint32_t>());
+
+		auto& init = emitter->ParticleInitialState;
+		if (auto node = data["InitialState"])
+		{
+			init.Duration = node["Duration"].as<float>(init.Duration);
+			init.StartLifetime = node["StartLifetime"].as<float>(init.StartLifetime);
+			init.StartSpeed = node["StartSpeed"].as<float>(init.StartSpeed);
+			init.StartSize = node["StartSize"].as<glm::vec3>(init.StartSize);
+			init.GravityModifier = node["GravityModifier"].as<float>(init.GravityModifier);
+			init.StartColor = node["StartColor"].as<glm::vec4>(init.StartColor);
+			init.FadeOutSpeed = node["FadeOutSpeed"].as<float>(init.FadeOutSpeed);
+		}
+
+		if (auto burstsNode = data["Bursts"])
+		{
+			emitter->Bursts.clear();
+
+			if (burstsNode.IsSequence())
+			{
+				for (const auto& node : burstsNode)
+				{
+					ParticleBurst burst{};
+					burst.StartTime = node["StartTime"].as<float>(burst.StartTime);
+					burst.Count = node["Count"].as<uint32_t>(burst.Count);
+					burst.Cycles = node["Cycles"].as<uint32_t>(burst.Cycles);
+					burst.Interval = node["Interval"].as<float>(burst.Interval);
+					burst.Probability = node["Probability"].as<float>(burst.Probability);
+					emitter->Bursts.emplace_back(burst);
+				}
+			}
+		}
+
+		auto& settings = emitter->ParticleEmitterSettings;
+
+		if (auto node = data["Emission"])
+		{
+			settings.Emission.ParticlesPerSecond = node["ParticlesPerSecond"].as<uint32_t>(settings.Emission.ParticlesPerSecond);
+			settings.Emission.ParticlesPerDistance = node["ParticlesPerDistance"].as<uint32_t>(settings.Emission.ParticlesPerDistance);
+		}
+
+		if (auto node = data["Shape"])
+		{
+			settings.Shape.Shape = node["Shape"].as<int>(settings.Shape.Shape);
+			settings.Shape.RandomizeDirection = node["RandomizeDirection"].as<float>(settings.Shape.RandomizeDirection);
+			settings.Shape.SpherizeDirection = node["SpherizeDirection"].as<float>(settings.Shape.SpherizeDirection);
+			settings.Shape.RandomizePosition = node["RandomizePosition"].as<float>(settings.Shape.RandomizePosition);
+			settings.Shape.bEnabled = node["bEnabled"].as<int>(settings.Shape.bEnabled);
+			settings.Shape.ConeRadius = node["ConeRadius"].as<float>(settings.Shape.ConeRadius);
+			settings.Shape.ConeAngleDegrees = node["ConeAngleDegrees"].as<float>(settings.Shape.ConeAngleDegrees);
+			settings.Shape.SphereRadius = node["SphereRadius"].as<float>(settings.Shape.SphereRadius);
+		}
+
+		if (auto node = data["VelocityOverLifeTime"])
+		{
+			settings.VelocityOverLifeTime.Linear = node["Linear"].as<glm::vec3>(settings.VelocityOverLifeTime.Linear);
+			settings.VelocityOverLifeTime.SpeedModifier = node["SpeedModifier"].as<float>(settings.VelocityOverLifeTime.SpeedModifier);
+			settings.VelocityOverLifeTime.Orbital = node["Orbital"].as<glm::vec3>(settings.VelocityOverLifeTime.Orbital);
+			settings.VelocityOverLifeTime.Radial = node["Radial"].as<float>(settings.VelocityOverLifeTime.Radial);
+			settings.VelocityOverLifeTime.Offset = node["Offset"].as<glm::vec3>(settings.VelocityOverLifeTime.Offset);
+			settings.VelocityOverLifeTime.bEnabled = node["bEnabled"].as<int>(settings.VelocityOverLifeTime.bEnabled);
+		}
+
+		if (auto node = data["ColorOverLifeTime"])
+		{
+			settings.ColorOverLifeTime.bEnabled = node["bEnabled"].as<int>(settings.ColorOverLifeTime.bEnabled);
+			settings.ColorOverLifeTime.FinalColor = node["FinalColor"].as<glm::vec4>(settings.ColorOverLifeTime.FinalColor);
+		}
+
+		if (auto node = data["SizeOverLifeTime"])
+		{
+			settings.SizeOverlifeTime.FinalSize = node["FinalSize"].as<glm::vec3>(settings.SizeOverlifeTime.FinalSize);
+			settings.SizeOverlifeTime.bEnabled = node["bEnabled"].as<int>(settings.SizeOverlifeTime.bEnabled);
+		}
+
+		uint64_t textureID = data["TextureID"].as<uint64_t>(0);
+		emitter->Texture = AssetKey<AssetType::Texture>(textureID);
+
+		return emitter;
+	}
+
 	void ParticleSystemSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
 	{
 		Count<ParticleSystem> particleSystem = asset.As<ParticleSystem>();
+
 		YAML::Emitter out;
-		out << YAML::BeginMap; // particle system
+		out << YAML::BeginMap;
 
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(particleSystem->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << particleSystem->GetID();
-		  /*
-		// Serialize emitters
-		out << YAML::Key << "Emitters" << YAML::Value << YAML::BeginSeq; // emitters
-		for (size_t i = 0; i < particleSystem->GetEmitterCount(); ++i)
+
+		out << YAML::Key << "Tracks" << YAML::Value << YAML::BeginSeq;
+
+		if (particleSystem->m_Timeline)
 		{
-			auto emitter = particleSystem->GetEmitter(i);
-			out << YAML::BeginMap;
-			out << YAML::Key << "MaxParticles" << YAML::Value << emitter->GetParticleCount();
-
-			// Serialize Initial State
-			const auto& init = emitter->ParticleInitialState;
-			out << YAML::Key << "InitialState" << YAML::BeginMap;
-			out << YAML::Key << "Duration" << YAML::Value << init.Duration;
-			out << YAML::Key << "bLooping" << YAML::Value << init.bLooping;
-			out << YAML::Key << "StartLifetime" << YAML::Value << init.StartLifetime;
-			out << YAML::Key << "StartSpeed" << YAML::Value << init.StartSpeed;
-			out << YAML::Key << "StartSize" << YAML::Value << init.StartSize;
-			out << YAML::Key << "GravityModifier" << YAML::Value << init.GravityModifier;
-			out << YAML::Key << "StartColor" << YAML::Value << init.StartColor;
-			out << YAML::Key << "EmitterPosition" << YAML::Value << init.EmitterPosition;
-			out << YAML::Key << "FadeOutSpeed" << YAML::Value << init.FadeOutSpeed;
-			out << YAML::Key << "EmitterPrevPosition" << YAML::Value << init.EmitterPrevPosition;
-			out << YAML::EndMap; // initial state
-
-			const auto& bursts = emitter->Bursts; // or emitter->GetBursts()
-			out << YAML::Key << "Bursts" << YAML::Value << YAML::BeginSeq;
-			for (const auto& b : bursts)
+			for (const auto& [trackID, track] : particleSystem->m_Timeline->GetTracks())
 			{
 				out << YAML::BeginMap;
-				out << YAML::Key << "StartTime" << YAML::Value << b.StartTime;
-				out << YAML::Key << "Count" << YAML::Value << b.Count;
-				out << YAML::Key << "Cycles" << YAML::Value << b.Cycles;
-				out << YAML::Key << "Interval" << YAML::Value << b.Interval;
-				out << YAML::Key << "Probability" << YAML::Value << b.Probability;
+				out << YAML::Key << "TrackID" << YAML::Value << (uint64_t)trackID;
+				out << YAML::Key << "EmitterID" << YAML::Value << (track.Emitter.IsValid() ? (uint64_t)track.Emitter.GetAssetID() : 0);
+
+				out << YAML::Key << "Clips" << YAML::Value << YAML::BeginSeq;
+
+				for (const auto& clip : track.Clips)
+				{
+					out << YAML::BeginMap;
+					out << YAML::Key << "StartTime" << YAML::Value << clip.StartTime;
+					out << YAML::EndMap;
+				}
+
+				out << YAML::EndSeq;
 				out << YAML::EndMap;
 			}
-			out << YAML::EndSeq;
-
-			// Serialize Emitter Settings
-			const auto& settings = emitter->ParticleEmitterSettings;
-
-			// Emission
-			out << YAML::Key << "Emission" << YAML::BeginMap;
-			out << YAML::Key << "ParticlesPerSecond" << YAML::Value << settings.Emission.ParticlesPerSecond;
-			out << YAML::Key << "ParticlesPerDistance" << YAML::Value << settings.Emission.ParticlesPerDistance;
-			out << YAML::EndMap;
-
-			// Shape
-			out << YAML::Key << "Shape" << YAML::BeginMap;
-			out << YAML::Key << "Shape" << YAML::Value << settings.Shape.Shape;
-			out << YAML::Key << "RandomizeDirection" << YAML::Value << settings.Shape.RandomizeDirection;
-			out << YAML::Key << "SpherizeDirection" << YAML::Value << settings.Shape.SpherizeDirection;
-			out << YAML::Key << "RandomizePosition" << YAML::Value << settings.Shape.RandomizePosition;
-			out << YAML::Key << "bEnabled" << YAML::Value << settings.Shape.bEnabled;
-			out << YAML::Key << "ConeRadius" << YAML::Value << settings.Shape.ConeRadius;
-			out << YAML::Key << "ConeAngleDegrees" << YAML::Value << settings.Shape.ConeAngleDegrees;
-			out << YAML::Key << "SphereRadius" << YAML::Value << settings.Shape.SphereRadius;
-			out << YAML::EndMap;
-
-			// Velocity Over Lifetime
-			out << YAML::Key << "VelocityOverLifeTime" << YAML::BeginMap;
-			out << YAML::Key << "Linear" << YAML::Value << settings.VelocityOverLifeTime.Linear;
-			out << YAML::Key << "SpeedModifier" << YAML::Value << settings.VelocityOverLifeTime.SpeedModifier;
-			out << YAML::Key << "Orbital" << YAML::Value << settings.VelocityOverLifeTime.Orbital;
-			out << YAML::Key << "Radial" << YAML::Value << settings.VelocityOverLifeTime.Radial;
-			out << YAML::Key << "Offset" << YAML::Value << settings.VelocityOverLifeTime.Offset;
-			out << YAML::Key << "bEnabled" << YAML::Value << settings.VelocityOverLifeTime.bEnabled;
-			out << YAML::EndMap;
-
-			// Color Over Lifetime
-			out << YAML::Key << "ColorOverLifeTime" << YAML::BeginMap;
-			out << YAML::Key << "bEnabled" << YAML::Value << settings.ColorOverLifeTime.bEnabled;
-			out << YAML::Key << "FinalColor" << YAML::Value << settings.ColorOverLifeTime.FinalColor;
-			out << YAML::EndMap;
-
-			// Size Over Lifetime
-			out << YAML::Key << "SizeOverLifeTime" << YAML::BeginMap;
-			out << YAML::Key << "FinalSize" << YAML::Value << settings.SizeOverlifeTime.FinalSize;
-			out << YAML::Key << "bEnabled" << YAML::Value << settings.SizeOverlifeTime.bEnabled;
-			out << YAML::EndMap;
-
-			// Optional: texture ID
-			if (emitter->Texture.IsValid())
-				out << YAML::Key << "TextureID" << YAML::Value << (uint64_t)emitter->Texture.GetAssetID();
-			else
-				out << YAML::Key << "TextureID" << YAML::Value << 0;
-
-			out << YAML::EndMap; // emitter
 		}
-		out << YAML::EndSeq; // emitters
-			   */
-		out << YAML::EndMap; // particle system
+
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
 
 		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
 		stream << out.c_str();
 		stream.close();
 	}
+
 
 	Count<class Asset> ParticleSystemSerilizer::TryLoadAsset(const AssetInfo& assetData)const
 	{
@@ -615,112 +728,34 @@ namespace Proof {
 		Count<ParticleSystem> particleSystem = Count<ParticleSystem>::Create();
 		SetID(assetData, particleSystem);
 
-#if 0
-		if (!data["Emitters"])
+		if (!data["Tracks"])
 			return particleSystem;
 
-		for (const auto& emitterNode : data["Emitters"])
+		Count<ParticleSystemTimeline> timeline = Count<ParticleSystemTimeline>::Create();
+
+		for (const auto& trackNode : data["Tracks"])
 		{
-			Count<ParticleEmitter> emitter;
-			 /*
-			if (emitterNode["MaxParticles"])
-			{
-				uint32_t maxParticles = emitterNode["MaxParticles"].as<uint32_t>();
-				emitter = Count<ParticleEmitter>::Create(maxParticles);
-			}
-			else
-				emitter = Count<ParticleEmitter>::Create();
-			*/
+			ParticleSystemTrack track;
 
-			// Initial State
-			auto& init = emitter->ParticleInitialState;
-			if (auto node = emitterNode["InitialState"])
-			{
-				init.Duration = node["Duration"].as<float>(init.Duration);
-				init.bLooping = node["bLooping"].as<int>(init.bLooping);
-				init.StartLifetime = node["StartLifetime"].as<float>(init.StartLifetime);
-				init.StartSpeed = node["StartSpeed"].as<float>(init.StartSpeed);
-				init.StartSize = node["StartSize"].as<glm::vec3>(init.StartSize);
-				init.GravityModifier = node["GravityModifier"].as<float>(init.GravityModifier);
-				init.StartColor = node["StartColor"].as<glm::vec4>(init.StartColor);
-				init.EmitterPosition = node["EmitterPosition"].as<glm::vec3>(init.EmitterPosition);
-				init.FadeOutSpeed = node["FadeOutSpeed"].as<float>(init.FadeOutSpeed);
-				init.EmitterPrevPosition = node["EmitterPrevPosition"].as<glm::vec3>(init.EmitterPrevPosition);
-			}
+			uint64_t emitterID = trackNode["EmitterID"].as<uint64_t>(0);
+			track.Emitter = AssetKey<AssetType::ParticleEmitter>(emitterID);
 
-			// Bursts
-			if (auto burstsNode = emitterNode["Bursts"])
+			if (auto clipsNode = trackNode["Clips"])
 			{
-				emitter->Bursts.clear();
-				if (burstsNode.IsSequence())
+				for (const auto& clipNode : clipsNode)
 				{
-					for (const auto& n : burstsNode)
-					{
-						ParticleBurst b{};
-						b.StartTime = n["StartTime"] ? n["StartTime"].as<float>() : 0.0f;
-						b.Count = n["Count"] ? n["Count"].as<uint32_t>() : 50;
-						b.Cycles = n["Cycles"] ? n["Cycles"].as<uint32_t>() : b.Cycles;
-						b.Interval = n["Interval"] ? n["Interval"].as<float>() : b.Interval;
-						b.Probability = n["Probability"] ? n["Probability"].as<float>() : b.Probability;
-						emitter->Bursts.push_back(b);
-					}
+					ParticleSystemEmitterClip clip(track.Emitter);
+					clip.StartTime = clipNode["StartTime"].as<float>(0.0f);
+
+					track.Clips.emplace_back(clip);
 				}
 			}
 
-			// Emitter Settings
-			auto& settings = emitter->ParticleEmitterSettings;
-
-			// Emission
-			if (auto node = emitterNode["Emission"])
-			{
-				settings.Emission.ParticlesPerSecond = node["ParticlesPerSecond"].as<float>(settings.Emission.ParticlesPerSecond);
-				settings.Emission.ParticlesPerDistance = node["ParticlesPerDistance"].as<float>(settings.Emission.ParticlesPerDistance);
-			}
-
-			// Shape
-			if (auto node = emitterNode["Shape"])
-			{
-				settings.Shape.Shape = node["Shape"].as<int>(settings.Shape.Shape);
-				settings.Shape.RandomizeDirection = node["RandomizeDirection"].as<float>(settings.Shape.RandomizeDirection);
-				settings.Shape.SpherizeDirection = node["SpherizeDirection"].as<float>(settings.Shape.SpherizeDirection);
-				settings.Shape.RandomizePosition = node["RandomizePosition"].as<float>(settings.Shape.RandomizePosition);
-				settings.Shape.bEnabled = node["bEnabled"].as<int>(settings.Shape.bEnabled);
-				settings.Shape.ConeRadius = node["ConeRadius"].as<float>(settings.Shape.ConeRadius);
-				settings.Shape.ConeAngleDegrees = node["ConeAngleDegrees"].as<float>(settings.Shape.ConeAngleDegrees);
-				settings.Shape.SphereRadius = node["SphereRadius"].as<float>(settings.Shape.SphereRadius);
-			}
-
-			// Velocity Over Lifetime
-			if (auto node = emitterNode["VelocityOverLifeTime"])
-			{
-				settings.VelocityOverLifeTime.Linear = node["Linear"].as<glm::vec3>(settings.VelocityOverLifeTime.Linear);
-				settings.VelocityOverLifeTime.SpeedModifier = node["SpeedModifier"].as<float>(settings.VelocityOverLifeTime.SpeedModifier);
-				settings.VelocityOverLifeTime.Orbital = node["Orbital"].as<glm::vec3>(settings.VelocityOverLifeTime.Orbital);
-				settings.VelocityOverLifeTime.Radial = node["Radial"].as<float>(settings.VelocityOverLifeTime.Radial);
-				settings.VelocityOverLifeTime.Offset = node["Offset"].as<glm::vec3>(settings.VelocityOverLifeTime.Offset);
-				settings.VelocityOverLifeTime.bEnabled = node["bEnabled"].as<int>(settings.VelocityOverLifeTime.bEnabled);
-			}
-
-			// Color Over Lifetime
-			if (auto node = emitterNode["ColorOverLifeTime"])
-			{
-				settings.ColorOverLifeTime.bEnabled = node["bEnabled"].as<int>(settings.ColorOverLifeTime.bEnabled);
-				settings.ColorOverLifeTime.FinalColor = node["FinalColor"].as<glm::vec4>(settings.ColorOverLifeTime.FinalColor);
-			}
-
-			// Size Over Lifetime
-			if (auto node = emitterNode["SizeOverLifeTime"])
-			{
-				settings.SizeOverlifeTime.FinalSize = node["FinalSize"].as<glm::vec3>(settings.SizeOverlifeTime.FinalSize);
-				settings.SizeOverlifeTime.bEnabled = node["bEnabled"].as<int>(settings.SizeOverlifeTime.bEnabled);
-			}
-
-			uint64_t texID = emitterNode["TextureID"] ? emitterNode["TextureID"].as<uint64_t>() : 0;
-			emitter->Texture = AssetKey<AssetType::Texture>( texID);
-
-			//particleSystem->AddEmitter(emitter);
+			timeline->AddTrack(track);
 		}
-		#endif
+
+		particleSystem->m_Timeline = timeline;
+
 		return particleSystem;
 	}
 	template<class T, VariableTypes VT>

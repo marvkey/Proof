@@ -716,13 +716,12 @@ namespace Proof
 
 	};
 
-	struct ParticleSystemComponent 
+	struct ParticleEffectComponent 
 	{
 	public:
-		ParticleSystemComponent(const ParticleSystemComponent& other);
-		ParticleSystemComponent();
-		//Count< class ParticleHandlerTable> ParticleHandlerTable;
-		Count<class ParticleSystemInstance> ParticleSytemInstance ;
+		ParticleEffectComponent(const ParticleEffectComponent& other);
+		ParticleEffectComponent();
+		Count<class ParticleEffect> ParticleEffect ;
 	};
 
 	struct PlayerHUDComponent 
@@ -858,7 +857,7 @@ namespace Proof
 		ComponentGroup<IDComponent, TagComponent, HierarchyComponent, TransformComponent, PrefabComponent,
 		MeshComponent,DynamicMeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent, CharacterControllerComponent,
 		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent, RigidBodyComponent, // rigid body should be here due to if we spawn entity we want to check if it has any collider then we add rigidbody on it
-		ScriptComponent, TextComponent,PlayerStartComponent, PlayerInputComponent, PlayerHUDComponent, ParticleSystemComponent, AudioComponent, AudioListenerComponent,
+		ScriptComponent, TextComponent,PlayerStartComponent, PlayerInputComponent, PlayerHUDComponent, ParticleEffectComponent, AudioComponent, AudioListenerComponent,
 		WaterComponent, BuoyancyComponent, TerrainComponent, WorldHUDComponent, PostProcessVolumeComponent, BoidFlockComponent>;
 	
 

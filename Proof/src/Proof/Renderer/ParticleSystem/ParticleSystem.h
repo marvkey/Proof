@@ -71,13 +71,15 @@ namespace Proof
 		std::vector< ParticleBurst> Bursts;
 		AssetKey<AssetType::Texture> Texture;
 
-		SBParticleInitalState ParticleInitialState;
+		SBParticleInitialSettings ParticleInitialState;
 		SBParticleEmitterSettings ParticleEmitterSettings;
 
 
 	private:
-		uint32_t m_MaxParticles = 0;
+		uint32_t m_MaxParticles = 1000;
 		friend class ParticleEmitterInstance;
+		friend class ParticleEmitterPanel;
+		friend class ParticleEmitterSerilizer;
 
 	};
 
@@ -93,30 +95,42 @@ namespace Proof
 
 		void Play(bool restart = true);
 		void Pause();
-		void Stop();
+		void Stop(bool waitUntilFinish = false);
+
+		uint32_t GetParticleCount()
+		{
+			return m_MaxParticles;
+		}
+
+		SBParticleInstanceState ParticleInstanceState;
 
 	private:
 		void Reset(uint32_t maxParticles);
-
+		friend class ParticleEmitterPanel;
 	private:
+		ParticleSystemState m_State = ParticleSystemState::None;
+		bool m_WaitUntilFinish = false;
 
-		ParticleSystemState m_State;
-		uint32_t m_MaxParticles = 0;  
+		uint32_t m_MaxParticles = 0;
 		float m_ParticleAccumulator = 0.0f;
 		glm::vec3 m_CurrentPos = glm::vec3(0.0f), m_PrevPos = glm::vec3(0.0f);
 
 		float m_Time = 0.0f;
 		float m_PrevTime = 0.0f;
 		Count<class StorageBuffer> m_SBParticlesBuffer;
-		Count<class StorageBuffer> m_SBParticleParticleInitalState; // storage cause of aling
+		Count<class StorageBuffer> m_SBParticleParticleInitialState; // storage cause of aling
+		Count<class StorageBuffer> m_SBParticleParticleInstanceState;
 		Count<class StorageBuffer> m_SBParticleEmitterSettingsBuffer; // storage cause of align 
 		Count<class StorageBuffer> m_SBTrackableData; // storage cause of align comptue shader will edit this
 		Count<class StorageBuffer> m_SBPerDrawData; // storage cause of align comptue shader will edit this
 
 		Count<ParticleEmitter> m_Emitter;
 		friend class WorldRenderer;
+		friend class ParticleEmitterSerilizer;
+		friend class WorldRenderer;
 	};
 
+	using ParticleClipID = uint64_t;
 
 	struct ParticleSystemEmitterClip 
 	{
@@ -130,9 +144,11 @@ namespace Proof
 		{
 			
 		}
+
+		UUID ID = UUID();
+
 		AssetKey<AssetType::ParticleEmitter> Emitter;
 		float StartTime = 0.0f;
-		bool Looping = false;
 	};
 							 
 	struct ParticleSystemTrack 
@@ -163,8 +179,8 @@ namespace Proof
 
 		ParticleSystemTrackInstance(const ParticleSystemTrack& track)
 		{
-			  if (!track.Emitter.IsValid())
-				return;
+			if (!track.Emitter.IsValid())
+			return;
 
 			Emitter = track.Emitter;
 			for (auto clip : track.Clips)
@@ -172,10 +188,19 @@ namespace Proof
 				EmitterClipInstance  instnace;
 				instnace.Clip  = clip;
 				instnace.Emitter = Count<ParticleEmitterInstance>::Create(track.Emitter.GetAsset<ParticleEmitter>());
+
+				EmitterClips.push_back(std::move(instnace));
 			}
 			
 		}
 
+		void SyncAllClipInstances()
+		{
+			for (const auto& emitterCLips: EmitterClips)
+			{
+				emitterCLips.Emitter->SyncWithParticleEmitter();
+			}
+		}
 		AssetKey<AssetType::ParticleEmitter> Emitter;
 		struct EmitterClipInstance
 		{
@@ -185,6 +210,8 @@ namespace Proof
 			}
 			ParticleSystemEmitterClip Clip;
 			Count<ParticleEmitterInstance> Emitter;
+			bool Started = false;
+
 		};
 
 		std::vector<EmitterClipInstance> EmitterClips;
@@ -193,107 +220,218 @@ namespace Proof
 
 	class ParticleSystemTimeline : public RefCounted
 	{
-		public:
-
-		ParticleSystemTimeline()
-		{
-			
-		}
+	public:
+		ParticleSystemTimeline() = default;
 
 		ParticleSystemTimeline(Count<ParticleSystemTimeline> timeline)
 		{
-			for (auto& [id, track] : timeline->m_Tracks)
-			{
-				AssetKey<AssetType::ParticleEmitter> emitter = id;
-				
-				if (!emitter.IsValid())
-					continue;
+			if (!timeline)
+				return;
 
-				m_Tracks[id] = track; // copy track
-				
-			}
+			m_Tracks = timeline->m_Tracks;
 		}
 
-		const std::unordered_map<AssetID, ParticleSystemTrack>& GetTracks(){return m_Tracks;};
-		const std::unordered_map<AssetID, ParticleSystemTrack>& GetTracks()const {return m_Tracks;};
+		bool AddTrack(const ParticleSystemTrack& track)
+		{
+			if (!track.Emitter.IsValid())
+				return false;
 
-		private:
+			AssetID id = track.Emitter.GetAssetID();
+
+			if (m_Tracks.contains(id))
+				return false;
+
+			m_Tracks.emplace(id, std::move(track));
+
+		return true;
+		}
+
+
+
+		bool AddTrack(AssetKey<AssetType::ParticleEmitter> emitter)
+		{
+			if (!emitter.IsValid())
+				return false;
+
+			AssetID id = emitter.GetAssetID();
+
+			if (m_Tracks.contains(id))
+				return false;
+
+			ParticleSystemTrack track;
+			track.Emitter = emitter;
+
+			m_Tracks.emplace(id, std::move(track));
+			return true;
+		}
+
+		bool RemoveTrack(AssetID id)
+		{
+			return m_Tracks.erase(id) > 0;
+		}
+
+		bool RemoveTrack(AssetKey<AssetType::ParticleEmitter> emitter)
+		{
+			return RemoveTrack(emitter.GetAssetID());
+		}
+
+		bool HasTrack(AssetID id) const
+		{
+			return m_Tracks.contains(id);
+		}
+
+		bool HasTrack(AssetKey<AssetType::ParticleEmitter> emitter) const
+		{
+			return HasTrack(emitter.GetAssetID());
+		}
+
+		ParticleSystemTrack* GetTrack(AssetID id)
+		{
+			auto it = m_Tracks.find(id);
+
+			if (it == m_Tracks.end())
+				return nullptr;
+
+			return &it->second;
+		}
+
+		const ParticleSystemTrack* GetTrack(AssetID id) const
+		{
+			auto it = m_Tracks.find(id);
+
+			if (it == m_Tracks.end())
+				return nullptr;
+
+			return &it->second;
+		}
+
+		void ClearTracks()
+		{
+			m_Tracks.clear();
+		}
+
+		uint32_t GetTrackCount() const
+		{
+			return static_cast<uint32_t>(m_Tracks.size());
+		}
+
+		std::unordered_map<AssetID, ParticleSystemTrack>& GetTracks()
+		{
+			return m_Tracks;
+		}
+
+		const std::unordered_map<AssetID, ParticleSystemTrack>& GetTracks() const
+		{
+			return m_Tracks;
+		}
+
+	private:
 		std::unordered_map<AssetID, ParticleSystemTrack> m_Tracks;
 
-
 		friend class ParticleSystemTimelineInstance;
+		friend class ParticleSystem;
 	};
 
 
 	class ParticleSystemTimelineInstance : public RefCounted
 	{
-		public:
+	public:
 		ParticleSystemTimelineInstance(Count<ParticleSystemTimeline> timeline)
-			:m_Timeline(timeline)
+			: m_Timeline(timeline)
 		{
 			SyncWithParticleTimeline();
 		}
 
 		ParticleSystemTimelineInstance(Count<ParticleSystemTimelineInstance> timeline)
-			:m_Timeline(timeline->m_Timeline)
+			: m_Timeline(timeline ? timeline->m_Timeline : nullptr)
 		{
 			SyncWithParticleTimeline();
 		}
 
-
 		void SyncWithParticleTimeline()
 		{
-			if (m_Timeline == nullptr)
-			{
+			if (!m_Timeline)
 				return;
-			}
 
 			m_Tracks.clear();
-			for (auto& [id, track] : m_Timeline->m_Tracks)
-			{
-				AssetKey<AssetType::ParticleEmitter> emitter = id;
-				if (!emitter.IsValid())
-					continue;;
 
-				m_Tracks[id] = ParticleSystemTrackInstance(track);
+			for (const auto& [id, track] : m_Timeline->m_Tracks)
+			{
+				
+				m_Tracks.emplace(id, ParticleSystemTrackInstance(track));
 			}
 		}
 
-		const std::unordered_map<AssetID, ParticleSystemTrackInstance>& GetTracks(){return m_Tracks;};
+
+		const ParticleSystemTrackInstance* GetTrack(AssetID id) const
+		{
+			auto it = m_Tracks.find(id);
+			return it != m_Tracks.end() ? &it->second : nullptr;
+		}
+
+		const std::unordered_map<AssetID, ParticleSystemTrackInstance>& GetTracks() const
+		{
+			return m_Tracks;
+		}
 
 	private:
 		Count<ParticleSystemTimeline> m_Timeline;
 		std::unordered_map<AssetID, ParticleSystemTrackInstance> m_Tracks;
-		friend class ParticleSystemInstance;
+
+		friend class ParticleEffect;
+		friend class ParticleEmitterPanel;
+		friend class ParticleSystem;
 	};
 
 
 	class ParticleSystem : public Asset
 	{
 	public:
-		ParticleSystem() {};
+		ParticleSystem()
+		{
+			m_Timeline = Count<ParticleSystemTimeline>::Create();
+		}
+
+		ParticleSystem(Count<ParticleSystem> timeline)
+		{
+			m_Timeline = Count<ParticleSystemTimeline>::Create(timeline->m_Timeline);
+		}
+		ParticleSystem(AssetKey<AssetType::ParticleEmitter> emmiter )
+		{
+			m_Timeline = Count<ParticleSystemTimeline>::Create();
+			if (emmiter.IsValid())
+			{
+				
+				m_Timeline->m_Tracks[emmiter.GetAssetID()] = {}; 
+				m_Timeline->m_Tracks[emmiter.GetAssetID()].Emitter = emmiter;; 
+				m_Timeline->m_Tracks[emmiter.GetAssetID()].Clips.push_back(ParticleSystemEmitterClip(emmiter)); 
+			}
+		}
+
 		ASSET_CLASS_TYPE(ParticleSystem);
 
 		Count<ParticleSystemTimeline> GetTimeline(){return m_Timeline;};
 
 	private:
 		Count<ParticleSystemTimeline> m_Timeline;
+		friend class ParticleSystemSerilizer;
 	};
 
-	class ParticleSystemInstance : public RefCounted
+	class ParticleEffect : public RefCounted
 	{
 	public:
-		ParticleSystemInstance(Count<ParticleSystem> system)
+		ParticleEffect(Count<ParticleSystem> system)
 			: m_ParticleSystem(system)
 		{
 			SyncWithParticleSystem();
 		}
-		ParticleSystemInstance(Count< ParticleSystemInstance> instnace);
-		ParticleSystemInstance()
-		{
-			
-		}
 
+		ParticleEffect(Count<ParticleEffect> instnace);
+
+		ParticleEffect()
+		{
+		
+		}
 
 		Count<ParticleSystem> GetParticleSystem() const { return m_ParticleSystem; }
 		void SyncWithParticleSystem();
@@ -305,22 +443,37 @@ namespace Proof
 		// State control
 		void Play(bool restart = true);
 		void Pause();
-		void Stop();
+		void Stop(bool waitUntilFinish = false);
 
 		ParticleSystemState GetState() const
 		{
 			return m_State;
 		}
 
-		Count<ParticleSystemTimelineInstance> GetTimeline(){return m_Timeline;};
+		Count<ParticleSystemTimelineInstance> GetTimeline()
+		{
+			return m_Timeline;
+		}
+
+		bool SetLooping(bool loop);
+
+		bool GetLooping() const
+		{
+			return m_Looping;
+		}
+
+		bool UpdateOffscreen = true;
+		float SimulationSpeed = 1.0f;
 
 	private:
-
 		float m_Time = 0.0f;
 		float m_PrevTime = 0.0f;
+		bool m_Looping = true;
+		bool m_StopRequested = false;
+
 		Count<ParticleSystem> m_ParticleSystem;
 		Count<ParticleSystemTimelineInstance> m_Timeline;
-		ParticleSystemState m_State;
+		ParticleSystemState m_State = ParticleSystemState::None;
 
 		friend class ParticleSystemEditorPanel;
 	};

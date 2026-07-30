@@ -1,47 +1,11 @@
 AssetType: ParticleSystem
 ID: 18199791468404885871
-Emitters:
-  - MaxParticles: 1000
-    InitialState:
-      Duration: 5
-      bLooping: 1
-      StartLifetime: 3
-      StartSpeed: 2
-      StartSize: [3.65578198, 3.65578198, 3.65578198]
-      GravityModifier: 0
-      StartColor: [1, 0, 0, 1]
-      EmitterPosition: [0, 0, 0]
-      FadeOutSpeed: 0.5
-      EmitterPrevPosition: [0, 0, 0]
-    Bursts:
-      - StartTime: 0.439999998
-        Count: 460
-        Cycles: 1
-        Interval: 0.519999981
-        Probability: 0.330000013
-    Emission:
-      ParticlesPerSecond: 100
-      ParticlesPerDistance: 0
-    Shape:
-      Shape: 0
-      RandomizeDirection: 0
-      SpherizeDirection: 0
-      RandomizePosition: 0
-      bEnabled: 1
-      ConeRadius: 1.81200004
-      ConeAngleDegrees: 0
-      SphereRadius: 1
-    VelocityOverLifeTime:
-      Linear: [0, 2, 0]
-      SpeedModifier: 1
-      Orbital: [0, 0, 0]
-      Radial: 0
-      Offset: [0, 0, 0]
-      bEnabled: 1
-    ColorOverLifeTime:
-      bEnabled: 1
-      FinalColor: [0.992592573, 0.582811117, 0.0220576115, 1]
-    SizeOverLifeTime:
-      FinalSize: [0.100000001, 0, 0]
-      bEnabled: 1
-    TextureID: 3065965350806345933
+Tracks:
+  - TrackID: 612480295052508671
+    EmitterID: 612480295052508671
+    Clips:
+      - StartTime: 0
+  - TrackID: 3969788842516442491
+    EmitterID: 3969788842516442491
+    Clips:
+      - StartTime: 1.56666672

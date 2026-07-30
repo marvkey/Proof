@@ -53,15 +53,16 @@ namespace Proof
 
         if (world == nullptr)
             return;
+		PF_PROFILE_FUNC();
 
         Renderer::BeginComputePass(Renderer::GetRendererCommandBuffer(), m_ParticleUpdateComputePass);
 
-        world->ForEachEnitityWith<ParticleSystemComponent>([&](Entity entity)
+        world->ForEachEnitityWith<ParticleEffectComponent>([&](Entity entity)
         {
-                auto instance = entity.GetComponent<ParticleSystemComponent>().ParticleSytemInstance;
+                auto instance = entity.GetComponent<ParticleEffectComponent>().ParticleEffect;
                 if (instance == nullptr)
                     return;
-				instance->OnUpdate(update,Transform(world->GetWorldSpaceTransform(entity)), m_ParticleUpdateComputePass);
+					instance->OnUpdate(update,Transform(world->GetWorldSpaceTransform(entity)), m_ParticleUpdateComputePass);
         });
 
 
@@ -88,6 +89,23 @@ namespace Proof
     }
     void ParticleEmitterInstance::OnUpdate(float dt, const Transform& transform, Count<ComputePass> cmdPass)
     {
+        PF_PROFILE_FUNC();
+
+        if (m_State != ParticleSystemState::Play)
+            return;
+
+        if (m_WaitUntilFinish)
+        {
+            const SBParticleTrackableData trackableData = GetTrackableData();
+
+            if (trackableData.State == 2)
+            {
+                m_State = ParticleSystemState::End;
+                m_WaitUntilFinish = false;
+                return;
+            }
+        }
+
         uint32_t burstSpawn = 0;
 #if 1
         m_PrevTime = m_Time;
@@ -112,17 +130,18 @@ namespace Proof
         {
             m_CurrentPos = transform.Location;
             m_PrevPos = transform.Location;
-            m_Emitter->ParticleInitialState.EmitterPosition = transform.Location;
-            m_Emitter->ParticleInitialState.EmitterPrevPosition = transform.Location;
+            ParticleInstanceState.EmitterPosition = transform.Location;
+            ParticleInstanceState.EmitterPrevPosition = transform.Location;
         }
 
         m_CurrentPos = transform.Location;
-        m_Emitter->ParticleInitialState.EmitterPosition = transform.Location;
+        ParticleInstanceState.EmitterPosition = transform.Location;
 
         m_SBParticleEmitterSettingsBuffer->SetData(Buffer(&m_Emitter->ParticleEmitterSettings, sizeof(SBParticleEmitterSettings)));
-        m_SBParticleParticleInitalState->SetData(Buffer(&m_Emitter->ParticleInitialState, sizeof(SBParticleInitalState)));
+        m_SBParticleParticleInitialState->SetData(Buffer(&m_Emitter->ParticleInitialState, sizeof(SBParticleInitialSettings)));
+        m_SBParticleParticleInstanceState->SetData(Buffer(&ParticleInstanceState, sizeof(SBParticleInstanceState)));
 
-        m_ParticleAccumulator +=float(m_Emitter->ParticleEmitterSettings.Emission.ParticlesPerSecond) * dt;
+        m_ParticleAccumulator += float(m_Emitter->ParticleEmitterSettings.Emission.ParticlesPerSecond) * dt;
 
         int toSpawn = static_cast<int>(floor(m_ParticleAccumulator));
         m_ParticleAccumulator -= toSpawn;
@@ -137,7 +156,8 @@ namespace Proof
         m_SBPerDrawData->SetData(Buffer(&drawState, sizeof(SBParticlePerDrawState)));
 
         cmdPass->SetInput("s_Particles", m_SBParticlesBuffer);
-        cmdPass->SetInput("ParticleInitialState", m_SBParticleParticleInitalState);
+        cmdPass->SetInput("ParticleInitialState", m_SBParticleParticleInitialState);
+        cmdPass->SetInput("ParticleInstanceState", m_SBParticleParticleInstanceState);
         cmdPass->SetInput("EmitterSettings",m_SBParticleEmitterSettingsBuffer);
         cmdPass->SetInput("TrackableData", m_SBTrackableData);
         cmdPass->SetInput("PerDrawData", m_SBPerDrawData);
@@ -148,12 +168,14 @@ namespace Proof
 
 
         m_PrevPos = transform.Location;
-        m_Emitter->ParticleInitialState.EmitterPrevPosition = transform.Location;
+        ParticleInstanceState.EmitterPrevPosition = transform.Location;
     }
 
 
     void ParticleEmitterInstance::Reset(uint32_t size)
     {
+		PF_PROFILE_FUNC();
+
         bool sizeChanged = false;
         if (m_MaxParticles != size)
             sizeChanged = true;
@@ -169,6 +191,8 @@ namespace Proof
 
         m_Time = 0.0f;
         m_PrevTime = 0.0f;
+        m_ParticleAccumulator = 0.0f;
+    	m_State = ParticleSystemState::None;
         if (m_SBParticlesBuffer != nullptr) // already initailized 
         {
             // when resize basically reeintialing whoel thing
@@ -183,9 +207,12 @@ namespace Proof
         std::vector<Particle> pool; pool.resize(m_MaxParticles);
         m_SBParticlesBuffer = StorageBuffer::Create(Buffer(pool.data(),m_MaxParticles * sizeof(Particle)));
         m_SBParticleEmitterSettingsBuffer = StorageBuffer::Create(Buffer(&m_Emitter->ParticleEmitterSettings, sizeof(SBParticleEmitterSettings)));
-        m_SBParticleParticleInitalState = StorageBuffer::Create(Buffer(&m_Emitter->ParticleInitialState, sizeof(SBParticleInitalState)));
+        m_SBParticleParticleInitialState = StorageBuffer::Create(Buffer(&m_Emitter->ParticleInitialState, sizeof(SBParticleInitialSettings)));
+        m_SBParticleParticleInstanceState = StorageBuffer::Create(Buffer(&ParticleInstanceState, sizeof(SBParticleInstanceState)));
         m_SBTrackableData = StorageBuffer::Create(Buffer(&trackableData, sizeof(SBParticleTrackableData)));
         m_SBPerDrawData = StorageBuffer::Create(sizeof(SBParticlePerDrawState));
+
+
     }
 
     
@@ -194,6 +221,11 @@ namespace Proof
     {
         PF_PROFILE_FUNC();
         Buffer buffer = m_SBTrackableData->GetDataRaw();
+
+		if (buffer.Data ==nullptr)
+			return SBParticleTrackableData();
+
+
         SBParticleTrackableData data = *buffer.As< SBParticleTrackableData>();
 
         buffer.Release();
@@ -208,90 +240,293 @@ namespace Proof
 
     void ParticleEmitterInstance::Play(bool restart)
     {
-        m_State = ParticleSystemState::Play;
+        if (m_State == ParticleSystemState::End)
+            restart = true;
 
         if (restart)
             Reset(m_MaxParticles);
+
+        m_WaitUntilFinish = false;
+        m_State = ParticleSystemState::Play;
     }
 
     void ParticleEmitterInstance::Pause()
     {
-            
+        if (m_State != ParticleSystemState::Play)
+            return;
+
+        m_State = ParticleSystemState::Pause;
     }
 
-    void ParticleEmitterInstance::Stop()
+    void ParticleEmitterInstance::Stop(bool waitUntilFinish)
     {
-    }
-
-
-    ParticleSystemInstance::ParticleSystemInstance(Count< ParticleSystemInstance> instnace)
-    {
-        m_ParticleSystem = instnace->m_ParticleSystem;
-		SyncWithParticleSystem();
-    }
-
-    void ParticleSystemInstance::SyncWithParticleSystem()
-    {
-        if (m_ParticleSystem == nullptr)
+        if (!waitUntilFinish)
         {
-            m_Timeline = nullptr;
+            m_WaitUntilFinish = false;
+            m_State = ParticleSystemState::End;
             return;
         }
 
-        m_Timeline = Count<ParticleSystemTimelineInstance>::Create(m_ParticleSystem->GetTimeline());
-        m_State = ParticleSystemState::None;
+        ParticleInstanceState.bLooping = 0;
+        m_WaitUntilFinish = true;
+        m_State = ParticleSystemState::Play;
     }
 
-    void ParticleSystemInstance::OnUpdate(float dt, const Transform& transform, Count<ComputePass> cmdPass)
-    {
 
-        m_PrevTime = m_Time;
-        m_Time += dt;
-        for(auto& [id,track] : m_Timeline->m_Tracks)
-        {
-            AssetKey<AssetType::ParticleSystem> emmiter = id;
-            if (!emmiter.IsValid())
-                return;
+	ParticleEffect::ParticleEffect(Count<ParticleEffect> instnace)
+	{
+		if (!instnace)
+			return;
 
-            for (auto& emitterClip : track.EmitterClips)
-            {
-
-                const float startTime = emitterClip.Clip.StartTime;
-
-                //if (m_PrevTime < startTime && m_Time >= startTime)
-                //    emitterClip.Emitter->Play(true);
-
-                if (m_Time >= startTime)
-                    emitterClip.Emitter->OnUpdate(dt, transform, cmdPass);
-            }
-        }
-    }
-
-    void ParticleSystemInstance::SetParticleSystem(Count<ParticleSystem> system)
-    {
-        if (system == nullptr)
-        {
-            m_ParticleSystem = nullptr;
-			m_State = ParticleSystemState::None;
-        }
-
-        m_ParticleSystem = system;
+		m_ParticleSystem = instnace->m_ParticleSystem;
+		m_Looping = instnace->m_Looping;
+		UpdateOffscreen = instnace->UpdateOffscreen;
+		SimulationSpeed = instnace->SimulationSpeed;
 
 		SyncWithParticleSystem();
-    }
+	}
 
-    void ParticleSystemInstance::Play(bool restart)
-    {
+	void ParticleEffect::SyncWithParticleSystem()
+	{
+		if (m_ParticleSystem == nullptr)
+		{
+			m_Timeline = nullptr;
+			m_State = ParticleSystemState::None;
+			return;
+		}
 
-    }
+		m_Timeline = Count<ParticleSystemTimelineInstance>::Create(m_ParticleSystem->GetTimeline());
 
-    void ParticleSystemInstance::Pause()
-    {
+		m_Time = 0.0f;
+		m_PrevTime = 0.0f;
+		m_StopRequested = false;
+		m_State = ParticleSystemState::None;
 
-    }
+		SetLooping(m_Looping);
+	}
 
-    void ParticleSystemInstance::Stop()
-    {
+	void ParticleEffect::OnUpdate(float dt, const Transform& transform, Count<ComputePass> cmdPass)
+	{
+		PF_PROFILE_FUNC();
 
-    }
+		if (!m_Timeline || m_State != ParticleSystemState::Play)
+			return;
+
+		dt *= SimulationSpeed;
+
+		m_PrevTime = m_Time;
+		m_Time += dt;
+
+		bool hasStartedEmitter = false;
+		bool allEmittersDone = true;
+
+		for (auto& [id, track] : m_Timeline->m_Tracks)
+		{
+			if (!track.Emitter.IsValid())
+				continue;
+
+			for (auto& emitterClip : track.EmitterClips)
+			{
+				if (!emitterClip.Emitter)
+					continue;
+
+				const float startTime = emitterClip.Clip.StartTime;
+
+				if (!emitterClip.Started)
+				{
+					if (m_StopRequested)
+						continue;
+
+					if (m_Time < startTime)
+					{
+						allEmittersDone = false;
+						continue;
+					}
+
+					emitterClip.Started = true;
+					emitterClip.Emitter->ParticleInstanceState.bLooping = m_Looping ? 1 : 0;
+					emitterClip.Emitter->Play(true);
+				}
+
+				hasStartedEmitter = true;
+
+				emitterClip.Emitter->OnUpdate(dt, transform, cmdPass);
+
+				if (!m_Looping || m_StopRequested)
+				{
+					const SBParticleTrackableData trackableData = emitterClip.Emitter->GetTrackableData();
+
+					if (trackableData.State != 2)
+						allEmittersDone = false;
+				}
+			}
+		}
+
+		if (m_StopRequested && !hasStartedEmitter)
+		{
+			m_StopRequested = false;
+			m_State = ParticleSystemState::End;
+			return;
+		}
+
+		if ((!m_Looping || m_StopRequested) && hasStartedEmitter && allEmittersDone)
+		{
+			m_StopRequested = false;
+			m_State = ParticleSystemState::End;
+		}
+	}
+
+	void ParticleEffect::SetParticleSystem(Count<ParticleSystem> system)
+	{
+		if (system == nullptr)
+		{
+			Stop(false);
+
+			m_ParticleSystem = nullptr;
+			m_Timeline = nullptr;
+			m_State = ParticleSystemState::None;
+			return;
+		}
+
+		m_ParticleSystem = system;
+
+		SyncWithParticleSystem();
+	}
+
+	void ParticleEffect::Play(bool restart)
+	{
+		if (!m_Timeline)
+			return;
+
+		if (m_State == ParticleSystemState::End)
+			restart = true;
+
+		if (m_State == ParticleSystemState::Play && !restart)
+			return;
+
+		if (restart)
+		{
+			m_Time = 0.0f;
+			m_PrevTime = 0.0f;
+
+			for (auto& [trackID, track] : m_Timeline->m_Tracks)
+			{
+				for (auto& emitterClip : track.EmitterClips)
+				{
+					emitterClip.Started = false;
+
+					if (!emitterClip.Emitter)
+						continue;
+
+					emitterClip.Emitter->Stop(false);
+					emitterClip.Emitter->ParticleInstanceState.bLooping = m_Looping ? 1 : 0;
+				}
+			}
+		}
+		else if (m_State == ParticleSystemState::Pause)
+		{
+			for (auto& [trackID, track] : m_Timeline->m_Tracks)
+			{
+				for (auto& emitterClip : track.EmitterClips)
+				{
+					if (!emitterClip.Emitter || !emitterClip.Started)
+						continue;
+
+					emitterClip.Emitter->Play(false);
+				}
+			}
+		}
+
+		m_StopRequested = false;
+		m_State = ParticleSystemState::Play;
+	}
+
+	void ParticleEffect::Pause()
+	{
+		if (!m_Timeline || m_State != ParticleSystemState::Play)
+			return;
+
+		m_State = ParticleSystemState::Pause;
+
+		for (auto& [trackID, track] : m_Timeline->m_Tracks)
+		{
+			for (auto& emitterClip : track.EmitterClips)
+			{
+				if (!emitterClip.Emitter || !emitterClip.Started)
+					continue;
+
+				emitterClip.Emitter->Pause();
+			}
+		}
+	}
+
+	void ParticleEffect::Stop(bool waitUntilFinish)
+	{
+		if (!m_Timeline)
+		{
+			m_Time = 0.0f;
+			m_PrevTime = 0.0f;
+			m_StopRequested = false;
+			m_State = ParticleSystemState::None;
+			return;
+		}
+
+		if (!waitUntilFinish)
+		{
+			for (auto& [trackID, track] : m_Timeline->m_Tracks)
+			{
+				for (auto& emitterClip : track.EmitterClips)
+				{
+					emitterClip.Started = false;
+
+					if (!emitterClip.Emitter)
+						continue;
+
+					emitterClip.Emitter->Stop(false);
+				}
+			}
+
+			m_Time = 0.0f;
+			m_PrevTime = 0.0f;
+			m_StopRequested = false;
+			m_State = ParticleSystemState::None;
+			return;
+		}
+
+		m_StopRequested = true;
+		m_State = ParticleSystemState::Play;
+
+		for (auto& [trackID, track] : m_Timeline->m_Tracks)
+		{
+			for (auto& emitterClip : track.EmitterClips)
+			{
+				if (!emitterClip.Emitter || !emitterClip.Started)
+					continue;
+
+				emitterClip.Emitter->ParticleInstanceState.bLooping = 0;
+				emitterClip.Emitter->Stop(true);
+			}
+		}
+	}
+
+	bool ParticleEffect::SetLooping(bool loop)
+	{
+		m_Looping = loop;
+
+		if (!m_Timeline)
+			return false;
+
+		for (auto& [trackID, track] : m_Timeline->m_Tracks)
+		{
+			for (auto& emitterClip : track.EmitterClips)
+			{
+				if (!emitterClip.Emitter)
+					continue;
+
+				emitterClip.Emitter->ParticleInstanceState.bLooping = loop ? 1 : 0;
+			}
+		}
+
+		return true;
+	}
 }

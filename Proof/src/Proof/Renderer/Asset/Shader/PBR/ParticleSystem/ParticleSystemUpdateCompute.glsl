@@ -7,26 +7,30 @@ layout(local_size_x = 512, local_size_y = 1, local_size_z = 1) in;
 
 layout(std430, binding = 0) buffer s_Particles { Particle Particles[]; };
 
-layout(std430, binding=1) coherent restrict buffer ParticleInitialState 
+layout(std430, binding=1) coherent restrict buffer ParticleInitialState
 {
-	float Duration;
-    int bLooping;
+    float Duration;
     float StartLifetime;
     float StartSpeed;
+    float GravityModifier;
 
     vec3 StartSize;
-    float GravityModifier;
-                                                
-    vec4 StartColor;
-
-    vec3 EmitterPosition;
     float FadeOutSpeed; // particle duration over how fast remaingin particles fade out
 
-    vec3 EmitterPrevPosition;
-
+    vec4 StartColor;
 } s_InitialState;
 
-layout(std430, binding = 2) buffer EmitterSettings
+
+layout(std430, binding=2) coherent restrict buffer ParticleInstanceState
+{
+    vec3 EmitterPosition;
+    int bLooping;
+
+    vec3 EmitterPrevPosition;
+} s_InstanceState;
+
+
+layout(std430, binding = 3) buffer EmitterSettings
 {
     ParticleEmission Emission;
     ParticleShape Shape;
@@ -35,30 +39,30 @@ layout(std430, binding = 2) buffer EmitterSettings
     ParticleSizeOverLifetime SizeOverLifeTime;
 } s_EmitterSettings;
 
-layout(std430, binding = 3) coherent restrict buffer TrackableData
+layout(std430, binding = 4) coherent restrict buffer TrackableData
 {
     float TimeElapsed;
-	int ActiveParticles;
-	int DeadParticles;
+    int ActiveParticles;
+    int DeadParticles;
     int MaxParticles; // max particles not edited
 
     int State; //0 none, 1 playing, 2 done
 }s_TrackableData;
 
 
-layout(std430, binding = 4) coherent restrict buffer PerDrawData
+layout(std430, binding = 5) coherent restrict buffer PerDrawData
 {
     int SpawnNewParticles; // leave as an int because if uint and goes -1 cause problems
     int AvailableToDraw;
-    float DeltaTime;    
-	int padding0;
+    float DeltaTime;
+    int padding0;
 } ;
 
 // Shared memory for particles within a workgroup
 shared Particle localParticles[512];
 
 // cheap deterministic RNG in [0,1)
-float randRNG(uint seed, float salt) 
+float randRNG(uint seed, float salt)
 {
     return fract(sin(float(seed) * salt) * 43758.5453);
 }
@@ -83,7 +87,7 @@ vec3 sampleConeDirection(uint gid, float alphaRad) {
 
 void RespawnParticleCone(inout Particle particle, uint gid,uint lid)
 {
-    vec3  center   = s_InitialState.EmitterPosition;
+    vec3  center   = s_InstanceState.EmitterPosition;
     float R        = s_EmitterSettings.Shape.ConeRadius;
     float angleRad = radians(s_EmitterSettings.Shape.ConeAngleDegrees);
 
@@ -137,7 +141,7 @@ void RespawnParticleSphere(inout Particle particle,uint gid, uint lid)
     float rVolume  = R * pow(u2, 1.0/3.0);
     float r        = mix(rSurface, rVolume, clamp(s_EmitterSettings.Shape.RandomizePosition, 0.0, 1.0));
 
-    vec3 center   = s_InitialState.EmitterPosition;
+    vec3 center   = s_InstanceState.EmitterPosition;
     vec3 spawnPos = center + unitOnSphere * r;
 
     // -------- Direction (Unity-like: randomize, then spherize toward surface normal)
@@ -170,10 +174,10 @@ void RespawnParticleSphere(inout Particle particle,uint gid, uint lid)
 }
 void RespawnParticle(inout Particle particle,uint gid, uint lid)
 {
-    if (s_EmitterSettings.Shape.bEnabled == 0) 
+    if (s_EmitterSettings.Shape.bEnabled == 0)
     {
         // Fallback: simple upward spawn
-        particle.Position = s_InitialState.EmitterPosition;
+        particle.Position = s_InstanceState.EmitterPosition;
         particle.Velocity = vec3(0.0, s_InitialState.StartSpeed, 0.0);
         particle.Size3D   = s_InitialState.StartSize;
         particle.Color    = s_InitialState.StartColor;
@@ -194,12 +198,12 @@ void RespawnParticle(inout Particle particle,uint gid, uint lid)
 void UpdateVelocityOverLifeTime(inout Particle particle,uint gid, uint lid,ParticleVelocityOverLifetime velocityOverLifeTime)
 {
     if (velocityOverLifeTime.bEnabled == 0)
-        return;
+    return;
 
     float deltaTime = DeltaTime;
 
     // Radial velocity from emitter center
-    vec3 radialDir = normalize(particle.Position - s_InitialState.EmitterPosition);
+    vec3 radialDir = normalize(particle.Position - s_InstanceState.EmitterPosition);
     vec3 radialVelocity = radialDir * velocityOverLifeTime.Radial;
 
     // Orbital (perpendicular) velocity (around Y axis for simplicity)
@@ -223,7 +227,7 @@ void UpdateColorOverLifetime(inout Particle particle,uint gid, uint lid,Particle
         particle.Color = vec4(1, 0, 1, 1); // bright magenta: shows invalid data
     }
     if (colorOverLifetime.bEnabled == 0)
-        return;
+    return;
 
     float lifePercent = (particle.Life / s_InitialState.StartLifetime);
     lifePercent = clamp(lifePercent, 0.0, 1.0);
@@ -234,7 +238,7 @@ void UpdateColorOverLifetime(inout Particle particle,uint gid, uint lid,Particle
 void UpdateSizeOverLifetime(inout Particle particle,uint gid, uint lid,ParticleSizeOverLifetime sizeOverLifeTime)
 {
     if (sizeOverLifeTime.bEnabled == 0)
-            return;
+    return;
 
     float lifePercent = (particle.Life / s_InitialState.StartLifetime);
     lifePercent = clamp(lifePercent, 0.0, 1.0);
@@ -254,7 +258,7 @@ void UpdateParticle(inout Particle particle,uint gid, uint lid)
     particle.Position += particle.Velocity * deltaTime;
 
     // base delta (follow emitter)
-    vec3 baseDelta = s_InitialState.EmitterPosition - s_InitialState.EmitterPrevPosition;
+    vec3 baseDelta = s_InstanceState.EmitterPosition - s_InstanceState.EmitterPrevPosition;
     particle.Position += baseDelta;
 
 
@@ -267,18 +271,25 @@ void UpdateParticle(inout Particle particle,uint gid, uint lid)
 
 }
 
-void main() 
+void main()
 {
-	uint gid = gl_GlobalInvocationID.x;
+    uint gid = gl_GlobalInvocationID.x;
     uint lid = gl_LocalInvocationID.x;
 
     // initial run
-    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0 && gl_GlobalInvocationID.z == 0) 
+    if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0 && gl_GlobalInvocationID.z == 0)
     {
-         s_TrackableData.ActiveParticles = 0;
-         s_TrackableData.DeadParticles = 0;
+        if(s_InstanceState.bLooping == 0 && s_TrackableData.TimeElapsed >= s_InitialState.Duration && s_TrackableData.ActiveParticles == 0)
+            s_TrackableData.State = 2;     // done 
+        else
+            s_TrackableData.State = 1;             // playing
+
+        s_TrackableData.ActiveParticles = 0;
+        s_TrackableData.DeadParticles = 0;
         // Update elapsed time ONCE
-        s_TrackableData.TimeElapsed += DeltaTime;
+        
+        if(s_TrackableData.State == 1)
+            s_TrackableData.TimeElapsed += DeltaTime;
 
         AvailableToDraw = SpawnNewParticles;
     }
@@ -289,7 +300,7 @@ void main()
 
 
     if (gid >= s_TrackableData.MaxParticles)
-        return;
+    return;
 
     // Load particle into shared memory
     localParticles[lid] = Particles[gid];
@@ -298,32 +309,32 @@ void main()
     float deltaTime = DeltaTime;
     if(s_InitialState.Duration < s_TrackableData.TimeElapsed)
     {
-        if(s_InitialState.bLooping == 1)
+        if(s_InstanceState.bLooping == 1)
         {
-            
+
             localParticles[lid].Color.a -= s_InitialState.FadeOutSpeed * deltaTime;
             localParticles[lid].Size3D -= vec3(1,1,1) * s_InitialState.FadeOutSpeed * deltaTime;
             localParticles[lid].Color.a = max(localParticles[lid].Color.a, 0.0);
 
             if(localParticles[lid].Color.a <=0.0)
-                localParticles[lid].bActive = 0;
+            localParticles[lid].bActive = 0;
         }
         else
         {
             stopEmitting = true; // duration done and not looping
         }
     }
-        
-   // Particle currentParticle = localParticles[lid];
+
+    // Particle currentParticle = localParticles[lid];
     localParticles[lid].Life -= DeltaTime;
 
     // If the particle is dead, respawn it
-    if (localParticles[lid].Life <= 0.0) 
+    if (localParticles[lid].Life <= 0.0)
     {
         if(stopEmitting == false)
         {
             int ticket = atomicAdd(AvailableToDraw, int(-1));
-            if (ticket > 0) 
+            if (ticket > 0)
             {
                 RespawnParticle(localParticles[lid], gid, lid);
             }
@@ -336,9 +347,9 @@ void main()
 
     // Classify as alive or dead AFTER update
     if (localParticles[lid].Life > 0.0)
-        atomicAdd(s_TrackableData.ActiveParticles, 1);
+    atomicAdd(s_TrackableData.ActiveParticles, 1);
     else
-        atomicAdd(s_TrackableData.DeadParticles, 1);
+    atomicAdd(s_TrackableData.DeadParticles, 1);
 
     barrier();
     Particles[gid] = localParticles[lid];

@@ -4003,70 +4003,70 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		* settings = entity.GetComponent<BoidFlockComponent>().Flock->GetSettings();
 	}
 #pragma endregion	
-	#pragma region ParticleSystemComponent
-	static bool ParticleSystemComponent_HasParticleIndex(uint64_t entityID, uint32_t tableIndex)
+	#pragma region ParticleEffectComponent
+	static bool ParticleEffectComponent_HasParticleIndex(uint64_t entityID, uint32_t tableIndex)
 	{
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
-			PF_ERROR("ParticleSystemComponent.HasParticleIndex - entity is invalid ");
+			PF_ERROR("ParticleEffectComponent.HasParticleIndex - entity is invalid ");
 			return false;
 		}
 		#endif
 
-		if (!entity.HasComponent<ParticleSystemComponent>())
+		if (!entity.HasComponent<ParticleEffectComponent>())
 		{
-			PF_ERROR("ParticleSystemComponent.HasParticleIndex entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
+			PF_ERROR("ParticleEffectComponent.HasParticleIndex entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
 			return false;
 		}
-		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
+		ParticleEffectComponent& comp = entity.GetComponent<ParticleEffectComponent>();
 		//if (comp.ParticleHandlerTable!= nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex))
 		//{
 		//	return true;
 		//}
 		return false;
 	}
-	static bool ParticleSystemComponent_ParticleIndexHasParticle(uint64_t entityID, uint32_t tableIndex)
+	static bool ParticleEffectComponent_ParticleIndexHasParticle(uint64_t entityID, uint32_t tableIndex)
 	{
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
-			PF_ERROR("ParticleSystemComponent.ParticleIndexHasParticle - entity is invalid ");
+			PF_ERROR("ParticleEffectComponent.ParticleIndexHasParticle - entity is invalid ");
 			return false;
 		}
 		#endif
 
-		if (!entity.HasComponent<ParticleSystemComponent>())
+		if (!entity.HasComponent<ParticleEffectComponent>())
 		{
-			PF_ERROR("ParticleSystemComponent.ParticleIndexHasParticle entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
+			PF_ERROR("ParticleEffectComponent.ParticleIndexHasParticle entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
 			return false;
 		}
-		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
+		ParticleEffectComponent& comp = entity.GetComponent<ParticleEffectComponent>();
 		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex)!=nullptr)
 		//{
 		//	return true;
 		//}
 		return false;
 	}
-	static bool ParticleSystemComponent_GetVisible(uint64_t entityID, uint32_t tableIndex) 
+	static bool ParticleEffectComponent_GetVisible(uint64_t entityID, uint32_t tableIndex) 
 	{
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
-			PF_ERROR("ParticleSystemComponent.GetVisible - entity is invalid ");
+			PF_ERROR("ParticleEffectComponent.GetVisible - entity is invalid ");
 			return {};
 		}
 		#endif
 
-		if (!entity.HasComponent<ParticleSystemComponent>())
+		if (!entity.HasComponent<ParticleEffectComponent>())
 		{
-			PF_ERROR("ParticleSystemComponent.GetVisible entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
+			PF_ERROR("ParticleEffectComponent.GetVisible entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
 			return {};
 		}
-		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
+		ParticleEffectComponent& comp = entity.GetComponent<ParticleEffectComponent>();
 		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
 		//{
 		//	return comp.ParticleHandlerTable->GetHandler(tableIndex)->Visible;
@@ -4074,170 +4074,170 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		PF_ERROR("PlayerHUDComponent.GetVisible entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
 		return false;
 	}
-	static void ParticleSystemComponent_SetVisible(uint64_t entityID, uint32_t tableIndex, bool* visible)
+	static void ParticleEffectComponent_SetVisible(uint64_t entityID, uint32_t tableIndex, bool* visible)
 	{
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
-			PF_ERROR("ParticleSystemComponent.SetVisible - entity is invalid ");
+			PF_ERROR("ParticleEffectComponent.SetVisible - entity is invalid ");
 			return;
 		}
 		#endif
 
-		if (!entity.HasComponent<ParticleSystemComponent>())
+		if (!entity.HasComponent<ParticleEffectComponent>())
 		{
-			PF_ERROR("ParticleSystemComponent.SetVisible entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
+			PF_ERROR("ParticleEffectComponent.SetVisible entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
 			return;
 		}
-		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
+		ParticleEffectComponent& comp = entity.GetComponent<ParticleEffectComponent>();
 		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
 		//{
 		//	comp.ParticleHandlerTable->GetHandler(tableIndex)->Visible = *visible;
 		//	return;
 		//}
-		PF_ERROR("ParticleSystemComponent.SetVisible entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
+		PF_ERROR("ParticleEffectComponent.SetVisible entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
 	}
 
-	static void ParticleSystemComponent_Play(uint64_t entityID, uint32_t tableIndex)
+	static void ParticleEffectComponent_Play(uint64_t entityID, uint32_t tableIndex)
 	{
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
-			PF_ERROR("ParticleSystemComponent.Play - entity is invalid ");
+			PF_ERROR("ParticleEffectComponent.Play - entity is invalid ");
 			return;
 		}
 		#endif
 
-		if (!entity.HasComponent<ParticleSystemComponent>())
+		if (!entity.HasComponent<ParticleEffectComponent>())
 		{
-			PF_ERROR("ParticleSystemComponent.Play() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
+			PF_ERROR("ParticleEffectComponent.Play() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
 			return;
 		}
-		//ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
+		//ParticleEffectComponent& comp = entity.GetComponent<ParticleEffectComponent>();
 		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
 		//{
 		//	comp.ParticleHandlerTable->GetHandler(tableIndex)->Play();
 		//	return;
 		//}
-		PF_ERROR("ParticleSystemComponent.Play() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
+		PF_ERROR("ParticleEffectComponent.Play() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
 	}
-	static void ParticleSystemComponent_Pause(uint64_t entityID, uint32_t tableIndex)
+	static void ParticleEffectComponent_Pause(uint64_t entityID, uint32_t tableIndex)
 	{
 
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
-			PF_ERROR("ParticleSystemComponent.Pause() - entity is invalid ");
+			PF_ERROR("ParticleEffectComponent.Pause() - entity is invalid ");
 			return;
 		}
 		#endif
 
-		if (!entity.HasComponent<ParticleSystemComponent>())
+		if (!entity.HasComponent<ParticleEffectComponent>())
 		{
-			PF_ERROR("ParticleSystemComponent.Pause() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
+			PF_ERROR("ParticleEffectComponent.Pause() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
 			return;
 		}
-		//ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
+		//ParticleEffectComponent& comp = entity.GetComponent<ParticleEffectComponent>();
 		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
 		//{
 		//	comp.ParticleHandlerTable->GetHandler(tableIndex)->Pause();
 		//	return;
 		//}
-		PF_ERROR("ParticleSystemComponent.Pause() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
+		PF_ERROR("ParticleEffectComponent.Pause() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
 	}
-	static void ParticleSystemComponent_End(uint64_t entityID, uint32_t tableIndex)
+	static void ParticleEffectComponent_End(uint64_t entityID, uint32_t tableIndex)
 	{
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
-			PF_ERROR("ParticleSystemComponent.End() - entity is invalid ");
+			PF_ERROR("ParticleEffectComponent.End() - entity is invalid ");
 			return;
 		}
 		#endif
 
-		if (!entity.HasComponent<ParticleSystemComponent>())
+		if (!entity.HasComponent<ParticleEffectComponent>())
 		{
-			PF_ERROR("ParticleSystemComponent.End() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
+			PF_ERROR("ParticleEffectComponent.End() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
 			return;
 		}
-		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
+		ParticleEffectComponent& comp = entity.GetComponent<ParticleEffectComponent>();
 		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
 		//{
 		//	comp.ParticleHandlerTable->GetHandler(tableIndex)->End();
 		//	return;
 		//}
-		PF_ERROR("ParticleSystemComponent.End() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
+		PF_ERROR("ParticleEffectComponent.End() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
 	}
-	static void ParticleSystemComponent_Restart(uint64_t entityID, uint32_t tableIndex)
+	static void ParticleEffectComponent_Restart(uint64_t entityID, uint32_t tableIndex)
 	{
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
-			PF_ERROR("ParticleSystemComponent.Restart() - entity is invalid ");
+			PF_ERROR("ParticleEffectComponent.Restart() - entity is invalid ");
 			return;
 		}
 		#endif
 
-		if (!entity.HasComponent<ParticleSystemComponent>())
+		if (!entity.HasComponent<ParticleEffectComponent>())
 		{
-			PF_ERROR("ParticleSystemComponent.Restart() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
+			PF_ERROR("ParticleEffectComponent.Restart() entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
 			return;
 		}
-		//ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
+		//ParticleEffectComponent& comp = entity.GetComponent<ParticleEffectComponent>();
 		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
 		//{
 		//	comp.ParticleHandlerTable->GetHandler(tableIndex)->Restart();
 		//	return;
 		//}
-		PF_ERROR("ParticleSystemComponent.Restart() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
+		PF_ERROR("ParticleEffectComponent.Restart() entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
 	}
-	static int ParticleSystemComponent_GetState(uint64_t entityID, uint32_t tableIndex)
+	static int ParticleEffectComponent_GetState(uint64_t entityID, uint32_t tableIndex)
 	{
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
-			PF_ERROR("ParticleSystemComponent.GetState - entity is invalid ");
+			PF_ERROR("ParticleEffectComponent.GetState - entity is invalid ");
 			return 0 ;
 		}
 		#endif
 
-		if (!entity.HasComponent<ParticleSystemComponent>())
+		if (!entity.HasComponent<ParticleEffectComponent>())
 		{
-			PF_ERROR("ParticleSystemComponent.GetState entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
+			PF_ERROR("ParticleEffectComponent.GetState entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
 			return 0;
 		}
-		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
+		ParticleEffectComponent& comp = entity.GetComponent<ParticleEffectComponent>();
 		//if (comp.ParticleHandlerTable != nullptr && comp.ParticleHandlerTable->HasHandler(tableIndex) && comp.ParticleHandlerTable->GetHandler(tableIndex) != nullptr)
 		//{
 		//	return (int)comp.ParticleHandlerTable->GetHandler(tableIndex)->GetState();
 		//}
-		PF_ERROR("ParticleSystemComponent.GetState entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
+		PF_ERROR("ParticleEffectComponent.GetState entity tag: {} ID: {}  table index {} is invalid", entity.GetName(), entity.GetUUID(), tableIndex);
 	}
 
-	static void ParticleSystemComponent_GetParticles(uint64_t entityID, MonoArray** theArray)
+	static void ParticleEffectComponent_GetParticles(uint64_t entityID, MonoArray** theArray)
 	{
 		Entity entity = ScriptEngine::GetWorldContext()->GetEntity(entityID);
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
-			PF_ERROR("ParticleSystemComponent.GetParticles - entity is invalid ");
+			PF_ERROR("ParticleEffectComponent.GetParticles - entity is invalid ");
 			return;
 		}
 		#endif
 
-		if (!entity.HasComponent<ParticleSystemComponent>())
+		if (!entity.HasComponent<ParticleEffectComponent>())
 		{
-			PF_ERROR("ParticleSystemComponent.GetParticles entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
+			PF_ERROR("ParticleEffectComponent.GetParticles entity tag: {} ID: {}  does not conatin ParticleSystem Component", entity.GetName(), entity.GetUUID());
 			return;
 		}
 		std::vector<uint32_t> objects;
-		ParticleSystemComponent& comp = entity.GetComponent<ParticleSystemComponent>();
+		ParticleEffectComponent& comp = entity.GetComponent<ParticleEffectComponent>();
 
 		//for (auto& part : comp.ParticleHandlerTable->GetHandlers())
 		//{
@@ -5320,18 +5320,18 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 		//particleSystem component
 		{
-			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_HasParticleIndex);
-			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_ParticleIndexHasParticle);
+			PF_ADD_INTERNAL_CALL(ParticleEffectComponent_HasParticleIndex);
+			PF_ADD_INTERNAL_CALL(ParticleEffectComponent_ParticleIndexHasParticle);
 
-			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_GetVisible);
-			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_SetVisible);
-			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_Play);
-			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_Pause);
-			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_End);
-			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_Restart);
-			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_GetState);
+			PF_ADD_INTERNAL_CALL(ParticleEffectComponent_GetVisible);
+			PF_ADD_INTERNAL_CALL(ParticleEffectComponent_SetVisible);
+			PF_ADD_INTERNAL_CALL(ParticleEffectComponent_Play);
+			PF_ADD_INTERNAL_CALL(ParticleEffectComponent_Pause);
+			PF_ADD_INTERNAL_CALL(ParticleEffectComponent_End);
+			PF_ADD_INTERNAL_CALL(ParticleEffectComponent_Restart);
+			PF_ADD_INTERNAL_CALL(ParticleEffectComponent_GetState);
 
-			PF_ADD_INTERNAL_CALL(ParticleSystemComponent_GetParticles);
+			PF_ADD_INTERNAL_CALL(ParticleEffectComponent_GetParticles);
 		}
 
 		// Boid Flock Component

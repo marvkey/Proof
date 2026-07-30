@@ -102,10 +102,10 @@ namespace Proof
 		{
 			PF_PROFILE_SCOPE_DYNAMIC("World::OnUpdateEditor - Particle OnUpdate");
 			/*
-			const auto& particleView = m_Registry.view<ParticleSystemComponent>();
+			const auto& particleView = m_Registry.view<ParticleEffectComponent>();
 			for (auto entity : particleView)
 			{
-				auto& particleSystem = particleView.get<ParticleSystemComponent>(entity);
+				auto& particleSystem = particleView.get<ParticleEffectComponent>(entity);
 				if (particleSystem.ParticleHandlerTable == nullptr)continue;
 				Entity wfadfas{ entity,this };
 				for (auto& [index, handler] : particleSystem.ParticleHandlerTable->GetHandlers())
@@ -146,11 +146,11 @@ namespace Proof
 #if 0
 		{
 
-			auto view = m_Registry.view<ParticleSystemComponent>();
+			auto view = m_Registry.view<ParticleEffectComponent>();
 			for (auto entity : view)
 			{
 				Entity e = { entity, this };
-				auto instance = e.GetComponent<ParticleSystemComponent>().ParticleSytemInstance;
+				auto instance = e.GetComponent<ParticleEffectComponent>().ParticleSytemInstance;
 				if (instance == nullptr)
 					return;
 				instance->OnUpdate(DeltaTime, Transform(GetWorldSpaceTransform(e)));
@@ -486,10 +486,10 @@ namespace Proof
 				}
 			}
 #if 0
-			const auto& particleView = m_Registry.view<ParticleSystemComponent>();
+			const auto& particleView = m_Registry.view<ParticleEffectComponent>();
 			for (auto entity : particleView)
 			{
-				auto& particleSystem = particleView.get<ParticleSystemComponent>(entity);
+				auto& particleSystem = particleView.get<ParticleEffectComponent>(entity);
 				if (particleSystem.ParticleSytemInstance == nullptr)continue;
 				for (auto emitter : particleSystem.ParticleSytemInstance->GetEmitters())
 				{
@@ -1206,11 +1206,11 @@ namespace Proof
 		{
 			PF_PROFILE_FUNC("World::OnUpdate - Particle OnUpdate");
 
-			const auto& particleView = m_Registry.view<ParticleSystemComponent>();
+			const auto& particleView = m_Registry.view<ParticleEffectComponent>();
 			for (auto entity : particleView)
 			{
 				/*
-				auto& particleSystem = particleView.get<ParticleSystemComponent>(entity);
+				auto& particleSystem = particleView.get<ParticleEffectComponent>(entity);
 				if (particleSystem.ParticleHandlerTable == nullptr)continue;
 				Entity wfadfas{ entity,this };
 				for (auto& [index, handler] : particleSystem.ParticleHandlerTable->GetHandlers())
@@ -1360,9 +1360,9 @@ namespace Proof
 		m_PhysicsWorld->Simulate(DeltaTime);
 #if 0
 		{
-			ForEachEnitityWith<ParticleSystemComponent>([&](Entity entity)
+			ForEachEnitityWith<ParticleEffectComponent>([&](Entity entity)
 				{
-					auto instance = entity.GetComponent<ParticleSystemComponent>().ParticleSytemInstance;
+					auto instance = entity.GetComponent<ParticleEffectComponent>().ParticleSytemInstance;
 					if (instance == nullptr)
 						return;
 					instance->OnUpdate(DeltaTime, Transform(GetWorldSpaceTransform(entity)));

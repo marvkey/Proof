@@ -17,6 +17,8 @@
 #include "GuiEditorPanel.h"
 #include "InputActionPanel.h"
 #include "InputBindingContextPanel.h"
+#include "ParticleEmitterPanel.h"
+
 namespace Proof 
 {
 	AssetEditor::AssetEditor(const char* id)
@@ -213,6 +215,7 @@ namespace Proof
 		RegisterEditor(AssetType::InputBindingContext);
 		RegisterEditor(AssetType::UIPanel);
 		RegisterEditor(AssetType::AnimationController);
+		RegisterEditor(AssetType::ParticleEmitter);
 	}
 
 	void AssetEditorPanel::UnregisterAllEditors()
@@ -321,6 +324,9 @@ namespace Proof
 				case Proof::AssetType::AnimationController:
 					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<AnimationControllerPanel>::Create();
 					break;
+				case Proof::AssetType::ParticleEmitter:
+					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<ParticleEmitterPanel>::Create();
+					  break;
 				default:
 					break;
 			}

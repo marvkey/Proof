@@ -88,6 +88,7 @@ namespace Proof
 			{AssetType::Skeleton,".Skeleton.ProofAsset"},
 			{AssetType::Animation,".Animation.ProofAsset"},
 			{AssetType::AnimationController,".AnimationController.ProofAsset"},
+			{AssetType::ParticleEmitter,".ParticleEmitter.ProofAsset"},
 		};
 		std::string GetAssetExtensionString(AssetType type);
 		// checks the file extension

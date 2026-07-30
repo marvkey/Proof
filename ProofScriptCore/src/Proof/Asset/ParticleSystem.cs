@@ -28,18 +28,18 @@ namespace Proof
         }
         public bool Visible
         {
-            get { return InternalCalls.ParticleSystemComponent_GetVisible(Entity.ID, TableIndex); }
+            get { return InternalCalls.ParticleEffectComponent_GetVisible(Entity.ID, TableIndex); }
             set
             {
-                InternalCalls.ParticleSystemComponent_SetVisible(Entity.ID, TableIndex, ref value);
+                InternalCalls.ParticleEffectComponent_SetVisible(Entity.ID, TableIndex, ref value);
             }
         }
 
-        public void Play() => InternalCalls.ParticleSystemComponent_Play(Entity.ID, TableIndex);
-        public void Pause() => InternalCalls.ParticleSystemComponent_Pause(Entity.ID, TableIndex);
-        public void End() => InternalCalls.ParticleSystemComponent_End(Entity.ID, TableIndex);
-        public void Restart() => InternalCalls.ParticleSystemComponent_Restart(Entity.ID, TableIndex);
+        public void Play() => InternalCalls.ParticleEffectComponent_Play(Entity.ID, TableIndex);
+        public void Pause() => InternalCalls.ParticleEffectComponent_Pause(Entity.ID, TableIndex);
+        public void End() => InternalCalls.ParticleEffectComponent_End(Entity.ID, TableIndex);
+        public void Restart() => InternalCalls.ParticleEffectComponent_Restart(Entity.ID, TableIndex);
 
-        public ParticleHandlerState GetState() => (ParticleHandlerState)InternalCalls.ParticleSystemComponent_GetState(Entity.ID, TableIndex); 
+        public ParticleHandlerState GetState() => (ParticleHandlerState)InternalCalls.ParticleEffectComponent_GetState(Entity.ID, TableIndex); 
     }
 }

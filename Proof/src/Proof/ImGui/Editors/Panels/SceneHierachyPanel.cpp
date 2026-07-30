@@ -1220,7 +1220,7 @@ namespace Proof
 			AddComponentGui<PlayerHUDComponent>(entity, "Player HUD");
 			AddComponentGui<WorldHUDComponent>(entity, "World HUD");
 
-			AddComponentGui<ParticleSystemComponent>(entity, "Particle System");
+			AddComponentGui<ParticleEffectComponent>(entity, "Particle System");
 
 			AddComponentGui<AudioComponent>(entity, "Audio");
 			AddComponentGui<AudioListenerComponent>(entity, "AudioListener");
@@ -1842,11 +1842,11 @@ namespace Proof
 			}
 			UI::EndPropertyGrid();
 			});
-		DrawComponents<ParticleSystemComponent>("Particle System", entity, [&](ParticleSystemComponent& particleSystem) {
+		DrawComponents<ParticleEffectComponent>("Particle System", entity, [&](ParticleEffectComponent& particleSystem) {
 
 			UI::BeginPropertyGrid();
 
-			auto instance = particleSystem.ParticleSytemInstance;
+			auto instance = particleSystem.ParticleEffect;
 			AssetKey<AssetType::ParticleSystem> key;
 			if(instance->GetParticleSystem() != nullptr)
 				key = instance->GetParticleSystem()->GetID();
@@ -1854,9 +1854,9 @@ namespace Proof
 			if (UI::AttributeAssetKeyReference("Particle System", key))
 			{
 				if (key.IsValid())
-					particleSystem.ParticleSytemInstance = Count<ParticleSystemInstance>::Create(key.GetAsset<ParticleSystem>());
+					particleSystem.ParticleEffect = Count<ParticleEffect>::Create(key.GetAsset<ParticleSystem>());
 				else
-					particleSystem.ParticleSytemInstance = Count<ParticleSystemInstance>::Create();
+					particleSystem.ParticleEffect = Count<ParticleEffect>::Create();
 			}
 
 			UI::EndPropertyGrid();

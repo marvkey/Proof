@@ -762,14 +762,14 @@ namespace Proof
 #endif
 		}
 		{
-			if (entity.HasComponent<ParticleSystemComponent>())
+			if (entity.HasComponent<ParticleEffectComponent>())
 			{
-				ParticleSystemComponent& particleSystemComponent = entity.GetComponent<ParticleSystemComponent>();
-				out << YAML::Key << "ParticleSystemComponent";
-				out << YAML::BeginMap; // ParticleSystemComponent
+				ParticleEffectComponent& particleEffectComponent = entity.GetComponent<ParticleEffectComponent>();
+				out << YAML::Key << "ParticleEffectComponent";
+				out << YAML::BeginMap; // ParticleEffectComponent
 				//out << YAML::Key << "AssetID" << YAML::Value << material.As<Asset>()->GetID();
 
-				auto system = particleSystemComponent.ParticleSytemInstance->GetParticleSystem();
+				auto system = particleEffectComponent.ParticleEffect->GetParticleSystem();
 				if (system)
 				{
 					out << YAML::Key << "AssetID" << YAML::Value << system.As<Asset>()->GetID();
@@ -780,10 +780,10 @@ namespace Proof
 				}
 				//out << YAML::Key << "ParticleHandlerTable";
 				//out << YAML::BeginSeq;//ParticleHandlerTable
-				//if (particleSystemComponent.ParticleHandlerTable != nullptr)
+				//if (particleEffectComponent.ParticleHandlerTable != nullptr)
 				{
 #if 0
-					for (auto& [index, particleHandler] : particleSystemComponent.ParticleHandlerTable->GetHandlers())
+					for (auto& [index, particleHandler] : particleEffectComponent.ParticleHandlerTable->GetHandlers())
 					{
 						out << YAML::BeginMap;// particleHandler
 
@@ -804,7 +804,7 @@ namespace Proof
 #endif
 				}
 				//out << YAML::EndSeq; // ParticleHandlerTable
-				out << YAML::EndMap; // ParticleSystemComponent
+				out << YAML::EndMap; // ParticleEffectComponent
 			}
 
 		
@@ -2111,25 +2111,25 @@ namespace Proof
 				}
 			}
 
-			// ParticleSystemComponent
+			// ParticleEffectComponent
 			{
-				auto particleSystemComponent = entity["ParticleSystemComponent"];
-				if (particleSystemComponent)
+				auto particleEffectComponent = entity["ParticleEffectComponent"];
+				if (particleEffectComponent)
 				{
-					auto& psc = NewEntity.AddComponent<ParticleSystemComponent>();
+					auto& psc = NewEntity.AddComponent<ParticleEffectComponent>();
 
-					if(particleSystemComponent["AssetID"])
+					if(particleEffectComponent["AssetID"])
 					{
-						AssetKey<AssetType::ParticleSystem> key = (AssetID)particleSystemComponent["AssetID"].as<uint64_t>();
+						AssetKey<AssetType::ParticleSystem> key = (AssetID)particleEffectComponent["AssetID"].as<uint64_t>();
 						if (key.IsValid())
 						{
-							psc.ParticleSytemInstance->SetParticleSystem(key.GetAsset<ParticleSystem>());
+							psc.ParticleEffect->SetParticleSystem(key.GetAsset<ParticleSystem>());
 						}
 					}
 #if 0
 
 					Count<ParticleHandlerTable> table = Count<ParticleHandlerTable>::Create();
-					for (auto  particleHandler : particleSystemComponent["ParticleHandlerTable"])
+					for (auto  particleHandler : particleEffectComponent["ParticleHandlerTable"])
 					{
 
 						AssetID id = particleHandler["ParticleHandlerAssetID"].as<uint64_t>();

@@ -5,20 +5,25 @@
 
 namespace Proof
 {
-	struct alignas(16) SBParticleInitalState
+	
+
+	struct alignas(16) SBParticleInitialSettings
 	{
-		float Duration = 5;
-		int bLooping = 1;	
+		float Duration = 5.0f;
 		float StartLifetime = 5.0f;
 		float StartSpeed = 5.0f;
+		float GravityModifier = 0.0f;
 
 		glm::vec3 StartSize = glm::vec3(1.0f);
-		float GravityModifier =0.0f;
+		float FadeOutSpeed = 0.5f;// particle duration over how fast remaingin particles fade out
 
 		glm::vec4 StartColor = glm::vec4(1.0f);
+	};
 
+	struct alignas(16) SBParticleInstanceState
+	{
 		glm::vec3 EmitterPosition = glm::vec3(0.0f);
-		float FadeOutSpeed = 0.5; // particle duration over how fast remaingin particles fade out
+		int bLooping = 0;
 
 		glm::vec3 EmitterPrevPosition = glm::vec3(0.0f);
 	};
@@ -115,7 +120,7 @@ namespace Proof
 		int DeadParticles = 0;
 		int MaxParticles = 0; // not edited in teh shader
 
-		int Sate = 0; // 0 none, 1 playing 2 Done 
+		int State = 0; // 0 none, 1 playing 2 Done 
 	};
 
 	struct alignas(16) SBParticlePerDrawState

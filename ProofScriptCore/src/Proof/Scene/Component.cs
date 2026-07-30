@@ -809,18 +809,18 @@ namespace Proof
     }
 
     [RegisterCoreClassStruct]
-    public class ParticleSystemComponent : Component
+    public class ParticleEffectComponent : Component
 	{
 
 
 		public bool HasParticleIndex(uint index)
 		{
-			return InternalCalls.ParticleSystemComponent_HasParticleIndex(Entity.ID, index);
+			return InternalCalls.ParticleEffectComponent_HasParticleIndex(Entity.ID, index);
 		}
 
 		public bool ParticleIndexHasParticle(uint index)
 		{
-			return InternalCalls.ParticleSystemComponent_ParticleIndexHasParticle(Entity.ID, index);
+			return InternalCalls.ParticleEffectComponent_ParticleIndexHasParticle(Entity.ID, index);
 		}
 
 		public ParticleSystem GetParticle(uint index)
@@ -835,7 +835,7 @@ namespace Proof
 		public ParticleSystem[] GetParticles()
 		{
 			uint[] list = null;
-			InternalCalls.ParticleSystemComponent_GetParticles(Entity.ID, ref list);
+			InternalCalls.ParticleEffectComponent_GetParticles(Entity.ID, ref list);
 
 			if (list == null)
 				return null;
