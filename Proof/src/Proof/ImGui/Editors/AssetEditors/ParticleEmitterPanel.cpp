@@ -173,19 +173,19 @@ namespace Proof
 
 			switch (ParticleEmitterShape(settings.Shape.Shape))
 			{
-				case ParticleEmitterShape::Cone:
+			case ParticleEmitterShape::Cone:
 				{
 					UI::AttributeSlider("Cone Radius", settings.Shape.ConeRadius, 0.0f, 50.0f);
 					UI::AttributeSlider("Cone Angle", settings.Shape.ConeAngleDegrees, 0.0f, 360.0f);
 					break;
 				}
-				case ParticleEmitterShape::Sphere:
+			case ParticleEmitterShape::Sphere:
 				{
 					UI::AttributeSlider("Sphere Radius", settings.Shape.SphereRadius, 0.0f, 50.0f);
 					break;
 				}
-				default:
-					break;
+			default:
+				break;
 			}
 
 			UI::EndPropertyGrid();
@@ -286,7 +286,7 @@ namespace Proof
 			else
 			{
 				m_ParticleSystemInstance->SetLooping(m_Resimulate);
-				m_ParticleSystemInstance->Play(false);
+				m_ParticleSystemInstance->Play();
 			}
 		}
 
@@ -297,10 +297,11 @@ namespace Proof
 		if (ImGui::Button("Restart", ImVec2(buttonWidth, 0.0f)))
 		{
 			m_ParticleSystemInstance->SetLooping(m_Resimulate);
-			emitterInstance->Reset(emitterInstance->GetParticleCount());
-			//emitterInstance->Play(false);
-			//m_ParticleSystemInstance->Play(false);
-		}
+			m_ParticleSystemInstance->Reset();
+
+			if (state == ParticleSystemState::Play)
+				m_ParticleSystemInstance->Play();
+		}                                             
 
 		ImGui::EndDisabled();
 		ImGui::SameLine();
@@ -414,7 +415,7 @@ namespace Proof
 
 		m_Resimulate = true;
 		m_ParticleSystemInstance->SetLooping(m_Resimulate);
-		m_ParticleSystemInstance->Play(true);
+		m_ParticleSystemInstance->Play();
 		m_EmitterInstance = GetPreviewEmitterInstance();
 	}
 

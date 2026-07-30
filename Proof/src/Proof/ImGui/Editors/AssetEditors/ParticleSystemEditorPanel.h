@@ -35,6 +35,7 @@ namespace Proof
 		void DrawSequencerToolbar();
 		void DrawSequencer();
 		void DrawAddTrackPopup();
+		void DrawPlaybackPanel();
 		void DrawDetailsPanel();
 
 		void CommitSequencerEdit(int itemIndex);
@@ -56,15 +57,14 @@ namespace Proof
 		float GetParticleSystemDuration() const;
 		std::string GetTrackName(AssetID trackID) const;
 
-
 		static int TimeToFrame(float time);
 		static float FrameToTime(int frame);
 
 	private:
 		friend class ParticleSequencerInterface;
 
-		static constexpr float TimelineFramesPerSecond = 60.0f;
-		static constexpr float MinimumTimelineDuration = 10.0f;
+		static constexpr float TimelineFramesPerSecond = 30.0f;
+		static constexpr float MinimumTimelineDuration = 1.0f;
 		static constexpr float TimelinePanelHeight = 320.0f;
 		static constexpr float DetailsPanelWidth = 360.0f;
 

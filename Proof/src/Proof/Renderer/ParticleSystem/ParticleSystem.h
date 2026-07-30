@@ -93,9 +93,10 @@ namespace Proof
 
 		void SyncWithParticleEmitter();
 
-		void Play(bool restart = true);
+		void Play();
 		void Pause();
 		void Stop(bool waitUntilFinish = false);
+		void Restart();
 
 		uint32_t GetParticleCount()
 		{
@@ -104,9 +105,15 @@ namespace Proof
 
 		SBParticleInstanceState ParticleInstanceState;
 
+		void Reset()
+		{
+			Reset(m_MaxParticles);
+		}
+		
 	private:
 		void Reset(uint32_t maxParticles);
 		friend class ParticleEmitterPanel;
+		friend class ParticleEffect;
 	private:
 		ParticleSystemState m_State = ParticleSystemState::None;
 		bool m_WaitUntilFinish = false;
@@ -441,9 +448,11 @@ namespace Proof
 		void SetParticleSystem(Count<ParticleSystem> system);
 
 		// State control
-		void Play(bool restart = true);
+		void Play();
 		void Pause();
 		void Stop(bool waitUntilFinish = false);
+		void Restart();
+		void Reset();
 
 		ParticleSystemState GetState() const
 		{

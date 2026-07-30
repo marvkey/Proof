@@ -579,42 +579,81 @@ namespace Proof
 
 	void ParticleSystemEditorPanel::RestartPreview()
 	{
-		m_CurrentTime = 0.0f;
-		m_CurrentFrame = 0;
 
 		if (!m_ParticleSystemInstance)
 			return;
-
-		m_ParticleSystemInstance->Play(true);
-
-		if (!m_IsPlaying)
-			m_ParticleSystemInstance->Pause();
+		m_CurrentFrame = 0;
+		m_ParticleSystemInstance->Reset();
 	}
 
 	void ParticleSystemEditorPanel::DrawSequencerToolbar()
 	{
 		ImGui::BeginChild("ParticleSystemToolbar", ImVec2(0.0f, 42.0f), true, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
 
-		if (ImGui::Button(m_IsPlaying ? "Pause" : "Play"))
+		if (!m_ParticleSystemInstance)
 		{
-			m_IsPlaying = !m_IsPlaying;
+			ImGui::TextDisabled("No particle preview available.");
+			ImGui::EndChild();
+			return;
+		}
 
-			if (m_ParticleSystemInstance)
+		const ParticleSystemState state = m_ParticleSystemInstance->GetState();
+		const bool isPlaying = state == ParticleSystemState::Play;
+		const bool canStop = state == ParticleSystemState::Play || state == ParticleSystemState::Pause;
+
+		if (ImGui::Button(isPlaying ? "Pause" : "Play", ImVec2(65.0f, 0.0f)))
+		{
+			if (isPlaying)
 			{
-				if (m_IsPlaying)
-					m_ParticleSystemInstance->Play(false);
-				else
-					m_ParticleSystemInstance->Pause();
+				m_ParticleSystemInstance->Pause();
+				m_IsPlaying = false;
+			}
+			else
+			{
+				m_ParticleSystemInstance->Play();
+				m_IsPlaying = true;
 			}
 		}
 
 		ImGui::SameLine();
 
-		if (ImGui::Button("Restart"))
+		if (ImGui::Button("Restart", ImVec2(65.0f, 0.0f)))
+		{
 			RestartPreview();
 
+			if (state == ParticleSystemState::Play)
+				m_ParticleSystemInstance->Play();
+		}
+
 		ImGui::SameLine();
-		ImGui::Text("%.2f s / %.2f s", FrameToTime(m_CurrentFrame), GetParticleSystemDuration());
+		ImGui::BeginDisabled(!canStop);
+
+		if (ImGui::Button("Stop", ImVec2(55.0f, 0.0f)))
+		{
+			m_ParticleSystemInstance->Stop(false);
+			m_CurrentFrame = 0;
+			m_IsPlaying = false;           
+
+		}
+
+		ImGui::EndDisabled();
+		ImGui::SameLine();
+		ImGui::TextUnformatted("Speed");
+		ImGui::SameLine();
+
+		float playbackSpeed = m_ParticleSystemInstance->SimulationSpeed;
+		ImGui::SetNextItemWidth(70.0f);
+		if (ImGui::DragFloat("##ParticlePlaybackSpeed", &playbackSpeed, 0.01f, 0.0f, 0.0f, "%.2f"))
+			m_ParticleSystemInstance->SimulationSpeed = std::max(playbackSpeed, 0.0f);
+
+		ImGui::SameLine();
+
+		bool resimulate = m_ParticleSystemInstance->GetLooping();
+		if (ImGui::Checkbox("Resimulate", &resimulate))
+			m_ParticleSystemInstance->SetLooping(resimulate);
+
+		ImGui::SameLine();
+		ImGui::Text("%.2f / %.2f s", m_CurrentTime, GetParticleSystemDuration());
 		ImGui::SameLine();
 
 		if (ImGui::Button("+ Track"))
@@ -630,7 +669,7 @@ namespace Proof
 		if (m_SelectedTrackID != AssetID(0))
 			selectedTrackName = GetTrackName(m_SelectedTrackID);
 
-		ImGui::SetNextItemWidth(220.0f);
+		ImGui::SetNextItemWidth(180.0f);
 
 		if (ImGui::BeginCombo("##ParticleTrack", selectedTrackName.c_str()))
 		{
@@ -762,15 +801,24 @@ namespace Proof
 		m_Camera.SetActive(m_IsViewportFocused);
 		m_Camera.OnUpdate(deltaTime);
 
+
 		m_World->OnUpdateEditor(deltaTime);
 
-		if (m_IsPlaying && m_ParticleSystemInstance)
+		if (m_ParticleSystemInstance)
 		{
-			m_CurrentTime += static_cast<float>(deltaTime);
-			m_CurrentFrame = TimeToFrame(m_CurrentTime);
+			const ParticleSystemState state = m_ParticleSystemInstance->GetState();
+			const float duration = GetParticleSystemDuration();
 
-			if (m_CurrentTime >= GetParticleSystemDuration())
-				RestartPreview();
+			m_IsPlaying = state == ParticleSystemState::Play;
+
+			m_CurrentTime = m_ParticleSystemInstance->m_Time;
+
+			if (m_ParticleSystemInstance->GetLooping() && duration > 0.0f)
+				m_CurrentTime = std::fmod(m_CurrentTime, duration);
+			else
+				m_CurrentTime = std::min(m_CurrentTime, duration);
+
+			m_CurrentFrame = TimeToFrame(m_CurrentTime);
 		}
 
 		m_World->OnRenderEditor(m_WorldRenderer, deltaTime, m_Camera, [this](Count<WorldRenderer> renderer)
@@ -808,8 +856,16 @@ namespace Proof
 
 		const ImVec2 available = ImGui::GetContentRegionAvail();
 		const float spacing = ImGui::GetStyle().ItemSpacing.x;
-		const float timelineHeight = std::min(TimelinePanelHeight, std::max(220.0f, available.y * 0.42f));
+		const float toolbarHeight = 42.0f;
+		const float sequencerHeaderHeight = 45.0f;
+		const float sequencerRowHeight = 25.0f;
+		const int visibleRows = m_Sequencer ? m_Sequencer->GetItemCount() : 0;
+
+		const float requiredTimelineHeight = toolbarHeight + sequencerHeaderHeight + visibleRows * sequencerRowHeight + 30.0f;
+		const float maxTimelineHeight = std::max(available.y - 120.0f, 220.0f);
+		const float timelineHeight = std::clamp(requiredTimelineHeight, 220.0f, maxTimelineHeight);
 		const float topHeight = std::max(available.y - timelineHeight - spacing, 120.0f);
+
 		const float detailsWidth = std::min(DetailsPanelWidth, std::max(280.0f, available.x * 0.34f));
 		const float viewportWidth = std::max(available.x - detailsWidth - spacing, 120.0f);
 
@@ -867,7 +923,6 @@ namespace Proof
 		m_Camera.SetPosition(glm::vec3(0.0f, 2.5f, 13.5f));
 		m_WorldRenderer = Count<WorldRenderer>::Create();
 
-		m_CurrentTime = 0.0f;
 		m_CurrentFrame = 0;
 		m_FirstVisibleFrame = 0;
 		m_SelectedEntry = -1;
@@ -880,9 +935,10 @@ namespace Proof
 		if (m_ParticleSystem->GetTimeline() && !m_ParticleSystem->GetTimeline()->GetTracks().empty())
 			m_SelectedTrackID = m_ParticleSystem->GetTimeline()->GetTracks().begin()->first;
 
-		m_ParticleSystemInstance->Play(true);
+		m_ParticleSystemInstance->Play();
 		RebuildSequencer();
 	}
+
 
 	void ParticleSystemEditorPanel::Save()
 	{

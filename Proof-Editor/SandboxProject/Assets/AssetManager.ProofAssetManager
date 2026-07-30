@@ -547,7 +547,7 @@ Assets:
     Path: Models\backpack\specular.jpg
   - Asset: 612480295052508671
     Type: ParticleEmitter
-    Path: New ParticleEmitter.ParticleEmitter.ProofAsset
+    Path: Green.ParticleEmitter.ProofAsset
   - Asset: 12857925597736787672
     Type: Texture
     Path: TexturesMaps\brick-wall-bl\brick-wall_preview.jpg
@@ -1075,4 +1075,4 @@ Assets:
     Path: Videos\GameEngineP2\Scenes\TestLightGrid.ProofWorld
   - Asset: 3969788842516442491
     Type: ParticleEmitter
-    Path: New ParticleEmitter (01).ParticleEmitter.ProofAsset
+    Path: REd.ParticleEmitter.ProofAsset

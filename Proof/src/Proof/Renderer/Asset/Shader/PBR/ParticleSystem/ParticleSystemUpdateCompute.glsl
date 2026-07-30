@@ -275,7 +275,8 @@ void main()
 {
     uint gid = gl_GlobalInvocationID.x;
     uint lid = gl_LocalInvocationID.x;
-
+    
+    /*
     // initial run
     if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0 && gl_GlobalInvocationID.z == 0)
     {
@@ -292,8 +293,9 @@ void main()
             s_TrackableData.TimeElapsed += DeltaTime;
 
         AvailableToDraw = SpawnNewParticles;
+        
     }
-
+    */
     // Wait for spawn counter to be initialized
     memoryBarrierBuffer();
     barrier();
@@ -339,6 +341,7 @@ void main()
                 RespawnParticle(localParticles[lid], gid, lid);
             }
         }
+        
     }
     else if(localParticles[lid].Life > 0.0)
     {

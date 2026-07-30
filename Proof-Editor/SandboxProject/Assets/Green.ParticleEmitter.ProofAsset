@@ -3,15 +3,12 @@ ID: 612480295052508671
 MaxParticles: 1000
 InitialState:
   Duration: 5
-  bLooping: 1
   StartLifetime: 5
-  StartSpeed: 5
+  StartSpeed: 1
   StartSize: [1, 1, 1]
   GravityModifier: 0
   StartColor: [0.341700971, 0.981481493, 0.384352952, 1]
-  EmitterPosition: [0, 0, 0]
   FadeOutSpeed: 0.150000006
-  EmitterPrevPosition: [0, 0, 0]
 Bursts:
   []
 Emission:
@@ -32,7 +29,7 @@ VelocityOverLifeTime:
   Orbital: [-0.939999998, 0.910000026, 0.639999986]
   Radial: 5.67199993
   Offset: [0.75, 0.370000005, 0.0700000003]
-  bEnabled: 1
+  bEnabled: 0
 ColorOverLifeTime:
   bEnabled: 1
   FinalColor: [1, 0.0259259343, 0.0259259343, 1]

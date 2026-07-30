@@ -1,4 +1,4 @@
-#include "Proofprch.h"
+ #include "Proofprch.h"
 
 #include "ParticleSystem.h"
 #include "Proof/Scene/Component.h"
@@ -7,7 +7,7 @@
 #include "Proof/Math/Random.h"
 #include "Proof/Renderer/ComputePass.h"
 #include "Proof/Renderer/Renderer.h"
-#include "Proof/Renderer/CommandBuffer.h"
+
 
 #include "Proof/Renderer/UniformBuffer.h"
 #include <glm/gtx/quaternion.hpp>
@@ -151,7 +151,7 @@ namespace Proof
 
         SBParticlePerDrawState drawState;
         drawState.SpawnNewParticles = toSpawn + burstSpawn; // 
-        drawState.DeltaTime = FrameTime::GetWorldDeltaTime();
+        drawState.DeltaTime = dt;
 
         m_SBPerDrawData->SetData(Buffer(&drawState, sizeof(SBParticlePerDrawState)));
 
@@ -182,12 +182,13 @@ namespace Proof
         m_MaxParticles = size;
 
         // inital setigns for trackable data
-        SBParticleTrackableData trackableData;
+    	SBParticleTrackableData trackableData{};
 
-        trackableData.TimeElapsed = 0.0f;
-        trackableData.ActiveParticles = 0;
-        trackableData.DeadParticles = 0;
-        trackableData.MaxParticles = m_MaxParticles;
+    	trackableData.TimeElapsed = 0.0f;
+    	trackableData.ActiveParticles = 0;
+    	trackableData.DeadParticles = 0;
+    	trackableData.MaxParticles = m_MaxParticles;
+    	trackableData.State = 1;
 
         m_Time = 0.0f;
         m_PrevTime = 0.0f;
@@ -238,8 +239,9 @@ namespace Proof
         Reset(m_Emitter->GetParticleCount());
     }
 
-    void ParticleEmitterInstance::Play(bool restart)
+    void ParticleEmitterInstance::Play()
     {
+		bool restart = false;
         if (m_State == ParticleSystemState::End)
             restart = true;
 
@@ -272,8 +274,14 @@ namespace Proof
         m_State = ParticleSystemState::Play;
     }
 
+    void ParticleEmitterInstance::Restart()
+    {
+		Reset();
+		Play();
+    }
 
-	ParticleEffect::ParticleEffect(Count<ParticleEffect> instnace)
+
+    ParticleEffect::ParticleEffect(Count<ParticleEffect> instnace)
 	{
 		if (!instnace)
 			return;
@@ -302,7 +310,7 @@ namespace Proof
 		m_StopRequested = false;
 		m_State = ParticleSystemState::None;
 
-		SetLooping(m_Looping);
+		Reset();
 	}
 
 	void ParticleEffect::OnUpdate(float dt, const Transform& transform, Count<ComputePass> cmdPass)
@@ -345,7 +353,7 @@ namespace Proof
 
 					emitterClip.Started = true;
 					emitterClip.Emitter->ParticleInstanceState.bLooping = m_Looping ? 1 : 0;
-					emitterClip.Emitter->Play(true);
+					emitterClip.Emitter->Play();
 				}
 
 				hasStartedEmitter = true;
@@ -393,16 +401,18 @@ namespace Proof
 		SyncWithParticleSystem();
 	}
 
-	void ParticleEffect::Play(bool restart)
+	void ParticleEffect::Play()
 	{
+
 		if (!m_Timeline)
 			return;
 
+		bool restart = false;
 		if (m_State == ParticleSystemState::End)
 			restart = true;
 
-		if (m_State == ParticleSystemState::Play && !restart)
-			return;
+		//if (m_State == ParticleSystemState::Play && !restart)
+		//	return;
 
 		if (restart)
 		{
@@ -418,12 +428,12 @@ namespace Proof
 					if (!emitterClip.Emitter)
 						continue;
 
-					emitterClip.Emitter->Stop(false);
 					emitterClip.Emitter->ParticleInstanceState.bLooping = m_Looping ? 1 : 0;
+					emitterClip.Emitter->Reset();
 				}
 			}
 		}
-		else if (m_State == ParticleSystemState::Pause)
+		else
 		{
 			for (auto& [trackID, track] : m_Timeline->m_Tracks)
 			{
@@ -432,7 +442,7 @@ namespace Proof
 					if (!emitterClip.Emitter || !emitterClip.Started)
 						continue;
 
-					emitterClip.Emitter->Play(false);
+					//emitterClip.Emitter->Play();
 				}
 			}
 		}
@@ -489,7 +499,7 @@ namespace Proof
 			m_Time = 0.0f;
 			m_PrevTime = 0.0f;
 			m_StopRequested = false;
-			m_State = ParticleSystemState::None;
+			m_State = ParticleSystemState::End;
 			return;
 		}
 
@@ -507,6 +517,32 @@ namespace Proof
 				emitterClip.Emitter->Stop(true);
 			}
 		}
+	}
+
+	void ParticleEffect::Restart()
+	{
+	}
+
+	void ParticleEffect::Reset()
+	{
+    	m_State = ParticleSystemState::None;
+		m_Time =0.0f;
+		m_PrevTime = 0.0f;
+		m_StopRequested = false;
+    	
+
+    	for (auto& [trackID, track] : m_Timeline->m_Tracks)
+    	{
+    		for (auto& emitterClip : track.EmitterClips)
+    		{
+    			emitterClip.Started = false;
+    			if (!emitterClip.Emitter)
+    				continue;
+    			emitterClip.Emitter->Reset(emitterClip.Emitter->m_MaxParticles);
+    			emitterClip.Emitter->ParticleInstanceState.bLooping = m_Looping ? 1 : 0;
+
+    		}
+    	}
 	}
 
 	bool ParticleEffect::SetLooping(bool loop)
