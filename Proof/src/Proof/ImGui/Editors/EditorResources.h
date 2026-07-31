@@ -25,6 +25,7 @@ namespace Proof
 		static inline Count<class Texture2D> InputBindingContextThumbnailIcon;
 		static inline Count<class Texture2D> MeshColliderThumbnailIcon;
 		static inline Count<class Texture2D> ParticleSystemThumbnailIcon;
+		static inline Count<class Texture2D> ParticleEmitterThumbnailIcon;
 		static inline Count<class Texture2D> PMatThumbnailIcon;
 		static inline Count<class Texture2D> PrefabThumbnailIcon;
 		static inline Count<class Texture2D> ScriptFileThumbnailIcon;

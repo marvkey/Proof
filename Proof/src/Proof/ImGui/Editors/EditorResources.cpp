@@ -24,6 +24,7 @@ namespace Proof {
 		InputBindingContextThumbnailIcon = Texture2D::Create(TextureConfiguration("InputBindingContextThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/InputBindingContext.png");
 		MeshColliderThumbnailIcon = Texture2D::Create(TextureConfiguration("MeshColliderThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/MeshCollider.png");
 		ParticleSystemThumbnailIcon = Texture2D::Create(TextureConfiguration("ParticleSystemThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/ParticleSystem.png");
+		ParticleEmitterThumbnailIcon = Texture2D::Create(TextureConfiguration("ParticleEmitterThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/ParticleEmitter.png");
 		PMatThumbnailIcon = Texture2D::Create(TextureConfiguration("PMatThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/PMat.png");
 		PrefabThumbnailIcon = Texture2D::Create(TextureConfiguration("PrefabThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/Prefab.png");
 		ScriptFileThumbnailIcon = Texture2D::Create(TextureConfiguration("ScriptFileThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/ScriptFile.png");

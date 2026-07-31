@@ -276,7 +276,6 @@ void main()
     uint gid = gl_GlobalInvocationID.x;
     uint lid = gl_LocalInvocationID.x;
     
-    /*
     // initial run
     if (gl_GlobalInvocationID.x == 0 && gl_GlobalInvocationID.y == 0 && gl_GlobalInvocationID.z == 0)
     {
@@ -295,7 +294,8 @@ void main()
         AvailableToDraw = SpawnNewParticles;
         
     }
-    */
+    
+    
     // Wait for spawn counter to be initialized
     memoryBarrierBuffer();
     barrier();

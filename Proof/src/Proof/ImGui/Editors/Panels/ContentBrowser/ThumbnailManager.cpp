@@ -507,6 +507,7 @@ namespace Proof
             case AssetType::Prefab: return EditorResources::PrefabThumbnailIcon;
             case AssetType::UIPanel: return EditorResources::UIThumbnailIcon;
             case AssetType::ParticleSystem: return EditorResources::ParticleSystemThumbnailIcon;
+            case AssetType::ParticleEmitter: return EditorResources::ParticleEmitterThumbnailIcon;
             case AssetType::Audio: return EditorResources::AudioThumbnailIcon;
             case AssetType::MeshCollider: return EditorResources::MeshColliderThumbnailIcon;
             case AssetType::ScriptFile: return EditorResources::ScriptFileThumbnailIcon;
