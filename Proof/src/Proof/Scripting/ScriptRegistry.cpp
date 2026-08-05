@@ -209,11 +209,12 @@ namespace Proof
 			RegisterClassFields(assemblyInfo, managedClass);
 			RegisterClassProperties(assemblyInfo, managedClass);
 
+
 			if (mono_class_is_subclass_of(managedClass.Class, PF_CACHED_CLASS_RAW("Proof.Entity"), false))
 			{
 				//AssetID handle = AssetManager::CreateMemoryOnlyAssetWithHandle<ScriptAsset>(Hash::GenerateFNVHash(managedClass.FullName), classID);
 
-
+				
 				s_ScriptRegistryData->EntityScripts[managedClass.FullName] = Count<ScriptClass>::Create(managedClass.FullName);
 			}
 		}

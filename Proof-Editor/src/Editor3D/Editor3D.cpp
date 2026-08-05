@@ -630,7 +630,7 @@ namespace Proof
 		contentBrowser->RegisterAssetDeletedCallback([this](const AssetInfo& metadata)
 			{
 				if (metadata.Type == AssetType::ScriptFile)
-				ScriptBuilder::RegenerateProjectScriptSolution(Application::Get()->GetProject());
+					ScriptBuilder::RegenerateProjectScriptSolution(Application::Get()->GetProject());
 
 			});
 

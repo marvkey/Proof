@@ -108,6 +108,7 @@ namespace Proof
 				InternalCalls.TransformComponent_SetForwardVector(Entity.ID, ref value);
 			}
 		}
+
         // local space
         public Proof.Vector3 Right
         {

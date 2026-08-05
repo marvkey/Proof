@@ -97,7 +97,9 @@ namespace Proof
     // public static float Lerp(float p1, float p2, float t) => Interpolate.Linear(p1, p2, t);
     // public static Proof.Vector3 Lerp(Proof.Vector3 p1, Proof.Vector3 p2, float t) => Interpolate.Linear(p1, p2, t);
 
-    public static float Floor(float value) => (float)Math.Floor(value);
+        public static float Floor(float value) => (float)Math.Floor(value);
+        public static float Round(float value) => (float)Math.Round(value, MidpointRounding.AwayFromZero);
+        public static int RoundToInt(float value) => (int)Math.Round(value, MidpointRounding.AwayFromZero);
 
         // not the same as a%b
         public static float Modulo(float a, float b) => a - b * (float)Math.Floor(a / b);

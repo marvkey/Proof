@@ -3,7 +3,7 @@
 
 #include "Proof/Renderer/Renderer.h"
 #include "../Panels/SceneHierachyPanel.h"
-#include "Proof/Scene/Entity.h"
+#include "Proof/Scene/Entity.h"                                     
 #include "Proof/Renderer/WorldRenderer.h"
 #include "Proof/Renderer/ParticleSystem/ParticleSystem.h"
 #include "Proof/Asset/AssetManager.h"

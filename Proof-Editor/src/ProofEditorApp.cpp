@@ -58,6 +58,7 @@ namespace Proof {
         //projectPath = "../Proof-Editor/OrbitBreak/OrbitBreak.ProofProject";
         //projectPath = "../Proof-Editor/NullState/NullState.ProofProject";
         //projectPath = "../Proof-Editor/KickUp/KickUp.ProofProject";
+        projectPath = "../Proof-Editor/CrossyBro/CrossyBro.ProofProject";
 
 
         if (argc > 1)

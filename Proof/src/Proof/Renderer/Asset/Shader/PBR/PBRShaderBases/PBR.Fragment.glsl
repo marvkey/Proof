@@ -397,6 +397,8 @@ void ApplyPBR(PBRData pbrData)
     float shadowFactor = PBR_CastShadow(cascadeIndex); // edits the value of the cascadeIndex and gives shadowFacotr
 
     PBR_FinalOutput(directLighting,shadowFactor,iblEffect,pbrData.EmissionColour,pbrData.Emission,cascadeIndex,pbrData.Alpha,pbrData);
+    
+    
 }
 
 void Fragment(inout PBRData pbrData);

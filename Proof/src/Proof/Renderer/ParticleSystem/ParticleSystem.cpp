@@ -416,6 +416,8 @@ namespace Proof
 
 		if (restart)
 		{
+			Reset();
+			/*
 			m_Time = 0.0f;
 			m_PrevTime = 0.0f;
 
@@ -432,6 +434,7 @@ namespace Proof
 					emitterClip.Emitter->Reset();
 				}
 			}
+			*/
 		}
 		else
 		{

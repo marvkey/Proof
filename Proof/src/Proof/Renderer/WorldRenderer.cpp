@@ -4289,7 +4289,7 @@ namespace Proof
 		{
 			const auto& subMesh = meshSource->GetSubMeshes().at(subMeshIndex);
 
-			glm::mat4 subMeshTransform = transform * mesh->GetTransform() * subMesh.Transform;
+			glm::mat4 subMeshTransform = transform * mesh->GetTransform();
 
 			AssetID materialHandle = AssetID((uint64_t)renderMaterial.Get());
 			PF_CORE_ASSERT(materialHandle, "Render Material ID cannot be zero");

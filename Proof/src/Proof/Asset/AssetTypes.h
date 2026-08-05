@@ -60,6 +60,7 @@ namespace Proof
 			AssetType::MeshSourceFile,
 			AssetType::Font,
 			AssetType::Audio,
+			AssetType::ScriptFile
 		};
 
 		inline bool IsAssetSource(AssetType type)
@@ -133,6 +134,12 @@ namespace Proof
 					".wav",
 					".mp3",
 					".flac"
+				}
+			},
+			{
+				AssetType::ScriptFile,
+				{
+					".cs",
 				}
 			},
 		};

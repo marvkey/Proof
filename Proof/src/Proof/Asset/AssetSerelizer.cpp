@@ -505,7 +505,7 @@ namespace Proof {
 	{
 
 		Count<ParticleEmitter> emitter = asset.As<ParticleEmitter>();
-
+										   
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 

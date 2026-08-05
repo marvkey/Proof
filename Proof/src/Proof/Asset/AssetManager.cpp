@@ -375,6 +375,17 @@ namespace Proof
 			InternalAddAsset(assetInfo, nullptr);
 			return;
 		}
+
+		if (type == AssetType::ScriptFile)
+		{
+			AssetInfo assetInfo;
+			assetInfo.Path = AssetManager::GetAssetFileSystemPathRelative(path);
+			assetInfo.State = AssetState::Unloaded;
+			assetInfo.ID = AssetManager::CreateID();
+			assetInfo.Type = AssetType::ScriptFile;
+
+			InternalAddAsset(assetInfo, nullptr);
+		}
 	}
 	bool AssetManager::IsAssetLoaded(AssetID ID)
 	{

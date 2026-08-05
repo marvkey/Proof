@@ -1125,77 +1125,59 @@ namespace Proof
 
 		e.GetComponent<WaterComponent>().Water->SetWorld(this);
 	}
-	void World::BuildDynamicMeshEntityHierarchy(Entity parent, Count<DynamicMesh> mesh, const MeshNode& node, bool generateColliders)
+
+	void BuildDynamicMeshEntityHierarchyadfadf(Entity parent, Count<DynamicMesh> mesh, const MeshNode& node, bool generateColliders,const glm::mat4& parentNodeTransform)
 	{
 		Count<MeshSource> meshSource = mesh->GetMeshSource();
 		const auto& nodes = meshSource->GetNodes();
 
-		// Skip empty root node
-		if (node.IsRoot() && node.Submeshes.empty())
-		{
-			for (uint32_t child : node.Children)
-				BuildDynamicMeshEntityHierarchy(parent, mesh, nodes[child], generateColliders);
+		glm::mat4 accumulatedNodeTransform = parentNodeTransform * node.LocalTransform;
 
-			return;
-		}
-
-		Entity nodeEntity = CreateChildEntity(parent, node.Name);
-
+		Entity nodeEntity = parent.GetCurrentWorld()->CreateChildEntity(parent, node.Name);
 		nodeEntity.GetTransformComponent().SetTransform(node.LocalTransform);
 
-		if (node.Submeshes.size() == 1)
+		for (uint32_t submeshIndex : node.Submeshes)
 		{
-			// Node == Mesh in this case
-			uint32_t submeshIndex = node.Submeshes[0];
+			const SubMesh& submesh = meshSource->GetSubMesh(submeshIndex);
 
-			nodeEntity.AddComponent<DynamicMeshComponent>();
-			DynamicMeshComponent& component = nodeEntity.GetComponent<DynamicMeshComponent>();
+			Entity meshEntity = parent.GetCurrentWorld()->CreateChildEntity(nodeEntity, submesh.Name);
+
+			// Usually identity, but guarantees the dynamic result matches the
+			// exact accumulated transform used by the static mesh.
+			glm::mat4 submeshCorrection = glm::inverse(accumulatedNodeTransform) * submesh.Transform;
+			meshEntity.GetTransformComponent().SetTransform(submeshCorrection);
+
+			auto& component = meshEntity.AddComponent<DynamicMeshComponent>();
 			component.SetMesh(mesh->GetID());
 			component.SetSubMeshIndex(submeshIndex);
 
-
 			if (generateColliders)
 			{
-				auto& colliderComponent = nodeEntity.AddComponent<MeshColliderComponent>();
-				Count<MeshCollider> colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(nodeEntity, colliderComponent);
+				auto& colliderComponent = meshEntity.AddComponent<MeshColliderComponent>();
+				Count<MeshCollider> colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(meshEntity, colliderComponent);
+
 				colliderComponent.ColliderKey = colliderAsset->GetID();
 				colliderComponent.SubMeshIndex = submeshIndex;
 				colliderComponent.UseSharedShape = colliderAsset->AlwaysShareShape;
-				nodeEntity.AddComponent<RigidBodyComponent>().RigidBodyType = RigidBodyType::Dynamic;
-
-			}
-		}
-		else if (node.Submeshes.size() > 1)
-		{
-			// Create one entity per child mesh, parented under node
-			for (uint32_t i = 0; i < node.Submeshes.size(); i++)
-			{
-				uint32_t submeshIndex = node.Submeshes[i];
-				Entity childEntity = CreateChildEntity(nodeEntity, meshSource->GetSubMesh(submeshIndex).Name);
-
-				childEntity.AddComponent<DynamicMeshComponent>();
-				DynamicMeshComponent& component = childEntity.GetComponent<DynamicMeshComponent>();
-				component.SetMesh(mesh->GetID());
-				component.SetSubMeshIndex(submeshIndex);
-
-
-				if (generateColliders)
-				{
-					auto& colliderComponent = childEntity.AddComponent<MeshColliderComponent>();
-					Count<MeshCollider> colliderAsset = PhysicsEngine::GetOrCreateColliderAsset(childEntity, colliderComponent);
-					colliderComponent.ColliderKey = colliderAsset->GetID();
-					colliderComponent.SubMeshIndex = submeshIndex;
-					colliderComponent.UseSharedShape = colliderAsset->AlwaysShareShape;
-					childEntity.AddComponent<RigidBodyComponent>().RigidBodyType = RigidBodyType::Dynamic;
-				}
 			}
 		}
 
-		// Recursively process children
 		for (uint32_t child : node.Children)
-			BuildDynamicMeshEntityHierarchy(nodeEntity, mesh, nodes[child], generateColliders);
+			BuildDynamicMeshEntityHierarchyadfadf(nodeEntity, mesh, nodes[child], generateColliders, accumulatedNodeTransform);
 	}
-	
+	void World::BuildDynamicMeshEntityHierarchy(Entity parent, Count<class DynamicMesh> mesh, const MeshNode& node, bool generateColliders)
+	{
+		Count<MeshSource> meshSource = mesh->GetMeshSource();
+		const auto& nodes = meshSource->GetNodes();
+
+		if (nodes.empty())
+			return;
+
+
+		BuildDynamicMeshEntityHierarchyadfadf(parent, mesh, nodes[0], generateColliders,glm::mat4(1.0f));
+	}
+
+
 	void World::OnUpdateRuntime(FrameTime DeltaTime) 
 	{
 		PF_PROFILE_FUNC();
@@ -1578,7 +1560,7 @@ namespace Proof
 
 		BuildBoneEntityIds(newEntity);
 
-		return entity;
+		return newEntity;
 	}
 	Entity World::CreateEntityFromOtherReal(Entity entity, std::unordered_map<UUID, UUID>& entitySwapID,bool includeChildren)
 	{
@@ -1681,7 +1663,7 @@ namespace Proof
 		PF_CORE_ASSERT(mesh->GetID());
 		auto info = AssetManager::GetAssetInfo(mesh);
 		Entity root = CreateEntity(info.GetName());
-		BuildDynamicMeshEntityHierarchy(root, mesh, mesh->GetMeshSource()->GetRootNode(), generateCollider);
+		BuildDynamicMeshEntityHierarchy(root, mesh,mesh->GetMeshSource()->GetRootNode(),generateCollider);
 
 		BuildBoneEntityIds(root);
 		return root;

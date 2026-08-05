@@ -333,19 +333,30 @@ void main()
     // If the particle is dead, respawn it
     if (localParticles[lid].Life <= 0.0)
     {
-        if(stopEmitting == false)
+        localParticles[lid].Life = 0.0;
+
+        if (!stopEmitting)
         {
             int ticket = atomicAdd(AvailableToDraw, int(-1));
+
             if (ticket > 0)
             {
                 RespawnParticle(localParticles[lid], gid, lid);
             }
+            else
+            {
+                localParticles[lid].bActive = 0;
+            }
         }
-        
+        else
+        {
+            localParticles[lid].bActive = 0;
+        }
     }
-    else if(localParticles[lid].Life > 0.0)
+    else
     {
-        UpdateParticle(localParticles[lid],gid,lid);
+        localParticles[lid].bActive = 1;
+        UpdateParticle(localParticles[lid], gid, lid);
     }
 
     // Classify as alive or dead AFTER update
