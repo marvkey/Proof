@@ -1520,9 +1520,15 @@ namespace Proof
 
 	void World::PrefabCopyEntity(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity,bool includeChildren)
 	{
+#if 0
 		// first id is the src, second is dstEntity
 		std::unordered_map<UUID, UUID> entitySwapIDs;
 		PrefabCopyEntityReal(prefab, srcEntity, parentEntity, entitySwapIDs, includeChildren);
+#endif
+
+		World* prefabWorld = prefab->m_World.Get();
+		CopyEntityHierarchy(srcEntity, parentEntity, prefabWorld, includeChildren, true);
+		prefabWorld->BuildBoneEntityIds(parentEntity);
 	}
 	//src entity is used as childenitty 
 	void World::PrefabCopyEntityReal(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity, std::unordered_map<UUID, UUID>& entitySwapID, bool includeChildren)
@@ -1551,6 +1557,7 @@ namespace Proof
 
 	Entity World::CreateEntity(Entity entity, bool includeChildren) 
 	{
+#if 0
 		PauseRigidBodyOnConstruct();
 		// first id is the src, second is dstEntity
 		std::unordered_map<UUID, UUID> entitySwapIDs;
@@ -1561,46 +1568,117 @@ namespace Proof
 		BuildBoneEntityIds(newEntity);
 
 		return newEntity;
-	}
-	Entity World::CreateEntityFromOtherReal(Entity entity, std::unordered_map<UUID, UUID>& entitySwapID,bool includeChildren)
-	{
+#endif
+		PauseRigidBodyOnConstruct();
+
 		Entity newEntity = CreateEntity(entity.GetName());
+		CopyEntityHierarchy(entity, newEntity, this, includeChildren, false);
+
 		if (entity.HasParent())
 		{
+			TransformComponent transform = newEntity.GetComponent<TransformComponent>();
 			newEntity.SetParent(entity.GetParent());
-		}
-		CopyComponentIfExistsEntity(AllComponents{}, newEntity, entity);
-
-		// first id is the src, second is dstEntity
-		entitySwapID[entity.GetUUID()] = newEntity.GetUUID();
-
-		if (includeChildren == true)
-		{
-			entity.EachChild([&](Entity childEntity) 
-				{
-
-					Entity newChild = CreateEntity(childEntity, true);
-					TransformComponent transform = newChild.GetComponent<TransformComponent>();
-					newEntity.AddChild(newChild);
-					newChild.GetComponent<TransformComponent>() = transform;
-					/*
-					if (m_PhysicsWorld)
-					{
-						if (m_PhysicsWorld->HasActor(newChild))
-						{
-							auto physicsActor = m_PhysicsWorld->GetActor(newChild);
-							physicsActor->SetTransform(GetWorldSpaceTransform(newChild));
-						}
-					}
-					*/
-					entitySwapID[childEntity.GetUUID()] = newChild.GetUUID();
-				});
+			newEntity.GetComponent<TransformComponent>() = transform;
 		}
 
-		m_ScriptWorld->PostDuplicateScriptInstance(entity, newEntity, entitySwapID);
+		UnPauseRigidBodyOnConstruct();
+		BuildBoneEntityIds(newEntity);
 
 		return newEntity;
 	}
+
+
+
+	void World::CreateChildrenRecursive(Entity entity, Entity newEntity, std::unordered_map<UUID, UUID>& entitySwapID)
+	{
+		std::vector<UUID> childIDs;
+		entity.EachChild([&](Entity childEntity) { childIDs.emplace_back(childEntity.GetUUID()); });
+
+		for (UUID childID : childIDs)
+		{
+			Entity childEntity = TryGetEntityWithUUID(childID);
+			if (!childEntity) continue;
+
+			Entity newChild = CreateEntity(childEntity.GetName());
+			CopyComponentIfExistsEntity(AllComponents{}, newChild, childEntity);
+
+			entitySwapID[childEntity.GetUUID()] = newChild.GetUUID();
+
+			TransformComponent transform = newChild.GetComponent<TransformComponent>();
+			newEntity.AddChild(newChild);
+			newChild.GetComponent<TransformComponent>() = transform;
+
+			CreateChildrenRecursive(childEntity, newChild, entitySwapID);
+		}
+	}
+
+	void World::CopyEntityHierarchy(Entity srcEntity, Entity dstEntity, World* dstWorld, bool includeChildren,bool dstIsPrefab)
+	{
+		std::unordered_map<UUID, UUID> entitySwapID;
+		CopyEntityHierarchyRecursive(srcEntity, dstEntity, dstWorld, entitySwapID, includeChildren, dstIsPrefab);
+
+		World* srcWorld = srcEntity.GetCurrentWorld();
+
+		for (auto& [srcID, dstID] : entitySwapID)
+		{
+			Entity srcCopiedEntity = srcWorld->TryGetEntityWithUUID(srcID);
+			Entity dstCopiedEntity = dstWorld->TryGetEntityWithUUID(dstID);
+
+			if (srcCopiedEntity && dstCopiedEntity)
+				dstWorld->GetScriptWorld()->PostDuplicateScriptInstance(srcCopiedEntity, dstCopiedEntity, entitySwapID);
+		}
+	}
+
+	void World::CopyEntityHierarchyRecursive(Entity srcEntity, Entity dstEntity, World* dstWorld,std::unordered_map<UUID, UUID>& entitySwapID, bool includeChildren, bool dstIsPrefab)
+	{
+		CopyComponentIfExistsEntity(AllComponents{}, dstEntity, srcEntity, dstIsPrefab);
+		entitySwapID[srcEntity.GetUUID()] = dstEntity.GetUUID();
+
+		if (!includeChildren) return;
+
+		std::vector<UUID> childIDs;
+		srcEntity.EachChild([&](Entity childEntity) { childIDs.emplace_back(childEntity.GetUUID()); });
+
+		for (UUID childID : childIDs)
+		{
+			Entity srcChild = srcEntity.GetCurrentWorld()->TryGetEntityWithUUID(childID);
+			if (!srcChild) continue;
+
+			Entity dstChild = dstWorld->CreateEntity(srcChild.GetName());
+			dstEntity.AddChild(dstChild);
+			CopyEntityHierarchyRecursive(srcChild, dstChild, dstWorld, entitySwapID, true, dstIsPrefab);
+		}
+	}
+
+	Entity World::CreateEntityFromOtherReal(Entity entity, std::unordered_map<UUID, UUID>& entitySwapID,bool includeChildren)
+	{
+
+		Entity newEntity = CreateEntity(entity.GetName());
+		CopyComponentIfExistsEntity(AllComponents{}, newEntity, entity);
+
+		entitySwapID[entity.GetUUID()] = newEntity.GetUUID();
+
+		if (entity.HasParent())
+		{
+			TransformComponent transform = newEntity.GetComponent<TransformComponent>();
+			newEntity.SetParent(entity.GetParent());
+			newEntity.GetComponent<TransformComponent>() = transform;
+		}
+
+		if (includeChildren)
+			CreateChildrenRecursive(entity, newEntity, entitySwapID);
+
+		for (auto& [srcID, dstID] : entitySwapID)
+		{
+			Entity srcEntity = TryGetEntityWithUUID(srcID);
+			Entity dstEntity = TryGetEntityWithUUID(dstID);
+			if (srcEntity && dstEntity) m_ScriptWorld->PostDuplicateScriptInstance(srcEntity, dstEntity, entitySwapID);
+		}
+
+		return newEntity;
+	}
+
+	
 
 	void World::UnPauseRigidBodyOnConstruct()
 	{
@@ -1747,6 +1825,7 @@ namespace Proof
 	Entity World::CreateEntity(const std::string& name, Count<Prefab> prefab, TransformComponent transfom, UUID id)
 	{
 		PF_PROFILE_FUNC();
+#if 0
 		/**
 		 * when an entity with sub children has rigid body this fucntions crahses 
 		 * it could be a problem with the emplace or replace in the copy compoentnt single
@@ -1762,6 +1841,28 @@ namespace Proof
 
 		UnPauseRigidBodyOnConstruct();
 
+		BuildBoneEntityIds(newEntity);
+
+		return newEntity;
+	   #endif
+
+		if (prefab == nullptr)
+			return Entity{};
+
+		if (!prefab->GetBaseEntity().IsValid())
+			return Entity{};
+
+		Entity entity = prefab->GetBaseEntity();
+		PauseRigidBodyOnConstruct();
+
+		Entity newEntity = CreateEntity(name);
+		CopyEntityHierarchy(entity, newEntity, this, true, false);
+
+		newEntity.GetComponent<TransformComponent>() = transfom;
+
+
+
+		UnPauseRigidBodyOnConstruct();
 		BuildBoneEntityIds(newEntity);
 
 		return newEntity;

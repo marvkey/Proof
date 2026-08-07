@@ -672,84 +672,58 @@ namespace Proof
 
     void ScriptWorld::PostDuplicateScriptInstance(Entity srcEntity, Entity dstEntity, std::unordered_map<UUID, UUID>& entitySwapID)
     {
-        PF_PROFILE_FUNC();
+       PF_PROFILE_FUNC();
+
         Count<ScriptWorld> srcScriptWorld = srcEntity.GetCurrentWorld()->GetScriptWorld();
 
-        if (!srcScriptWorld->IsEntityScriptInstantiated(srcEntity))
-            return;
+	    if (!srcScriptWorld->IsEntityScriptInstantiated(srcEntity)) return;
+	    if (!IsEntityScriptInstantiated(dstEntity)) return;
 
-        if (!IsEntityScriptInstantiated(dstEntity))return;
+	    ScriptClassesContainerMetaData* srcClassesMetaData = srcScriptWorld->GetEntityClassesContainer(srcEntity, true);
+	    ScriptClassesContainerMetaData* dstClassesMetaData = GetEntityClassesContainer(dstEntity, true);
 
-        ScriptClassesContainerMetaData* srcClassesMetaData = srcScriptWorld->GetEntityClassesContainer(srcEntity, true);
-        if (!srcClassesMetaData)
-            return;
+	    if (!srcClassesMetaData || !dstClassesMetaData) return;
 
-        ScriptClassesContainerMetaData* dstClassesMetaData = GetEntityClassesContainer(dstEntity, true);
+	    for (auto& [className, classMetaData] : srcClassesMetaData->Classes)
+	    {
+		    auto dstClassMetaData = dstClassesMetaData->GetClassMetaData(className);
+		    if (!dstClassMetaData) continue;
 
-        for (auto& [className, classMetaData] : srcClassesMetaData->Classes)
-        {
-            for (auto& [fieldName, fieldStorage] : classMetaData.Fields)
-            {
-                if (!fieldStorage)
-                    continue;
+		    for (auto& [fieldName, fieldStorage] : classMetaData.Fields)
+		    {
+			    if (!fieldStorage || !dstClassMetaData->Fields.contains(fieldName)) continue;
 
-                if (fieldStorage->GetFieldInfo()->IsArray())
-                {
-                    Count<ArrayFieldStorage> arrayStorage = fieldStorage.As<ArrayFieldStorage>();
+			    if (fieldStorage->GetFieldInfo()->IsArray())
+			    {
+				    Count<ArrayFieldStorage> srcArrayStorage = fieldStorage.As<ArrayFieldStorage>();
+				    Count<ArrayFieldStorage> dstArrayStorage = dstClassMetaData->Fields.at(fieldName).As<ArrayFieldStorage>();
 
-                    ScriptFieldType nativeType = arrayStorage->GetFieldInfo()->Type;
+				    if (srcArrayStorage->GetFieldInfo()->Type != ScriptFieldType::Entity) continue;
 
-                    if (nativeType == ScriptFieldType::Entity)
-                    {
-                        uintptr_t length = arrayStorage->GetLength();
+				    uint32_t length = (uint32_t)srcArrayStorage->GetLength();
+				    dstArrayStorage->Resize(length);
 
-                        for (uint32_t i = 0; i < (uint32_t)length; i++)
-                        {
-                            UUID uuid = arrayStorage->GetValue<uint64_t>(i);
+				    for (uint32_t i = 0; i < length; i++)
+				    {
+					    UUID srcUUID = srcArrayStorage->GetValue<uint64_t>(i);
+					    auto it = entitySwapID.find(srcUUID);
+					    UUID dstUUID = it != entitySwapID.end() ? it->second : (UUID)0;
+					    dstArrayStorage->SetValue<uint64_t>(i, dstUUID.Get());
+				    }
+			    }
+			    else if (!fieldStorage->GetFieldInfo()->IsEnum())
+			    {
+				    Count<FieldStorage> srcStorage = fieldStorage.As<FieldStorage>();
+				    if (srcStorage->GetFieldInfo()->Type != ScriptFieldType::Entity) continue;
 
-                            Entity fieldEntity = srcEntity.GetCurrentWorld()->TryGetEntityWithUUID(uuid);
-
-                            if (!fieldEntity)
-                                continue;
-
-                            if (srcEntity == fieldEntity || srcEntity.IsAncestorOf(fieldEntity) || srcEntity.IsDescendantOf(fieldEntity))
-                            {
-                                if (entitySwapID.contains(uuid))
-                                {
-                                    dstClassesMetaData->GetClassMetaData(className)->Fields.at(fieldName).As<ArrayFieldStorage>()->
-                                        SetValue<uint64_t>(i, entitySwapID[uuid].Get());
-                                }
-                            }
-                        }
-                    }
-
-                }
-                // just  a normal storage
-                else if (fieldStorage->GetFieldInfo()->IsEnum() == false)
-                {
-                    Count<FieldStorage> storage = fieldStorage.As<FieldStorage>();
-
-                    if (storage->GetFieldInfo()->Type == ScriptFieldType::Entity)
-                    {
-                        UUID uuid = storage->GetValue<uint64_t>();
-
-                        Entity fieldEntity = srcEntity.GetCurrentWorld()->TryGetEntityWithUUID(uuid);
-
-                        if (!fieldEntity)
-                            continue;
-
-                        if (srcEntity == fieldEntity || srcEntity.IsAncestorOf(fieldEntity) || srcEntity.IsDescendantOf(fieldEntity))
-                        {
-                            if (entitySwapID.contains(uuid))
-                            {
-                                dstClassesMetaData->GetClassMetaData(className)->Fields.at(fieldName).As<FieldStorage>()->
-                                    SetValue<uint64_t>(entitySwapID[uuid].Get());
-                            }
-                        }
-                    }
-                }
-            }
-        }
+				    Count<FieldStorage> dstStorage = dstClassMetaData->Fields.at(fieldName).As<FieldStorage>();
+				    UUID srcUUID = srcStorage->GetValue<uint64_t>();
+				    auto it = entitySwapID.find(srcUUID);
+				    UUID dstUUID = it != entitySwapID.end() ? it->second : srcUUID;
+				    dstStorage->SetValue<uint64_t>(dstUUID.Get());
+			    }
+		    }
+	    }
 
     }
 

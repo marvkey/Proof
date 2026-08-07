@@ -211,6 +211,12 @@ namespace Proof {
 		void PrefabCopyEntityReal(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity, std::unordered_map<UUID, UUID>& entitySwapID,bool includeChildren = true);
 		// first id is the dstEntity, second is srcEntity
 		class Entity CreateEntityFromOtherReal(Entity entity, std::unordered_map<UUID, UUID>& entitySwapID,bool includeChildren = true);
+		void CreateChildrenRecursive(Entity entity, Entity newEntity, std::unordered_map<UUID, UUID>& entitySwapID);
+
+
+		void CopyEntityHierarchy(Entity srcEntity, Entity dstEntity, World* dstWorld, bool includeChildren, bool dstIsPrefab);
+		void CopyEntityHierarchyRecursive(Entity srcEntity, Entity dstEntity, World* dstWorld, std::unordered_map<UUID, UUID>& entitySwapID, bool includeChildren, bool dstIsPrefab);
+
 
 		void PauseRigidBodyOnConstruct()
 		{
