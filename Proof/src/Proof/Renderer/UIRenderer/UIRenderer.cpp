@@ -114,7 +114,8 @@ namespace Proof
         case UIElementType::Text:
             {
                 UITextComponent& text = element.GetComponent<UITextComponent>();
-                renderer->DrawString(text.Text.GetValue(), text.Font, text.TextConfig, finalTransform);
+                if (text.Font.IsValid())
+                    renderer->DrawString(text.Text.GetValue(), text.Font.GetAsset<Font>(), text.TextConfig, finalTransform);
                 break;
             }
         case UIElementType::VerticalBox:

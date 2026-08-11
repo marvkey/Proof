@@ -502,13 +502,16 @@ namespace Proof
 
 				out << YAML::Key << "TextComponent";
 				out << YAML::BeginMap; // Text Component
-				out << YAML::Key << "Color" << textComponent.Colour;
-				out << YAML::Key << "Kerning" << textComponent.Kerning;
-				out << YAML::Key << "LineSpacing" << textComponent.LineSpacing;
+				out << YAML::Key << "Color" << textComponent.Params.Color;
+				out << YAML::Key << "Kerning" << textComponent.Params.Kerning;
+				out << YAML::Key << "LineSpacing" << textComponent.Params.LineSpacing;
 				out << YAML::Key << "Text" << textComponent.Text;
 				out << YAML::Key << "Visible" << textComponent.Visible;
 				out << YAML::Key << "UseLocalRotation" << textComponent.UseLocalRotation;
 				out << YAML::Key << "RenderInViewSpace" << textComponent.RenderInViewSpace;
+				out << YAML::Key << "OutlineColor" << textComponent.Params.OutlineColor;
+				out << YAML::Key << "OutlineThickness" << textComponent.Params.OutlineThickness;
+				out << YAML::Key << "Font" << textComponent.Font.Get();
 				out << YAML::EndMap; // Text Component
 			}
 		}
@@ -1578,15 +1581,18 @@ namespace Proof
 				if (textComponent)
 				{
 					auto& src = NewEntity.AddComponent<TextComponent>();
-					src.Colour = textComponent["Color"].as<glm::vec4>();
-					src.Kerning = textComponent["Kerning"].as<float>();
-					src.LineSpacing = textComponent["LineSpacing"].as<float>();
+					src.Params.Color = textComponent["Color"].as<glm::vec4>();
+					src.Params.Kerning = textComponent["Kerning"].as<float>();
+					src.Params.LineSpacing = textComponent["LineSpacing"].as<float>();
 					src.Text = textComponent["Text"].as<std::string>();
 					if(textComponent["UseLocalRotation"])
 						src.UseLocalRotation = textComponent["UseLocalRotation"].as<bool>();
 
 					src.Visible = textComponent["Visible"].as<bool>(src.Visible);
 					src.RenderInViewSpace = textComponent["RenderInViewSpace"].as<bool>(src.RenderInViewSpace);
+					src.Font = AssetKey<AssetType::Font>( textComponent["Font"].as<uint64_t>(src.Font.Get()));
+					src.Params.OutlineThickness = textComponent["OutlineThickness"].as<float>(src.Params.OutlineThickness);
+					src.Params.OutlineColor = textComponent["OutlineColor"].as<glm::vec4>(src.Params.OutlineColor);
 				}
 			}
 			// CAMERA

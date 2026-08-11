@@ -197,13 +197,24 @@ namespace Proof
 
             InternalCalls.PlayerInputComponent_SetMotion(ID, this.GetType().FullName,MotionName, func.Method.Name);
 		}
-        public Entity GetParent()
+        public Entity Parent
         {
-			InternalCalls.Entity_GetParent(ID, out ulong owenrId);
-			if (owenrId == 0)	
-				return null;
+           
+			
+            get
+            {
+                InternalCalls.Entity_GetParent(ID, out ulong ownerId);
 
-			return new Entity(owenrId);
+                if (ownerId == 0)
+                    return null;
+
+                return new Entity(ownerId);
+            }
+
+            set
+            {
+                InternalCalls.Entity_SetParent(ID, value != null ? value.ID : 0);
+            }
         }
 
         public T GetComponent<T>() where T : Component, new()
@@ -283,7 +294,7 @@ namespace Proof
             return null;
         }
         
-        public T GetScriptInstance<T>() where T : Entity, new()
+        public T GetScriptInstance<T>() where T : Entity
         {
             object instance = InternalCalls.GetScriptInstanceOfType(ID, typeof(T).FullName);
             if (instance == null)

@@ -517,7 +517,7 @@ namespace Proof
 		// Apply scale to box size
 		glm::vec3 scaled = boxSize * worldScale;
 
-		// Inertia tensor for box: (1/12) * m * (h² + d²), etc.
+		// Inertia tensor for box: (1/12) * m * (hï¿½ + dï¿½), etc.
 		float Ix = (1.0f / 12.0f) * mass * (scaled.y * scaled.y + scaled.z * scaled.z);
 		float Iy = (1.0f / 12.0f) * mass * (scaled.x * scaled.x + scaled.z * scaled.z);
 		float Iz = (1.0f / 12.0f) * mass * (scaled.x * scaled.x + scaled.y * scaled.y);
@@ -548,10 +548,10 @@ namespace Proof
 	{
 		using namespace physx;
 
-		// Uniform scale — take average (if it's nonuniform, you may want to clamp or warn)
+		// Uniform scale ï¿½ take average (if it's nonuniform, you may want to clamp or warn)
 		float scaledRadius = radius * glm::max(glm::compMax(worldScale), 0.0001f);
 
-		// Inertia for a solid sphere: (2/5) * m * r²
+		// Inertia for a solid sphere: (2/5) * m * rï¿½
 		float inertiaScalar = (2.0f / 5.0f) * mass * scaledRadius * scaledRadius;
 
 		PxVec3 inertia(inertiaScalar);
@@ -676,8 +676,17 @@ namespace Proof
 	void PhysicsActor::Translate(const glm::vec3& translation, const bool autowake)
 	{
 		physx::PxTransform transform = m_RigidActor->getGlobalPose();
+
 		transform.p += PhysXUtils::ToPhysXVector(translation);
-		m_RigidActor->setGlobalPose(transform, autowake);
+
+		if (IsKinematic())
+		{
+			SetKinematicTarget(PhysXUtils::FromPhysXVector(transform.p), PhysXUtils::FromPhysXQuat(transform.q));
+		}
+		else
+		{
+			m_RigidActor->setGlobalPose(transform, autowake);
+		}
 
 		//if (!IsDynamic())
 		SyncTransform();
@@ -732,11 +741,20 @@ namespace Proof
 	void PhysicsActor::Rotate(const glm::quat& rotation, bool autowake)
 	{
 		physx::PxTransform transform = m_RigidActor->getGlobalPose();
+
 		transform.q *= PhysXUtils::ToPhysXQuat(rotation);
-		m_RigidActor->setGlobalPose(transform, autowake);
+
+		if (IsKinematic())
+		{
+			SetKinematicTarget(PhysXUtils::FromPhysXVector(transform.p), PhysXUtils::FromPhysXQuat(transform.q));
+		}
+		else
+		{
+			m_RigidActor->setGlobalPose(transform, autowake);
+		}
 
 		//if (!IsDynamic())
-			SyncTransform();
+		SyncTransform();
 	}
 
 	float PhysicsActor::GetMass() const

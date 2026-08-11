@@ -51,6 +51,7 @@ namespace Proof {
        // projectPath = "../Proof-Editor/PacMan/PacMan.ProofProject";
         //projectPath = "../Proof-Editor/OrbitBreak/OrbitBreak.ProofProject";
         //projectPath = "../Proof-Editor/NullState/NullState.ProofProject";
+        projectPath = "../Proof-Editor/CrossyBro/CrossyBro.ProofProject";
 
         if (argc > 1)
             projectPath = argv[1];

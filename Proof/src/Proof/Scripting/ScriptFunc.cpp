@@ -302,6 +302,22 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		return entity.GetUUID().Get();
 	}
 
+	static uint64_t World_InstanciateLocation(uint64_t prefabID, glm::vec3 location)
+	{
+		if (!AssetManager::HasAsset(prefabID))
+		{
+			PF_EC_ERROR("World.InstanciateLocation - prefabID is invalid {}",prefabID);
+			return 0;
+		}
+
+		Count<World> world = ScriptEngine::GetWorldContext();
+		AssetInfo info = AssetManager::GetAssetInfo(prefabID);
+		Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(prefabID);
+
+		Entity entity = world->CreateEntity(info.GetName(), prefab, location,UUID());
+		return entity.GetUUID().Get();
+	}
+
 	static bool World_OpenWorld(uint64_t worldID) 
 	{
 		Count<World> world = ScriptEngine::GetWorldContext();
@@ -575,7 +591,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		#if PF_ENABLE_DEBUG
 		if (!entity)
 		{
-			PF_EC_ERROR("Entity.GetOwner - entity is invalid");
+			PF_EC_ERROR("Entity.GetParent - entity is invalid");
 			return;
 		}
 		#endif
@@ -586,6 +602,39 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			return;
 		}
 		*owenerId = entity.GetParentUUID();
+	}
+
+	static void Entity_SetParent(uint64_t entityID, uint64_t parent)
+	{
+		SCRIPT_FUNC_ENTITY_CHECK_VOID();
+
+	#if PF_ENABLE_DEBUG
+		if (!entity)
+		{
+			PF_EC_ERROR("Entity.SetParent - entity is invalid");
+			return;
+		}
+	#endif
+
+		
+		if (entity.HasParent())
+		{
+			PF_EC_ERROR("{} Entity: {} already has a Parent: {}",SCRIPT_FUNC_GET_NAME, entity.GetName(),entity.GetParent().GetName());
+			return;
+		}
+
+		Entity newParent = ScriptEngine::GetWorldContext()->TryGetEntityWithUUID(parent);
+
+		if (newParent == entity)
+		{
+			PF_EC_ERROR("{} Entity: {} cannot be a parent of itself",SCRIPT_FUNC_GET_NAME, entity.GetName());
+			return;
+		}
+
+		if (newParent.IsValid())
+			ScriptEngine::GetWorldContext()->ParentEntity(entity, newParent);
+		else
+			ScriptEngine::GetWorldContext()->UnparentEntity(entity);
 	}
 #pragma endregion 
 	
@@ -1527,7 +1576,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 	}
 
-	void RigidBodyComponent_GetKinematicTarget(uint64_t entityID, glm::vec3* outTargetPosition, glm::vec3* outTargetRotation)
+	void RigidBodyComponent_GetKinematicTarget(uint64_t entityID, glm::vec3* outTargetPosition, QuaternionProper* rotationRadians)
 	{
 		auto entity = GetEntity(entityID);
 		if (!entity)
@@ -1544,10 +1593,10 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 
 		*outTargetPosition = actor->GetKinematicTargetPosition();
-		*outTargetRotation = glm::degrees(actor->GetKinematicTargetRotationEuler());
+		*rotationRadians = Utils::GlmToQuaternionProper( actor->GetKinematicTargetRotationEuler());
 	}
 
-	void RigidBodyComponent_SetKinematicTarget(uint64_t entityID, glm::vec3* inTargetPosition, glm::vec3* inTargetRotation)
+	void RigidBodyComponent_SetKinematicTarget(uint64_t entityID, glm::vec3* inTargetPosition, QuaternionProper* rotationRadians)
 	{
 		auto entity = GetEntity(entityID);
 		if (!entity)
@@ -1563,13 +1612,13 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			return;
 		}
 
-		if (inTargetPosition == nullptr || inTargetRotation == nullptr)
+		if (inTargetPosition == nullptr || rotationRadians == nullptr)
 		{
 			PF_ERROR("RigidBodyComponent.SetKinematicTarget - targetPosition or targetRotation is null!");
 			return;
 		}
 
-		actor->SetKinematicTarget(*inTargetPosition, glm::radians(*inTargetRotation));
+		actor->SetKinematicTarget(*inTargetPosition, Utils::QuaternionProperToGlm(*rotationRadians));
 	}
 
 
@@ -4955,6 +5004,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		//World
 		{
 			PF_ADD_INTERNAL_CALL(World_Instanciate);
+			PF_ADD_INTERNAL_CALL(World_InstanciateLocation);
 			PF_ADD_INTERNAL_CALL(World_CreateEntity);
 			PF_ADD_INTERNAL_CALL(World_CreateEntityFromEntity);
 			PF_ADD_INTERNAL_CALL(World_IsEntityValid);
@@ -4977,6 +5027,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(GetScriptInstanceOfType);
 			PF_ADD_INTERNAL_CALL(AddScriptInstance);
 			PF_ADD_INTERNAL_CALL(Entity_GetParent);
+			PF_ADD_INTERNAL_CALL(Entity_SetParent);
 			PF_ADD_INTERNAL_CALL(Entity_GetChildren);
 			PF_ADD_INTERNAL_CALL(Entity_AddChild);
 		}

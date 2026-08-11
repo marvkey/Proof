@@ -2025,13 +2025,15 @@ namespace Proof
 			//ImGui::InputTextMultiline("Text", (char*)textComponent.Text.c_str(), textComponent.Text.capacity() + 1);
 			UI::AttributeInputTextMultiline("", textComponent.Text, 0);
 			UI::BeginPropertyGrid();
-			UI::AttributeColor("Colour", textComponent.Colour);
+			UI::AttributeColor("Colour", textComponent.Params.Color);
 
-			UI::AttributeDrag("Kernng", textComponent.Kerning, 0.025);
-			UI::AttributeDrag("Line Spacing", textComponent.LineSpacing, 0.025);
+			UI::AttributeDrag("Kernng", textComponent.Params.Kerning, 0.025);
+			UI::AttributeDrag("Line Spacing", textComponent.Params.LineSpacing, 0.025);
 			UI::AttributeBool("Visible", textComponent.Visible);
 			UI::AttributeBool("UseLocalRotation", textComponent.UseLocalRotation);
 			UI::AttributeBool("RenderInViewSpace", textComponent.RenderInViewSpace);
+			UI::AttributeColor("OutlineColor", textComponent.Params.OutlineColor);
+			UI::AttributeDrag("OutlineThickness", textComponent.Params.OutlineThickness,0.025,0.0,1.0f);
 			UI::EndPropertyGrid();
 			});
 

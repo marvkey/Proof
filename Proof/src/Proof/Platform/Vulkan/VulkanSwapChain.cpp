@@ -13,6 +13,7 @@
 #define VMA_IMPLEMENTATION
 #include "VulkanUtils/vk_mem_alloc.h"
 #include "VulkanAllocator.h"
+#include "Proof/Core/Application.h"
 // images for vulkan swapchaing
 /*
 #include <vulkan/vulkan.h>
@@ -475,58 +476,73 @@ namespace Proof
 
 		VkRenderPassCreateInfo renderPassInfo = {};
 
-#if 1 // set to 0 in RUNTIME 
+
 		VkSubpassDependency dependency = {};
-		dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-		dependency.dstSubpass = 0;
-		dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.srcAccessMask = 0;
-		dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = 1;
-		renderPassInfo.pAttachments = &colorAttachmentDesc;
-		renderPassInfo.subpassCount = 1;
-		renderPassInfo.pSubpasses = &subpassDescription;
-		renderPassInfo.dependencyCount = 1;
-		renderPassInfo.pDependencies = &dependency;
-#else
-
-	
-
-
 		VkSubpassDependency deps[2]{};
 
-		// [0] EXTERNAL -> 0  (mirror pipeline�s first dep)
-		deps[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-		deps[0].dstSubpass = 0;
-		deps[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		deps[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-		deps[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		deps[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		deps[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+		if (Application::Get()->GetConfig().EnableImgui == true)
+		{
+			// When ImGui is enabled, the swapchain is being used through the normal
+			// editor/ImGui rendering path, so we keep the standard external -> color
+			// attachment dependency used by the swapchain render pass.
+			dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+			dependency.dstSubpass = 0;
+			dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			dependency.srcAccessMask = 0;
+			dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
-		// [1] 0 -> EXTERNAL  (mirror pipeline�s second dep)
-		deps[1].srcSubpass = 0;
-		deps[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-		deps[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		deps[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		deps[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		deps[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-		deps[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			renderPassInfo.attachmentCount = 1;
+			renderPassInfo.pAttachments = &colorAttachmentDesc;
+			renderPassInfo.subpassCount = 1;
+			renderPassInfo.pSubpasses = &subpassDescription;
+			renderPassInfo.dependencyCount = 1;
+			renderPassInfo.pDependencies = &dependency;
+		}
+		else
+		{
+			PF_ENGINE_CRITICAL("TEMPORARY RENDERER ASSUMPTION: ImGui is disabled, so the swapchain render pass is assuming the application renders directly to the swapchain. "
+					  "This currently requires the swapchain render pass dependencies to match the RuntimeCompatibility render pass.");
 
+			// TEMPORARY:
+			// When ImGui is disabled we currently assume this is the standalone/runtime
+			// rendering path, where the final image is rendered directly into the swapchain.
+			//
+			// Graphics pipelines used by this path are created against our
+			// RuntimeCompatibility render pass. Vulkan requires the render pass active
+			// during the draw to be compatible with the render pass the pipeline was
+			// created against, including these subpass dependencies.
+			//
+			// Because of that, the swapchain render pass mirrors the two dependencies
+			// used by the RuntimeCompatibility render pass here.
 
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderPassInfo.attachmentCount = 1;
-		renderPassInfo.pAttachments = &colorAttachmentDesc;
-		renderPassInfo.subpassCount = 1;
-		renderPassInfo.pSubpasses = &subpassDescription;
+			// [0] EXTERNAL -> 0
+			deps[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+			deps[0].dstSubpass = 0;
+			deps[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			deps[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			deps[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			deps[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			deps[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-		renderPassInfo.dependencyCount = 2;
-		renderPassInfo.pDependencies = deps;
+			// [1] 0 -> EXTERNAL
+			deps[1].srcSubpass = 0;
+			deps[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+			deps[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			deps[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+			deps[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+			deps[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			deps[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-#endif
+			renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+			renderPassInfo.attachmentCount = 1;
+			renderPassInfo.pAttachments = &colorAttachmentDesc;
+			renderPassInfo.subpassCount = 1;
+			renderPassInfo.pSubpasses = &subpassDescription;
+			renderPassInfo.dependencyCount = 2;
+			renderPassInfo.pDependencies = deps;
+		}
 
 		VK_CHECK_RESULT(vkCreateRenderPass(device, &renderPassInfo, nullptr, &m_RenderPass));
 		VulkanUtils::SetDebugUtilsObjectName(device, VK_OBJECT_TYPE_RENDER_PASS, "Swapchain render pass", m_RenderPass);

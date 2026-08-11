@@ -460,10 +460,15 @@ namespace Proof
 			{
 				UI::BindableVariabeString("Text", text.Text, m_UIPanel->VariableTable);
 				UI::BeginPropertyGrid();
+				UI::AttributeAssetKeyReference("Font", text.Font);
 				UI::AttributeColor("Color", text.TextConfig.Color );
 
 				UI::AttributeDrag("Kerning", text.TextConfig.Kerning, 0.025);
 				UI::AttributeDrag("Line Spacing", text.TextConfig.LineSpacing, 0.025);
+
+				ImGui::Separator();
+				UI::AttributeColor("OutlineColor", text.TextConfig.OutlineColor);
+				UI::AttributeDrag("OutlineThickness", text.TextConfig.OutlineThickness, 0.025,0.0f,1.0f);
 				UI::EndPropertyGrid();
 			});
 

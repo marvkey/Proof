@@ -16,6 +16,9 @@ namespace Proof
         float Kerning = 0.0f;
         // spacing of new line 
         float LineSpacing = 1.0f;
+
+        glm::vec4 OutlineColor = glm::vec4(0.0f,0.0f,0.0f,1.0f);
+        float OutlineThickness = 0.0f;
     };
     // Rename MESH Vertex
     struct Vertex {

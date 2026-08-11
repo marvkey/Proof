@@ -18,7 +18,7 @@
 #include "Proof/Renderer/CommandBuffer.h"
 #include "Proof/Renderer/Shader.h"
 #include "Proof/Renderer/RenderMaterial.h"
-#include "Proof/Renderer/Renderer2D.h"	
+#include "Proof/Renderer/Renderer2D.h"
 #include "Proof/Core/Application.h"
 #include "Proof/Project/Project.h"
 #include "Proof/Renderer/Font.h"
@@ -27,18 +27,19 @@
 
 #include "Proof/Input/ElevatedInputSystem/ElevatedInputDevices/ElevatedInputDeviceManager.h"
 
-namespace Proof {
-		/*
-		{
-			//https://github.com/SaschaWillems/Vulkan/blob/master/examples/negativeviewportheight/negativeviewportheight.cpp
-			//https://www.saschawillems.de/blog/2019/03/29/flipping-the-vulkan-viewport/
-			Viewport viewPort;
-			viewPort.X = 0.0f;
-			viewPort.Y = (float)m_WorldRenderers->GetFrameHeight();
-			viewPort.Width = m_WorldRenderers->GetFrameWidth();
-			viewPort.Height = -(float)m_ScreenFrameBuffer->GetFrameHeight();
-			viewPort.MinDepth = 0;
-			viewPort.MaxDepth = 1;
+namespace Proof
+{
+	/*
+	{
+	//https://github.com/SaschaWillems/Vulkan/blob/master/examples/negativeviewportheight/negativeviewportheight.cpp
+	//https://www.saschawillems.de/blog/2019/03/29/flipping-the-vulkan-viewport/
+	Viewport viewPort;
+	viewPort.X = 0.0f;
+	viewPort.Y = (float)m_WorldRenderers->GetFrameHeight();
+	viewPort.Width = m_WorldRenderers->GetFrameWidth();
+	viewPort.Height = -(float)m_ScreenFrameBuffer->GetFrameHeight();
+	viewPort.MinDepth = 0;
+	viewPort.MaxDepth = 1;
 
 			ViewportScissor scissor;
 			scissor.Offset = { 0,0 };
@@ -47,6 +48,32 @@ namespace Proof {
 		*/
 	AssetID changeWorldID = 0;
 	bool changeWorld = false;
+
+	bool ShowValousProduction = true;
+	bool ShowMadeWithProof = true;
+
+	enum class RuntimeStartupState
+	{
+		ValousProduction,
+		MadeWithProof,
+		Finished
+	};
+
+	RuntimeStartupState s_RuntimeStartupState = RuntimeStartupState::ValousProduction;
+	float s_RuntimeStartupTimer = 0.0f;
+
+	float s_ValousProductionDuration = 3.0f;
+	float s_MadeWithProofDuration = 2.0f;
+
+	bool s_ValousProductionAudioPlayed = false;
+
+	void PlayValousProductionAudio()
+	{
+		// TODO: Play the recorded "You are witnessing a Valous production" audio here.
+	}
+
+	void DrawString(Count<Renderer2D> renderer2D,const std::string& string, const glm::vec2& position, const glm::vec4& color, float size);
+	void DrawTexture(Count<Renderer2D> renderer2D, Count<Texture2D> texture, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color = glm::vec4(1.0f));
 
 	uint32_t startFrame;
 	void RuntimeLayer::OnAttach()
@@ -82,7 +109,7 @@ namespace Proof {
 			quadVertexArray->AddData(0, DataType::Vec3, offsetof(QuadVertex, QuadVertex::Position));
 			quadVertexArray->AddData(1, DataType::Vec2, offsetof(QuadVertex, QuadVertex::TexCoord));
 
-			
+
 			GraphicsPipelineConfiguration config;
 			config.DebugName = "Runtime";
 			config.Attachments = { Application::Get()->GetWindow()->GetSwapChain()->GetColorFormat() };
@@ -110,15 +137,25 @@ namespace Proof {
 		m_InputManager->OnEventDelegate.Bind<&RuntimeLayer::InputBindElevatedDelegate>(this);
 
 		// depends on the game
-#if 1
+	#if 1
 		auto prefabs = AssetManager::GetAllAssetType(AssetType::Prefab);
 
 		for (auto prefabID : prefabs)
 		{
 			AssetManager::LoadAsset(prefabID);
 		}
-#endif
+	#endif
 		m_World->StartRuntime();
+
+		s_RuntimeStartupTimer = 0.0f;
+		s_ValousProductionAudioPlayed = false;
+
+		if (ShowValousProduction)
+			s_RuntimeStartupState = RuntimeStartupState::ValousProduction;
+		else if (ShowMadeWithProof)
+			s_RuntimeStartupState = RuntimeStartupState::MadeWithProof;
+		else
+			s_RuntimeStartupState = RuntimeStartupState::Finished;
 
 		Application::Get()->GetWindow()->SetWindowInputEvent(true);
 		m_WorldRenderer->SetViewportSize(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
@@ -138,10 +175,45 @@ namespace Proof {
 		float fDeltaTime = DeltaTime.Get();
 		m_InputManager->OnUpdate(fDeltaTime);
 
+		if (s_RuntimeStartupState != RuntimeStartupState::Finished)
+		{
+			s_RuntimeStartupTimer += fDeltaTime;
+
+			if (s_RuntimeStartupState == RuntimeStartupState::ValousProduction)
+			{
+				if (!s_ValousProductionAudioPlayed)
+				{
+					PlayValousProductionAudio();
+					s_ValousProductionAudioPlayed = true;
+				}
+
+				if (s_RuntimeStartupTimer >= s_ValousProductionDuration)
+				{
+					s_RuntimeStartupTimer = 0.0f;
+
+					if (ShowMadeWithProof)
+						s_RuntimeStartupState = RuntimeStartupState::MadeWithProof;
+					else
+						s_RuntimeStartupState = RuntimeStartupState::Finished;
+				}
+			}
+			else if (s_RuntimeStartupState == RuntimeStartupState::MadeWithProof)
+			{
+				if (s_RuntimeStartupTimer >= s_MadeWithProofDuration)
+				{
+					s_RuntimeStartupTimer = 0.0f;
+					s_RuntimeStartupState = RuntimeStartupState::Finished;
+				}
+			}
+		}
+
 		if (m_World->HasWorldCamera())
 		{
 			m_Camera.SetActive(false);
-			m_World->OnUpdateRuntime(fDeltaTime);
+
+			if (s_RuntimeStartupState == RuntimeStartupState::Finished)
+				m_World->OnUpdateRuntime(fDeltaTime);
+
 			m_World->OnRenderRuntime(m_WorldRenderer, fDeltaTime);
 
 		}
@@ -151,6 +223,36 @@ namespace Proof {
 			m_Camera.SetViewportSize(Application::Get()->GetWindow()->GetWidth(), Application::Get()->GetWindow()->GetHeight());
 			m_World->OnRenderEditor(m_WorldRenderer, fDeltaTime,m_Camera);
 		}
+
+		if (s_RuntimeStartupState != RuntimeStartupState::Finished)
+		{
+			m_Renderer2D->SetTargetFrameBuffer(m_WorldRenderer->GetExternalCompositePassFrameBuffer());
+
+			Renderer2DContextSettings settings;
+			settings.RenderOnTop = true;
+
+			glm::vec2 resolution = m_WorldRenderer->GetScreenData().FullResolution;
+
+			m_Renderer2D->BeginContext(glm::ortho(0.0f, resolution.x, 0.0f, resolution.y), glm::mat4(1.0f),Vector(0), settings);
+
+			if (s_RuntimeStartupState == RuntimeStartupState::ValousProduction)
+			{
+				DrawString(m_Renderer2D, "You are witnessing a Valous production", { resolution.x * 0.5f - 300.0f, resolution.y * 0.5f }, glm::vec4(1.0f), 35.0f);
+
+				// When the Valous Production texture is ready, replace the text above with this.
+				//DrawTexture(m_Renderer2D, m_ValousProductionTexture, { resolution.x * 0.5f, resolution.y * 0.5f }, { 512.0f, 256.0f });
+			}
+			else if (s_RuntimeStartupState == RuntimeStartupState::MadeWithProof)
+			{
+				DrawString(m_Renderer2D, "Made with Proof", { resolution.x * 0.5f - 130.0f, resolution.y * 0.5f }, glm::vec4(1.0f), 40.0f);
+
+				// When the Made With Proof texture is ready, replace the text above with this.
+				//DrawTexture(m_Renderer2D, m_MadeWithProofTexture, { resolution.x * 0.5f, resolution.y * 0.5f }, { 512.0f, 256.0f });
+			}
+
+			m_Renderer2D->EndContext();
+		}
+
 		if (Input::IsKeyClicked(KeyBoardKey::F3))
 			Math::ChangeBool(m_ShowDebugStats);
 
@@ -226,6 +328,17 @@ namespace Proof {
 		TextParams params;
 		params.Color = color;
 		renderer2D->DrawString(string, Font::GetDefault(), params,transform);
+	}
+
+	void DrawTexture(Count<Renderer2D> renderer2D, Count<Texture2D> texture, const glm::vec2& position, const glm::vec2& size, const glm::vec4& color)
+	{
+		if (!texture)
+			return;
+
+		glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(size.x, size.y, 1.0f));
+		glm::mat4 transform = glm::translate(glm::mat4(1.0f), { position.x, position.y, -0.2f }) * scale;
+
+		renderer2D->DrawQuad(transform, color, texture);
 	}
 
 	void RuntimeLayer::DrawDebugStats()

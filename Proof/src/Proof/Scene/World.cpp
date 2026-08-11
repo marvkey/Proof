@@ -587,14 +587,11 @@ namespace Proof
 
 				if (!textComponent.Visible)
 					continue;
-				TextParams params;
-				params.Color = textComponent.Colour;
-				params.Kerning = textComponent.Kerning;
-				params.LineSpacing = textComponent.LineSpacing;
+				
 				if (textComponent.UseLocalRotation)
-					renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransformUsingLocalRotation(e));
+					renderer2D->DrawString(textComponent.Text, font, textComponent.Params, GetWorldSpaceTransformUsingLocalRotation(e));
 				else
-					renderer2D->DrawString(textComponent.Text, font, params, GetWorldSpaceTransform(e));
+					renderer2D->DrawString(textComponent.Text, font, textComponent.Params, GetWorldSpaceTransform(e));
 			}
 			
 		}
@@ -1520,55 +1517,15 @@ namespace Proof
 
 	void World::PrefabCopyEntity(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity,bool includeChildren)
 	{
-#if 0
-		// first id is the src, second is dstEntity
-		std::unordered_map<UUID, UUID> entitySwapIDs;
-		PrefabCopyEntityReal(prefab, srcEntity, parentEntity, entitySwapIDs, includeChildren);
-#endif
-
 		World* prefabWorld = prefab->m_World.Get();
 		CopyEntityHierarchy(srcEntity, parentEntity, prefabWorld, includeChildren, true);
 		prefabWorld->BuildBoneEntityIds(parentEntity);
 	}
-	//src entity is used as childenitty 
-	void World::PrefabCopyEntityReal(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity, std::unordered_map<UUID, UUID>& entitySwapID, bool includeChildren)
-	{
-		// first function call for base has to be null
-		// handle it
 
-		// id of each swap id of entity
-		entitySwapID[srcEntity.GetUUID()] = { parentEntity.GetUUID() };
-		CopyComponentIfExistsEntity(AllComponents{}, parentEntity, srcEntity, true);
-
-		if (includeChildren)
-		{
-			srcEntity.EachChild([&](Entity childEntity)
-				{
-					Entity newEntity;
-					newEntity = prefab->m_World->CreateEntity();
-					newEntity.SetParent(parentEntity);
-					//Entity newChild = prefab->m_World->CreateEntity(childEntity, true);
-					PrefabCopyEntityReal(prefab, childEntity, newEntity, entitySwapID,true);
-				});
-		}
-
-		m_ScriptWorld->PostDuplicateScriptInstance(srcEntity, parentEntity, entitySwapID);
-	}
 
 	Entity World::CreateEntity(Entity entity, bool includeChildren) 
 	{
-#if 0
-		PauseRigidBodyOnConstruct();
-		// first id is the src, second is dstEntity
-		std::unordered_map<UUID, UUID> entitySwapIDs;
-		Entity newEntity = CreateEntityFromOtherReal(entity,entitySwapIDs, includeChildren);
 
-		UnPauseRigidBodyOnConstruct();
-
-		BuildBoneEntityIds(newEntity);
-
-		return newEntity;
-#endif
 		PauseRigidBodyOnConstruct();
 
 		Entity newEntity = CreateEntity(entity.GetName());
@@ -1587,8 +1544,7 @@ namespace Proof
 		return newEntity;
 	}
 
-
-
+	 #if 0
 	void World::CreateChildrenRecursive(Entity entity, Entity newEntity, std::unordered_map<UUID, UUID>& entitySwapID)
 	{
 		std::vector<UUID> childIDs;
@@ -1611,7 +1567,7 @@ namespace Proof
 			CreateChildrenRecursive(childEntity, newChild, entitySwapID);
 		}
 	}
-
+	  #endif
 	void World::CopyEntityHierarchy(Entity srcEntity, Entity dstEntity, World* dstWorld, bool includeChildren,bool dstIsPrefab)
 	{
 		std::unordered_map<UUID, UUID> entitySwapID;
@@ -1649,36 +1605,6 @@ namespace Proof
 			CopyEntityHierarchyRecursive(srcChild, dstChild, dstWorld, entitySwapID, true, dstIsPrefab);
 		}
 	}
-
-	Entity World::CreateEntityFromOtherReal(Entity entity, std::unordered_map<UUID, UUID>& entitySwapID,bool includeChildren)
-	{
-
-		Entity newEntity = CreateEntity(entity.GetName());
-		CopyComponentIfExistsEntity(AllComponents{}, newEntity, entity);
-
-		entitySwapID[entity.GetUUID()] = newEntity.GetUUID();
-
-		if (entity.HasParent())
-		{
-			TransformComponent transform = newEntity.GetComponent<TransformComponent>();
-			newEntity.SetParent(entity.GetParent());
-			newEntity.GetComponent<TransformComponent>() = transform;
-		}
-
-		if (includeChildren)
-			CreateChildrenRecursive(entity, newEntity, entitySwapID);
-
-		for (auto& [srcID, dstID] : entitySwapID)
-		{
-			Entity srcEntity = TryGetEntityWithUUID(srcID);
-			Entity dstEntity = TryGetEntityWithUUID(dstID);
-			if (srcEntity && dstEntity) m_ScriptWorld->PostDuplicateScriptInstance(srcEntity, dstEntity, entitySwapID);
-		}
-
-		return newEntity;
-	}
-
-	
 
 	void World::UnPauseRigidBodyOnConstruct()
 	{
@@ -1822,29 +1748,31 @@ namespace Proof
 		}
 		return newEntity;
 	}
-	Entity World::CreateEntity(const std::string& name, Count<Prefab> prefab, TransformComponent transfom, UUID id)
+
+	Entity World::CreateEntity(const std::string& name, Count<Prefab> prefab, glm::vec3 location, UUID id)
 	{
-		PF_PROFILE_FUNC();
-#if 0
-		/**
-		 * when an entity with sub children has rigid body this fucntions crahses 
-		 * it could be a problem with the emplace or replace in the copy compoentnt single
-		 * 
-		 */
+		if (prefab == nullptr)
+			return Entity{};
+
+		if (!prefab->GetBaseEntity().IsValid())
+			return Entity{};
+
+		Entity entity = prefab->GetBaseEntity();
 		PauseRigidBodyOnConstruct();
 
-		Entity prefabBaseEntity = prefab->GetBaseEntity();
-		if (!prefabBaseEntity)return {};
-		Entity newEntity = CreateEntityPrefabStatic(prefab, this, prefabBaseEntity, true);
-		newEntity.SetName(name);
-		newEntity.GetComponent<TransformComponent>() = transfom;
+		Entity newEntity = CreateEntity(name);
+		CopyEntityHierarchy(entity, newEntity, this, true, false);
+
+		newEntity.GetComponent<TransformComponent>().Location = location;
 
 		UnPauseRigidBodyOnConstruct();
-
 		BuildBoneEntityIds(newEntity);
 
 		return newEntity;
-	   #endif
+	}
+	Entity World::CreateEntity(const std::string& name, Count<Prefab> prefab, TransformComponent transfom, UUID id)
+	{
+		PF_PROFILE_FUNC();
 
 		if (prefab == nullptr)
 			return Entity{};
@@ -1859,7 +1787,6 @@ namespace Proof
 		CopyEntityHierarchy(entity, newEntity, this, true, false);
 
 		newEntity.GetComponent<TransformComponent>() = transfom;
-
 
 
 		UnPauseRigidBodyOnConstruct();

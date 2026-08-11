@@ -50,6 +50,22 @@ namespace Proof
 	};
 	using AssetID = UUID;
 
+
+	enum class DefaultRuntimeAssets : uint64_t// thse are the IDS
+	{
+		Cube = 50,
+		Sphere,
+		Capsule,
+		Cylinder,
+		Cone,
+		Torus,
+		Plane,
+		Material=70,
+		PhysicsMaterial,
+		DefaultFont = 80,
+	};
+
+
 	class Asset;
 	namespace Utils 
 	{

@@ -2182,7 +2182,7 @@ namespace Proof
 				else if (info.Type == AssetType::Prefab)
 				{
 					Count<Prefab> prefab = AssetManager::GetAsset<Prefab>(info.ID);
-					m_ActiveWorld->CreateEntity(info.GetName(), prefab, TransformComponent());
+					m_ActiveWorld->CreateEntity(info.GetName(), prefab, glm::vec3(0.0f));
 				}
 			}
 		}

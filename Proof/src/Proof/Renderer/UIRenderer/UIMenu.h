@@ -8,6 +8,8 @@
 #include "Proof/Utils/MultiUse.h"
 #include <glm/glm.hpp>
 #include <entt/entt.hpp>
+
+#include "Proof/Asset/AssetManager.h"
 #include "Proof/Core/Delegate.h"
 namespace Proof
 {
@@ -205,7 +207,7 @@ namespace Proof
 	{
 		BindableVariableString Text = { "Text" };
 		TextParams TextConfig;
-		Count<Font> Font = Font::GetDefault();
+		AssetKey<AssetType::Font> Font =AssetID((uint64_t)DefaultRuntimeAssets::DefaultFont);
 	};
 
 	struct UIProggresBarComponent

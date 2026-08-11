@@ -20,6 +20,9 @@
 #include "Proof/Audio/Audio.h"
 #include "AssetCustomData/AssetCustomDataManager.h"
 #include <future>
+
+#include "Proof/Renderer/Font.h"
+
 namespace Proof
 {
 	
@@ -67,6 +70,7 @@ namespace Proof
 			s_AssetManagerData->AssetSerilizer[AssetType::Skeleton] = CreateSpecial<SkeletonSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::AnimationController] = CreateSpecial<AnimationControllerSerializer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::ParticleEmitter] = CreateSpecial<ParticleEmitterSerilizer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::Font] = CreateSpecial<FontAssetSerializer>();
 		}
 
 		{
@@ -199,6 +203,14 @@ namespace Proof
 						CreateRuntimeAsset(ID, asset, "DefaultPhysicsMaterial");
 					}
 					break;
+
+			case DefaultRuntimeAssets::DefaultFont:
+				{
+					Count<Font> defaultFont = Font::GetDefault();
+					Count<Asset> asset = defaultFont.As<Asset>();
+					CreateRuntimeAsset(ID, asset, "DefaultFont");
+					break;
+				}
 			}
 		});
 
@@ -371,6 +383,18 @@ namespace Proof
 			assetInfo.State = AssetState::Unloaded;
 			assetInfo.ID = AssetManager::CreateID();
 			assetInfo.Type = AssetType::Audio;
+
+			InternalAddAsset(assetInfo, nullptr);
+			return;
+		}
+
+		if (type == AssetType::Font && Utils::FontHasFormat(extension))
+		{
+			AssetInfo assetInfo;
+			assetInfo.Path = AssetManager::GetAssetFileSystemPathRelative(path);
+			assetInfo.State = AssetState::Unloaded;
+			assetInfo.ID = AssetManager::CreateID();
+			assetInfo.Type = AssetType::Font;
 
 			InternalAddAsset(assetInfo, nullptr);
 			return;

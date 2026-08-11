@@ -1016,11 +1016,11 @@ namespace Proof
 			set => InternalCalls.RigidBodyComponent_SetIsSleeping(Entity.ID, value);
 		}
 
-		public void GetKineMatrixicTarget(out Proof.Vector3 targetPosition, out Proof.Vector3 targetRotation)
-			=> InternalCalls.RigidBodyComponent_GetKineMatrixicTarget(Entity.ID, out targetPosition, out targetRotation);
+		public void GetKinematicTarget(out Proof.Vector3 targetPosition, out Proof.Quaternion targetRotation)
+			=> InternalCalls.RigidBodyComponent_GetKinematicTarget(Entity.ID, out targetPosition, out targetRotation);
 
-		public void SetKineMatrixicTarget(Proof.Vector3 targetPosition, Proof.Vector3 targetRotation)
-			=> InternalCalls.RigidBodyComponent_SetKineMatrixicTarget(Entity.ID, ref targetPosition, ref targetRotation);
+		public void SetKinematicTarget(Proof.Vector3 targetPosition, Proof.Quaternion targetRotation)
+			=> InternalCalls.RigidBodyComponent_SetKinematicTarget(Entity.ID, ref targetPosition, ref targetRotation);
 
 
 		public void AddForceAtLocation(Proof.Vector3 force, Proof.Vector3 location, ForceMode forceMode = ForceMode.Force)

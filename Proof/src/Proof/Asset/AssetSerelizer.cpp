@@ -957,6 +957,9 @@ namespace Proof {
 				out << YAML::Key << "Color" << YAML::Value << textComponent.TextConfig.Color;
 				out << YAML::Key << "Kerning" << YAML::Value << textComponent.TextConfig.Kerning;
 				out << YAML::Key << "LineSpacing" << YAML::Value << textComponent.TextConfig.LineSpacing;
+				out << YAML::Key << "OutlineColor" << YAML::Value << textComponent.TextConfig.OutlineColor;
+				out << YAML::Key << "OutlineThickness" << YAML::Value << textComponent.TextConfig.OutlineThickness;
+				out << YAML::Key << "FontAssetID" << YAML::Value << textComponent.Font.Get();
 				out << YAML::EndMap; // UITextComponent
 			}
 		}
@@ -1107,6 +1110,10 @@ namespace Proof {
 					src.TextConfig.Color = textComponent["Color"].as<glm::vec4>();
 					src.TextConfig.Kerning = textComponent["Kerning"].as<float>();
 					src.TextConfig.LineSpacing = textComponent["LineSpacing"].as<float>();
+					src.TextConfig.OutlineThickness = textComponent["OutlineThickness"].as<float>();
+					src.TextConfig.OutlineColor = textComponent["OutlineColor"].as<glm::vec4>();
+					src.Font.SetAssetID(textComponent["FontAssetID"].as<uint64_t>(AssetManager::GetDefaultAsset(DefaultRuntimeAssets::DefaultFont)->GetID().Get()));
+					
 					LoadClampedBindableVariableString(textComponent, "Text", src.Text, uiPanel->VariableTable->GetVariableSetStorage());
 				}
 			}
@@ -1553,6 +1560,18 @@ namespace $NAMESPACE_NAME$
 		stream << out.c_str();
 		stream.close();
 
+	}
+
+	void FontAssetSerializer::Save(const AssetInfo& data, const Count<class Asset>& asset) const
+	{
+	}
+
+	Count<class Asset> FontAssetSerializer::TryLoadAsset(const AssetInfo& assetData) const
+	{
+		auto fullPath = AssetManager::GetAssetFileSystemPath(assetData.Path).string();
+		Count<Font> asset = Count<Font>::Create(fullPath);
+		SetID(assetData, asset);
+		return asset;
 	}
 
 	Count<class Asset> AnimationControllerSerializer::TryLoadAsset(const AssetInfo& assetData) const

@@ -36,6 +36,8 @@ project "ProofRuntime"
 		"%{IncludeDir.optick}",
 		"%{IncludeDir.magic_enum}",
 		"%{IncludeDir.mono}",
+		"%{IncludeDir.tracy}",
+		
     }
 
     links

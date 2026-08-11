@@ -65,6 +65,11 @@ namespace Proof
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
 		//returns entity ID
         internal extern static ulong World_Instanciate(ulong prefabID, Transform transform);
+
+        [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
+        //returns entity ID
+        internal extern static ulong World_InstanciateLocation(ulong prefabID, Vector3 location);
+
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static ulong World_CreateEntity(string name, Transform transform);
         [System.Runtime.CompilerServices.MethodImplAttribute(MethodImplOptions.InternalCall)]
@@ -134,6 +139,9 @@ namespace Proof
 
         [MethodImplAttribute(MethodImplOptions.InternalCall)]
         internal extern static object Entity_GetParent(ulong entityID, out ulong ownerID);
+
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static object Entity_SetParent(ulong entityID, ulong ownerID);
         #endregion
          
         #region TagComponent
@@ -350,12 +358,14 @@ namespace Proof
         internal static extern void RigidBodyComponent_SetLayerByName(ulong entityID, ref string layerName);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void RigidBodyComponent_GetKineMatrixicTarget(ulong entityID, out Vector3 targetPosition, out Vector3 targetRotation);
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void RigidBodyComponent_SetKineMatrixicTarget(ulong entityID, ref Vector3 targetPosition, ref Vector3 targetRotation);
+        internal static extern void RigidBodyComponent_AddForceAtLocation(ulong entityID, ref Vector3 force, ref Vector3 location, ForceMode forceMode);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal static extern void RigidBodyComponent_AddForceAtLocation(ulong entityID, ref Vector3 force, ref Vector3 location, ForceMode forceMode);
+        internal static extern void  RigidBodyComponent_GetKinematicTarget(ulong entityID, out Vector3 inTargetPosition, out Quaternion rotationRadians);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal static extern void  RigidBodyComponent_SetKinematicTarget(ulong entityID, ref Vector3 inTargetPosition, ref Quaternion rotationRadians);
+
         #endregion
         #region BoxColliderComponent
 

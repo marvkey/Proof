@@ -117,9 +117,11 @@ namespace Proof {
 			auto vertexArray = VertexArray::Create({ sizeof(TextVertex) });
 			vertexArray->AddData(0, DataType::Vec3, offsetof(TextVertex, TextVertex::Positon));
 			vertexArray->AddData(1, DataType::Vec4, offsetof(TextVertex, TextVertex::Color));
-			vertexArray->AddData(2, DataType::Vec3, offsetof(TextVertex, TextVertex::TexCoord));
+			vertexArray->AddData(2, DataType::Vec2, offsetof(TextVertex, TextVertex::TexCoord));
 			vertexArray->AddData(3, DataType::Float, offsetof(TextVertex, TextVertex::FontIndex));
 			vertexArray->AddData(4, DataType::Float, offsetof(TextVertex, TextVertex::TexIndex));
+			vertexArray->AddData(5, DataType::Vec4, offsetof(TextVertex, TextVertex::OutlineColor));
+			vertexArray->AddData(6, DataType::Float, offsetof(TextVertex, TextVertex::OutlineThickness));
 
 
 			m_TextVertexBufferBase = pnew TextVertex[c_MaxVertexCount];
@@ -969,16 +971,16 @@ namespace Proof {
 	void Renderer2D::DrawString(const std::string& text, Count<class Font> font, const TextParams& textParam, const glm::mat4& transform)
 	{
 		if (m_TextIndexCount >= c_MaxIndexCount)
-		{ // reached maxed index size
+		{
 			Render();
 			Reset();
 		}
+
 		//https://freetype.org/freetype2/docs/tutorial/step2.html
 		const auto& fontGeometry = font->GetMSDFData()->FontGeometry;
 		const auto& metrics = fontGeometry.getMetrics();
 		Count<Texture2D> fontAtlas = font->GetTextureAtlas();
 
-		//m_Storage2DData->FontTexture = fontAtlas;
 		float fontIndex = -1.f;
 		for (uint32_t i = 0; i < m_TextFontSlotIndex; i++)
 		{
@@ -1005,7 +1007,12 @@ namespace Proof {
 		double x = 0.0;
 		double fsScale = 1.0 / (metrics.ascenderY - metrics.descenderY);
 		double y = -fsScale * metrics.ascenderY;
+
 		const float spaceGlyphAdvance = fontGeometry.getGlyph(' ')->getAdvance();
+
+		// TextParams uses normalized 0 - 1, shader uses 0 - 20.
+		const float outlineThickness = glm::clamp(textParam.OutlineThickness, 0.0f, 1.0f) * 20.0f;
+
 		for (size_t i = 0; i < text.size(); i++)
 		{
 			char character = text[i];
@@ -1019,6 +1026,7 @@ namespace Proof {
 				y -= fsScale * metrics.lineHeight + textParam.LineSpacing;
 				continue;
 			}
+
 			if (character == ' ')
 			{
 				float advance = spaceGlyphAdvance;
@@ -1040,6 +1048,7 @@ namespace Proof {
 				x += 4.0f * (fsScale * spaceGlyphAdvance + textParam.Kerning);
 				continue;
 			}
+
 			auto glyph = fontGeometry.getGlyph(character);
 
 			if (!glyph)
@@ -1050,14 +1059,15 @@ namespace Proof {
 
 			double al, ab, ar, at;
 			glyph->getQuadAtlasBounds(al, ab, ar, at);
+
 			glm::vec2 texCoordMin((float)al, (float)ab);
 			glm::vec2 texCoordMax((float)ar, (float)at);
 
 			double pl, pb, pr, pt;
 			glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+
 			glm::vec2 quadMin(pl, pb);
 			glm::vec2 quadMax(pr, pt);
-
 
 			quadMin *= fsScale, quadMax *= fsScale;
 
@@ -1065,9 +1075,9 @@ namespace Proof {
 			quadMin += glm::vec2(x, y);
 			quadMax += glm::vec2(x, y);
 
-
 			float texelWidth = 1.0f / fontAtlas->GetWidth();
 			float texelHeight = 1.0f / fontAtlas->GetHeight();
+
 			texCoordMin *= glm::vec2(texelWidth, texelHeight);
 			texCoordMax *= glm::vec2(texelWidth, texelHeight);
 
@@ -1075,24 +1085,36 @@ namespace Proof {
 			m_TextVertexBufferPtr->Color = textParam.Color;
 			m_TextVertexBufferPtr->TexCoord = texCoordMin;
 			m_TextVertexBufferPtr->FontIndex = fontIndex;
+			m_TextVertexBufferPtr->TexIndex = -1.0f;
+			m_TextVertexBufferPtr->OutlineColor = textParam.OutlineColor;
+			m_TextVertexBufferPtr->OutlineThickness = outlineThickness;
 			m_TextVertexBufferPtr++;
 
 			m_TextVertexBufferPtr->Positon = transform * glm::vec4(quadMin.x, quadMax.y, 0.0f, 1.0f);
 			m_TextVertexBufferPtr->Color = textParam.Color;
 			m_TextVertexBufferPtr->TexCoord = { texCoordMin.x, texCoordMax.y };
 			m_TextVertexBufferPtr->FontIndex = fontIndex;
+			m_TextVertexBufferPtr->TexIndex = -1.0f;
+			m_TextVertexBufferPtr->OutlineColor = textParam.OutlineColor;
+			m_TextVertexBufferPtr->OutlineThickness = outlineThickness;
 			m_TextVertexBufferPtr++;
 
 			m_TextVertexBufferPtr->Positon = transform * glm::vec4(quadMax, 0.0f, 1.0f);
 			m_TextVertexBufferPtr->Color = textParam.Color;
 			m_TextVertexBufferPtr->TexCoord = texCoordMax;
 			m_TextVertexBufferPtr->FontIndex = fontIndex;
+			m_TextVertexBufferPtr->TexIndex = -1.0f;
+			m_TextVertexBufferPtr->OutlineColor = textParam.OutlineColor;
+			m_TextVertexBufferPtr->OutlineThickness = outlineThickness;
 			m_TextVertexBufferPtr++;
 
 			m_TextVertexBufferPtr->Positon = transform * glm::vec4(quadMax.x, quadMin.y, 0.0f, 1.0f);
 			m_TextVertexBufferPtr->Color = textParam.Color;
 			m_TextVertexBufferPtr->TexCoord = { texCoordMax.x, texCoordMin.y };
 			m_TextVertexBufferPtr->FontIndex = fontIndex;
+			m_TextVertexBufferPtr->TexIndex = -1.0f;
+			m_TextVertexBufferPtr->OutlineColor = textParam.OutlineColor;
+			m_TextVertexBufferPtr->OutlineThickness = outlineThickness;
 			m_TextVertexBufferPtr++;
 
 			m_TextIndexCount += 6;
@@ -1105,7 +1127,7 @@ namespace Proof {
 
 				x += fsScale * advance + textParam.Kerning;
 			}
-		}
+		}	
 	}
 
 	

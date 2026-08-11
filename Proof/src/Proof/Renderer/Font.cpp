@@ -18,6 +18,8 @@ namespace Proof
 #define LCG_MULTIPLIER 6364136223846793005ull
 #define LCG_INCREMENT 1442695040888963407ull
 #define THREADS 8
+
+const static double s_RangeValue = 8.0; //(Marve todo) is this right (also in cshader if chagne need to shange pixel rangne in shader)
 	struct FontInput
 	{
 		Buffer fontData;
@@ -65,7 +67,7 @@ namespace Proof
 
 	static bool TryReadFontAtlasFromCache(const std::string& fontName, float fontSize, AtlasHeader& header, void*& pixels, Buffer& storageBuffer)
 	{
-		std::string filename = fmt::format("{0}-{1}.hfa", fontName, fontSize);
+		std::string filename = fmt::format("{0}-{1}-{2}.hfa", fontName, fontSize, s_RangeValue);
 		std::filesystem::path filepath = Utils::GetCacheDirectory() / filename;
 
 		if (std::filesystem::exists(filepath))
@@ -190,7 +192,8 @@ namespace Proof
 		config.generatorAttributes.config.overlapSupport = true;
 		config.generatorAttributes.scanlinePass = true;
 		double minEmSize = 0;
-		double rangeValue = 2.0;
+		//double rangeValue = 2.0;
+		
 		msdf_atlas::TightAtlasPacker::DimensionsConstraint atlasSizeConstraint = msdf_atlas::TightAtlasPacker::DimensionsConstraint::MULTIPLE_OF_FOUR_SQUARE;
 		config.angleThreshold = DEFAULT_ANGLE_THRESHOLD;
 		config.miterLimit = DEFAULT_MITER_LIMIT;
@@ -283,7 +286,7 @@ namespace Proof
 		if (fontInput.fontName)
 			m_MSDFData->FontGeometry.setName(fontInput.fontName);
 
-		double pxRange = rangeValue;
+		double pxRange = s_RangeValue;
 		bool fixedDimensions = fixedWidth >= 0 && fixedHeight >= 0;
 		bool fixedScale = config.emSize > 0;
 		msdf_atlas::TightAtlasPacker atlasPacker;

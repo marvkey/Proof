@@ -289,7 +289,21 @@ namespace Proof {
             }
         }
 
+        glm::vec3 min = vertices[0].Position;
+        glm::vec3 max = vertices[0].Position;
 
+        for (const auto& vertex : vertices)
+        {
+            min = glm::min(min, vertex.Position);
+            max = glm::max(max, vertex.Position);
+        }
+
+        glm::vec3 center = (min + max) * 0.5f;
+
+        for (auto& vertex : vertices)
+        {
+            vertex.Position -= center;
+        }
         return Count<Mesh>::Create("Capsule", vertices, indices);
     }
     //https://www.songho.ca/opengl/gl_cylinder.html (//for cone and cylinder) download the zip file

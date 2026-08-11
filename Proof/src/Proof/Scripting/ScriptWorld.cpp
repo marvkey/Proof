@@ -603,7 +603,8 @@ namespace Proof
 
             Entity srcentity = world->GetWorld()->TryGetEntityWithUUID(entityID);
             Entity dstentity = newWorld->TryGetEntityWithUUID(entityID);
-            newScirptWorld->DuplicateScriptInstance(srcentity, dstentity);
+            if (srcentity && dstentity)
+                newScirptWorld->DuplicateScriptInstance(srcentity, dstentity);
         }
         return newScirptWorld;
     }

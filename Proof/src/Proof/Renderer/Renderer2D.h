@@ -33,6 +33,9 @@ namespace Proof {
 
 		//(tex background)
 		float TexIndex;
+
+		glm::vec4 OutlineColor;
+		float OutlineThickness;
 	};
 
 	struct PointVertex

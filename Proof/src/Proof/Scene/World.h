@@ -97,6 +97,7 @@ namespace Proof {
 		void OnSimulatePhysics(FrameTime DeltaTime);
 
 		Entity CreateEntity(const std::string& name, Count<class Prefab> prefab, TransformComponent transform, UUID id = UUID());
+		Entity CreateEntity(const std::string& name, Count<class Prefab> prefab, glm::vec3 location, UUID id = UUID());
 		class Entity CreateEntity(const std::string& EntName = "Empty Entity");
 		class Entity CreateEntity(const std::string& EntName, EntityID ID);
 		class Entity CreateEntity(Entity entity, bool includeChildren = true);
@@ -204,15 +205,6 @@ namespace Proof {
 		void OnWaterComponentCreate(entt::registry& registry, entt::entity entity);
 		//https://github.com/Ant-Play/Ant/blob/2dab7c0362f017911df9090b1608ec4b81ad1f2c/Ant/src/Ant/Scene/Scene.h
 		void BuildDynamicMeshEntityHierarchy(Entity parent, Count<class DynamicMesh> mesh, const MeshNode& node, bool generateColliders);
-
-		// same funciton just use the entity swap Ids
-		// mainly for script components
-		// first id is the dstEntity, second is srcEntity
-		void PrefabCopyEntityReal(Count<class Prefab> prefab, Entity srcEntity, Entity parentEntity, std::unordered_map<UUID, UUID>& entitySwapID,bool includeChildren = true);
-		// first id is the dstEntity, second is srcEntity
-		class Entity CreateEntityFromOtherReal(Entity entity, std::unordered_map<UUID, UUID>& entitySwapID,bool includeChildren = true);
-		void CreateChildrenRecursive(Entity entity, Entity newEntity, std::unordered_map<UUID, UUID>& entitySwapID);
-
 
 		void CopyEntityHierarchy(Entity srcEntity, Entity dstEntity, World* dstWorld, bool includeChildren, bool dstIsPrefab);
 		void CopyEntityHierarchyRecursive(Entity srcEntity, Entity dstEntity, World* dstWorld, std::unordered_map<UUID, UUID>& entitySwapID, bool includeChildren, bool dstIsPrefab);

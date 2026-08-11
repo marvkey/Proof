@@ -21,6 +21,8 @@
 #include <format>
 #include <set>
 #include <any>
+
+#include "Proof/Renderer/Vertex.h"
 /* REMEMBER TO IMPLEMENT SYSTEM OF NEW GET ASSET AS WE HAVE A POINTER BUT BEFORE ACCESS We have to check if ID still exist Asset*/
 /* THE DESTRUCTOR OFEACH GETS CALLED WEHN THE POINTER GETS DEREFRENCED BE REMEMBER WHEN TESTING */
 namespace Proof
@@ -656,16 +658,11 @@ namespace Proof
 	public:
 		TextComponent(const TextComponent& other) = default;
 		TextComponent() = default;
+		AssetKey<AssetType::Font> Font =AssetID((uint64_t)DefaultRuntimeAssets::DefaultFont);
 
 		//chagne to u32 string in teh futre 
 		std::string Text;
-		glm::vec4 Colour{ 1 };
-
-		// horizontal distnace between each character
-		float Kerning = 0.0f;
-		// spacing of new line 
-		float LineSpacing = 1.0f;
-		//Todo background color
+		TextParams Params;
 
 		bool Visible = true;
 		bool UseLocalRotation = false;// render using local rotation 

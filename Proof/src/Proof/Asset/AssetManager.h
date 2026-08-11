@@ -36,19 +36,7 @@ namespace Proof
 		AssetInfo Info;
 		Count<Asset> Asset = nullptr;
 	};
-	enum class DefaultRuntimeAssets // thse are the IDS
-	{
-		Cube = 50,
-		Sphere,
-		Capsule,
-		Cylinder,
-		Cone,
-		Torus,
-		Plane,
-		Material=70,
-		PhysicsMaterial,
-		//Font=80,
-	};
+
 	class World;
 	class AssetManager 
 	{

@@ -197,7 +197,8 @@ namespace Proof
 		{
 			for (auto& [id, panel] : kv.second)
 			{
-				panel->Save();
+				if (AssetManager::HasAsset(id))
+					panel->Save();
 			}
 		}
 	}
