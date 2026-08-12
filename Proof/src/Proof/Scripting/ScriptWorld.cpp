@@ -364,7 +364,6 @@ namespace Proof
 
                 for (auto& [fieldName, field] : classMetaData.Fields)
                 {
-                    auto field = classMetaData.Fields.at(fieldName);
 
                     // we do a check because we dont want to have to create script fields
                     // for the object
@@ -762,18 +761,21 @@ namespace Proof
 
         auto view = GetWorld()->GetAllEntitiesWith<ScriptComponent>();
 
-        for (auto instanceHandle : m_CallOnCreate)
-            ScriptEngine::CallMethod(instanceHandle, "OnCreate");
+        // snapshot + clear FIRST so reentrant inserts (a script creating another
+        // scripted entity inside its own OnCreate) go into a fresh m_CallOnCreate
+        // instead of the one we're iterating
+        auto pendingOnCreate = std::move(m_CallOnCreate);
         m_CallOnCreate.clear();
+        for (auto instanceHandle : pendingOnCreate)
+            ScriptEngine::CallMethod(instanceHandle, "OnCreate");
+
         for (auto& [enityID, classes] : m_RuntimeEntityClassStorage)
         {
             if (!RuntimeIsEntityScriptInstantiated(GetWorld()->GetEntity(enityID)))continue;
             for (auto& [className, classMetaData] : classes.Classes)
             {
-
                 if (classMetaData.ScriptHandle)
                     ScriptEngine::CallMethod(classMetaData.ScriptHandle, "OnUpdate", frame.Get());
-
             }
         }
 

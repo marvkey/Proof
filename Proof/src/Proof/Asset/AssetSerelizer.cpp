@@ -1110,8 +1110,8 @@ namespace Proof {
 					src.TextConfig.Color = textComponent["Color"].as<glm::vec4>();
 					src.TextConfig.Kerning = textComponent["Kerning"].as<float>();
 					src.TextConfig.LineSpacing = textComponent["LineSpacing"].as<float>();
-					src.TextConfig.OutlineThickness = textComponent["OutlineThickness"].as<float>();
-					src.TextConfig.OutlineColor = textComponent["OutlineColor"].as<glm::vec4>();
+					src.TextConfig.OutlineThickness = textComponent["OutlineThickness"].as<float>(0.0f);
+					src.TextConfig.OutlineColor = textComponent["OutlineColor"].as<glm::vec4>(src.TextConfig.OutlineColor);
 					src.Font.SetAssetID(textComponent["FontAssetID"].as<uint64_t>(AssetManager::GetDefaultAsset(DefaultRuntimeAssets::DefaultFont)->GetID().Get()));
 					
 					LoadClampedBindableVariableString(textComponent, "Text", src.Text, uiPanel->VariableTable->GetVariableSetStorage());
