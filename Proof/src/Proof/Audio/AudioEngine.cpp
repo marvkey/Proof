@@ -138,7 +138,7 @@ namespace Proof
             PF_CORE_ASSERT(false);
         }
 
-        ma_engine_set_volume(&s_Data->Engine, 0.5); // just hafl teh iniital volueme
+        ma_engine_set_volume(&s_Data->Engine, 1.0); // just hafl teh iniital volueme
 	}
 	void AudioEngine::ShutDown()
 	{

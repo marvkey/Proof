@@ -592,9 +592,7 @@ namespace Proof
 		bool Kinematic = false;
 		CollisionDetectionType CollisionDetection = CollisionDetectionType::Discrete;
 
-		VectorTemplate<bool>FreezeLocation = { false,false,false };
-		VectorTemplate<bool>FreezeRotation = { false,false,false };
-		
+		PhysicsActorConstraint Constraints = PhysicsActorConstraint::None;
 		friend class World;
 		friend class SceneSerializer;
 		friend class SceneHierachyPanel;

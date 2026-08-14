@@ -72,6 +72,7 @@ namespace Proof {
 		static Renderer::API GetAPI();
 
 		static Count<class TextureCube> CreatePreethamSky(float turbidity, glm::vec3 sunDirection);
+		static Count<class TextureCube> CreateProceduralSky(struct ProceduralSkyData skyData, glm::vec3 sunDirection);
 		static Count<class TextureCube> CreateHosekWilkieSky(float turbidity, float GroundReflectance, glm::vec3 sunDirection);
 		static Count<class Texture2D> GetWhiteTexture();
 		static Count<class Texture2D> GetBlackTexture();

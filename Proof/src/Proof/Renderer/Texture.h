@@ -163,11 +163,40 @@ namespace Proof
 			return !(*this == other);
 		}
 	};
+
+	struct ProceduralSkyData
+	{
+		glm::vec3 SunDirection;      // form component
+		// Sun
+		bool bSun = true;
+		float SunIntensity = 1.0f;
+		float SunSize = 1.0f;
+
+		// Atmosphere
+		float SkyIntensity = 1.0f;
+		float RayleighStrength = 0.0025f;
+		float MieStrength = 0.0003f;
+		float MieAnisotropy = 0.98f;
+
+		// Clouds
+		float CloudCoverage = 0.2f;
+		float WispyCloudCoverage = 0.9f;
+		float CloudDensity = 1.0f;
+		float CloudScale = 1.0f;
+		float CloudSpeed = 1.0f;
+		float CloudBrightness = 1.0f;
+		float Facets = 24.0f; 
+
+		bool operator==(const ProceduralSkyData& other) const = default;
+
+	};
 	enum class EnvironmentState
 	{
 		HosekWilkie = 0,
 		PreethamSky,
-		EnvironmentTexture
+		EnvironmentTexture,
+		ProceduralSky,
+		//VolumetricSky,
 	};
 	class Environment : public Asset
 	{
@@ -178,10 +207,12 @@ namespace Proof
 		Environment(HosekWilkieSkyData data);
 		Environment(PreethamSkyData data);
 		Environment(EnvironmentTextureData data);
+		Environment(ProceduralSkyData data);
 
 		void Update(HosekWilkieSkyData data);
 		void Update(PreethamSkyData data);
 		void Update(EnvironmentTextureData data);
+		void Update(ProceduralSkyData data);
 		~Environment();
 
 		Count<TextureCube> GetIrradianceMap() { return m_IrradianceMap; }
@@ -191,6 +222,7 @@ namespace Proof
 		PreethamSkyData GetPreethamSkyData() { return m_PreethamSky; }
 		HosekWilkieSkyData GetHosekWilkieDataSkyData() { return m_HosekWilkieSky; }
 		EnvironmentState GetEnvironmentState() { return m_EnvironmentState; }
+		ProceduralSkyData GetProceduralSkyData() { return m_ProceduralSky; }
 		bool IsDynamic() { return m_EnvironmentState != EnvironmentState::EnvironmentTexture; }
 	private:
 		Count<TextureCube> m_IrradianceMap = nullptr;
@@ -200,6 +232,7 @@ namespace Proof
 		PreethamSkyData m_PreethamSky;
 		HosekWilkieSkyData m_HosekWilkieSky;
 		EnvironmentTextureData m_EnvironmentTexture;
+		ProceduralSkyData m_ProceduralSky;
 		bool m_IsUpdated = false;
 		static inline std::vector<WeakCount<Environment>> s_Instances;
 

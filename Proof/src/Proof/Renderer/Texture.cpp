@@ -342,6 +342,16 @@ namespace Proof
 		m_PrefilterMap = Renderer::GetBlackTextureCube();
 	}
 
+	Environment::Environment(ProceduralSkyData data)
+	{
+		s_Instances.push_back(this);
+		m_EnvironmentState = EnvironmentState::ProceduralSky;
+		m_IsUpdated = true;
+		m_ProceduralSky = data;
+		m_IrradianceMap = Renderer::GetBlackTextureCube();
+		m_PrefilterMap = Renderer::GetBlackTextureCube();
+	}
+
 	Environment::~Environment()
 	{
 		PF_CORE_ASSERT(Utils::Remove(s_Instances, WeakCount<Environment>(this)),"This should exist");
@@ -401,4 +411,19 @@ namespace Proof
 		m_EnvironmentTexture = data;
 	}
 
+	void Environment::Update(ProceduralSkyData data)
+	{
+		if (m_EnvironmentState == EnvironmentState::ProceduralSky)
+		{
+			if (m_ProceduralSky != data)
+			{
+				m_ProceduralSky = data;
+				m_IsUpdated = true;
+			}
+			return;
+		}
+		m_IsUpdated = true;
+		m_EnvironmentState = EnvironmentState::ProceduralSky;
+		m_ProceduralSky = data;
+	}
 }

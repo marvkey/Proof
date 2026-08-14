@@ -322,6 +322,14 @@ namespace Proof
 
 						environment->Update(data);
 					}
+					else if (environment->GetEnvironmentState() == EnvironmentState::ProceduralSky)
+					{
+						auto data = environment->GetProceduralSkyData();
+
+						data.SunDirection = normalize(GetWorldSpaceRotation(entity));
+
+						environment->Update(data);
+					}
 
 					if (skyLightComponent.Environment != nullptr)
 					{

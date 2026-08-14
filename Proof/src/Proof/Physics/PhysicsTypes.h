@@ -84,4 +84,21 @@ namespace Proof
 		VelocityChange,
 		Acceleration
 	};
+
+	enum class PhysicsActorConstraint : uint32_t
+	{
+		None = 0,
+
+		LocationX = BIT(0),
+		LocationY = BIT(1),
+		LocationZ = BIT(2),
+		AllLocation = LocationX | LocationY | LocationZ,
+
+		RotationX = BIT(3),
+		RotationY = BIT(4),
+		RotationZ = BIT(5),
+		AllRotation = RotationX | RotationY | RotationZ,
+
+		All = AllLocation | AllRotation
+	};
 }

@@ -807,6 +807,7 @@ namespace Proof
 				renderPassSpec.TargetFrameBuffer = worldCompoiteframebuffer;
 
 				m_CompositePass = RenderPass::Create(renderPassSpec);
+				m_CompositePass->AddGlobalInput(m_GlobalInputs);
 				m_CompositeMaterial = RenderMaterial::Create({ "Composite", Renderer::GetShader("WorldComposite") });
 			}
 
@@ -2941,7 +2942,7 @@ namespace Proof
 			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, m_CompositePass, true);
 			//float exposure = m_SceneData.SceneCamera.Camera.GetExposure();
 			auto inputImage = m_GeometryPass->GetOutput(0);
-
+			m_CompositeMaterial->Set("u_DepthTexture",m_PreDepthPass->GetOutput(0));
 			// use the post rocesss ouput if there is any
 			if(m_PostProcessMaterials.size() > 0)
 				inputImage = m_PostProcessFrameBuffer->GetOutput(0);

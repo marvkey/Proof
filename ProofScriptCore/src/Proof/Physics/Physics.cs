@@ -8,7 +8,23 @@ using System.Threading.Tasks;
 namespace Proof
 {
     
-    
+    [Flags]
+    public enum PhysicsActorConstraint : uint
+    {
+        None = 0,
+
+        LocationX = 1 << 0,
+        LocationY = 1 << 1,
+        LocationZ = 1 << 2,
+        AllLocation = LocationX | LocationY | LocationZ,
+
+        RotationX = 1 << 3,
+        RotationY = 1 << 4,
+        RotationZ = 1 << 5,
+        AllRotation = RotationX | RotationY | RotationZ,
+
+        All = AllLocation | AllRotation
+    } 
     [StructLayout(LayoutKind.Sequential)]
     public struct RaycastHit
     {

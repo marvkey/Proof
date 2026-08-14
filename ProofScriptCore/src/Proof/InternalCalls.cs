@@ -365,6 +365,10 @@ namespace Proof
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal static extern void  RigidBodyComponent_SetKinematicTarget(ulong entityID, ref Vector3 inTargetPosition, ref Quaternion rotationRadians);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static uint RigidBodyComponent_GetConstraints(ulong entityID);
+        [MethodImplAttribute(MethodImplOptions.InternalCall)]
+        internal extern static void RigidBodyComponent_SetConstraints(ulong entityID, uint constraints);
 
         #endregion
         #region BoxColliderComponent

@@ -5,6 +5,8 @@
 #include "PhysicsShapes.h"
 namespace Proof
 {
+
+
 	class Entity;
 	class PhysicsActor : public PhysicsActorBase
 	{
@@ -27,6 +29,8 @@ namespace Proof
 		virtual glm::vec3 GetLocation() const { return PhysXUtils::FromPhysXVector(m_RigidActor->getGlobalPose().p); }
 		virtual void SetLocation(const glm::vec3& translation, const bool autowake = true);
 		virtual void Translate(const glm::vec3& translation, const bool autowake = true);
+		virtual void SetContraints(PhysicsActorConstraint constraint);
+		virtual PhysicsActorConstraint GetConstraints();
 
 		void ClearForce(ForceMode mode);
 		void ClearTorque(ForceMode mode);
@@ -84,15 +88,10 @@ namespace Proof
 		}
 		void SetKinematic(bool isKinematic);
 
-		void SetLockLocation(const VectorTemplate<bool>& location);
-		void SetLockRotaion(const VectorTemplate<bool>& rotation);
 
-		VectorTemplate<bool> GetLockRotation()const { return m_Entity.GetComponent<RigidBodyComponent>().FreezeRotation; }
 		bool IsAllRotationLocked() const 
 		{
-			auto freezeRotation = GetLockRotation();
-			if (freezeRotation.X == true && freezeRotation.Y  == true && freezeRotation.Z == true)return true;
-			return false;
+			
 		}
 		virtual bool IsGravityEnabled() const 
 		{ 

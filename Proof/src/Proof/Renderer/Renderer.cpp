@@ -79,6 +79,7 @@ namespace Proof {
 		bool CommandBufferRecording = false;
 
 		Count<ComputePass> HosekWilkiePass;
+		Count<ComputePass> ProceduralSkyPass;
 		TemporalBlueNoise BlueNoiseSpp1Data;
 	};
 	static RendererAPI* InitRendererAPI()
@@ -200,6 +201,7 @@ namespace Proof {
 		RendererLoadShader("EnvironmentPrefilter", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/EnvironmentPrefilter.glsl");
 		RendererLoadShader("PreethamSky", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/PreethamSky.glsl");
 		RendererLoadShader("HosekWilkieSky", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/HosekWilkieSky.glsl");
+		RendererLoadShader("ProceduralSky", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/IBL/ProceduralSky.glsl");
 
 		// postprocess
 
@@ -376,6 +378,19 @@ namespace Proof {
 				computeePassConfig.DebugName = "Hosek Wilkie";
 				computeePassConfig.Pipeline = hosekPipeline;
 				s_Data->HosekWilkiePass = ComputePass::Create(computeePassConfig);
+
+			}
+
+			{
+				ComputePipelineConfig config;
+				config.DebugName = "ProceduralSky";
+				config.Shader = Renderer::GetShader("ProceduralSky");
+				auto proceduralSkyPipeline = ComputePipeline::Create(config);
+
+				ComputePassConfiguration computeePassConfig;
+				computeePassConfig.DebugName = "ProceduralSky";
+				computeePassConfig.Pipeline = proceduralSkyPipeline;
+				s_Data->ProceduralSkyPass = ComputePass::Create(computeePassConfig);
 
 			}
 			QuadVertex data[4];
@@ -692,6 +707,51 @@ namespace Proof {
 		//environmentMap->GenerateMips();
 		return environmentMap;
 	}
+	Count<TextureCube> envidfasfasfasdronmentMap;
+	struct alignas(16) ProceduralSkyPushData
+	{
+		glm::vec4 SunDirection_Time; // xyz = sun direction, w = time
+		glm::vec2 CloudParams;       // x = cirrus, y = cumulus
+	};
+
+	Count<TextureCube> Renderer::CreateProceduralSky(struct ProceduralSkyData skyData, glm::vec3 sunDirection)
+	{
+		PF_PROFILE_FUNC();
+
+		glm::vec3 zero{ 0 };
+		if (sunDirection == zero || glm::any(glm::isnan(sunDirection)))
+			sunDirection = { 0.001f, 1.0f, 0.001f };
+
+		sunDirection = glm::normalize(sunDirection);
+
+		ProceduralSkyPushData finalData{};
+		finalData.SunDirection_Time = glm::vec4(sunDirection, (float)FrameTime::GetTime());
+		finalData.CloudParams = glm::vec2(skyData.CloudCoverage , skyData.WispyCloudCoverage);
+
+		const uint32_t cubemapSize = GetConfig().EnvironmentMapResolution;
+
+		TextureConfiguration baseCubeMapConfig;
+		baseCubeMapConfig.DebugName = "Procedural Sky Cube";
+		baseCubeMapConfig.Height = cubemapSize;
+		baseCubeMapConfig.Width = cubemapSize;
+		baseCubeMapConfig.Storage = true;
+		baseCubeMapConfig.GenerateMips = false;
+		baseCubeMapConfig.Format = ImageFormat::RGBA16F;
+
+		if (!envidfasfasfasdronmentMap)
+		envidfasfasfasdronmentMap = TextureCube::Create(baseCubeMapConfig, SamplerWrap::ClampEdge, SamplerFilter::Linear);
+		s_Data->ProceduralSkyPass->SetInput("o_CubeMap", envidfasfasfasdronmentMap);
+
+		Count<RenderCommandBuffer> commandBuffer = s_Data->RenderCommandBuffer;
+		Renderer::BeginComputePass(commandBuffer, s_Data->ProceduralSkyPass);
+		s_Data->ProceduralSkyPass->PushData("u_Uniforms", &finalData);
+
+		const uint32_t groupCount = (cubemapSize + 31) / 32;
+		s_Data->ProceduralSkyPass->Dispatch(groupCount, groupCount, 6);
+		Renderer::EndComputePass(s_Data->ProceduralSkyPass);
+
+		return envidfasfasfasdronmentMap;
+	}
 
 
 	float EvaluateSpline(const double* spline, size_t stride, float value)
@@ -1000,7 +1060,7 @@ namespace Proof {
 				continue;
 			auto environment = e.Lock();
 
-			if (!environment->m_IsUpdated)
+			if (!environment->m_IsUpdated && environment->GetEnvironmentState() != EnvironmentState::ProceduralSky)
 				continue;
 
 			switch (environment->m_EnvironmentState)
@@ -1064,6 +1124,15 @@ namespace Proof {
 				}
 			}
 			break;
+			case EnvironmentState::ProceduralSky:
+				{
+
+					auto proceduralSky = environment->m_ProceduralSky;
+					auto texture = CreateProceduralSky(proceduralSky, proceduralSky.SunDirection);
+					environment->m_PrefilterMap = texture; 
+					environment->m_IrradianceMap = texture;
+				}
+				break;
 			default:
 				continue;
 				break;

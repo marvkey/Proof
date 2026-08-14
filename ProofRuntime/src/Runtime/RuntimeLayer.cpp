@@ -173,7 +173,7 @@ namespace Proof
 
 
 		float fDeltaTime = DeltaTime.Get();
-		m_InputManager->OnUpdate(fDeltaTime);
+		
 
 		if (s_RuntimeStartupState != RuntimeStartupState::Finished)
 		{
@@ -213,7 +213,7 @@ namespace Proof
 
 			if (s_RuntimeStartupState == RuntimeStartupState::Finished)
 				m_World->OnUpdateRuntime(fDeltaTime);
-
+			m_InputManager->OnUpdate(DeltaTime);
 			m_World->OnRenderRuntime(m_WorldRenderer, fDeltaTime);
 
 		}
@@ -289,7 +289,6 @@ namespace Proof
 	bool RuntimeLayer::InputBindElevatedDelegate(const ElevatedInputKeyParams& key)
 	{
 		return m_World->OnElevatedKeyEvent(key);
-		return false;
 	}
 
 	void RuntimeLayer::OnWorldTransition(AssetID ID)

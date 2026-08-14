@@ -1037,6 +1037,18 @@ namespace Proof
         {
             InternalCalls.RigidBodyComponent_Rotate(Entity.ID, ref quat);
         }
+
+        public PhysicsActorConstraint Constraints
+        {
+			get
+			{
+				return (PhysicsActorConstraint) InternalCalls.RigidBodyComponent_GetConstraints(Entity.ID);
+			}
+			set
+			{
+				InternalCalls.RigidBodyComponent_SetConstraints(Entity.ID, (uint)value);
+			}
+        }
     }
     [RegisterCoreClassStruct]
     public class BoxColliderComponent : Component

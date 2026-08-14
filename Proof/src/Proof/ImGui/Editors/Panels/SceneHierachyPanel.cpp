@@ -1536,6 +1536,9 @@ namespace Proof
 						case Proof::EnvironmentState::EnvironmentTexture:
 							environment->Update(environment->GetTextureData());
 							break;
+					case Proof::EnvironmentState::ProceduralSky:
+						environment->Update(environment->GetProceduralSkyData());
+						break;
 						default:
 							break;
 					}
@@ -1574,6 +1577,35 @@ namespace Proof
 						environment->Update(pretham);
 					}
 					break;
+
+				case EnvironmentState::ProceduralSky:
+					{
+						UI::EndPropertyGrid();
+						UI::AttributeText("Edit Rotation of Transform to change sun Position");
+						UI::BeginPropertyGrid();
+
+						auto procedural = environment->GetProceduralSkyData();
+
+						UI::AttributeBool("Sun", procedural.bSun);
+						UI::AttributeSlider("Sun Intensity",   procedural.SunIntensity, 0.0f, 20.0f);
+						UI::AttributeSlider("Sun Size", procedural.SunSize, 0.01f, 10.0f);
+
+						UI::AttributeSlider("Sky Intensity", procedural.SkyIntensity, 0.0f, 10.0f);
+						UI::AttributeSlider("Rayleigh Strength", procedural.RayleighStrength, 0.0001f, 0.01f);
+						UI::AttributeSlider("Mie Strength", procedural.MieStrength, 0.00001f, 0.005f);
+						UI::AttributeSlider("Mie Anisotropy", procedural.MieAnisotropy, 0.0f, 0.999f);
+
+						UI::AttributeSlider("Cloud Coverage", procedural.CloudCoverage, 0.0f, 1.0f);
+						UI::AttributeSlider("Wispy Cloud Coverage", procedural.WispyCloudCoverage, 0.0f, 1.0f);
+						UI::AttributeSlider("Cloud Density", procedural.CloudDensity, 0.0f, 5.0f);
+						UI::AttributeSlider("Cloud Scale", procedural.CloudScale, 0.01f, 10.0f);
+						UI::AttributeSlider("Cloud Speed", procedural.CloudSpeed, 0.0f, 5.0f);
+						UI::AttributeSlider("Cloud Brightness", procedural.CloudBrightness, 0.0f, 10.0f);
+						UI::AttributeSlider("Facets", procedural.Facets, 0.0f, 128.0f);
+
+						environment->Update(procedural);
+					}
+						break;
 					default:
 						break;
 				}
@@ -1793,8 +1825,33 @@ namespace Proof
 				UI::AttributeBool("Gravity", rigidBody.Gravity);
 				UI::AttributeBool("Kinematic", rigidBody.Kinematic);
 
-				DrawVectorControl("Freeze Location", rigidBody.FreezeLocation, false);
-				DrawVectorControl("Freeze Rotation", rigidBody.FreezeRotation, false);
+				uint32_t constraints = (uint32_t)rigidBody.Constraints;
+
+				VectorTemplate<bool> freezeLocation;
+				freezeLocation.X = constraints & (uint32_t)PhysicsActorConstraint::LocationX;
+				freezeLocation.Y = constraints & (uint32_t)PhysicsActorConstraint::LocationY;
+				freezeLocation.Z = constraints & (uint32_t)PhysicsActorConstraint::LocationZ;
+
+				VectorTemplate<bool> freezeRotation;
+				freezeRotation.X = constraints & (uint32_t)PhysicsActorConstraint::RotationX;
+				freezeRotation.Y = constraints & (uint32_t)PhysicsActorConstraint::RotationY;
+				freezeRotation.Z = constraints & (uint32_t)PhysicsActorConstraint::RotationZ;
+
+				DrawVectorControl("Freeze Location", freezeLocation, false);
+				DrawVectorControl("Freeze Rotation", freezeRotation, false);
+
+				constraints = 0;
+
+				if (freezeLocation.X) constraints |= (uint32_t)PhysicsActorConstraint::LocationX;
+				if (freezeLocation.Y) constraints |= (uint32_t)PhysicsActorConstraint::LocationY;
+				if (freezeLocation.Z) constraints |= (uint32_t)PhysicsActorConstraint::LocationZ;
+
+				if (freezeRotation.X) constraints |= (uint32_t)PhysicsActorConstraint::RotationX;
+				if (freezeRotation.Y) constraints |= (uint32_t)PhysicsActorConstraint::RotationY;
+				if (freezeRotation.Z) constraints |= (uint32_t)PhysicsActorConstraint::RotationZ;
+
+				rigidBody.Constraints =(PhysicsActorConstraint )constraints;
+
 			}
 			UI::EndPropertyGrid();
 			});
@@ -1958,7 +2015,7 @@ namespace Proof
 
 					Count<FieldStorageBase> field = classMetaData.Fields.at(fieldName);
 
-					std::string fieldName = field->GetFieldInfo()->DisplayName.empty() ? Utils::String::SubStr(field->GetFieldInfo()->Name, field->GetFieldInfo()->Name.find(':') + 1) : field->GetFieldInfo()->DisplayName;
+					std::string fieldNameView = field->GetFieldInfo()->DisplayName.empty() ? Utils::String::SubStr(field->GetFieldInfo()->Name, field->GetFieldInfo()->Name.find(':') + 1) : field->GetFieldInfo()->DisplayName;
 
 					if (field->GetFieldInfo()->Seperator)
 					{
@@ -1967,18 +2024,18 @@ namespace Proof
 					if (field->GetFieldInfo()->IsArray())
 					{
 						Count<ArrayFieldStorage> storage = field.As<ArrayFieldStorage>();
-						UI::DrawFieldValue(m_ActiveWorld, fieldName, storage);
+						UI::DrawFieldValue(m_ActiveWorld, fieldNameView, storage);
 
 					}
 					else if (field->GetFieldInfo()->IsEnum())
 					{
 						Count<EnumFieldStorage> storage = field.As<EnumFieldStorage>();
-						UI::DrawFieldValue(m_ActiveWorld, fieldName, storage);
+						UI::DrawFieldValue(m_ActiveWorld, fieldNameView, storage);
 					}
 					else
 					{
 						Count<FieldStorage> storage = field.As<FieldStorage>();
-						UI::DrawFieldValue(m_ActiveWorld, fieldName, storage);
+						UI::DrawFieldValue(m_ActiveWorld, fieldNameView, storage);
 					}
 				}
 			#if 0

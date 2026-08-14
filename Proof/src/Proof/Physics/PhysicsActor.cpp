@@ -264,7 +264,12 @@ namespace Proof
 	void PhysicsActor::OnPhysicsUpdate(float deltaTime)
 	{
 	}
-	
+
+	PhysicsActorConstraint PhysicsActor::GetConstraints()
+	{
+		return GetEntity().GetComponent<RigidBodyComponent>().Constraints;
+	}
+
 	void PhysicsActor::ClearForce(ForceMode mode )
 	{
 		if (!IsDynamic())return;
@@ -475,32 +480,7 @@ namespace Proof
 		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, isKinematic);
 	}
 
-	void PhysicsActor::SetLockLocation(const VectorTemplate<bool>& location)
-	{
-		if (!IsDynamic())
-			return;
-
-		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, location.X);
-		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, location.Y);
-		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, location.Z);
-
-		RigidBodyComponent& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
-
-		rigidBody.FreezeLocation = location;
-	}
-
-	void PhysicsActor::SetLockRotaion(const VectorTemplate<bool>& rotation)
-	{
-		if (!IsDynamic())
-			return;
-		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rotation.X);
-		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, rotation.Y);
-		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, rotation.Z);
-
-		RigidBodyComponent& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
-
-		rigidBody.FreezeRotation = rotation;
-	}
+	
 
 	void PhysicsActor::SetGravityEnabled(const bool enableGravity)
 	{
@@ -692,6 +672,42 @@ namespace Proof
 		SyncTransform();
 	}
 
+	void PhysicsActor::SetContraints(PhysicsActorConstraint constraint)
+	{
+
+		if (!IsDynamic())
+			return;
+
+		physx::PxRigidDynamic* actor = m_RigidActor->is<physx::PxRigidDynamic>();
+		PF_CORE_ASSERT(actor);
+
+		auto HasConstraint = [constraint](PhysicsActorConstraint flag)
+		{
+			return (static_cast<uint32_t>(constraint) & static_cast<uint32_t>(flag)) != 0;
+		};
+
+		bool locationX = HasConstraint(PhysicsActorConstraint::LocationX);
+		bool locationY = HasConstraint(PhysicsActorConstraint::LocationY);
+		bool locationZ = HasConstraint(PhysicsActorConstraint::LocationZ);
+
+		bool rotationX = HasConstraint(PhysicsActorConstraint::RotationX);
+		bool rotationY = HasConstraint(PhysicsActorConstraint::RotationY);
+		bool rotationZ = HasConstraint(PhysicsActorConstraint::RotationZ);
+
+		actor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, locationX);
+		actor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, locationY);
+		actor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, locationZ);
+
+		actor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rotationX);
+		actor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, rotationY);
+		actor->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, rotationZ);
+
+		RigidBodyComponent& rigidBody = m_Entity.GetComponent<RigidBodyComponent>();
+
+		rigidBody.Constraints  = constraint;
+
+	}
+
 	glm::vec3 PhysicsActor::GetMassSpaceInertiaTensor()
 	{
 		if (!IsDynamic())
@@ -857,17 +873,10 @@ namespace Proof
 			body->setAngularDamping(rigidBodyComponent.AngularDrag);
 			body->setLinearDamping(rigidBodyComponent.LinearDrag);
 			body->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, Math::InverseBool(rigidBodyComponent.Gravity));
-			body->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, rigidBodyComponent.Kinematic);
-			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, rigidBodyComponent.FreezeLocation.X);
-			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, rigidBodyComponent.FreezeLocation.Y);
-			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, rigidBodyComponent.FreezeLocation.Z);
-
-			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, rigidBodyComponent.FreezeRotation.X);
-			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, rigidBodyComponent.FreezeRotation.Y);
-			body->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, rigidBodyComponent.FreezeRotation.Z);
-
+			body->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, rigidBodyComponent.Kinematic); 
 			m_RigidActor = body;
 
+			SetContraints(rigidBodyComponent.Constraints);
 			const PhysicsSettings& settings = PhysicsEngine::GetSettings();
 			body->setSolverIterationCounts(settings.SolverIterations, settings.SolverVelocityIterations);
 			body->setRigidBodyFlag(physx::PxRigidBodyFlag::eENABLE_CCD, rigidBodyComponent.CollisionDetection == CollisionDetectionType::Continuous);

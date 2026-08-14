@@ -253,6 +253,7 @@ namespace Proof
 			for (auto& callback : m_NewAssetCreatedCallbacks)
 				callback(assetInfo);
 
+			AssetManager::SaveAsset(asset->GetID());
 			return asset;
 		}
 

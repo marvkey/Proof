@@ -13,6 +13,7 @@ using Proof.Swizzle;
 namespace Proof
 {
 
+   
     /// <summary>
     /// A Vector of type float with 3 components.
     /// </summary>

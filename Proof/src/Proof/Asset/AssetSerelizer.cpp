@@ -1090,10 +1090,10 @@ namespace Proof {
 			}
 
 			{
-				auto buttonComponent = uiElement["UIButtomComponent"];
+				auto buttonComponent = uiElement["UIButtonComponent"];
 				if (buttonComponent)
 				{
-					auto& src = newUIElement.GetComponent<UIImageComponent>();
+					auto& src = newUIElement.GetComponent<UIButtonComponent>();
 					src.TintColor = buttonComponent["TintColor"].as<glm::vec4>(glm::vec4(1.0f));
 
 					LoadBindableVariable(buttonComponent, "TintColor", src.TintColor, uiPanel->VariableTable->GetVariableSetStorage());

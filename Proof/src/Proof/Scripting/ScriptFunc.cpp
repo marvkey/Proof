@@ -37,6 +37,7 @@
 #include "Proof/Renderer/DebugRenderer.h"
 #include "Proof/Scene/GameMode/LocalGameMode.h"
 #include "ScriptUtils.h"
+#include "artery-font-format/artery-font/types.h"
 #include "Proof/Physics/Boids/BoidFlock.h"
 #include "Proof/Scene/Script.h"
 //(IMPORTPF)
@@ -337,7 +338,10 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		//	//world->StartRuntime();
 		//	return true;
 		//}
-		return false;
+
+		world->OnWorldTransition(worldID);
+
+		return true;
 	}
 	static void World_Restart()
 	{
@@ -1645,6 +1649,20 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		}
 
 		actor->AddForceAtPosition(*inForce, *inLocation, forceMode);
+	}
+
+	static uint32_t RigidBodyComponent_GetConstraints(UUID entityID)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK(RigidBodyComponent,0);
+
+		return (uint32_t) entity.GetComponent<RigidBodyComponent>().Constraints;
+	}
+
+	static void RigidBodyComponent_SetConstraints(UUID entityID,uint32_t constraint)
+	{
+		SCRIPT_FUNC_FUNCTION_CHECK_VOID(RigidBodyComponent);
+
+		entity.GetComponent<RigidBodyComponent>().Constraints = (PhysicsActorConstraint) constraint;
 	}
 #pragma endregion
 #pragma region BoxColliderComponent
@@ -4017,6 +4035,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		//	InputManagerMeathods::SetPlayerInput((uint32_t)playerInput.InputPlayer, (PlayerInputState)inputState);
 	}
 
+
 	#pragma endregion 
 
 #pragma region BoidFlockComponent
@@ -5138,6 +5157,8 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 			PF_ADD_INTERNAL_CALL(RigidBodyComponent_SetKinematicTarget);
 
 			PF_ADD_INTERNAL_CALL(RigidBodyComponent_AddForceAtLocation);
+			PF_ADD_INTERNAL_CALL(RigidBodyComponent_GetConstraints);
+			PF_ADD_INTERNAL_CALL(RigidBodyComponent_SetConstraints);
 		}
 		//BoxColliderComponent
 		{

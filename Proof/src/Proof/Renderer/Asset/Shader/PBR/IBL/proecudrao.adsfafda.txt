@@ -1,0 +1,277 @@
+//https://github.com/shff/opengl_sky/blob/master/main.c
+#Compute Shader
+#version 450 core
+
+layout(binding = 0, rgba16f) restrict writeonly uniform imageCube o_CubeMap;
+
+// --- Push Constants ------------------------------------------------------
+// SunDirection / Time are runtime values (change every frame / every sun
+// move) kept separate from ProceduralSkyData, which is meant to be
+// diffed via operator== for caching.
+//
+// Values are packed into vec4s so the C++ and GLSL push constant layouts
+// always match correctly.
+layout(push_constant) uniform Uniforms
+{
+// xyz = SunDirection, w = Time
+    vec4 SunDirection_Time;
+
+// --- mirrors ProceduralSkyData, same field order ---
+// x = bSun, y = SunIntensity, z = SunSize, w = SkyIntensity
+    vec4 Sun;
+
+// x = RayleighStrength, y = MieStrength, z = MieAnisotropy
+    vec4 Atmosphere;
+
+// x = CloudCoverage, y = WispyCloudCoverage,
+// z = CloudDensity, w = CloudScale
+    vec4 Clouds0;
+
+// x = CloudSpeed, y = CloudBrightness, z = Facets
+    vec4 Clouds1;
+
+} u_Uniforms;
+
+const vec3 nitrogen = vec3(0.650, 0.570, 0.475);
+
+// --- Cubemap direction (same pattern as the Preetham compute shader) ---
+vec3 GetCubeMapTexCoord()
+{
+    ivec2 cubeSize = imageSize(o_CubeMap);
+
+    vec2 st = (vec2(gl_GlobalInvocationID.xy) + 0.5) / vec2(cubeSize);
+    vec2 uv = 2.0 * vec2(st.x, 1.0 - st.y) - vec2(1.0);
+
+    vec3 ret;
+    if (gl_GlobalInvocationID.z == 0)      ret = vec3(  1.0, uv.y, -uv.x);
+    else if (gl_GlobalInvocationID.z == 1) ret = vec3( -1.0, uv.y,  uv.x);
+    else if (gl_GlobalInvocationID.z == 2) ret = vec3( uv.x,  1.0, -uv.y);
+    else if (gl_GlobalInvocationID.z == 3) ret = vec3( uv.x, -1.0,  uv.y);
+    else if (gl_GlobalInvocationID.z == 4) ret = vec3( uv.x, uv.y,   1.0);
+    else if (gl_GlobalInvocationID.z == 5) ret = vec3(-uv.x, uv.y,  -1.0);
+
+    return normalize(ret);
+}
+
+// --- Low-poly facet (optional, Facets = 0 disables) ---------------------
+vec3 facetize(vec3 p, float n)
+{
+    if (n <= 0.0)
+    return p;
+
+    return normalize(floor(p * n) / n + 0.5 / n);
+}
+
+// --- Noise / fbm (unchanged from your original) --------------------------
+float hash(float n)
+{
+    return fract(sin(n) * 43758.5453123);
+}
+
+float noise(vec3 x)
+{
+    vec3 f = fract(x);
+    float n = dot(floor(x), vec3(1.0, 157.0, 113.0));
+
+    return mix(
+    mix(
+    mix(hash(n +   0.0), hash(n +   1.0), f.x),
+    mix(hash(n + 157.0), hash(n + 158.0), f.x),
+    f.y
+    ),
+    mix(
+    mix(hash(n + 113.0), hash(n + 114.0), f.x),
+    mix(hash(n + 270.0), hash(n + 271.0), f.x),
+    f.y
+    ),
+    f.z
+    );
+}
+
+const mat3 m = mat3(
+0.0,  1.60,  1.20,
+-1.6,  0.72, -0.96,
+-1.2, -0.96,  1.28
+);
+
+float fbm(vec3 p)
+{
+    float f = 0.0;
+
+    f += noise(p) / 2.0;  p = m * p * 1.1;
+    f += noise(p) / 4.0;  p = m * p * 1.2;
+    f += noise(p) / 6.0;  p = m * p * 1.3;
+    f += noise(p) / 12.0; p = m * p * 1.4;
+    f += noise(p) / 24.0;
+
+    return f;
+}
+
+// --- Sky + clouds, ported from the original fragment shader -------------
+vec3 proceduralSky(vec3 dir, vec3 sunDir)
+{
+    float Time = u_Uniforms.SunDirection_Time.w;
+
+    bool bSun = u_Uniforms.Sun.x > 0.5;
+    float SunIntensity = u_Uniforms.Sun.y;
+    float SunSize = u_Uniforms.Sun.z;
+    float SkyIntensity = u_Uniforms.Sun.w;
+
+    float RayleighStrength = max(u_Uniforms.Atmosphere.x, 0.000001);
+    float MieStrength = max(u_Uniforms.Atmosphere.y, 0.000001);
+    float MieAnisotropy = clamp(u_Uniforms.Atmosphere.z, -0.999, 0.999);
+
+    float CloudCoverage = clamp(u_Uniforms.Clouds0.x, 0.0, 1.0);
+    float WispyCloudCoverage = clamp(u_Uniforms.Clouds0.y, 0.0, 1.0);
+    float CloudDensity = max(u_Uniforms.Clouds0.z, 0.0);
+    float CloudScale = max(u_Uniforms.Clouds0.w, 0.001);
+
+    float CloudSpeed = u_Uniforms.Clouds1.x;
+    float CloudBrightness = max(u_Uniforms.Clouds1.y, 0.0);
+    float Facets = u_Uniforms.Clouds1.z;
+
+    float Br = RayleighStrength;
+    float Bm = MieStrength;
+    float gg = MieAnisotropy;
+
+    vec3 Kr = Br / pow(nitrogen, vec3(4.0));
+    vec3 Km = Bm / pow(nitrogen, vec3(0.84));
+
+    float mu = clamp(dot(dir, sunDir), -1.0, 1.0);
+
+    float rayleigh = 3.0 / (8.0 * 3.141592) * (1.0 + mu * mu);
+
+    vec3 mie = (
+    Kr +
+    Km * (1.0 - gg * gg) / (2.0 + gg * gg) /
+    pow(max(1.0 + gg * gg - 2.0 * gg * mu, 0.0001), 1.5)
+    ) / (Br + Bm);
+
+    // raw dir.y here, NOT clamped — matches the original's y>=0-only math
+    // FIX: the original shader never evaluates this below the horizon.
+    // Because this cubemap contains the lower hemisphere too, keep the
+    // atmosphere evaluation slightly above zero to avoid exponential garbage.
+    float atmosphereY = max(dir.y, 0.001);
+
+    vec3 day_extinction =
+    exp(
+    -exp(
+    -(
+    (atmosphereY + sunDir.y * 4.0) *
+    (exp(-atmosphereY * 16.0) + 0.1) /
+    80.0
+    ) / Br
+    ) *
+    (exp(-atmosphereY * 16.0) + 0.1) *
+    Kr / Br
+    ) *
+    exp(-atmosphereY * exp(-atmosphereY * 8.0) * 4.0) *
+    exp(-atmosphereY * 2.0) *
+    4.0;
+
+    vec3 night_extinction = vec3(1.0 - exp(sunDir.y)) * 0.2;
+
+    float extinctionBlend = clamp(-sunDir.y * 0.2 + 0.5, 0.0, 1.0);
+    vec3 extinction = mix(day_extinction, night_extinction, extinctionBlend);
+
+    vec3 col = rayleigh * mie * extinction * SkyIntensity;
+
+    if (bSun)
+    {
+        float sunDisc = smoothstep(
+        1.0 - 0.0005 * max(SunSize, 0.001),
+        1.0,
+        mu
+        );
+
+        col += sunDisc * SunIntensity * extinction;
+    }
+
+    // clamp ONLY here for clouds, same as the original's max(pos.y, 0.0)
+    float yClamped = max(dir.y, 0.0);
+
+    if (dir.y > 0.001)
+    {
+        // Facet ONLY the clouds.
+        // The atmosphere, horizon and sun remain smooth.
+        vec3 cloudDir = facetize(dir, Facets);
+
+        float cloudY = max(cloudDir.y, 0.001);
+        vec3 cloudPosition = cloudDir.xyz / cloudY;
+
+        float cirrusDensity = smoothstep(
+        1.0 - WispyCloudCoverage,
+        1.0,
+        fbm(
+        cloudPosition * (2.0 * CloudScale) +
+        Time * (0.05 * CloudSpeed)
+        )
+        ) * 0.3 * CloudDensity;
+
+        col = mix(
+        col,
+        extinction * 4.0 * CloudBrightness,
+        clamp(cirrusDensity * yClamped, 0.0, 1.0)
+        );
+
+        for (int i = 0; i < 3; i++)
+        {
+            float density = smoothstep(
+            1.0 - CloudCoverage,
+            1.0,
+            fbm(
+            (0.7 * CloudScale + float(i) * 0.01) * cloudPosition +
+            Time * (0.3 * CloudSpeed)
+            )
+            ) * CloudDensity;
+
+            density = clamp(density, 0.0, 1.0);
+
+            col = mix(
+            col,
+            extinction * density * 5.0 * CloudBrightness,
+            clamp(min(density, 1.0) * yClamped, 0.0, 1.0)
+            );
+        }
+    }
+
+    col += noise(dir * 1000.0) * 0.01;
+
+    // below horizon: fade smoothly into a dark "ground" tone instead of
+    // letting the sky formula extrapolate into garbage for dir.y < 0
+    vec3 groundColor = vec3(0.02, 0.02, 0.025) * SkyIntensity;
+
+    float horizonFade = 1.0 - smoothstep(-0.15, 0.0, dir.y);
+
+    col = mix(col, groundColor, horizonFade);
+
+    return max(col, vec3(0.0));
+}
+
+layout(local_size_x = 32, local_size_y = 32, local_size_z = 1) in;
+
+void main()
+{
+    ivec2 cubeSize = imageSize(o_CubeMap);
+
+    if (gl_GlobalInvocationID.x >= uint(cubeSize.x) ||
+    gl_GlobalInvocationID.y >= uint(cubeSize.y))
+    return;
+
+    vec3 dir = GetCubeMapTexCoord();
+
+    vec3 sunDir = u_Uniforms.SunDirection_Time.xyz;
+
+    if (dot(sunDir, sunDir) < 0.000001)
+    sunDir = vec3(0.0, 1.0, 0.0);
+    else
+    sunDir = normalize(sunDir);
+
+    vec3 col = proceduralSky(dir, sunDir);
+
+    imageStore(
+    o_CubeMap,
+    ivec3(gl_GlobalInvocationID),
+    vec4(col, 1.0)
+    );
+}

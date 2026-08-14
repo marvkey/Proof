@@ -594,8 +594,7 @@ namespace Proof
 				out << YAML::Key << "AngularDrag" << rigidBody.AngularDrag;
 				out << YAML::Key << "Gravity" << rigidBody.Gravity;
 				out << YAML::Key << "Type" << EnumReflection::EnumString<RigidBodyType>(rigidBody.RigidBodyType);
-				out << YAML::Key << "FreezeLocation" <<  rigidBody.FreezeLocation;
-				out << YAML::Key << "FreezeRotation" <<  rigidBody.FreezeRotation;
+				out << YAML::Key << "Constraints" << YAML::Value << static_cast<uint32_t>(rigidBody.Constraints);
 				out << YAML::Key << "Kinematic" << rigidBody.Kinematic;
 				out << YAML::Key <<"CollisionDetection"<<EnumReflection::EnumString<CollisionDetectionType>( rigidBody.CollisionDetection);
 
@@ -1517,6 +1516,11 @@ namespace Proof
 								src.Environment->Update(data);
 							}
 							break;
+						case Proof::EnvironmentState::ProceduralSky:
+							{
+								
+							}
+							break;
 						default:
 							break;
 						}
@@ -1716,8 +1720,45 @@ namespace Proof
 					rgb.LinearDrag = rigidBodyComponent["LinearDrag"].as<float>();
 					rgb.AngularDrag = rigidBodyComponent["AngularDrag"].as<float>();
 					rgb.Gravity = rigidBodyComponent["Gravity"].as<bool>();
-					rgb.FreezeLocation = rigidBodyComponent["FreezeLocation"].as<VectorTemplate<bool>>();
-					rgb.FreezeRotation = rigidBodyComponent["FreezeRotation"].as<VectorTemplate<bool>>();
+					if (rigidBodyComponent["Constraints"])
+					{
+						rgb.Constraints = (PhysicsActorConstraint)rigidBodyComponent["Constraints"].as<uint32_t>();
+					}
+					else
+					{
+						// Backwards compatibility for old scenes/prefabs.
+						PhysicsActorConstraint constraints = PhysicsActorConstraint::None;
+
+						if (rigidBodyComponent["FreezeLocation"])
+						{
+							VectorTemplate<bool> location = rigidBodyComponent["FreezeLocation"].as<VectorTemplate<bool>>();
+
+							if (location.X)
+								constraints = (PhysicsActorConstraint)((uint32_t)constraints | (uint32_t)PhysicsActorConstraint::LocationX);
+
+							if (location.Y)
+								constraints = (PhysicsActorConstraint)((uint32_t)constraints | (uint32_t)PhysicsActorConstraint::LocationY);
+
+							if (location.Z)
+								constraints = (PhysicsActorConstraint)((uint32_t)constraints | (uint32_t)PhysicsActorConstraint::LocationZ);
+						}
+
+						if (rigidBodyComponent["FreezeRotation"])
+						{
+							VectorTemplate<bool> rotation = rigidBodyComponent["FreezeRotation"].as<VectorTemplate<bool>>();
+
+							if (rotation.X)
+								constraints = (PhysicsActorConstraint)((uint32_t)constraints | (uint32_t)PhysicsActorConstraint::RotationX);
+
+							if (rotation.Y)
+								constraints = (PhysicsActorConstraint)((uint32_t)constraints | (uint32_t)PhysicsActorConstraint::RotationY);
+
+							if (rotation.Z)
+								constraints = (PhysicsActorConstraint)((uint32_t)constraints | (uint32_t)PhysicsActorConstraint::RotationZ);
+						}
+
+						rgb.Constraints = constraints;
+					}
 					rgb.Kinematic = rigidBodyComponent["Kinematic"].as<bool>(rgb.Kinematic);
 					rgb.RigidBodyType = EnumReflection::StringEnum<RigidBodyType>(rigidBodyComponent["Type"].as<std::string>());
 					rgb.CollisionDetection = EnumReflection::StringEnum<CollisionDetectionType>(rigidBodyComponent["CollisionDetection"].
