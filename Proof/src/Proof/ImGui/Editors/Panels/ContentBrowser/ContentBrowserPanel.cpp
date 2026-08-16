@@ -47,6 +47,8 @@
 
 #include <ImSequencer.h>
 
+#include "Proof/Audio/AudioController.h"
+
 //https://github.com/Ant-Play/Ant/blob/2dab7c0362f017911df9090b1608ec4b81ad1f2c/AntPlay/src/Panels/ContentBrowserPanel.cpp
 namespace Proof
 {
@@ -316,11 +318,18 @@ namespace Proof
 								if(ImGui::MenuItem("AnimationController"))
 									CreateAsset<AnimationController>("New AnimationController");
 
-								if (ImGui::MenuItem("ParticleEmitter"))
-									CreateAsset<ParticleEmitter>("New ParticleEmitter");
+								if (ImGui::BeginMenu("Particles"))
+								{
+									if (ImGui::MenuItem("ParticleEmitter"))
+										CreateAsset<ParticleEmitter>("New ParticleEmitter");
 
-								if (ImGui::MenuItem("ParticleSystem"))
-									CreateAsset<ParticleSystem>("New ParticleSystem");
+									if (ImGui::MenuItem("ParticleSystem"))
+										CreateAsset<ParticleSystem>("New ParticleSystem");
+
+									ImGui::EndMenu();
+								}
+								if(ImGui::MenuItem("AudioController"))
+									CreateAsset<AudioController>("New AudioController");
 
 								ImGui::EndMenu();
 							}

@@ -14,6 +14,7 @@ namespace Proof
 		void UpdateVelocity(const glm::vec3& velocity = {});
 	private:
 		friend class AudioEngine;
+		friend class AudioWorld;
 		uint32_t m_IndexPosition = 0;
 	};
 }

@@ -1,69 +1,66 @@
 #pragma once
+
 #include "Proof/Core/Core.h"
-#include <glm/glm.hpp>
-#include <MiniAudio.h>
 #include "Proof/Core/UUID.h"
 #include "AudioTools.h"
+
+#include <glm/glm.hpp>
+#include <MiniAudio.h>
+
 namespace Proof
 {
-    
+
+
 	class Sound : public RefCounted
 	{
-    public:
-        Sound(const SoundConfiguration& soundConfig);
-        Sound() {};
-        ~Sound();
-        virtual bool Play();
-        virtual bool Stop();
-        virtual bool Pause();
-        virtual bool IsPlaying() const;
-        virtual bool IsStopping() const;
-        SoundState GetState() const { return m_State; };
-        void Update(float ts);
+	public:
+		Sound(const SoundConfiguration& soundConfig);
+		Sound() {};
+		~Sound();
 
-        bool IsReadyToPlay() const { return m_Initialized; }
-        void SetTransform(const AudioTransform& transform);
-        void SetVelocity(const glm::vec3& velocity = { 0.0f, 0.0f, 0.0f });
-        void UpdateDataSource(const SoundConfiguration& soundConfig);
-        virtual bool IsLooping() const { return m_IsLooping; };
+		bool Play();
+		bool Pause();
+		bool Stop();
+		bool Restart();
 
-        float GetPlaybackPercentage();
+		bool IsPlaying() const;
+		SoundState GetState() const { return m_State; }
 
-        uint64_t GetCurrentPCMFrame();
-        uint64_t GetTotalPCmFrame();
-    private:
+		void Update(float ts);
 
-        void Release();
-        bool StopFade(uint64_t numSamples);
+		bool IsReadyToPlay() const { return m_Initialized; }
+		bool IsFinished() const { return m_IsFinished; }
 
-       /* Stop playback with short fade-out to prevent click.
-          @param milliseconds - length of the fade-out in milliseconds
+		void SetTransform(const AudioTransform& transform);
+		void SetVelocity(const glm::vec3& velocity = { 0.0f, 0.0f, 0.0f });
 
-          @returns true - if successfully initialized fade
-       */
-        bool StopFade(int milliseconds);
+		void UpdateDataSource(const SoundConfiguration& soundConfig);
 
-        void StopNow(bool notifyPlaybackComplete = true, bool resetPlaybackPosition = true);
-    private:
+		float GetPlaybackPercentage();
 
-        UUID m_UUID = { 0 };
-        std::function<void()> m_OnPlaybackComplete;
-        ma_sound m_Sound;
-            
-        SoundState m_State{ SoundState::Stopped };
-        SoundConfiguration m_Config;
-        bool m_IsLooping = false;
-        bool m_IsFinished = false;
+		uint64_t GetCurrentPCMFrame();
+		uint64_t GetTotalPCmFrame();
 
-        bool m_Initialized = false;
+	private:
+		void Release();
 
-        float m_StoredFaderValue = 1.0f;
-        float m_LastFadeOutDuration = 0.0f;
+	private:
+		UUID m_UUID = { 0 };
 
-           /* Stop-fade counter. Used to stop the sound after "stopping-fade" has finished. */
-        float m_StopFadeTime = 0.0f;
-        uint64_t m_TotalLength;
+		std::function<void()> m_OnPlaybackComplete;
 
-        friend class AudioEngine;
+		ma_sound m_Sound{};
+
+		SoundState m_State = SoundState::None;
+		SoundConfiguration m_Config;
+
+		bool m_IsLooping = false;
+		bool m_IsFinished = false;
+		bool m_Initialized = false;
+
+		uint64_t m_TotalLength = 0;
+
+		friend class AudioEngine;
+		friend class AudioWorld;
 	};
 }

@@ -199,6 +199,8 @@ namespace Proof {
 		void OnMeshColliderComponentDestroy(entt::registry& registry, entt::entity entity);
 		void OnScriptAdded(entt::registry& component, entt::entity entityID);
 		void OnScriptDelete(entt::registry& component, entt::entity entityID);
+		void OnAudioComponentCreate(entt::registry& component, entt::entity entityID);
+		void OnAudioComponentDelete(entt::registry& component, entt::entity entityID);
 
 		void OnUpdateAnimation(float deltaTime);
 
@@ -222,6 +224,7 @@ namespace Proof {
 		void CalculateUIPosition(Count<class Renderer2D> renderer2D);
 	private:
 
+		Count<class AudioWorld> m_AudioWorld;
 		std::vector<Entity> m_RigidBodyWaitingList;
 		bool m_RigidBodyOnConstruct = true;
 		std::function<void(AssetID)> m_OnWorldTransitionCallback;

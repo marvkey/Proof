@@ -4,39 +4,51 @@
 #include "Proof/Scene/Component.h"
 #include "Proof/Asset/AssetManager.h"
 #include "Audio.h"
+#include "AudioController.h"
+#include "Proof/Math/Random.h"
+
 namespace Proof::Utils {
 
     SoundConfiguration AudioComponentToSoundConfig(const AudioComponent& component)
     {
         SoundConfiguration soundConfig;
-        if(AssetManager::HasAsset(component.AudioAsset);
-            soundConfig.Aduio =AssetManager::GetAsset<Audio>(component.AudioAsset));
+
+        if (!component.AudioController.IsValid())
+            return soundConfig;
+
+        Count<AudioController> audioController = component.AudioController.GetAsset<AudioController>();
+
+        if (audioController == nullptr)
+            return soundConfig;
+
+        soundConfig.Aduio = audioController->AudioSource.GetAsset<Audio>();
 
         soundConfig.VolumeMultiplier = component.VolumeMultiplier;
-        soundConfig.PitchMultiplier = component.PitchMultiplier;
+        soundConfig.PitchMultiplier = component.PitchMultiplier * Random::Real(audioController->MinPitch,audioController->MaxPitch);
         soundConfig.Looping = component.Looping;
-        soundConfig.MasterReverbSend = component.MasterReverbSend;
-        soundConfig.LowPassFilter = component.LowPassFilter;
-        soundConfig.HighPassFilterValue = component.HighPassFilter;
-        soundConfig.SpatializationEnabled = component.SpatializationEnabled;
+
+        soundConfig.MasterReverbSend = audioController->MasterReverbSend;
+        soundConfig.LowPassFilter = audioController->LowPassFilter;
+        soundConfig.HighPassFilterValue = audioController->HighPassFilter;
+        soundConfig.SpatializationEnabled = audioController->SpatializationEnabled;
 
         // SPECILIZATION
 
-        soundConfig.AttenuationMod = component.AttenuationModel;
-        
-        soundConfig.MinGain = component.MinGain;
-        soundConfig.MaxGain = component.MaxGain;
+        soundConfig.AttenuationMod = audioController->AttenuationMod;
 
-        soundConfig.MinDistance = component.MinDistance;
-        soundConfig.MaxDistance = component.MaxDistance;
-        
-        soundConfig.ConeInnerAngleInRadians = component.ConeInnerAngleInRadians;
-        soundConfig.ConeOuterAngleInRadians = component.ConeOuterAngleInRadians;
-        soundConfig.ConeOuterGain = component.ConeOuterGain;
-       
-        soundConfig.DopplerFactor = component.DopplerFactor;
-        soundConfig.Rolloff = component.Rolloff;
-        
+        soundConfig.MinGain = audioController->MinGain;
+        soundConfig.MaxGain = audioController->MaxGain;
+
+        soundConfig.MinDistance = audioController->MinDistance;
+        soundConfig.MaxDistance = audioController->MaxDistance;
+
+        soundConfig.ConeInnerAngleInRadians = audioController->ConeInnerAngleInRadians;
+        soundConfig.ConeOuterAngleInRadians = audioController->ConeOuterAngleInRadians;
+        soundConfig.ConeOuterGain = audioController->ConeOuterGain;
+
+        soundConfig.DopplerFactor = audioController->DopplerFactor;
+        soundConfig.Rolloff = audioController->Rolloff;
+
         return soundConfig;
     }
     AudioTransform TransformToAudioTransform(const TransformComponent& transform)

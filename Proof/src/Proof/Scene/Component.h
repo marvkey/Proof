@@ -734,30 +734,14 @@ namespace Proof
 	};
 	struct AudioComponent
 	{
-		AssetID AudioAsset = { 0 };
+		AssetKey<AssetType::AudioController> AudioController;
 
 		float VolumeMultiplier = 1.0f; // 0-1
-		float PitchMultiplier = 1.0f;//0,24
+		float PitchMultiplier = 1.0f;    // 0 -1 
+
 		bool Looping = false;
 		bool PlayOnAwake = false;
-
-		float MasterReverbSend = 0.0f;
-		float LowPassFilter = 1.0f;
-		float HighPassFilter = 0.0f;
-
-		bool SpatializationEnabled = false;
-
-		AttenuationModel AttenuationModel{ AttenuationModel::Inverse };   // Distance attenuation function
-		float MinGain{ 0.0f };                                            // Minumum volume muliplier
-		float MaxGain{ 1.0f };                                            // Maximum volume multiplier
-		float MinDistance{ 1.0f };                                        // Distance where to start attenuation
-		float MaxDistance{ 1000.0f };                                     // Distance where to end attenuation
-		float ConeInnerAngleInRadians{ 6.283185f };                     // Defines the angle where no directional attenuation occurs 
-		float ConeOuterAngleInRadians{ 6.283185f };                     // Defines the angle where directional attenuation is at max value (lowest multiplier)
-		float ConeOuterGain{ 0.0f };                                      // Attenuation multiplier when direction of the emmiter falls outside of the ConeOuterAngle
-		float DopplerFactor{ 1.0f };                                      // The amount of doppler effect to apply. Set to 0 to disables doppler effect. 
-		float Rolloff{ 0.6f };                                            // Affects steepness of the attenuation curve. At 1.0 Inverse model is the same as Exponential
-
+		bool DeleteOnFinished = false; // only active when PlayOnAwake is true   and Looping is false
 	};
 
 	struct AudioListenerComponent

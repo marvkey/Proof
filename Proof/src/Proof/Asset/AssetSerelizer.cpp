@@ -31,6 +31,8 @@
 #include "Proof/Animation/Animation.h"
 #include "Proof/Animation/AnimationController.h"
 #include "Proof/Animation/Skeleton.h"
+#include "Proof/Audio/AudioController.h"
+
 namespace Proof {
 	void AssetSerializer::SetID(const AssetInfo& data, const Count<class Asset>& asset)
 	{
@@ -1180,51 +1182,99 @@ namespace Proof {
 
 	void AudioAssetSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
 	{
-		/*
-		Count<Audio>audio = asset.As<Audio>();
+		
+	}
+
+	void AudioControllerAssetSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
+	{
+		Count<AudioController> audioController = asset.As<AudioController>();
+
 		YAML::Emitter out;
 		out << YAML::BeginMap;
-		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(audio->GetAssetType());
-		out << YAML::Key << "ID" << YAML::Value << audio->GetID();
-		if (AssetManager::HasAsset(audio->GetPath()))
-		{
-			out << YAML::Key << "AudioSource" << YAML::Value << AssetManager::GetAssetInfo(audio->GetPath()).ID;
-		}
-		else
-		{
-			out << YAML::Key << "AudioSource" << YAML::Value << 0;
-		}
+
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(audioController->GetAssetType());
+		out << YAML::Key << "ID" << YAML::Value << audioController->GetID();
+
+		out << YAML::Key << "AudioSource" << YAML::Value << audioController->AudioSource.GetAssetID();
+
+		// Pitch
+		out << YAML::Key << "MinPitch" << YAML::Value << audioController->MinPitch;
+		out << YAML::Key << "MaxPitch" << YAML::Value << audioController->MaxPitch;
+
+		// Effects
+		out << YAML::Key << "MasterReverbSend" << YAML::Value << audioController->MasterReverbSend;
+		out << YAML::Key << "LowPassFilter" << YAML::Value << audioController->LowPassFilter;
+		out << YAML::Key << "HighPassFilter" << YAML::Value << audioController->HighPassFilter;
+
+		// Spatialization
+		out << YAML::Key << "SpatializationEnabled" << YAML::Value << audioController->SpatializationEnabled;
+
+		out << YAML::Key << "AttenuationMod" << YAML::Value << EnumReflection::EnumString(audioController->AttenuationMod);
+
+		out << YAML::Key << "MinGain" << YAML::Value << audioController->MinGain;
+		out << YAML::Key << "MaxGain" << YAML::Value << audioController->MaxGain;
+
+		out << YAML::Key << "MinDistance" << YAML::Value << audioController->MinDistance;
+		out << YAML::Key << "MaxDistance" << YAML::Value << audioController->MaxDistance;
+
+		out << YAML::Key << "ConeInnerAngleInRadians" << YAML::Value << audioController->ConeInnerAngleInRadians;
+		out << YAML::Key << "ConeOuterAngleInRadians" << YAML::Value << audioController->ConeOuterAngleInRadians;
+		out << YAML::Key << "ConeOuterGain" << YAML::Value << audioController->ConeOuterGain;
+
+		out << YAML::Key << "DopplerFactor" << YAML::Value << audioController->DopplerFactor;
+		out << YAML::Key << "Rolloff" << YAML::Value << audioController->Rolloff;
+
 		out << YAML::EndMap;
+
 		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
 		stream << out.c_str();
 		stream.close();
-		*/
+	}
+
+	Count<class Asset> AudioControllerAssetSerilizer::TryLoadAsset(const AssetInfo& assetData) const
+	{
+		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+
+		if (!data["AssetType"])
+			return nullptr;
+
+		Count<AudioController> audioController = Count<AudioController>::Create();
+
+		audioController->AudioSource = AssetID(data["AudioSource"].as<uint64_t>());
+
+		// Pitch
+		audioController->MinPitch = data["MinPitch"].as<float>(audioController->MinPitch);
+		audioController->MaxPitch = data["MaxPitch"].as<float>(audioController->MaxPitch);
+
+		// Effects
+		audioController->MasterReverbSend = data["MasterReverbSend"].as<float>();
+		audioController->LowPassFilter = data["LowPassFilter"].as<float>();
+		audioController->HighPassFilter = data["HighPassFilter"].as<float>();
+
+		// Spatialization
+		audioController->SpatializationEnabled = data["SpatializationEnabled"].as<bool>();
+
+		audioController->AttenuationMod = EnumReflection::StringEnum<AttenuationModel>(data["AttenuationMod"].as<std::string>());
+
+		audioController->MinGain = data["MinGain"].as<float>();
+		audioController->MaxGain = data["MaxGain"].as<float>();
+
+		audioController->MinDistance = data["MinDistance"].as<float>();
+		audioController->MaxDistance = data["MaxDistance"].as<float>();
+
+		audioController->ConeInnerAngleInRadians = data["ConeInnerAngleInRadians"].as<float>();
+		audioController->ConeOuterAngleInRadians = data["ConeOuterAngleInRadians"].as<float>();
+		audioController->ConeOuterGain = data["ConeOuterGain"].as<float>();
+
+		audioController->DopplerFactor = data["DopplerFactor"].as<float>();
+		audioController->Rolloff = data["Rolloff"].as<float>();
+
+		SetID(assetData, audioController);
+		return audioController;
 	}
 
 	Count<class Asset> AudioAssetSerilizer::TryLoadAsset(const AssetInfo& assetData) const
 	{
-		/*
-		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
-		if (!data["AssetType"])
-			return nullptr;
-
-		Count<Audio> audio;
-		
-		uint64_t sourceID = data["AudioSource"].as<uint64_t>();
-		
-		if (AssetManager::HasAsset(sourceID))
-		{
-			audio = Count<Audio>::Create(AssetManager::GetAssetFileSystemPath(AssetManager::GetAssetInfo(sourceID).Path));
-		}
-		else
-		{
-			return nullptr;
-		}
-		
-		SetID(assetData, audio);
-		return audio;
-		*/
-
 		auto fullPath = AssetManager::GetAssetFileSystemPath(assetData.Path).string();
 		Count<Audio> asset = Count<Audio>::Create(fullPath);
 		SetID(assetData, asset);

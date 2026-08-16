@@ -509,6 +509,7 @@ namespace Proof
             case AssetType::ParticleSystem: return EditorResources::ParticleSystemThumbnailIcon;
             case AssetType::ParticleEmitter: return EditorResources::ParticleEmitterThumbnailIcon;
             case AssetType::Audio: return EditorResources::AudioThumbnailIcon;
+            case AssetType::AudioController: return EditorResources::AudioControllerThumbnailIcon;
             case AssetType::MeshCollider: return EditorResources::MeshColliderThumbnailIcon;
             case AssetType::ScriptFile: return EditorResources::ScriptFileThumbnailIcon;
             case AssetType::InputAction: return EditorResources::InputActionThumbnailIcon;

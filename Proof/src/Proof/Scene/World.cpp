@@ -5,6 +5,7 @@
 #include "Script.h"
 #include "Mesh.h"
 #include "Proof/Core/FrameTime.h"
+#include "Proof/Audio/AudioWorld.h"
 #include "Component.h"
 #include "Proof/Scene/Component.h"
 #include "Proof/Renderer/Shader.h"
@@ -1088,6 +1089,19 @@ namespace Proof
 		Entity e = { entityID, this };
 		m_ScriptWorld->DestroyEntityScript(e);
 	}
+
+	void World::OnAudioComponentCreate(entt::registry& component, entt::entity entityID)
+	{
+		Entity e = { entityID, this };
+		m_AudioWorld->InstantiateAudioSource(e);
+	}
+
+	void World::OnAudioComponentDelete(entt::registry& component, entt::entity entityID)
+	{
+		Entity e = { entityID, this };
+		m_AudioWorld->DeleteAudioSource(e);
+	}
+
 	void World::OnUpdateAnimation(float deltaTime)
 	{
 		PF_PROFILE_FUNC();
@@ -1238,91 +1252,11 @@ namespace Proof
 		}
 
 		OnUpdateAnimation(DeltaTime);
-#if 1
+
 		{
 			PF_PROFILE_FUNC("World::OnUpdate - Audio");
-
-			AudioEngine::OnUpdate(DeltaTime);
-			{
-				PF_PROFILE_FUNC("World::OnUpdate - AudioListener");
-				//m_Camera
-
-				Entity listener;
-				auto view = m_Registry.view<AudioListenerComponent>();
-				for (auto e : view)
-				{
-					Entity check = { e,this };
-					auto& listenerComponent = check.GetComponent<AudioListenerComponent>();
-
-					if (listenerComponent.Active)
-					{
-						listener = check;
-
-						auto transform = Utils::TransformToAudioTransform(GetWorldSpaceTransformComponent(listener));
-						
-						AudioEngine::UpdateListenerPosition(transform);
-						AudioEngine::UpdateListenerConeAttenuation(listenerComponent.ConeInnerAngleInRadians, listenerComponent.ConeOuterAngleInRadians, listenerComponent.ConeOuterGain);
-						auto physicsActor = m_PhysicsWorld->GetActor(listener);
-						if (physicsActor)
-						{
-
-							if(physicsActor->IsDynamic())
-								AudioEngine::UpdateAudioListenerVelocity( physicsActor->GetLinearVelocity());
-						}
-						else
-						{
-							AudioEngine::UpdateAudioListenerVelocity(glm::vec3{ 0 });
-						}
-						break;
-
-					}
-				}
-			#if 0
-				// we are going to remove this soon just for now testing
-				if (!listener)
-				{
-					TransformComponent comp;
-					comp.Location = m_CameraPositon;
-					auto transform = Utils::TransformToAudioTransform(comp);
-					AudioEngine::UpdateListenerPosition(transform);
-
-					AudioListenerComponent defaultSettings;
-					AudioEngine::UpdateListenerConeAttenuation(defaultSettings.ConeInnerAngleInRadians, defaultSettings.ConeOuterAngleInRadians, defaultSettings.ConeOuterGain);
-				}
-			#endif
-			}
-
-
-			{
-				AudioEngine::AddNewSounds();
-				PF_PROFILE_FUNC("World::OnUpdate - Audio");
-				auto view = m_Registry.view<AudioComponent>();
-
-				for (auto e : view)
-				{
-
-					Entity audioEntity = { e,this };
-					
-					auto& audioComponent = audioEntity.GetComponent<AudioComponent>();
-					auto transform = Utils::TransformToAudioTransform(GetWorldSpaceTransformComponent(audioEntity));
-
-					AudioEngine::UpdateAudio(audioEntity.GetUUID(), Utils::AudioComponentToSoundConfig(audioComponent));
-					AudioEngine::UpdateAudioTransform(audioEntity.GetUUID(), transform);
-					auto physicsActor = m_PhysicsWorld->GetActor(audioEntity);
-
-					if (physicsActor)
-					{
-						if(physicsActor->IsDynamic())
-							AudioEngine::UpdateAudioVelocity(audioEntity.GetUUID(), physicsActor->GetLinearVelocity());
-					}
-					else
-					{
-						AudioEngine::UpdateAudioVelocity(audioEntity.GetUUID(), glm::vec3{ 0 });
-					}
-				}
-			}
+			m_AudioWorld->OnUpdate(DeltaTime);
 		}
-#endif
 		{
 
 			ForEachEnitityWith<WaterComponent>([&](Entity e)
@@ -1879,7 +1813,11 @@ namespace Proof
 		m_GameMode->Start();
 
 		m_PhysicsWorld = Count<PhysicsWorld>::Create(this);
+		m_AudioWorld = Count<AudioWorld>::Create(this);
+		m_AudioWorld->BeginRuntime();
 		m_PhysicsWorld->StartWorld();
+
+
 		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
 		m_Registry.on_destroy<RigidBodyComponent>().connect < &World::OnRigidBodyComponentDelete>(this);
 
@@ -1887,9 +1825,9 @@ namespace Proof
 		m_Registry.on_construct<ScriptComponent>().connect<&World::OnScriptAdded>(this);
 		m_Registry.on_destroy<ScriptComponent>().connect < &World::OnScriptDelete>(this);
 
+		m_Registry.on_construct<AudioComponent>().connect<&World::OnAudioComponentCreate>(this);
+		m_Registry.on_destroy<AudioComponent>().connect < &World::OnAudioComponentDelete>(this);
 
-		Count<World> instance = this;
-		AudioEngine::BeginContext(instance);
 
 		ForEachEnitityWith<TerrainComponent>([&](Entity e)
 		{
@@ -1917,10 +1855,16 @@ namespace Proof
 
 		m_Registry.on_construct<ScriptComponent>().disconnect(this);
 		m_Registry.on_destroy<ScriptComponent>().disconnect(this);
+
+		m_Registry.on_construct<AudioComponent>().disconnect(this);
+		m_Registry.on_destroy<AudioComponent>().disconnect(this);
 		
-		AudioEngine::EndContext();
 		m_PhysicsWorld->EndWorld();
 		m_PhysicsWorld = nullptr;
+
+		m_AudioWorld->EndRuntime();
+		m_AudioWorld = nullptr;
+
 		m_GameMode->End();
 
 		m_GameMode = nullptr;

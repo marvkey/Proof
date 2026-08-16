@@ -1,5 +1,7 @@
 #include "Proofprch.h"
 #include "AssetEditor.h"
+
+#include "AudioControllerEditorPanel.h"
 #include "Proof/Core/FrameTime.h"
 #include "ProoF/Asset/Asset.h"
 #include "ProoF/Asset/AssetManager.h"
@@ -14,6 +16,7 @@
 #include "Proof/Input/Input.h"
 #include "Proof/ImGui/Editors/AssetEditors/PrefabEditor.h"
 #include "Proof/ImGui/Editors/AssetEditors/AnimationControllerEditorPanel.h"
+#include "Proof/ImGui/Editors/AssetEditors/AudioControllerEditorPanel.h"
 #include "GuiEditorPanel.h"
 #include "InputActionPanel.h"
 #include "InputBindingContextPanel.h"
@@ -217,6 +220,7 @@ namespace Proof
 		RegisterEditor(AssetType::UIPanel);
 		RegisterEditor(AssetType::AnimationController);
 		RegisterEditor(AssetType::ParticleEmitter);
+		RegisterEditor(AssetType::AudioController);
 	}
 
 	void AssetEditorPanel::UnregisterAllEditors()
@@ -328,6 +332,9 @@ namespace Proof
 				case Proof::AssetType::ParticleEmitter:
 					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<ParticleEmitterPanel>::Create();
 					  break;
+				case Proof::AssetType::AudioController:
+					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<AudioControllerEditorPanel>::Create();
+				break;
 				default:
 					break;
 			}

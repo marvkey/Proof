@@ -818,10 +818,12 @@ namespace Proof
 				out << YAML::Key << "AudioComponent";
 				out << YAML::BeginMap; // AudioComponent
 
+				out << YAML::Key << "AudioController" << YAML::Key << audioComponent.AudioController;
 				out << YAML::Key << "VolumeMultiplier" << YAML::Key << audioComponent.VolumeMultiplier;
 				out << YAML::Key << "PitchMultiplier" << YAML::Key << audioComponent.PitchMultiplier;
 				out << YAML::Key << "Looping" << YAML::Key << audioComponent.Looping;
 				out << YAML::Key << "PlayOnAwake" << YAML::Key << audioComponent.PlayOnAwake;
+				/*
 				out << YAML::Key << "MasterReverbSend" << YAML::Key << audioComponent.MasterReverbSend;
 				out << YAML::Key << "LowPassFilter" << YAML::Key << audioComponent.LowPassFilter;
 				out << YAML::Key << "HighPassFilter" << YAML::Key << audioComponent.HighPassFilter;
@@ -841,7 +843,7 @@ namespace Proof
 					out << YAML::Key << "DopplerFactor" << YAML::Key << audioComponent.DopplerFactor;
 					out << YAML::Key << "Rolloff" << YAML::Key << audioComponent.Rolloff;
 				}
-
+					*/
 				out << YAML::EndMap; // AudioComponent
 
 			}
@@ -1908,10 +1910,12 @@ namespace Proof
 				{
 					auto& ac = NewEntity.AddComponent<AudioComponent>();
 
+					ac.AudioController.SetAssetID(audioComponent["AudioController"].as<uint64_t>(0));
 					ac.VolumeMultiplier = audioComponent["VolumeMultiplier"].as<float>();
 					ac.PitchMultiplier = audioComponent["PitchMultiplier"].as<float>();
 					ac.Looping = audioComponent["Looping"].as<bool>();
 					ac.PlayOnAwake = audioComponent["PlayOnAwake"].as<bool>();
+					/*
 					ac.MasterReverbSend = audioComponent["MasterReverbSend"].as<float>();
 					ac.LowPassFilter = audioComponent["LowPassFilter"].as<float>();
 					ac.HighPassFilter = audioComponent["HighPassFilter"].as<float>();
@@ -1934,6 +1938,7 @@ namespace Proof
 						ac.DopplerFactor = audioComponent["DopplerFactor"].as<float>();
 						ac.Rolloff = audioComponent["Rolloff"].as<float>();
 					}
+					*/
 				}
 
 			}

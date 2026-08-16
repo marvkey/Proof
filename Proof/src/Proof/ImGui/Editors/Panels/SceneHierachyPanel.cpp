@@ -2489,13 +2489,14 @@ namespace Proof
 			{
 				UI::BeginPropertyGrid();
 
-				UI::AttributeAssetReference("Audio", AssetType::Audio, audio.AudioAsset);
+				UI::AttributeAssetKeyReference("Audio", audio.AudioController);
 
 				UI::AttributeSlider("VolumeMultiplier", audio.VolumeMultiplier, 0, 1);
-				UI::AttributeSlider("PitchMultiplier", audio.PitchMultiplier, 0, 24);
+				UI::AttributeDrag("PitchMultiplier", audio.PitchMultiplier, 0, 24,0.025);
 
 				UI::AttributeBool("Looping", audio.Looping);
 				UI::AttributeBool("Play On Awake", audio.PlayOnAwake);
+			/*
 				UI::AttributeBool("Specialization", audio.SpatializationEnabled);
 
 				if (audio.SpatializationEnabled == false)
@@ -2524,6 +2525,7 @@ namespace Proof
 					UI::AttributeSlider("Doppler Factor", audio.DopplerFactor, 0, 1);
 					UI::AttributeSlider("RollOff", audio.Rolloff, 0, 1);
 				}
+				*/
 
 				UI::EndPropertyGrid();
 			});

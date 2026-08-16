@@ -20,6 +20,7 @@ namespace Proof
 		static inline Count<class Texture2D> AnimationThumbnailIcon;
 		static inline Count<class Texture2D> AnimationControllerThumbnailIcon;
 		static inline Count<class Texture2D> AudioThumbnailIcon;
+		static inline Count<class Texture2D> AudioControllerThumbnailIcon;
 		static inline Count<class Texture2D> FontThumbnailIcon;
 		static inline Count<class Texture2D> InputActionThumbnailIcon;
 		static inline Count<class Texture2D> InputBindingContextThumbnailIcon;

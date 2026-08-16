@@ -29,6 +29,7 @@ namespace Proof
 		UIPanel,
 		ParticleSystem,
 		Audio,
+		AudioController,
 		//AudioSourceFile,
 		MeshCollider,
 		ScriptFile,
@@ -106,6 +107,7 @@ namespace Proof
 			{AssetType::Animation,".Animation.ProofAsset"},
 			{AssetType::AnimationController,".AnimationController.ProofAsset"},
 			{AssetType::ParticleEmitter,".ParticleEmitter.ProofAsset"},
+			{AssetType::AudioController,".AudioController.ProofAsset"},
 		};
 		std::string GetAssetExtensionString(AssetType type);
 		// checks the file extension

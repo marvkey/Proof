@@ -7,14 +7,10 @@ namespace Proof
     static constexpr float SPEED_OF_SOUND = 343.3f;
     enum class SoundState
     {
-        Stopped,
-        Starting,
-        Playing,
-        Pausing,
-        Paused,
-        Stopping,
-        FadingOut,
-        FadingIn
+        None,
+        Play,
+        Pause,
+        End
     };
 
     enum class AttenuationModel
@@ -29,7 +25,7 @@ namespace Proof
     {
         Count<class Audio> Aduio =nullptr;  
         float VolumeMultiplier = 1.0f; // min 0, max 1
-        float PitchMultiplier = 1.0f;//min 0, max 24
+        float PitchMultiplier = 1.0f;//min 0, max 1 (it multipleis by the pitch in the Auid
         bool Looping = false;
         //Master Reverb Send is a parameter that controls the amount of an audio signal that is sent to a global reverb effect. 
         //It typically ranges from 0.0 (no signal sent) to 1.0 (full signal sent). 
@@ -67,36 +63,8 @@ namespace Proof
         //float SourceSize{ 1.0f };                                       // Diameter of the sound source in game world.
         //float Spread{ 1.0f };
         //float Focus{ 1.0f };
-
-        bool operator==(const SoundConfiguration& other) const {
-            return Aduio == other.Aduio &&
-                VolumeMultiplier == other.VolumeMultiplier &&
-                PitchMultiplier == other.PitchMultiplier &&
-                Looping == other.Looping &&
-                MasterReverbSend == other.MasterReverbSend &&
-                LowPassFilter == other.LowPassFilter &&
-                HighPassFilterValue == other.HighPassFilterValue &&
-                SpatializationEnabled == other.SpatializationEnabled &&
-                AttenuationMod == other.AttenuationMod &&
-                MinGain == other.MinGain &&
-                MaxGain == other.MaxGain &&
-                MinDistance == other.MinDistance &&
-                MaxDistance == other.MaxDistance &&
-                ConeInnerAngleInRadians == other.ConeInnerAngleInRadians &&
-                ConeOuterAngleInRadians == other.ConeOuterAngleInRadians &&
-                ConeOuterGain == other.ConeOuterGain &&
-                DopplerFactor == other.DopplerFactor &&
-                Rolloff == other.Rolloff;// &&
-                //AirAbsorptionEnabled == other.AirAbsorptionEnabled &&
-                //SpreadFromSourceSize == other.SpreadFromSourceSize &&
-                //SourceSize == other.SourceSize &&
-                //Spread == other.Spread &&
-                //Focus == other.Focus;
-        }
-
-        bool operator!=(const SoundConfiguration& other) const {
-            return !(*this == other);
-        }
+        bool operator==(const SoundConfiguration&) const = default;
+        
     };
 
     struct AudioTransform
