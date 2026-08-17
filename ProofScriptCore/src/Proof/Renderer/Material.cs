@@ -95,8 +95,7 @@ namespace Proof
         }
     }
 
-
-[RegisterCoreClassStruct]
+    [RegisterCoreClassStruct]
     public class Material : Asset
     {
 
@@ -185,6 +184,186 @@ namespace Proof
         {
             if (texture.ID.IsValid())
                 InternalCalls.Material_SetTexture(m_ID.ToUInt64(), name, texture.ID.ToUInt64());
+        }
+    }
+
+
+
+    public class PbrSurfaceMaterial
+    {
+        private readonly Material m_Material;
+
+        private const string AlbedoColorName = "u_MaterialUniform.Albedo";
+        private const string MetalnessName = "u_MaterialUniform.Metalness";
+        private const string RoughnessName = "u_MaterialUniform.Roughness";
+        private const string NormalTextureToggleName = "u_MaterialUniform.NormalTexToggle";
+        private const string EmissionOverrideColorToggleName = "u_MaterialUniform.EmissionOverrideColorToggle";
+        private const string EmissionName = "u_MaterialUniform.Emission";
+        private const string EmissionOverrideColorName = "u_MaterialUniform.EmissionOverrideColor";
+        private const string TilingName = "u_MaterialUniform.TextureTiling";
+        private const string OffsetName = "u_MaterialUniform.TextureOffset";
+
+        private const string AlbedoMapName = "u_AlbedoMap";
+        private const string NormalMapName = "u_NormalMap";
+        private const string MetalnessMapName = "u_MetallicMap";
+        private const string RoughnessMapName = "u_RoughnessMap";
+
+        public Material Material => m_Material;
+        public bool IsValid => m_Material != null && m_Material.ID.IsValid();
+
+        public PbrSurfaceMaterial(Material material)
+        {
+            m_Material = material;
+        }
+
+        private MaterialVariable GetVariable(string name)
+        {
+            if (!IsValid)
+            {
+                Log.Error("PbrSurfaceMaterial: Material is invalid.");
+                return null;
+            }
+
+            return m_Material.GetVariable(name);
+        }
+
+        public Vector3 GetAlbedoColor()
+        {
+            MaterialVariable variable = GetVariable(AlbedoColorName);
+            return variable != null ? variable.Get<Vector3>() : default;
+        }
+
+        public void SetAlbedo(Vector3 value)
+        {
+            GetVariable(AlbedoColorName)?.Set(value);
+        }
+
+        public float GetMetalness()
+        {
+            MaterialVariable variable = GetVariable(MetalnessName);
+            return variable != null ? variable.Get<float>() : 0.0f;
+        }
+
+        public void SetMetalness(float value)
+        {
+            GetVariable(MetalnessName)?.Set(value);
+        }
+
+        public float GetRoughness()
+        {
+            MaterialVariable variable = GetVariable(RoughnessName);
+            return variable != null ? variable.Get<float>() : 0.0f;
+        }
+
+        public void SetRoughness(float value)
+        {
+            GetVariable(RoughnessName)?.Set(value);
+        }
+
+        public bool GetNormalTextureToggle()
+        {
+            MaterialVariable variable = GetVariable(NormalTextureToggleName);
+            return variable != null && variable.Get<bool>();
+        }
+
+        public void SetNormalTextureToggle(bool value)
+        {
+            GetVariable(NormalTextureToggleName)?.Set(value);
+        }
+
+        public bool GetEmissionOverrideColorToggle()
+        {
+            MaterialVariable variable = GetVariable(EmissionOverrideColorToggleName);
+            return variable != null && variable.Get<bool>();
+        }
+
+        public void SetEmissionOverrideColorToggle(bool value)
+        {
+            GetVariable(EmissionOverrideColorToggleName)?.Set(value);
+        }
+
+        public float GetEmission()
+        {
+            MaterialVariable variable = GetVariable(EmissionName);
+            return variable != null ? variable.Get<float>() : 0.0f;
+        }
+
+        public void SetEmission(float value)
+        {
+            GetVariable(EmissionName)?.Set(value);
+        }
+
+        public Vector3 GetEmissionOverrideColor()
+        {
+            MaterialVariable variable = GetVariable(EmissionOverrideColorName);
+            return variable != null ? variable.Get<Vector3>() : default;
+        }
+
+        public void SetEmissionOverrideColor(Vector3 value)
+        {
+            GetVariable(EmissionOverrideColorName)?.Set(value);
+        }
+
+        public Vector2 GetTiling()
+        {
+            MaterialVariable variable = GetVariable(TilingName);
+            return variable != null ? variable.Get<Vector2>() : default;
+        }
+
+        public void SetTiling(Vector2 value)
+        {
+            GetVariable(TilingName)?.Set(value);
+        }
+
+        public Vector2 GetOffset()
+        {
+            MaterialVariable variable = GetVariable(OffsetName);
+            return variable != null ? variable.Get<Vector2>() : default;
+        }
+
+        public void SetOffset(Vector2 value)
+        {
+            GetVariable(OffsetName)?.Set(value);
+        }
+
+        public void SetAlbedoMap(Texture2D texture)
+        {
+            GetVariable(AlbedoMapName)?.SetTexture(texture);
+        }
+
+        public void SetNormalMap(Texture2D texture)
+        {
+            GetVariable(NormalMapName)?.SetTexture(texture);
+        }
+
+        public void SetMetalnessMap(Texture2D texture)
+        {
+            GetVariable(MetalnessMapName)?.SetTexture(texture);
+        }
+
+        public void SetRoughnessMap(Texture2D texture)
+        {
+            GetVariable(RoughnessMapName)?.SetTexture(texture);
+        }
+
+        public Texture2D GetAlbedoMap()
+        {
+            return GetVariable(AlbedoMapName)?.GetTexture();
+        }
+
+        public Texture2D GetNormalMap()
+        {
+            return GetVariable(NormalMapName)?.GetTexture();
+        }
+
+        public Texture2D GetMetalnessMap()
+        {
+            return GetVariable(MetalnessMapName)?.GetTexture();
+        }
+
+        public Texture2D GetRoughnessMap()
+        {
+            return GetVariable(RoughnessMapName)?.GetTexture();
         }
     }
 }

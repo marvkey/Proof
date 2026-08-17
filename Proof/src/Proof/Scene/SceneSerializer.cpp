@@ -1379,7 +1379,8 @@ namespace Proof
 					//src.SetMesh( meshComponent["MeshAssetPointerID"].as<uint64_t>());
 					if (meshComponent["MaterialTable"])
 					{
-						Count<MaterialTable> matTable = Count<MaterialTable>::Create(false);
+						Count<MaterialTable> matTable  = Count<MaterialTable>::CreateFrom(AssetManager::GetAsset<Mesh>(src.m_MeshID)->GetMaterialTable());
+
 						for (auto mat : meshComponent["MaterialTable"])
 						{
 							AssetID id = mat["AssetID"].as<uint64_t>();
@@ -1426,7 +1427,9 @@ namespace Proof
 
 					if (dynamicMeshComponent["MaterialTable"])
 					{
-						Count<MaterialTable> matTable = Count<MaterialTable>::Create(false);
+
+						Count<MaterialTable> matTable = AssetManager::GetAsset<DynamicMesh>(src.m_MeshID)->GetMaterialTableBasedOnSubMeshIndex(src.m_SubmeshIndex);
+
 						for (auto mat : dynamicMeshComponent["MaterialTable"])
 						{
 							AssetID id = mat["AssetID"].as<uint64_t>();
@@ -2300,6 +2303,21 @@ namespace Proof
 					
 				}
 			}
+
+			//AudioListenerComponent
+			{
+				auto audioListenerComponent = entity["AudioListenerComponent"];
+				if (audioListenerComponent)
+				{
+					auto& component = NewEntity.AddComponent<AudioListenerComponent>();
+
+					component.Active = audioListenerComponent["Active"].as<bool>();
+					component.ConeInnerAngleInRadians = audioListenerComponent["ConeInnerAngleInRadians"].as<float>();
+					component.ConeOuterAngleInRadians = audioListenerComponent["ConeOuterAngleInRadians"].as<float>();
+					component.ConeOuterGain = audioListenerComponent["ConeOuterGain"].as<float>();
+				}
+			}
+		
 		}
 	}
 

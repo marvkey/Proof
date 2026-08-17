@@ -53,6 +53,8 @@ namespace Proof
 
 		if (m_State == SoundState::End)
 			ma_sound_seek_to_pcm_frame(&m_Sound, 0);
+		// doign this little faid to avoid  a burp soudn that happens sometiems
+		ma_sound_set_fade_in_milliseconds(&m_Sound, 0.0f, 1.0f, 25);
 
 		ma_result result = ma_sound_start(&m_Sound);
 
@@ -109,6 +111,9 @@ namespace Proof
 		ma_sound_stop(&m_Sound);
 		ma_sound_seek_to_pcm_frame(&m_Sound, 0);
 
+		// doign this little faid to avoid  a burp soudn that happens sometiems
+		ma_sound_set_fade_in_milliseconds(&m_Sound, 0.0f, 1.0f, 25);
+
 		ma_result result = ma_sound_start(&m_Sound);
 
 		if (result != MA_SUCCESS)
@@ -126,17 +131,18 @@ namespace Proof
 
 	void Sound::Update(float ts)
 	{
+		
 		if (!m_Initialized)
 			return;
 
 		if (m_State != SoundState::Play)
 			return;
 
-		if (ma_sound_is_playing(&m_Sound) == MA_FALSE)
-		{
-			if (m_Config.Looping)
-				return;
+		if (m_Config.Looping)
+			return;
 
+		if (ma_sound_at_end(&m_Sound) == MA_TRUE)
+		{
 			m_State = SoundState::End;
 			m_IsFinished = true;
 
@@ -168,6 +174,7 @@ namespace Proof
 			bool streaming = false;
 			ma_uint32 flags = MA_SOUND_FLAG_DECODE | (streaming ? MA_SOUND_FLAG_STREAM : 0);
 
+			// has a resourc emanager that handles this so we dont always be reloading saame memory
 			ma_result result = ma_sound_init_from_file(&AudioEngine::GetEngine(), path.string().c_str(), flags, NULL, NULL, &m_Sound);
 			PF_CORE_ASSERT(result == MA_SUCCESS, "Failed to load sound from filepath");
 

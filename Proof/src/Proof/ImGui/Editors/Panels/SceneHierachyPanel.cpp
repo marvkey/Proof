@@ -2496,37 +2496,6 @@ namespace Proof
 
 				UI::AttributeBool("Looping", audio.Looping);
 				UI::AttributeBool("Play On Awake", audio.PlayOnAwake);
-			/*
-				UI::AttributeBool("Specialization", audio.SpatializationEnabled);
-
-				if (audio.SpatializationEnabled == false)
-				{
-
-					UI::EnumCombo("Attenuation Model", audio.AttenuationModel);
-
-					UI::AttributeDrag("Min Gain", audio.MinGain, 0.025f, 0, 1);
-					UI::AttributeDrag("Max Gain", audio.MaxGain, 0.025f, 0, 1);
-
-					UI::AttributeDrag("Min Distance", audio.MinDistance, 0.025f, 0, audio.MaxDistance);
-					UI::AttributeDrag("Max Distance", audio.MaxDistance, 0.025f, audio.MinDistance, Math::GetMaxType<float>());
-
-					{
-						float degrees = glm::degrees(audio.ConeInnerAngleInRadians);
-						if (UI::AttributeSlider("Cone Inner Angle", degrees, 0, 360))
-							audio.ConeInnerAngleInRadians = glm::radians(degrees);
-
-						degrees = glm::degrees(audio.ConeOuterAngleInRadians);
-						if (UI::AttributeSlider("Cone Outer Angle", degrees, 0, 360))
-							audio.ConeOuterAngleInRadians = glm::radians(degrees);
-
-						UI::AttributeSlider("ConeOuterGain", audio.ConeOuterGain, 0, 1);
-					}
-
-					UI::AttributeSlider("Doppler Factor", audio.DopplerFactor, 0, 1);
-					UI::AttributeSlider("RollOff", audio.Rolloff, 0, 1);
-				}
-				*/
-
 				UI::EndPropertyGrid();
 			});
 
@@ -2535,7 +2504,19 @@ namespace Proof
 				UI::BeginPropertyGrid();
 
 				UI::AttributeBool("Active", audio.Active);
-				UI::AttributeDrag("ConeOuterGain", audio.ConeOuterGain, 0.25f);
+				float degrees = Math::Degrees(audio.ConeInnerAngleInRadians);
+
+				UI::AttributeSlider("Inner Angle", degrees, 0.0f, 360.0f,
+					"The inner angle of the directional sound cone. Inside this cone the sound plays at its normal gain.");
+
+				audio.ConeInnerAngleInRadians = Math::Radian(degrees);
+
+				float degrees2 = Math::Degrees(audio.ConeOuterAngleInRadians);
+
+				UI::AttributeSlider("Outer Angle", degrees2, 0.0f, 360.0f,
+					"The outer angle of the directional sound cone. Between the inner and outer angles the sound transitions toward the Outer Gain.");
+
+				UI::AttributeDrag("ConeOuterGain", audio.ConeOuterGain, 0.025f,0.0,1.0f);
 				UI::EndPropertyGrid();
 			});
 

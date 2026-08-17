@@ -464,41 +464,105 @@ namespace Proof {
 
 	void PrefabAssetSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
 	{
+	
 		Count<Prefab> prefab = asset.As<Prefab>();
 
+		if (!prefab)
+			return;
+
+		if (!prefab->GetWorld())
+		{
+			PF_ENGINE_ERROR("Cannot save Prefab {} because its World is invalid", prefab->GetID());
+			return;
+		}
+
+		if (!prefab->GetBaseEntity())
+		{
+			PF_ENGINE_ERROR("Cannot save Prefab {} because its Base Entity is invalid", prefab->GetID());
+			return;
+		}
+
 		YAML::Emitter out;
+
 		out << YAML::BeginMap;
+
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(prefab->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << prefab->GetID();
 		out << YAML::Key << "EntityOwner" << YAML::Value << prefab->GetBaseEntity().GetUUID();
+
 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
 
 		for (auto [id, entity] : prefab->m_World->GetEntities())
-		{
 			SceneSerializer::SerilizeEntity(out, entity);
-		}
-		out << YAML::Flow;
+
+		out << YAML::EndSeq;
+
 		out << YAML::EndMap;
+
+		if (!out.good())
+		{
+			PF_ENGINE_ERROR("Failed to serialize Prefab {}: {}", prefab->GetID(), out.GetLastError());
+			return;
+		}
+
 		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+
+		if (!stream.is_open())
+		{
+			PF_ENGINE_ERROR("Failed to open Prefab {} for saving", prefab->GetID());
+			return;
+		}
+
 		stream << out.c_str();
 		stream.close();
 	}
 
 	Count<class Asset> PrefabAssetSerilizer::TryLoadAsset(const AssetInfo& assetData) const
 	{
-		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		std::filesystem::path path = AssetManager::GetAssetFileSystemPath(assetData.Path);
+
+		if (!std::filesystem::exists(path))
+		{
+			PF_ENGINE_ERROR("Prefab file does not exist {}", path.string());
+			return nullptr;
+		}
+
+		YAML::Node data = YAML::LoadFile(path.string());
+
 		if (!data["AssetType"])
 			return nullptr;
+
 		Count<Prefab> prefab = Count<Prefab>::Create();
-		UUID owernID = data["EntityOwner"].as<uint64_t>();
+		SetID(assetData, prefab);
+
 		auto entities = data["Entities"];
+
+		// Empty prefab is valid.
+		// Prefab constructor already creates "Base Prefab".
+		if (!entities || !entities.IsSequence() || entities.size() == 0)
+			return prefab;
+
+		if (!data["EntityOwner"])
+		{
+			PF_ENGINE_ERROR("Prefab {} contains entities but has no EntityOwner", assetData.Path.string());
+			return nullptr;
+		}
+
+		UUID ownerID = data["EntityOwner"].as<uint64_t>();
 
 		Count<World> world = Count<World>::Create("prefab world");
 
 		SceneSerializer::DeSerilizeEntity(entities, world);
 
-		prefab->SetEntity(world->GetEntity(owernID));
-		SetID(assetData, prefab);
+		if (!world->HasEntity(ownerID))
+		{
+			PF_ENGINE_ERROR("Prefab {} EntityOwner {} was not found after deserialization", assetData.Path.string(), ownerID.Get());
+			return nullptr;
+		}
+
+		Entity ownerEntity = world->GetEntity(ownerID);
+
+		prefab->SetEntity(ownerEntity);
 
 		return prefab;
 	}

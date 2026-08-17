@@ -739,8 +739,8 @@ namespace Proof
 		float VolumeMultiplier = 1.0f; // 0-1
 		float PitchMultiplier = 1.0f;    // 0 -1 
 
-		bool Looping = false;
-		bool PlayOnAwake = false;
+		bool Looping = true;
+		bool PlayOnAwake = true;
 		bool DeleteOnFinished = false; // only active when PlayOnAwake is true   and Looping is false
 	};
 
@@ -749,7 +749,7 @@ namespace Proof
 		bool Active = true; /// can only have 1
 		float ConeInnerAngleInRadians = 6.283185f; /* 360 degrees. */;
 		float ConeOuterAngleInRadians = 6.283185f; /* 360 degrees. */;
-		float ConeOuterGain = 0.0f;
+		float ConeOuterGain = 1.0f;
 		AudioListenerComponent() = default;
 		AudioListenerComponent(const AudioListenerComponent& other) = default;
 	};

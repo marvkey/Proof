@@ -37,13 +37,28 @@ namespace Proof
 			SoundConfiguration soundConfig = Utils::AudioComponentToSoundConfig(audioComp);
 			sound = Count<Sound>::Create(soundConfig);
 
+			auto world = m_World.Lock();
+
+			if (world)
+			{
+				auto transform = Utils::TransformToAudioTransform(world->GetWorldSpaceTransformComponent(entity));
+				sound->SetTransform(transform);
+
+				auto physicsActor = world->GetPhysicsWorld()->GetActor(entity);
+
+				if (physicsActor && physicsActor->IsDynamic())
+					sound->SetVelocity(physicsActor->GetLinearVelocity());
+				else
+					sound->SetVelocity(glm::vec3{ 0 });
+			}
+
 			if (audioComp.PlayOnAwake)
 				sound->Play();
 		}
 		else
 		{
 			sound = Count<Sound>::Create();
-		}                                         
+		}
 
 		m_Runtime.WorldSounds[entity.GetUUID()] = sound;
 
