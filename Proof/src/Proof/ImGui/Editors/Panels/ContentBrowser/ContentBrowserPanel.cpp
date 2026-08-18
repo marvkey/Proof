@@ -48,6 +48,7 @@
 #include <ImSequencer.h>
 
 #include "Proof/Audio/AudioController.h"
+#include "Proof/Audio/AudioMixer.h"
 
 //https://github.com/Ant-Play/Ant/blob/2dab7c0362f017911df9090b1608ec4b81ad1f2c/AntPlay/src/Panels/ContentBrowserPanel.cpp
 namespace Proof
@@ -328,8 +329,17 @@ namespace Proof
 
 									ImGui::EndMenu();
 								}
-								if(ImGui::MenuItem("AudioController"))
-									CreateAsset<AudioController>("New AudioController");
+
+								if (ImGui::BeginMenu("Audio"))
+								{
+									if (ImGui::MenuItem("AudioController"))
+										CreateAsset<AudioController>("New AudioController");
+
+									if (ImGui::MenuItem("AudioMixer"))
+										CreateAsset<AudioMixer>("New AudioMixer");
+
+									ImGui::EndMenu();
+								}
 
 								ImGui::EndMenu();
 							}

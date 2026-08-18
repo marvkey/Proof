@@ -4,6 +4,7 @@
 #include "AudioEngine.h"
 #include "Audio.h"
 #include "Proof/Asset/AssetManager.h"
+#include "AudioMixer.h"
 
 namespace Proof
 {
@@ -38,6 +39,20 @@ namespace Proof
 		m_IsFinished = false;
 		m_TotalLength = 0;
 		m_State = SoundState::None;
+	}
+
+	void Sound::SetMixerGroup(const Count<class AudioMixerGroup> group)
+	{
+		if (!m_Initialized)
+			return;
+
+		if (!group)
+		{
+			ma_node_attach_output_bus(&m_Sound, 0, ma_engine_get_endpoint(&AudioEngine::GetEngine()), 0);
+			return;
+		}
+
+		ma_node_attach_output_bus(&m_Sound, 0, group->GetNativeGroup(), 0);
 	}
 
 	bool Sound::Play()
@@ -156,7 +171,7 @@ namespace Proof
 	void Sound::UpdateDataSource(const SoundConfiguration& config)
 	{
 		bool audioChanged = m_Config.Aduio != config.Aduio;
-
+		bool mixerChange = m_Config.Mixer != config.Mixer;
 		if (audioChanged)
 		{
 			if (m_Initialized)
@@ -199,6 +214,8 @@ namespace Proof
 		ma_sound_set_looping(&m_Sound, config.Looping);
 		ma_sound_set_spatialization_enabled(&m_Sound, config.SpatializationEnabled);
 
+		if (mixerChange)
+			SetMixerGroup(config.Mixer);
 		if (config.SpatializationEnabled)
 		{
 			ma_sound_set_attenuation_model(&m_Sound, GetMiniAudioAttenuationModel(config.AttenuationMod));

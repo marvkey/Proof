@@ -10,10 +10,11 @@ namespace Proof
 
 	struct AudioMixerGroupKey
 	{
-		
+		AssetKey<AssetType::AudioMixer> AudioMixer;
+		UUID MixerGroupID = 0;
 	};
 
-
+   // Tod add effects, low pass, echo, (https://www.youtube.com/watch?v=IxHPzrEq1Tc&t=215s)
 	class AudioMixerGroup : public RefCounted
 	{
 	public:
@@ -37,6 +38,8 @@ namespace Proof
 		ma_sound_group* GetNativeGroup() { return &m_Group; }
 		const ma_sound_group* GetNativeGroup() const { return &m_Group; }
 
+		Count<class AudioEffectTable> GetEffectTable(){return m_EffectTable;}
+
 	private:
 		UUID m_ID = { 0 };
 		UUID m_ParentID = { 0 };
@@ -47,6 +50,7 @@ namespace Proof
 		std::vector<UUID> m_Children;
 
 		ma_sound_group m_Group{};
+		Count<class AudioEffectTable> m_EffectTable = nullptr;
 
 		friend class AudioMixer;
 		friend class AudioMixerAssetSerilizer;
@@ -60,7 +64,7 @@ namespace Proof
 		AudioMixer(UUID masterGroupID);
 		~AudioMixer();
 
-		//ASSET_CLASS_TYPE(AudioMixer);
+		ASSET_CLASS_TYPE(AudioMixer);
 
 		Count<AudioMixerGroup> CreateGroup(const std::string& name);
 		Count<AudioMixerGroup> CreateGroup(const std::string& name, UUID parentID);
@@ -77,6 +81,61 @@ namespace Proof
 
 		const std::unordered_map<UUID, Count<AudioMixerGroup>>& GetGroups() const { return m_Groups; }
 
+		bool IsDescendant(UUID groupID, UUID potentialDescendantID) const
+		{
+			Count<AudioMixerGroup> group = GetGroup(groupID);
+
+			if (!group)
+				return false;
+
+			for (UUID childID : group->m_Children)
+			{
+				if (childID == potentialDescendantID)
+					return true;
+
+				if (IsDescendant(childID, potentialDescendantID))
+					return true;
+			}
+
+			return false;
+		}
+
+		bool ReparentGroup(UUID groupID, UUID newParentID)
+		{
+			if (groupID == m_MasterGroupID)
+				return false;
+
+			if (groupID == newParentID)
+				return false;
+
+			Count<AudioMixerGroup> group = GetGroup(groupID);
+			Count<AudioMixerGroup> newParent = GetGroup(newParentID);
+
+			if (!group || !newParent)
+				return false;
+
+			if (IsDescendant(groupID, newParentID))
+				return false;
+
+			Count<AudioMixerGroup> oldParent = GetGroup(group->m_ParentID);
+
+			if (oldParent)
+			{
+				auto it = std::find(oldParent->m_Children.begin(), oldParent->m_Children.end(), groupID);
+
+				if (it != oldParent->m_Children.end())
+					oldParent->m_Children.erase(it);
+			}
+
+			group->m_ParentID = newParentID;
+			newParent->m_Children.push_back(groupID);
+
+			// MiniAudio's native routing needs to be moved as well.
+			ma_node_detach_output_bus(&group->m_Group, 0);
+			ma_node_attach_output_bus(&group->m_Group, 0, &newParent->m_Group, 0);
+
+			return true;
+		}
 	private:
 		UUID GenerateGroupID() const;
 

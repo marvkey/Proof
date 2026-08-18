@@ -17,7 +17,6 @@
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Scene/Material.h"
 #include "Proof/Physics/PhysicsMaterial.h"
-#include "Proof/Audio/Audio.h"
 #include "AssetCustomData/AssetCustomDataManager.h"
 #include <future>
 
@@ -62,6 +61,7 @@ namespace Proof
 			s_AssetManagerData->AssetSerilizer[AssetType::ParticleSystem] = CreateSpecial<ParticleSystemSerilizer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::Audio] = CreateSpecial<AudioAssetSerilizer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::AudioController] = CreateSpecial<AudioControllerAssetSerilizer>();
+			s_AssetManagerData->AssetSerilizer[AssetType::AudioMixer] = CreateSpecial<AudioMixerAssetSerilizer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::MeshCollider] = CreateSpecial<MeshColliderAssetSerilizer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::ScriptFile] = CreateSpecial<ScriptFileAssetSerilizer>();
 			s_AssetManagerData->AssetSerilizer[AssetType::World] = CreateSpecial<WorldAssetSerializer>();

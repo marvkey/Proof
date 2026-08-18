@@ -2,14 +2,19 @@
 #include "AudioMixer.h"
 
 #include "AudioEngine.h"
+#include "AudioEffects.h"
 
 namespace Proof
 {
 	AudioMixerGroup::AudioMixerGroup(UUID id, const std::string& name, UUID parentID, ma_sound_group* parentGroup)
 		: m_ID(id), m_Name(name), m_ParentID(parentID)
 	{
+		m_EffectTable = Count<AudioEffectTable>::Create();
+
 		ma_result result = ma_sound_group_init(&AudioEngine::GetEngine(), MA_SOUND_FLAG_NO_SPATIALIZATION, parentGroup, &m_Group);
 		PF_CORE_ASSERT(result == MA_SUCCESS, "Failed to initialize AudioMixerGroup");
+
+		ma_sound_group_set_volume(&m_Group, m_Volume);
 	}
 
 	AudioMixerGroup::~AudioMixerGroup()
@@ -27,17 +32,18 @@ namespace Proof
 	AudioMixer::AudioMixer()
 	{
 		m_MasterGroupID = GenerateGroupID();
-
 		Count<AudioMixerGroup> master = Count<AudioMixerGroup>::Create(m_MasterGroupID, "Master", UUID(0), nullptr);
 		m_Groups.emplace(m_MasterGroupID, master);
 	}
 
 	AudioMixer::AudioMixer(UUID masterGroupID)
 	{
+
 		if (masterGroupID.Get() == 0)
 			masterGroupID = GenerateGroupID();
 
 		m_MasterGroupID = masterGroupID;
+
 
 		Count<AudioMixerGroup> master = Count<AudioMixerGroup>::Create(m_MasterGroupID, "Master", UUID(0), nullptr);
 		m_Groups.emplace(m_MasterGroupID, master);

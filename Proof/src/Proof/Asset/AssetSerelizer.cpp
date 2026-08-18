@@ -32,6 +32,8 @@
 #include "Proof/Animation/AnimationController.h"
 #include "Proof/Animation/Skeleton.h"
 #include "Proof/Audio/AudioController.h"
+#include "Proof/Audio/AudioEffects.h"
+#include "Proof/Audio/AudioMixer.h"
 
 namespace Proof {
 	void AssetSerializer::SetID(const AssetInfo& data, const Count<class Asset>& asset)
@@ -1294,7 +1296,437 @@ namespace Proof {
 		stream << out.c_str();
 		stream.close();
 	}
+	void SerilizeAudioEffectTable(YAML::Emitter& out, const Count<AudioEffectTable>& effectTable)
+	{
+		out << YAML::BeginSeq;
 
+		if (effectTable)
+		{
+			for (const auto& effect : effectTable->GetEffects())
+			{
+				if (!effect)
+					continue;
+
+				out << YAML::BeginMap;
+
+				out << YAML::Key << "Type" << YAML::Value << EnumReflection::EnumString(effect->GetType());
+				out << YAML::Key << "Enabled" << YAML::Value << effect->IsEnabled();
+
+				switch (effect->GetType())
+				{
+					case AudioEffectType::LowPass:
+					{
+						auto lowPass = effect.As<AudioLowPassEffect>();
+
+						out << YAML::Key << "CutoffFrequency" << YAML::Value << lowPass->GetCutoffFrequency();
+						out << YAML::Key << "Order" << YAML::Value << lowPass->GetOrder();
+
+						break;
+					}
+
+					case AudioEffectType::HighPass:
+					{
+						auto highPass = effect.As<AudioHighPassEffect>();
+
+						out << YAML::Key << "CutoffFrequency" << YAML::Value << highPass->GetCutoffFrequency();
+						out << YAML::Key << "Order" << YAML::Value << highPass->GetOrder();
+
+						break;
+					}
+
+					case AudioEffectType::Echo:
+					{
+						auto echo = effect.As<AudioEchoEffect>();
+
+						out << YAML::Key << "DelaySeconds" << YAML::Value << echo->GetDelaySeconds();
+						out << YAML::Key << "Wet" << YAML::Value << echo->GetWet();
+						out << YAML::Key << "Dry" << YAML::Value << echo->GetDry();
+						out << YAML::Key << "Decay" << YAML::Value << echo->GetDecay();
+
+						break;
+					}
+
+					case AudioEffectType::Equalizer:
+					{
+						auto equalizer = effect.As<AudioEqualizerEffect>();
+
+						out << YAML::Key << "Frequency" << YAML::Value << equalizer->GetFrequency();
+						out << YAML::Key << "GainDB" << YAML::Value << equalizer->GetGainDB();
+						out << YAML::Key << "Q" << YAML::Value << equalizer->GetQ();
+
+						break;
+					}
+
+					case AudioEffectType::LowShelf:
+					{
+						auto lowShelf = effect.As<AudioLowShelfEffect>();
+
+						out << YAML::Key << "Frequency" << YAML::Value << lowShelf->GetFrequency();
+						out << YAML::Key << "GainDB" << YAML::Value << lowShelf->GetGainDB();
+						out << YAML::Key << "Q" << YAML::Value << lowShelf->GetQ();
+
+						break;
+					}
+
+					case AudioEffectType::HighShelf:
+					{
+						auto highShelf = effect.As<AudioHighShelfEffect>();
+
+						out << YAML::Key << "Frequency" << YAML::Value << highShelf->GetFrequency();
+						out << YAML::Key << "GainDB" << YAML::Value << highShelf->GetGainDB();
+						out << YAML::Key << "Q" << YAML::Value << highShelf->GetQ();
+
+						break;
+					}
+
+					case AudioEffectType::None:
+					default:
+						break;
+				}
+
+				out << YAML::EndMap;
+			}
+		}
+
+		out << YAML::EndSeq;
+	}
+
+	void DeSerilizeAudioEffectTable(const YAML::Node& node, const Count<AudioEffectTable>& effectTable)
+	{
+		if (!effectTable)
+			return;
+
+		effectTable->Clear();
+
+		if (!node || !node.IsSequence())
+			return;
+
+		for (size_t i = 0; i < node.size(); i++)
+		{
+			YAML::Node effectNode = node[i];
+
+			if (!effectNode["Type"])
+				continue;
+
+			AudioEffectType type = EnumReflection::StringEnum<AudioEffectType>(effectNode["Type"].as<std::string>());
+
+			Count<AudioEffect> effect = nullptr;
+
+			switch (type)
+			{
+				case AudioEffectType::LowPass:
+				{
+					float cutoffFrequency = effectNode["CutoffFrequency"].as<float>(20000.0f);
+					uint32_t order = effectNode["Order"].as<uint32_t>(2);
+
+					effect = Count<AudioLowPassEffect>::Create(cutoffFrequency, order).As<AudioEffect>();
+
+					break;
+				}
+
+				case AudioEffectType::HighPass:
+				{
+					float cutoffFrequency = effectNode["CutoffFrequency"].as<float>(20.0f);
+					uint32_t order = effectNode["Order"].as<uint32_t>(2);
+
+					effect = Count<AudioHighPassEffect>::Create(cutoffFrequency, order).As<AudioEffect>();
+
+					break;
+				}
+
+				case AudioEffectType::Echo:
+				{
+					float delaySeconds = effectNode["DelaySeconds"].as<float>(0.2f);
+					float decay = effectNode["Decay"].as<float>(0.25f);
+					float wet = effectNode["Wet"].as<float>(0.25f);
+					float dry = effectNode["Dry"].as<float>(1.0f);
+
+					effect = Count<AudioEchoEffect>::Create(delaySeconds, decay, wet, dry).As<AudioEffect>();
+
+					break;
+				}
+
+				case AudioEffectType::Equalizer:
+				{
+					float frequency = effectNode["Frequency"].as<float>(1000.0f);
+					float gainDB = effectNode["GainDB"].as<float>(0.0f);
+					float q = effectNode["Q"].as<float>(1.0f);
+
+					effect = Count<AudioEqualizerEffect>::Create(frequency, gainDB, q).As<AudioEffect>();
+
+					break;
+				}
+
+				case AudioEffectType::LowShelf:
+				{
+					float frequency = effectNode["Frequency"].as<float>(200.0f);
+					float gainDB = effectNode["GainDB"].as<float>(0.0f);
+					float q = effectNode["Q"].as<float>(1.0f);
+
+					effect = Count<AudioLowShelfEffect>::Create(frequency, gainDB, q).As<AudioEffect>();
+
+					break;
+				}
+
+				case AudioEffectType::HighShelf:
+				{
+					float frequency = effectNode["Frequency"].as<float>(8000.0f);
+					float gainDB = effectNode["GainDB"].as<float>(0.0f);
+					float q = effectNode["Q"].as<float>(1.0f);
+
+					effect = Count<AudioHighShelfEffect>::Create(frequency, gainDB, q).As<AudioEffect>();
+
+					break;
+				}
+
+				case AudioEffectType::None:
+				default:
+					break;
+			}
+
+			if (!effect)
+				continue;
+
+			if (effectNode["Enabled"])
+				effect->SetEnabled(effectNode["Enabled"].as<bool>());
+
+			effectTable->AddEffect(effect);
+		}
+	}
+
+
+	void AudioMixerAssetSerilizer::Save(const AssetInfo& data, const Count<class Asset>& asset) const
+	{
+		Count<AudioMixer> mixer = asset.As<AudioMixer>();
+
+		if (!mixer)
+			return;
+
+		YAML::Emitter out;
+
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(mixer->GetAssetType());
+		out << YAML::Key << "ID" << YAML::Value << mixer->GetID();
+		out << YAML::Key << "MasterGroupID" << YAML::Value << mixer->GetMasterGroupID().Get();
+
+		out << YAML::Key << "Groups" << YAML::Value << YAML::BeginSeq;
+
+		for (const auto& [groupID, group] : mixer->GetGroups())
+		{
+			if (!group)
+				continue;
+
+			out << YAML::BeginMap;
+
+			out << YAML::Key << "ID" << YAML::Value << group->GetID().Get();
+			out << YAML::Key << "Name" << YAML::Value << group->GetName();
+			out << YAML::Key << "ParentID" << YAML::Value << group->GetParentID().Get();
+			out << YAML::Key << "Volume" << YAML::Value << group->GetVolume();
+
+			out << YAML::Key << "Effects" << YAML::Value;
+			SerilizeAudioEffectTable(out, group->GetEffectTable());
+
+			out << YAML::EndMap;
+		}
+
+		out << YAML::EndSeq;
+		out << YAML::EndMap;
+
+		if (!out.good())
+		{
+			PF_ENGINE_ERROR("Failed to serialize AudioMixer {}: {}", mixer->GetID(), out.GetLastError());
+			return;
+		}
+
+		std::filesystem::path path = AssetManager::GetAssetFileSystemPath(data.Path);
+		std::ofstream stream(path.string());
+
+		if (!stream.is_open())
+		{
+			PF_ENGINE_ERROR("Failed to open AudioMixer {} for saving", mixer->GetID());
+			return;
+		}
+
+		stream << out.c_str();
+		stream.close();
+	}
+
+
+	Count<class Asset> AudioMixerAssetSerilizer::TryLoadAsset(const AssetInfo& data) const
+	{
+		std::filesystem::path path = AssetManager::GetAssetFileSystemPath(data.Path);
+
+		if (!std::filesystem::exists(path))
+		{
+			PF_ENGINE_ERROR("AudioMixer file does not exist {}", path.string());
+			return nullptr;
+		}
+
+		YAML::Node root = YAML::LoadFile(path.string());
+
+		if (!root["AssetType"])
+			return nullptr;
+
+		if (!root["MasterGroupID"])
+		{
+			PF_ENGINE_ERROR("AudioMixer {} has no MasterGroupID", data.Path.string());
+			return nullptr;
+		}
+
+		UUID masterGroupID = root["MasterGroupID"].as<uint64_t>();
+
+		Count<AudioMixer> mixer = Count<AudioMixer>::Create(masterGroupID);
+		SetID(data, mixer);
+
+		YAML::Node groups = root["Groups"];
+
+		if (!groups || !groups.IsSequence())
+			return mixer;
+
+
+		// ------------------------------------------------------------------------------------------------
+		// Load the Master group first.
+		// ------------------------------------------------------------------------------------------------
+
+		YAML::Node masterNode;
+
+		for (size_t i = 0; i < groups.size(); i++)
+		{
+			YAML::Node groupNode = groups[i];
+
+			if (!groupNode["ID"])
+				continue;
+
+			UUID groupID = groupNode["ID"].as<uint64_t>();
+
+			if (groupID == masterGroupID)
+			{
+				masterNode = groupNode;
+				break;
+			}
+		}
+
+		Count<AudioMixerGroup> master = mixer->GetMasterGroup();
+
+		if (master && masterNode)
+		{
+			if (masterNode["Name"])
+				master->SetName(masterNode["Name"].as<std::string>());
+
+			if (masterNode["Volume"])
+				master->SetVolume(masterNode["Volume"].as<float>());
+
+			DeSerilizeAudioEffectTable(masterNode["Effects"], master->GetEffectTable());
+		}
+
+
+		// ------------------------------------------------------------------------------------------------
+		// Store every non-Master group temporarily.
+		//
+		// Groups are stored in an unordered_map when saving, so we cannot assume a parent appears before
+		// its children in the YAML file.
+		//
+		// Example:
+		//
+		//		Cars   -> Parent = SFX
+		//		SFX    -> Parent = Master
+		//		Master
+		//
+		// Therefore we keep attempting to create groups whose parent already exists.
+		// ------------------------------------------------------------------------------------------------
+
+		std::vector<YAML::Node> remainingGroups;
+
+		for (size_t i = 0; i < groups.size(); i++)
+		{
+			YAML::Node groupNode = groups[i];
+
+			if (!groupNode["ID"])
+				continue;
+
+			UUID groupID = groupNode["ID"].as<uint64_t>();
+
+			if (groupID == masterGroupID)
+				continue;
+
+			remainingGroups.push_back(groupNode);
+		}
+
+
+		while (!remainingGroups.empty())
+		{
+			bool createdAnyGroup = false;
+
+			for (auto it = remainingGroups.begin(); it != remainingGroups.end();)
+			{
+				YAML::Node groupNode = *it;
+
+				if (!groupNode["ID"] || !groupNode["ParentID"])
+				{
+					it = remainingGroups.erase(it);
+					continue;
+				}
+
+				UUID groupID = groupNode["ID"].as<uint64_t>();
+				UUID parentID = groupNode["ParentID"].as<uint64_t>();
+
+				// Parent has not been created yet.
+				if (!mixer->HasGroup(parentID))
+				{
+					++it;
+					continue;
+				}
+
+				// Duplicate UUID in the file.
+				if (mixer->HasGroup(groupID))
+				{
+					it = remainingGroups.erase(it);
+					continue;
+				}
+
+				std::string name = groupNode["Name"].as<std::string>("Audio Group");
+
+				Count<AudioMixerGroup> group = mixer->CreateGroupWithID(groupID, name, parentID);
+
+				if (!group)
+				{
+					it = remainingGroups.erase(it);
+					continue;
+				}
+
+				if (groupNode["Volume"])
+					group->SetVolume(groupNode["Volume"].as<float>());
+
+				DeSerilizeAudioEffectTable(groupNode["Effects"], group->GetEffectTable());
+
+				it = remainingGroups.erase(it);
+				createdAnyGroup = true;
+			}
+
+			// Nothing could be created, which means the remaining groups have invalid/missing parents
+			// or a broken hierarchy.
+			if (!createdAnyGroup)
+				break;
+		}
+
+
+		if (!remainingGroups.empty())
+		{
+			for (const YAML::Node& groupNode : remainingGroups)
+			{
+				if (!groupNode["ID"])
+					continue;
+
+				UUID groupID = groupNode["ID"].as<uint64_t>();
+				UUID parentID = groupNode["ParentID"].as<uint64_t>(0);
+
+				PF_ENGINE_ERROR("Failed to load AudioMixerGroup {} because parent {} could not be resolved", groupID.Get(), parentID.Get());
+			}
+		}
+
+		return mixer;
+	}
 	Count<class Asset> AudioControllerAssetSerilizer::TryLoadAsset(const AssetInfo& assetData) const
 	{
 		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());

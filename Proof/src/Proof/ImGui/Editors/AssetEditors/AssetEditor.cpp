@@ -2,6 +2,7 @@
 #include "AssetEditor.h"
 
 #include "AudioControllerEditorPanel.h"
+#include "AudioMixerEditorPanel.h"
 #include "Proof/Core/FrameTime.h"
 #include "ProoF/Asset/Asset.h"
 #include "ProoF/Asset/AssetManager.h"
@@ -221,6 +222,7 @@ namespace Proof
 		RegisterEditor(AssetType::AnimationController);
 		RegisterEditor(AssetType::ParticleEmitter);
 		RegisterEditor(AssetType::AudioController);
+		RegisterEditor(AssetType::AudioMixer);
 	}
 
 	void AssetEditorPanel::UnregisterAllEditors()
@@ -334,6 +336,9 @@ namespace Proof
 					  break;
 				case Proof::AssetType::AudioController:
 					s_Editors[asset->GetAssetType()][asset->GetID()] = Count<AudioControllerEditorPanel>::Create();
+				break;
+			case Proof::AssetType::AudioMixer:
+				s_Editors[asset->GetAssetType()][asset->GetID()] = Count<AudioMixerEditorPanel>::Create();
 				break;
 				default:
 					break;

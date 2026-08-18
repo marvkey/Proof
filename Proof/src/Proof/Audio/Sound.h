@@ -43,6 +43,8 @@ namespace Proof
 
 	private:
 		void Release();
+		void SetMixerGroup(const Count<class AudioMixerGroup> group);
+
 
 	private:
 		UUID m_UUID = { 0 };

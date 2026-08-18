@@ -20,6 +20,7 @@ namespace Proof {
 		AnimationControllerThumbnailIcon = Texture2D::Create(TextureConfiguration("AnimationControllerThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/AnimationController.png");
 		AudioThumbnailIcon = Texture2D::Create(TextureConfiguration("AudioThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/Audio.png");
 		AudioControllerThumbnailIcon = Texture2D::Create(TextureConfiguration("AudioControllerThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/AudioController.png");
+		AudioMixerThumbnailIcon = Texture2D::Create(TextureConfiguration("AudioMixerThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/AudioMixer.png");
 		FontThumbnailIcon = Texture2D::Create(TextureConfiguration("FontThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/Font.png");
 		InputActionThumbnailIcon = Texture2D::Create(TextureConfiguration("InputActionThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/InputAction.png");
 		InputBindingContextThumbnailIcon = Texture2D::Create(TextureConfiguration("InputBindingContextThumbnailIcon"), "Resources/Icons/ContentBrowser/AssetIcons/InputBindingContext.png");

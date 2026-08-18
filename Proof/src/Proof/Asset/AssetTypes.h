@@ -30,6 +30,7 @@ namespace Proof
 		ParticleSystem,
 		Audio,
 		AudioController,
+		AudioMixer,
 		//AudioSourceFile,
 		MeshCollider,
 		ScriptFile,
@@ -108,6 +109,7 @@ namespace Proof
 			{AssetType::AnimationController,".AnimationController.ProofAsset"},
 			{AssetType::ParticleEmitter,".ParticleEmitter.ProofAsset"},
 			{AssetType::AudioController,".AudioController.ProofAsset"},
+			{AssetType::AudioMixer,".AudioMixer.ProofAsset"},
 		};
 		std::string GetAssetExtensionString(AssetType type);
 		// checks the file extension

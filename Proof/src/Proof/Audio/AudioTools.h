@@ -21,9 +21,12 @@ namespace Proof
         Exponential    // Exponential attenuation. Equivalent to OpenAL's AL_EXPONENT_DISTANCE_CLAMPED.
 
     };
+
+
     struct SoundConfiguration
     {
-        Count<class Audio> Aduio =nullptr;  
+        Count<class Audio> Aduio =nullptr;
+        Count< class AudioMixerGroup> Mixer = nullptr;
         float VolumeMultiplier = 1.0f; // min 0, max 1
         float PitchMultiplier = 1.0f;//min 0, max 1 (it multipleis by the pitch in the Auid
         bool Looping = false;
