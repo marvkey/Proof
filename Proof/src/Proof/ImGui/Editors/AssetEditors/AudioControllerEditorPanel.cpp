@@ -125,6 +125,7 @@ namespace  Proof
 			AssetID audioSource = m_AudioController->AudioSource.GetAssetID();
 
 			UI::AttributeAssetReference("Audio Source", AssetType::Audio, audioSource);
+			UI::AttributeAudioMixerGroupKeyReference("Audio Mixer",m_AudioController->MixerKey);
 
 			if (audioSource != m_AudioController->AudioSource.GetAssetID())
 			{

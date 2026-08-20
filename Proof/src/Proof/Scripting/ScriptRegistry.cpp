@@ -97,6 +97,8 @@ namespace Proof
 		//uint32_t classID = Hash::GenerateFNVHash(className);
 		if (s_ScriptRegistryData->Classes.find(className) == s_ScriptRegistryData->Classes.end())
 		{
+			
+
 			PF_ENGINE_ERROR("Script Registry does not contain {}", className);
 			return nullptr;
 		}
@@ -146,23 +148,23 @@ namespace Proof
 			case ScriptFieldType::Float: return PF_REGISTERED_CLASS("System.Single")->Class;
 			case ScriptFieldType::Double: return PF_REGISTERED_CLASS("System.Double")->Class;
 			case ScriptFieldType::String: return PF_REGISTERED_CLASS("System.String")->Class;
-			case ScriptFieldType::Vector2: return PF_REGISTERED_CLASS("PF.Vector2")->Class;
-			case ScriptFieldType::Vector3: return PF_REGISTERED_CLASS("PF.Vector3")->Class;
-			case ScriptFieldType::Vector4: return PF_REGISTERED_CLASS("PF.Vector4")->Class;
-			case ScriptFieldType::bVector2: return PF_REGISTERED_CLASS("PF.bVector2")->Class;
-			case ScriptFieldType::bVector3: return PF_REGISTERED_CLASS("PF.bVector3")->Class;
-			case ScriptFieldType::bVector4: return PF_REGISTERED_CLASS("PF.bVector4")->Class;
-			case ScriptFieldType::AssetID: return PF_REGISTERED_CLASS("PF.AssetID")->Class;
-			case ScriptFieldType::Prefab: return PF_REGISTERED_CLASS("PF.Prefab")->Class;
-			case ScriptFieldType::Entity: return PF_REGISTERED_CLASS("PF.Entity")->Class;
-			case ScriptFieldType::Mesh: return PF_REGISTERED_CLASS("PF.Mesh")->Class;
-			case ScriptFieldType::DynamicMesh: return PF_REGISTERED_CLASS("PF.DynamicMesh")->Class;
-			case ScriptFieldType::Material: return PF_REGISTERED_CLASS("PF.Material")->Class;
-			case ScriptFieldType::PhysicsMaterial: return PF_REGISTERED_CLASS("PF.PhysicsMaterial")->Class;
-			case ScriptFieldType::Texture2D: return PF_REGISTERED_CLASS("PF.Texture2D")->Class;
-			case ScriptFieldType::InputAction: return PF_REGISTERED_CLASS("PF.InputAction")->Class;
-			case ScriptFieldType::InputBindingContext: return PF_REGISTERED_CLASS("PF.InputBindingContext")->Class;
-			case ScriptFieldType::UIPanel: return PF_REGISTERED_CLASS("PF.UIPanel")->Class;
+			case ScriptFieldType::Vector2: return PF_REGISTERED_CLASS("Proof.Vector2")->Class;
+			case ScriptFieldType::Vector3: return PF_REGISTERED_CLASS("Proof.Vector3")->Class;
+			case ScriptFieldType::Vector4: return PF_REGISTERED_CLASS("Proof.Vector4")->Class;
+			case ScriptFieldType::bVector2: return PF_REGISTERED_CLASS("Proof.bVector2")->Class;
+			case ScriptFieldType::bVector3: return PF_REGISTERED_CLASS("Proof.bVector3")->Class;
+			case ScriptFieldType::bVector4: return PF_REGISTERED_CLASS("Proof.bVector4")->Class;
+			case ScriptFieldType::AssetID: return PF_REGISTERED_CLASS("Proof.AssetID")->Class;
+			case ScriptFieldType::Prefab: return PF_REGISTERED_CLASS("Proof.Prefab")->Class;
+			case ScriptFieldType::Entity: return PF_REGISTERED_CLASS("Proof.Entity")->Class;
+			case ScriptFieldType::Mesh: return PF_REGISTERED_CLASS("Proof.StaticMesh")->Class;
+			case ScriptFieldType::DynamicMesh: return PF_REGISTERED_CLASS("Proof.DynamicMesh")->Class;
+			case ScriptFieldType::Material: return PF_REGISTERED_CLASS("Proof.Material")->Class;
+			case ScriptFieldType::PhysicsMaterial: return PF_REGISTERED_CLASS("Proof.PhysicsMaterial")->Class;
+			case ScriptFieldType::Texture2D: return PF_REGISTERED_CLASS("Proof.Texture2D")->Class;
+			case ScriptFieldType::InputAction: return PF_REGISTERED_CLASS("Proof.InputAction")->Class;
+			case ScriptFieldType::InputBindingContext: return PF_REGISTERED_CLASS("Proof.InputBindingContext")->Class;
+			case ScriptFieldType::UIPanel: return PF_REGISTERED_CLASS("Proof.UIPanel")->Class;
 		}
 		PF_ENGINE_ERROR("NOt supported type {}", EnumReflection::EnumString(fieldType));
 		PF_CORE_ASSERT(false);
@@ -727,7 +729,6 @@ namespace Proof
 			mono_metadata_decode_row(typeDefinitionsTable, i, cols, MONO_TYPEDEF_SIZE);
 			const char* nameSpace = mono_metadata_string_heap(ScriptEngine::GetCoreAssemblyInfo()->AssemblyImage, cols[MONO_TYPEDEF_NAMESPACE]);
 			const char* className = mono_metadata_string_heap(ScriptEngine::GetCoreAssemblyInfo()->AssemblyImage, cols[MONO_TYPEDEF_NAME]);
-
 			std::string fullName;
 			if (strlen(nameSpace) != 0)
 				fullName = fmt::format("{}.{}", nameSpace, className);

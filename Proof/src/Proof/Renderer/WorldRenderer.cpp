@@ -766,11 +766,16 @@ namespace Proof
 			{
 
 				FrameBufferConfig postProcessFramebufferSpec;
-				postProcessFramebufferSpec.DebugName = "PostProcesss";
+				postProcessFramebufferSpec.DebugName = "PostProcesssA";
 				postProcessFramebufferSpec.ClearColor = { 0.1f, 0.1f, 0.1f, 1.0f };
 				postProcessFramebufferSpec.Attachments = { ImageFormat::RGBA32F, ImageFormat::DEPTH32F };
+				postProcessFramebufferSpec.ClearColorOnLoad = false;
+				postProcessFramebufferSpec.ClearDepthOnLoad = false;
+
 				//compFramebufferSpec.Transfer = true;
-				m_PostProcessFrameBuffer = FrameBuffer::Create(postProcessFramebufferSpec);
+				m_PostProcessFrameBufferA = FrameBuffer::Create(postProcessFramebufferSpec);
+				postProcessFramebufferSpec.DebugName =  "PostProcessB";
+				m_PostProcessFrameBufferB = FrameBuffer::Create(postProcessFramebufferSpec);
 
 				
 			}
@@ -2899,21 +2904,123 @@ namespace Proof
 	}
 	void WorldRenderer::RenderPostProcessingPasses()
 	{
-		PF_PROFILE_FUNC();
+			PF_PROFILE_FUNC();
 
-		if(m_PostProcessMaterials.size() == 0)
-			return;
+	if (m_PostProcessMaterials.size() == 0)
+		return;
 
-		for(int i =0; i < m_PostProcessMaterials.size(); i++)
+		/*
+			POST PROCESS PING-PONG FRAMEBUFFERS
+			-----------------------------------
+
+			We use TWO post-process framebuffers (A and B) and alternate between them.
+
+			This is NOT because different effects belong to different framebuffers.
+			Every effect is still applied on top of all the effects that came before it.
+
+			A post-process effect needs to:
+
+				1. READ the output of the previous effect.
+				2. WRITE its new result somewhere else.
+
+			We cannot normally sample from an image while simultaneously rendering
+			back into that exact same image.
+
+			WRONG:
+
+				Framebuffer A
+					|
+					v
+				Vignette
+					|
+					v
+				Framebuffer A
+
+				Read A + Write A at the same time = BAD.
+
+			Instead we ping-pong:
+
+				Geometry
+					|
+					v
+				Fog
+					|
+					v
+				Framebuffer A
+
+				Framebuffer A
+					|
+					v
+				Vignette
+					|
+					v
+				Framebuffer B
+
+				Framebuffer B
+					|
+					v
+				Next Effect
+					|
+					v
+				Framebuffer A
+
+			Nothing is lost when switching between A and B.
+
+				A after Fog:
+					Scene + Fog
+
+				B after Vignette:
+					Scene + Fog + Vignette
+
+				A after Effect 3:
+					Scene + Fog + Vignette + Effect 3
+
+			A and B are just two permanent scratch framebuffers reused every frame.
+
+			We also clear each scratch framebuffer the FIRST time it is written to
+			during this post-process run.
+
+			Example:
+
+				Fog      -> A   Clear A = true
+				Vignette -> B   Clear B = true
+				Effect 3 -> A   Clear A = false
+				Effect 4 -> B   Clear B = false
+
+			After every pass, inputImage becomes that pass's output, meaning the next
+			effect always receives the fully processed result from everything before it.
+		*/
+
+		Count<Image> inputImage = m_GeometryPass->GetOutput(0);
+
+		bool clearedFrameBufferA = false;
+		bool clearedFrameBufferB = false;
+
+		for (uint32_t i = 0; i < m_PostProcessMaterials.size(); i++)
 		{
-			Count<RenderMaterial> renderMaterail = m_PostProcessMaterials[i]->GetRenderMaterial();
+			Count<RenderMaterial> renderMaterial = m_PostProcessMaterials[i]->GetRenderMaterial();
 
-			auto pass = m_PostProcessPasses.at(renderMaterail->GetConfig().Shader);
-			// clear teh inital pass
-			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, pass, i ==0 ? true : false);
+			auto pass = m_PostProcessPasses.at(renderMaterial->GetConfig().Shader);
 
-			Renderer::SubmitFullScreenQuad(m_CommandBuffer, pass, renderMaterail);
+			bool useFrameBufferA = (i % 2 == 0);
+
+			Count<FrameBuffer> outputFrameBuffer = useFrameBufferA ? m_PostProcessFrameBufferA : m_PostProcessFrameBufferB;
+
+			bool clearFrameBuffer = useFrameBufferA ? !clearedFrameBufferA : !clearedFrameBufferB;
+
+			pass->SetInput("u_InputColor", inputImage);
+			pass->SetTargetFrameBuffer(outputFrameBuffer);
+
+			Renderer::BeginRenderMaterialRenderPass(m_CommandBuffer, pass, clearFrameBuffer);
+			Renderer::SubmitFullScreenQuad(m_CommandBuffer, pass, renderMaterial);
 			Renderer::EndRenderPass(pass);
+
+			if (useFrameBufferA)
+				clearedFrameBufferA = true;
+			else
+				clearedFrameBufferB = true;
+
+			inputImage = pass->GetOutput(0);
 		}
 	}
 	void WorldRenderer::CompositePass()
@@ -2945,8 +3052,7 @@ namespace Proof
 			m_CompositeMaterial->Set("u_DepthTexture",m_PreDepthPass->GetOutput(0));
 			// use the post rocesss ouput if there is any
 			if(m_PostProcessMaterials.size() > 0)
-				inputImage = m_PostProcessFrameBuffer->GetOutput(0);
-			m_CompositeMaterial->Set("u_WorldTexture", inputImage);
+				inputImage = (m_PostProcessMaterials.size() % 2) == 1 ? m_PostProcessFrameBufferA->GetOutput(0) : m_PostProcessFrameBufferB->GetOutput(0);			m_CompositeMaterial->Set("u_WorldTexture", inputImage);
 
 			m_CompositeMaterial->Set("u_BloomTexture", m_BloomComputeTextures[2]);
 
@@ -4935,13 +5041,12 @@ namespace Proof
 		pipelineSpecification.WriteDepth = false;
 		pipelineSpecification.DepthTest = false;
 		pipelineSpecification.Shader = shader;
-
 		Count<GraphicsPipeline> compositePipeline = GraphicsPipeline::Create(pipelineSpecification);
 
 		RenderPassConfig renderPassSpec;
 		renderPassSpec.DebugName = fmt::format("PostProcess {}", shader->GetName());
 		renderPassSpec.Pipeline = compositePipeline;
-		renderPassSpec.TargetFrameBuffer = m_PostProcessFrameBuffer;
+		renderPassSpec.TargetFrameBuffer = m_PostProcessFrameBufferA;
 
 		auto renderPass = RenderPass::Create(renderPassSpec);
 		m_PostProcessPasses[shader] = renderPass;
@@ -4950,5 +5055,6 @@ namespace Proof
 		renderPass->SetInput("u_InputDepth", m_PreDepthPass->GetOutput(0));
 		renderPass->AddGlobalInput(m_GlobalInputs);
 		renderPass->SetInput("FrameData",m_UBFrameBuffer);
+
 	}
 }

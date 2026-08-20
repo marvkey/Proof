@@ -5,7 +5,7 @@
 #include "Proof/Asset/AssetTypes.h"
 #include "UITypes.h"
 #include <vector>
-
+#include "Proof/Audio/AudioUtils.h"
 namespace Proof
 {
 	class World;
@@ -31,6 +31,7 @@ namespace Proof::UI
 
 
 	bool AttributeAssetReferenceList(const std::string& label, AssetType type, std::vector<AssetID>& id, const PropertyAssetReferenceSettings& settings = {});
+	bool AttributeAudioMixerGroupKeyReference(const std::string& label, AudioMixerGroupKey& mixerGroupKey, const PropertyAssetReferenceSettings& settings = {});
 
 	template <AssetType Type>
 	bool AttributeAssetKeyReference(const std::string& label, AssetKey<Type>& assetKey, const PropertyAssetReferenceSettings& settings = {}) {

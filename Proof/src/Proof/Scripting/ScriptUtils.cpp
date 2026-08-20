@@ -82,10 +82,10 @@ namespace Proof::ScriptUtils
 					if (PF_CORE_CLASS(Prefab) && typeClass == PF_CORE_CLASS(Prefab)->Class)
 						return ScriptFieldType::Prefab;
 
-					if (PF_CORE_CLASS(Mesh) && typeClass == PF_CORE_CLASS(Mesh)->Class)
+					if (PF_CORE_CLASS(StaticMesh) && typeClass == PF_CORE_CLASS(StaticMesh)->Class)
 						return ScriptFieldType::Mesh;
 
-					if (PF_CORE_CLASS(DynamicMesh) && typeClass == PF_CORE_CLASS(StaticMesh)->Class)
+					if (PF_CORE_CLASS(DynamicMesh) && typeClass == PF_CORE_CLASS(DynamicMesh)->Class)
 						return ScriptFieldType::DynamicMesh;
 
 					if (PF_CORE_CLASS(Material) && typeClass == PF_CORE_CLASS(Material)->Class)
@@ -196,7 +196,7 @@ namespace Proof::ScriptUtils
 				case ScriptFieldType::String: return (MonoObject*)UTF8StringToMono(*(std::string*)data);
 				case ScriptFieldType::Prefab: return ScriptEngine::CreateManagedObject("Proof.Prefab", *(AssetID*)data);
 				case ScriptFieldType::Entity: return ScriptEngine::CreateManagedObject("Proof.Entity", *(UUID*)data);
-				case ScriptFieldType::Mesh: return ScriptEngine::CreateManagedObject("Proof.Mesh", *(AssetID*)data);
+				case ScriptFieldType::Mesh: return ScriptEngine::CreateManagedObject("Proof.StaticMesh", *(AssetID*)data);
 				case ScriptFieldType::DynamicMesh: return ScriptEngine::CreateManagedObject("Proof.DynamicMesh", *(AssetID*)data);
 				case ScriptFieldType::Material: return ScriptEngine::CreateManagedObject("Proof.Material", *(AssetID*)data);
 				case ScriptFieldType::PhysicsMaterial: return ScriptEngine::CreateManagedObject("Proof.PhysicsMaterial", *(AssetID*)data);
@@ -380,7 +380,7 @@ namespace Proof::ScriptUtils
 			case ScriptFieldType::Material:
 			case ScriptFieldType::PhysicsMaterial:
 			case ScriptFieldType::Texture2D:
-			case ScriptFieldType::InputAction:
+			case ScriptFieldType::InputAction:                
 			case ScriptFieldType::InputBindingContext:
 			case ScriptFieldType::UIPanel:
 				{

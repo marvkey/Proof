@@ -36,7 +36,9 @@ namespace Proof
 
 		template<typename T,typename UIFunction>
 		void DrawComponents(const std::string&name,class Entity& entity,UIFunction Uifunction,const std::string& toolTip=std::string());
-		
+		char m_EntitySearchBuffer[256]{};
+		bool m_SearchingEntities = false;
+		float m_HierarchyHeight =550.0f;
 	};
 }
 

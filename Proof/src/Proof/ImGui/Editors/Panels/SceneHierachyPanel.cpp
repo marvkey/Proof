@@ -688,42 +688,104 @@ namespace Proof
 	{
 
 	}
-	void SceneHierachyPanel::OnImGuiRender(const char* dsiplayName, bool& isOpen) {
-
+	void SceneHierachyPanel::OnImGuiRender(const char* dsiplayName, bool& isOpen)
+	{
 		if (isOpen == false)
 			return;
+
 		PF_PROFILE_FUNC();
+
 		UI::ScopedID customID(GetCustomPushID().Get());
+
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
+
 		if (ImGui::Begin(dsiplayName, &isOpen));
 		{
-
 			m_IsFocused = ImGui::IsWindowFocused();
 			m_IsHovered = ImGui::IsWindowHovered();
+
+			float availableHeight = ImGui::GetContentRegionAvail().y;
+
+			const float splitterHeight = 6.0f;
+			const float minimumPanelHeight = 100.0f;
+
+			float maximumHierarchyHeight = std::max(minimumPanelHeight, availableHeight - minimumPanelHeight - splitterHeight);
+
+			m_HierarchyHeight = std::clamp(m_HierarchyHeight, minimumPanelHeight, maximumHierarchyHeight);
+
+
 			/*
-			auto &a =m_ActiveWorld->m_Registry.view<>();
-			for (auto& g : a) {
-
-			}
-			*/
+				HIERARCHY
+			---------
+			Resizable top section containing the entity search and hierarchy.
+		*/
 			ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0,0,0,1 });
-			ImGui::BeginChild("Child Herieachy", { ImGui::GetContentRegionAvail().x,ImGui::GetWindowHeight() / 2 });
-		
 
-		
-			if (ImGui::BeginPopupContextWindow(0)) { // right click adn open a new entitiy
+			ImGui::BeginChild("Child Herieachy", { ImGui::GetContentRegionAvail().x,m_HierarchyHeight });
+
+
+			/*
+				ENTITY SEARCH
+				-------------
+
+				If the search box is empty we draw the normal hierarchy.
+
+				When searching we check every entity directly so deeply nested
+				entities can still be found without opening all of their parents.
+			*/
+			ImGui::SetNextItemWidth(-1.0f);
+
+			ImGui::InputTextWithHint("##EntitySearch", "Search Entity...", m_EntitySearchBuffer, sizeof(m_EntitySearchBuffer));
+
+			m_SearchingEntities = m_EntitySearchBuffer[0] != '\0';
+
+			ImGui::Separator();
+
+
+			if (ImGui::BeginPopupContextWindow(0))
+			{
 				CreateEntityMenu();
 				ImGui::EndPopup();
 			}
 
+
 			{
 				m_WindowHoveredorFocus = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
 
-				for (auto [id, entity] : m_ActiveWorld->GetEntities())
+
+				if (m_SearchingEntities)
 				{
-					if (entity.HasParent() == false)
-						DrawEntityNode(entity);
+					std::string search = m_EntitySearchBuffer;
+
+					std::transform(search.begin(), search.end(), search.begin(), [](unsigned char c)
+						{
+							return (char)std::tolower(c);
+						});
+
+
+					for (auto [id, entity] : m_ActiveWorld->GetEntities())
+					{
+						std::string entityName = entity.GetComponent<TagComponent>().Tag;
+
+						std::transform(entityName.begin(), entityName.end(), entityName.begin(), [](unsigned char c)
+							{
+								return (char)std::tolower(c);
+							});
+
+
+						if (entityName.find(search) != std::string::npos)
+							DrawEntityNode(entity);
+					}
 				}
+				else
+				{
+					for (auto [id, entity] : m_ActiveWorld->GetEntities())
+					{
+						if (entity.HasParent() == false)
+							DrawEntityNode(entity);
+					}
+				}
+
 
 				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false)
 				{
@@ -732,53 +794,116 @@ namespace Proof
 					else
 						AssetSelectionManager::DeselectAll(AssetSelectionContext::Prefab, m_PrefabID);
 				}
-
 			}
+
+
 			ImGui::EndChild();
-			if (ImGui::BeginDragDropTarget()) {
+
+
+			/*
+				Keep your existing entity drop behavior.
+
+				Dropping an entity into the hierarchy background unparents it.
+			*/
+			if (ImGui::BeginDragDropTarget())
+			{
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity"))
 				{
-
 					Entity Data = *(const Entity*)payload->Data;
 					Data.Unparent();
 				}
+
 				ImGui::EndDragDropTarget();
 			}
+
+
 			ImGui::PopStyleColor();
-			ImGui::BeginChild("Properties", ImGui::GetContentRegionAvail());
+
+
+			/*
+				HIERARCHY / PROPERTIES SPLITTER
+				--------------------------------
+
+				The InvisibleButton gives the splitter a larger 6 pixel hit area
+				so it is easy to grab.
+
+				We then draw a visible 1 pixel line through the center.
+
+				The line uses ImGui's built in separator colors so it matches the
+				rest of the editor:
+
+					ImGuiCol_Separator
+					ImGuiCol_SeparatorHovered
+					ImGuiCol_SeparatorActive
+			*/
+			ImGui::InvisibleButton("##HierarchyPropertiesSplitter", ImVec2(-1.0f, splitterHeight));
+
+			ImVec2 splitterMin = ImGui::GetItemRectMin();
+			ImVec2 splitterMax = ImGui::GetItemRectMax();
+
+			ImU32 splitterColor = ImGui::GetColorU32(ImGuiCol_Separator);
+
+			if (ImGui::IsItemActive())
+				splitterColor = ImGui::GetColorU32(ImGuiCol_SeparatorActive);
+			else if (ImGui::IsItemHovered())
+				splitterColor = ImGui::GetColorU32(ImGuiCol_SeparatorHovered);
+
+			float splitterY = (splitterMin.y + splitterMax.y) * 0.5f;
+
+			ImGui::GetWindowDrawList()->AddLine(ImVec2(splitterMin.x, splitterY), ImVec2(splitterMax.x, splitterY), splitterColor, 1.0f);
+
+
+			if (ImGui::IsItemHovered() || ImGui::IsItemActive())
+				ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
+
+
+			if (ImGui::IsItemActive())
 			{
+				m_HierarchyHeight += ImGui::GetIO().MouseDelta.y;
+
+				float maxHeight = std::max(minimumPanelHeight, availableHeight - minimumPanelHeight - splitterHeight);
+
+				m_HierarchyHeight = std::clamp(m_HierarchyHeight, minimumPanelHeight, maxHeight);
+			}
+
+
+			/*
+				PROPERTIES
+				----------
+
+				Takes all of the remaining space underneath the hierarchy.
+			*/
+			ImGui::BeginChild("Properties", ImGui::GetContentRegionAvail());
+
+			{
+				if (m_IsWorld)
 				{
-					if (m_IsWorld)
+					if (SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0)
 					{
+						auto entity = m_ActiveWorld->GetEntity(SelectionManager::GetSelections(SelectionContext::Scene).front());
 
-						if (SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0)
-						{
-							auto entity = m_ActiveWorld->GetEntity(SelectionManager::GetSelections(SelectionContext::Scene).front());
-							DrawComponent(entity);
-						}
-					}
-					else
-					{
-						if (AssetSelectionManager::HasSelections(AssetSelectionContext::Prefab, m_PrefabID))
-						{
-							auto entity = m_ActiveWorld->GetEntity(AssetSelectionManager::GetSelections(AssetSelectionContext::Prefab, m_PrefabID).front());
-							DrawComponent(entity);
-						}
-
+						DrawComponent(entity);
 					}
 				}
+				else
 				{
+					if (AssetSelectionManager::HasSelections(AssetSelectionContext::Prefab, m_PrefabID))
+					{
+						auto entity = m_ActiveWorld->GetEntity(AssetSelectionManager::GetSelections(AssetSelectionContext::Prefab, m_PrefabID).front());
 
+						DrawComponent(entity);
+					}
 				}
 			}
+
 			ImGui::EndChild();
 		}
 
+
 		ImGui::End();
+
 		ImGui::PopStyleVar();
-
 	}
-
 	
 	bool  SceneHierachyPanel::CreateEntityMenu(Entity owner) {
 		Entity newEntity;
@@ -1050,13 +1175,19 @@ namespace Proof
 		//	//Editore3D::Get()->m_EditorCamera.SetPosition (m_ActiveWorld->GetWorldSpaceLocation(m_SelectedEntity));
 		//}
 
-		if (opened) {
-			for (const UUID& I : entity.GetComponent<HierarchyComponent>().Children) {
-				if (m_ActiveWorld->HasEntity(I))
-					DrawEntityNode(m_ActiveWorld->GetEntity(I));
-				else
-					PF_INFO("Entity {} no child {}", entity.GetName(), I);
+		if (opened)
+		{
+			if (!m_SearchingEntities)
+			{
+				for (const UUID& I : entity.GetComponent<HierarchyComponent>().Children)
+				{
+					if (m_ActiveWorld->HasEntity(I))
+						DrawEntityNode(m_ActiveWorld->GetEntity(I));
+					else
+						PF_INFO("Entity {} no child {}", entity.GetName(), I);
+				}
 			}
+
 			ImGui::TreePop();
 		}
 		ImGui::PopID();
@@ -2496,6 +2627,8 @@ namespace Proof
 
 				UI::AttributeBool("Looping", audio.Looping);
 				UI::AttributeBool("Play On Awake", audio.PlayOnAwake);
+				if (!audio.Looping && audio.PlayOnAwake)
+					UI::AttributeBool("DestroyOnFinishe",audio.DeleteOnFinished);
 				UI::EndPropertyGrid();
 			});
 

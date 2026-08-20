@@ -2,6 +2,7 @@
 
 #include "Proof/Asset/Asset.h"
 #include "AudioTools.h"
+#include "AudioUtils.h"
 
 namespace Proof
 {
@@ -15,7 +16,7 @@ namespace Proof
 
     public:
         AssetKey <AssetType::Audio> AudioSource;
-
+        AudioMixerGroupKey MixerKey;
         // Pitch
         float MinPitch = 1.0f;
         float MaxPitch = 1.0f;

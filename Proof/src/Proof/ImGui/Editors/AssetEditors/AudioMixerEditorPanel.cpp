@@ -52,7 +52,8 @@ namespace Proof
 	{
 		if (!m_AudioMixer)
 			return;
-    	ImGui::Begin("Audio Mixer");
+
+		ImGui::Begin("Audio Mixer");
 
 		DrawToolbar();
 
@@ -80,7 +81,7 @@ namespace Proof
 
 	void AudioMixerEditorPanel::DrawToolbar()
 	{
-		Count<AudioMixerGroup> selectedGroup = m_AudioMixer->GetGroup(m_SelectedGroupID);
+		Count<AudioMixerGroup> selectedGroup = m_AudioMixer->TryGetGroup(m_SelectedGroupID);
 
 		if (ImGui::Button("Add Group"))
 			CreateGroup(m_AudioMixer->GetMasterGroupID());
@@ -139,7 +140,7 @@ namespace Proof
 
 	void AudioMixerEditorPanel::DrawGroupNode(UUID groupID)
 	{
-		Count<AudioMixerGroup> group = m_AudioMixer->GetGroup(groupID);
+		Count<AudioMixerGroup> group = m_AudioMixer->TryGetGroup(groupID);
 
 		if (!group)
 			return;
@@ -199,7 +200,7 @@ namespace Proof
 			if (groupID != m_AudioMixer->GetMasterGroupID())
 			{
 				if (ImGui::MenuItem("Delete"))
-				DeleteSelectedGroup();
+					DeleteSelectedGroup();
 			}
 
 			ImGui::EndPopup();
@@ -220,7 +221,7 @@ namespace Proof
 
 	void AudioMixerEditorPanel::DrawGroupInspector()
 	{
-		Count<AudioMixerGroup> group = m_AudioMixer->GetGroup(m_SelectedGroupID);
+		Count<AudioMixerGroup> group = m_AudioMixer->TryGetGroup(m_SelectedGroupID);
 
 		if (!group)
 		{
@@ -274,7 +275,7 @@ namespace Proof
 		}
 		else
 		{
-			Count<AudioMixerGroup> parent = m_AudioMixer->GetGroup(group->GetParentID());
+			Count<AudioMixerGroup> parent = m_AudioMixer->TryGetGroup(group->GetParentID());
 
 			if (parent)
 				UI::AttributeTextBar("Output", parent->GetName());
@@ -298,20 +299,26 @@ namespace Proof
 		ImGui::Separator();
 		ImGui::Spacing();
 
-		ImGui::TextUnformatted("Volume Preview");
+		ImGui::TextUnformatted("Output");
 
-		float gain = group->GetVolume();
-		float displayDB = VolumeToDecibels(gain);
+		float currentLevel = group->GetCurrentLevel();
+		float deltaTime = ImGui::GetIO().DeltaTime;
+
+		if (currentLevel >= m_DisplayedOutputLevel)
+			m_DisplayedOutputLevel = currentLevel;
+		else
+			m_DisplayedOutputLevel = glm::max(0.0f, m_DisplayedOutputLevel - deltaTime * 1.5f);
+
+		float outputDB = VolumeToDecibels(m_DisplayedOutputLevel);
+		float meter = glm::clamp((outputDB - AudioMixerMinimumDB) / (0.0f - AudioMixerMinimumDB), 0.0f, 1.0f);
 
 		UI::BeginPropertyGrid();
 
-		UI::AttributeTextBar("Linear Gain", fmt::format("{:.4f}", gain));
-		UI::AttributeTextBar("Decibels", fmt::format("{:.2f} dB", displayDB));
+		UI::AttributeTextBar("Level", fmt::format("{:.2f} dB", outputDB));
 
 		UI::EndPropertyGrid();
 
-		float meter = glm::clamp((displayDB - AudioMixerMinimumDB) / (0.0f - AudioMixerMinimumDB), 0.0f, 1.0f);
-		ImGui::ProgressBar(meter, ImVec2(-1.0f, 18.0f), "");
+		ImGui::ProgressBar(meter, ImVec2(-1.0f, 22.0f), "");
 	}
 
 	void AudioMixerEditorPanel::DrawEffectTable(const Count<AudioMixerGroup>& group)
@@ -668,7 +675,7 @@ namespace Proof
 		if (m_SelectedGroupID == m_AudioMixer->GetMasterGroupID())
 			return;
 
-		Count<AudioMixerGroup> group = m_AudioMixer->GetGroup(m_SelectedGroupID);
+		Count<AudioMixerGroup> group = m_AudioMixer->TryGetGroup(m_SelectedGroupID);
 
 		if (!group)
 			return;
@@ -691,6 +698,7 @@ namespace Proof
 			return;
 
 		m_SelectedGroupID = groupID;
+		m_DisplayedOutputLevel = 0.0f;
 	}
 
 	void AudioMixerEditorPanel::Save()

@@ -176,6 +176,8 @@ namespace Proof {
 				{ "MATERIAL_POST_PROCESS", "" },
 			};
 			RendererLoadShader("ScreenGlitch", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenGlitch.glsl", macroDefintions);
+			RendererLoadShader("VignettePostProcess", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenEffects/VignettePostProcess.glsl", macroDefintions);
+			RendererLoadShader("FogPostProcess", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PostProcess/ScreenEffects/FogPostProcess.glsl", macroDefintions);
 		}
 		// predepth
 		RendererLoadShader("PreDepth_Static", ProofCurrentDirectorySrc + "Proof/Renderer/Asset/Shader/PBR/PreDepth/PreDepth_Static.glsl");

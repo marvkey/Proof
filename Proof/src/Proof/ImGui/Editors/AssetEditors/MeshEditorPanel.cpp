@@ -193,121 +193,104 @@ namespace Proof
 		const std::vector<uint32_t>& nodeSubMeshIndices = node.Submeshes;
 
 		auto meshSource = meshBase->GetMeshSource();
-		bool enableSameline = !nodeSubMeshIndices.empty() && !node.IsRoot();
-		if (!nodeSubMeshIndices.empty() && !node.IsRoot())
+
+		bool nodeContainsMeshes = meshSource->NodeHasAnySubMesh(node.Index);
+		bool enableSameline = nodeContainsMeshes && !node.IsRoot();
+
+		if (nodeContainsMeshes && !node.IsRoot())
 		{
-			UI::PushID();
+			ImGui::PushID((int)node.Index);
 
 			const std::vector<uint32_t>& submeshes = meshBase->GetSubMeshes();
 
 			bool nodeHasAnySubMesh = meshSource->NodeHasSubAnyMesh(node.Index, submeshes);
-			if (ImGui::Checkbox("##checkbox", &nodeHasAnySubMesh))
+
+			if (ImGui::Checkbox("##NodeEnabled", &nodeHasAnySubMesh))
 			{
 				std::vector<uint32_t> subMeshCopy;
 				// doing this because if we have large amoutn dont want to be creating a copy every time
-				// memory and time expensive 
+				// memory and time expensive
 				subMeshCopy = submeshes;
-
 
 				if (nodeHasAnySubMesh)
 					meshSource->EnableNodeSubMeshes(node.Index, subMeshCopy);
 				else
 					meshSource->DisableNodeSubMeshes(node.Index, subMeshCopy);
 
-				meshBase->SetSubMeshes(subMeshCopy);
+				meshBase->SetSubMeshesExact(subMeshCopy);
 			}
 
-			UI::PopID();
-
-
-
-		#if 0
-			ImGui::PushID(node.Name.c_str());
-
-
-			uint32_t meshIndex = nodeSubMeshIndices.front();
-			const std::vector<uint32_t>& submeshes = meshBase->GetSubMeshes();
-
-			bool checked = std::find(submeshes.begin(), submeshes.end(), meshIndex) != submeshes.end();
-
-			if (ImGui::Checkbox("##checkbox", &checked))
-			{
-				std::vector<uint32_t> subMeshCopy;
-
-				// doing this because if we have large amoutn dont want to be creating a copy every time
-				// memory and time expensive 
-
-				subMeshCopy = submeshes;
-
-				if (checked)
-					subMeshCopy.emplace_back(meshIndex);
-				else
-					Utils::Remove(subMeshCopy, meshIndex);
-
-				meshBase->SetSubMeshes(subMeshCopy);
-			}
 			ImGui::PopID();
-			ImGui::SameLine();
-		#endif
-
 		}
+
+
 		bool useTreeNodeLeaf = node.Children.size() == 0 && node.Submeshes.size() == 0;
 
-		if(enableSameline)
+		if (enableSameline)
 			ImGui::SameLine();
-		if (UI::AttributeTreeNode(node.Name,true,6.0f,(node.IsRoot() ? 4: 2),false,true))
+
+		if (UI::AttributeTreeNode(node.Name, true, 6.0f, (node.IsRoot() ? 4 : 2), false, true))
 		{
 		#if TRANSFORM_INFO
 			{
 				glm::vec3 translation, rotation, scale;
 				Math::DecomposeTransform(transform, translation, rotation, scale);
+
 				ImGui::Text("World Transform");
 				ImGui::Text("  Translation: %.2f, %.2f, %.2f", translation.x, translation.y, translation.z);
 				ImGui::Text("  Scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
 			}
+
 			{
 				glm::vec3 translation, rotation, scale;
 				Math::DecomposeTransform(transform, translation, rotation, scale);
+
 				ImGui::Text("Local Transform");
 				ImGui::Text("  Translation: %.2f, %.2f, %.2f", translation.x, translation.y, translation.z);
 				ImGui::Text("  Scale: %.2f, %.2f, %.2f", scale.x, scale.y, scale.z);
 			}
 		#endif
+
 			const std::vector<uint32_t>& submeshes = meshBase->GetSubMeshes();
+
 			for (uint32_t i = 0; i < nodeSubMeshIndices.size(); i++)
 			{
-				UI::PushID();
 				const SubMesh& subMesh = meshSource->GetSubMesh(nodeSubMeshIndices[i]);
 
-				//subMesh
+				ImGui::PushID((int)subMesh.SubMeshIndex);
 
 				bool value = Utils::Contains(submeshes, subMesh.SubMeshIndex);
-				if (ImGui::Checkbox(fmt::format("{}##{}",subMesh.Name,i).c_str(), &value))
+
+				if (ImGui::Checkbox(subMesh.Name.c_str(), &value))
 				{
 					std::vector<uint32_t> subMeshCopy;
 					// doing this because if we have large amoutn dont want to be creating a copy every time
-					// memory and time expensive 
+					// memory and time expensive
 					subMeshCopy = submeshes;
 
 					if (value)
-						subMeshCopy.emplace_back(subMesh.SubMeshIndex);
+					{
+						if (!Utils::Contains(subMeshCopy, subMesh.SubMeshIndex))
+							subMeshCopy.emplace_back(subMesh.SubMeshIndex);
+					}
 					else
+					{
 						Utils::Remove(subMeshCopy, subMesh.SubMeshIndex);
+					}
 
-					meshBase->SetSubMeshes(subMeshCopy);
+					meshBase->SetSubMeshesExact(subMeshCopy);
 				}
 
-				UI::PopID();
-
+				ImGui::PopID();
 			}
 
+
 			for (uint32_t i = 0; i < node.Children.size(); i++)
-				MeshNodeHierarchy(meshBase, meshBase->GetMeshSource()->GetNodes().at(node.Children[i]), transform, level + 1);
+				MeshNodeHierarchy(meshBase, meshSource->GetNodes().at(node.Children[i]), transform, level + 1);
 
 			UI::EndTreeNode();
 		}
 	}
-
 	void MeshEditorPanel::DrawMeshNode()
 	{
 		const MeshNode& rootNode = m_MeshBase->GetMeshSource()->GetRootNode();

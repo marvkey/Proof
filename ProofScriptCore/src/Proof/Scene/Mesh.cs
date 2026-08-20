@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+
 
 namespace Proof
 {
@@ -16,12 +18,13 @@ namespace Proof
 
             return new Material(MatrixerialHandle);
         }
-
+                                                          
         public uint GetMaterialCount() => InternalCalls.MeshBase_GetMaterialCount(ref m_ID);
         public bool IsStaticMesh() => InternalCalls.MeshBase_IsStaticMesh(ref m_ID);
 
     }
-    public class StaticMesh : MeshBase
+    [RegisterCoreClassStruct]
+    public class  StaticMesh : MeshBase
     {
         internal StaticMesh() { m_ID = AssetID.Invalid; }
         internal StaticMesh(AssetID handle) { m_ID = handle; }
@@ -30,7 +33,7 @@ namespace Proof
         public override AssetType Type => AssetType.Mesh;
 
     }
-
+    [RegisterCoreClassStruct]
     public class DynamicMesh : MeshBase
     {
         internal DynamicMesh() { m_ID = AssetID.Invalid; }

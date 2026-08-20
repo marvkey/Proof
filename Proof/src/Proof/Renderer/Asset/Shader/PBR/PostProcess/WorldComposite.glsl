@@ -107,7 +107,7 @@ layout(push_constant) uniform Uniforms
 } u_Uniforms;
 
 
-#define PROOF_RENDERER_FOG_EFFECT 1
+#define PROOF_RENDERER_FOG_EFFECT 0
 
 void main()
 {

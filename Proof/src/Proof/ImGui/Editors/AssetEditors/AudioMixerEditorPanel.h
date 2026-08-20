@@ -39,7 +39,7 @@ namespace Proof
         Count<AudioMixer> m_AudioMixer = nullptr;
 
         UUID m_SelectedGroupID = { 0 };
-
+        float m_DisplayedOutputLevel = 0.0f;
         bool m_NeedsSaving = false;
     };
 }

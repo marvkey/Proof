@@ -6,19 +6,85 @@
 
 namespace Proof
 {
+
+	static void AudioMixerMeterProcess(ma_node* node, const float** framesIn, ma_uint32* frameCountIn, float** framesOut, ma_uint32* frameCountOut)
+	{
+		AudioMixerMeterNode* meter = reinterpret_cast<AudioMixerMeterNode*>(node);
+
+		ma_uint32 frameCount = *frameCountOut;
+
+		if (*frameCountIn < frameCount)
+			frameCount = *frameCountIn;
+
+		ma_uint32 sampleCount = frameCount * meter->Channels;
+
+		const float* input = framesIn[0];
+		float* output = framesOut[0];
+
+		float peak = 0.0f;
+
+		for (ma_uint32 i = 0; i < sampleCount; i++)
+		{
+			float sample = input[i];
+
+			output[i] = sample;
+
+			float level = std::abs(sample);
+
+			if (level > peak)
+				peak = level;
+		}
+
+		meter->CurrentLevel.store(peak, std::memory_order_relaxed);
+
+		*frameCountIn = frameCount;
+		*frameCountOut = frameCount;
+	}
+
+	static ma_node_vtable AudioMixerMeterVTable =
+	{
+		AudioMixerMeterProcess,
+		nullptr,
+		1,
+		1,
+		MA_NODE_FLAG_CONTINUOUS_PROCESSING
+	};
+
+
 	AudioMixerGroup::AudioMixerGroup(UUID id, const std::string& name, UUID parentID, ma_sound_group* parentGroup)
 		: m_ID(id), m_Name(name), m_ParentID(parentID)
 	{
-		m_EffectTable = Count<AudioEffectTable>::Create();
+		ma_engine& engine = AudioEngine::GetEngine();
 
-		ma_result result = ma_sound_group_init(&AudioEngine::GetEngine(), MA_SOUND_FLAG_NO_SPATIALIZATION, parentGroup, &m_Group);
+		ma_result result = ma_sound_group_init(&engine, MA_SOUND_FLAG_NO_SPATIALIZATION, parentGroup, &m_Group);
 		PF_CORE_ASSERT(result == MA_SUCCESS, "Failed to initialize AudioMixerGroup");
+
+		m_MeterNode.Channels = ma_engine_get_channels(&engine);
+
+		ma_uint32 inputChannels[] = { m_MeterNode.Channels };
+		ma_uint32 outputChannels[] = { m_MeterNode.Channels };
+
+		ma_node_config meterConfig = ma_node_config_init();
+		meterConfig.vtable = &AudioMixerMeterVTable;
+		meterConfig.pInputChannels = inputChannels;
+		meterConfig.pOutputChannels = outputChannels;
+
+		result = ma_node_init(ma_engine_get_node_graph(&engine), &meterConfig, nullptr, &m_MeterNode.Base);
+		PF_CORE_ASSERT(result == MA_SUCCESS, "Failed to initialize AudioMixer meter");
+
+		ma_node_attach_output_bus(&m_Group, 0, &m_MeterNode.Base, 0);
+
+		if (parentGroup)
+			ma_node_attach_output_bus(&m_MeterNode.Base, 0, parentGroup, 0);
+		else
+			ma_node_attach_output_bus(&m_MeterNode.Base, 0, ma_engine_get_endpoint(&engine), 0);
 
 		ma_sound_group_set_volume(&m_Group, m_Volume);
 	}
 
 	AudioMixerGroup::~AudioMixerGroup()
 	{
+		ma_node_uninit(&m_MeterNode.Base, nullptr);
 		ma_sound_group_uninit(&m_Group);
 	}
 
@@ -96,7 +162,7 @@ namespace Proof
 			return nullptr;
 		}
 
-		Count<AudioMixerGroup> parent = GetGroup(parentID);
+		Count<AudioMixerGroup> parent = TryGetGroup(parentID);
 
 		if (!parent)
 		{
@@ -130,7 +196,7 @@ namespace Proof
 
 	void AudioMixer::DestroyGroupRecursive(UUID groupID)
 	{
-		Count<AudioMixerGroup> group = GetGroup(groupID);
+		Count<AudioMixerGroup> group = TryGetGroup(groupID);
 
 		if (!group)
 			return;
@@ -142,7 +208,7 @@ namespace Proof
 
 		if (groupID != m_MasterGroupID)
 		{
-			Count<AudioMixerGroup> parent = GetGroup(group->m_ParentID);
+			Count<AudioMixerGroup> parent = TryGetGroup(group->m_ParentID);
 
 			if (parent)
 			{
@@ -156,7 +222,7 @@ namespace Proof
 		m_Groups.erase(groupID);
 	}
 
-	Count<AudioMixerGroup> AudioMixer::GetGroup(UUID groupID) const
+	Count<AudioMixerGroup> AudioMixer::TryGetGroup(UUID groupID) const
 	{
 		auto it = m_Groups.find(groupID);
 
@@ -166,7 +232,7 @@ namespace Proof
 		return it->second;
 	}
 
-	Count<AudioMixerGroup> AudioMixer::GetGroup(const std::string& name) const
+	Count<AudioMixerGroup> AudioMixer::TryGetGroup(const std::string& name) const
 	{
 		for (const auto& [id, group] : m_Groups)
 		{

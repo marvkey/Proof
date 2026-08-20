@@ -352,6 +352,8 @@ namespace Proof {
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(mesh->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << mesh->GetID();
 		out << YAML::Key << "AssetSource" << YAML::Value << mesh->GetMeshSource()->GetID();
+		SerializeCommon::SerelizeMaterialTable(out, mesh->GetMaterialTable());
+
 		out << YAML::Key << "Translation" << YAML::Value << mesh->GetTranslation();
 		out << YAML::Key << "RotationDeg" << YAML::Value << mesh->GetRotationDeg();
 		out << YAML::Key << "Scale" << YAML::Value << mesh->GetScale();
@@ -362,6 +364,8 @@ namespace Proof {
 			out << YAML::Value << std::vector<uint32_t>();
 		else
 			out << YAML::Value << mesh->GetSubMeshes();
+
+
 		out << YAML::EndMap;
 
 		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
@@ -386,7 +390,12 @@ namespace Proof {
 		mesh->SetRotationDeg(data["RotationDeg"].as<glm::vec3>(mesh->GetRotationDeg()));
 		mesh->SetScale(data["Scale"].as<float>(mesh->GetScale()));
 
+		Count<MaterialTable> table = SerializeCommon::LoadMaterialTable(data,mesh->GetMeshSource()->GetMaterials());
+		if (table)
+			mesh->m_MaterialTable = table;
 		SetID(assetData, mesh);
+
+		mesh->ArrangeMaterialTable();
 		return mesh;
 	}
 	void DynamicMeshAssetSerializer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
@@ -399,6 +408,8 @@ namespace Proof {
 		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(mesh->GetAssetType());
 		out << YAML::Key << "ID" << YAML::Value << mesh->GetID();
 		out << YAML::Key << "AssetSource" << YAML::Value << mesh->GetMeshSource()->GetID();
+		SerializeCommon::SerelizeMaterialTable(out, mesh->GetMaterialTable());
+
 		out << YAML::Key << "Translation" << YAML::Value << mesh->GetTranslation();
 		out << YAML::Key << "RotationDeg" << YAML::Value << mesh->GetRotationDeg();
 		out << YAML::Key << "Scale" << YAML::Value << mesh->GetScale();
@@ -428,7 +439,14 @@ namespace Proof {
 		mesh->SetRotationDeg(data["RotationDeg"].as<glm::vec3>(mesh->GetRotationDeg()));
 		mesh->SetScale(data["Scale"].as<float>(mesh->GetScale()));
 
+		Count<MaterialTable> table = SerializeCommon::LoadMaterialTable(data,mesh->GetMeshSource()->GetMaterials());
+
+		if (table)
+			mesh->m_MaterialTable = table;
+
 		SetID(assetData, mesh);
+		mesh->ArrangeMaterialTable();
+
 		return mesh;
 	}
 	void MeshSourceAssetSerializer::Save(const AssetInfo& data, const Count<class Asset>& asset) const
@@ -1251,51 +1269,7 @@ namespace Proof {
 		
 	}
 
-	void AudioControllerAssetSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
-	{
-		Count<AudioController> audioController = asset.As<AudioController>();
 
-		YAML::Emitter out;
-		out << YAML::BeginMap;
-
-		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(audioController->GetAssetType());
-		out << YAML::Key << "ID" << YAML::Value << audioController->GetID();
-
-		out << YAML::Key << "AudioSource" << YAML::Value << audioController->AudioSource.GetAssetID();
-
-		// Pitch
-		out << YAML::Key << "MinPitch" << YAML::Value << audioController->MinPitch;
-		out << YAML::Key << "MaxPitch" << YAML::Value << audioController->MaxPitch;
-
-		// Effects
-		out << YAML::Key << "MasterReverbSend" << YAML::Value << audioController->MasterReverbSend;
-		out << YAML::Key << "LowPassFilter" << YAML::Value << audioController->LowPassFilter;
-		out << YAML::Key << "HighPassFilter" << YAML::Value << audioController->HighPassFilter;
-
-		// Spatialization
-		out << YAML::Key << "SpatializationEnabled" << YAML::Value << audioController->SpatializationEnabled;
-
-		out << YAML::Key << "AttenuationMod" << YAML::Value << EnumReflection::EnumString(audioController->AttenuationMod);
-
-		out << YAML::Key << "MinGain" << YAML::Value << audioController->MinGain;
-		out << YAML::Key << "MaxGain" << YAML::Value << audioController->MaxGain;
-
-		out << YAML::Key << "MinDistance" << YAML::Value << audioController->MinDistance;
-		out << YAML::Key << "MaxDistance" << YAML::Value << audioController->MaxDistance;
-
-		out << YAML::Key << "ConeInnerAngleInRadians" << YAML::Value << audioController->ConeInnerAngleInRadians;
-		out << YAML::Key << "ConeOuterAngleInRadians" << YAML::Value << audioController->ConeOuterAngleInRadians;
-		out << YAML::Key << "ConeOuterGain" << YAML::Value << audioController->ConeOuterGain;
-
-		out << YAML::Key << "DopplerFactor" << YAML::Value << audioController->DopplerFactor;
-		out << YAML::Key << "Rolloff" << YAML::Value << audioController->Rolloff;
-
-		out << YAML::EndMap;
-
-		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
-		stream << out.c_str();
-		stream.close();
-	}
 	void SerilizeAudioEffectTable(YAML::Emitter& out, const Count<AudioEffectTable>& effectTable)
 	{
 		out << YAML::BeginSeq;
@@ -1727,6 +1701,55 @@ namespace Proof {
 
 		return mixer;
 	}
+
+	void AudioControllerAssetSerilizer::Save(const AssetInfo& assetData, const Count<class Asset>& asset) const
+	{
+		Count<AudioController> audioController = asset.As<AudioController>();
+
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+
+		out << YAML::Key << "AssetType" << YAML::Value << EnumReflection::EnumString(audioController->GetAssetType());
+		out << YAML::Key << "ID" << YAML::Value << audioController->GetID();
+
+		out << YAML::Key << "AudioSource" << YAML::Value << audioController->AudioSource.GetAssetID();
+		out << YAML::Key << "AudioMixer" << YAML::Value << audioController->MixerKey.AudioMixer.GetAssetID();
+		out << YAML::Key << "AudioMixerGroup" << YAML::Value << audioController->MixerKey.MixerGroupID;
+
+		// Pitch
+		out << YAML::Key << "MinPitch" << YAML::Value << audioController->MinPitch;
+		out << YAML::Key << "MaxPitch" << YAML::Value << audioController->MaxPitch;
+
+		// Effects
+		out << YAML::Key << "MasterReverbSend" << YAML::Value << audioController->MasterReverbSend;
+		out << YAML::Key << "LowPassFilter" << YAML::Value << audioController->LowPassFilter;
+		out << YAML::Key << "HighPassFilter" << YAML::Value << audioController->HighPassFilter;
+
+		// Spatialization
+		out << YAML::Key << "SpatializationEnabled" << YAML::Value << audioController->SpatializationEnabled;
+
+		out << YAML::Key << "AttenuationMod" << YAML::Value << EnumReflection::EnumString(audioController->AttenuationMod);
+
+		out << YAML::Key << "MinGain" << YAML::Value << audioController->MinGain;
+		out << YAML::Key << "MaxGain" << YAML::Value << audioController->MaxGain;
+
+		out << YAML::Key << "MinDistance" << YAML::Value << audioController->MinDistance;
+		out << YAML::Key << "MaxDistance" << YAML::Value << audioController->MaxDistance;
+
+		out << YAML::Key << "ConeInnerAngleInRadians" << YAML::Value << audioController->ConeInnerAngleInRadians;
+		out << YAML::Key << "ConeOuterAngleInRadians" << YAML::Value << audioController->ConeOuterAngleInRadians;
+		out << YAML::Key << "ConeOuterGain" << YAML::Value << audioController->ConeOuterGain;
+
+		out << YAML::Key << "DopplerFactor" << YAML::Value << audioController->DopplerFactor;
+		out << YAML::Key << "Rolloff" << YAML::Value << audioController->Rolloff;
+
+		out << YAML::EndMap;
+
+		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
+		stream << out.c_str();
+		stream.close();
+	}
+
 	Count<class Asset> AudioControllerAssetSerilizer::TryLoadAsset(const AssetInfo& assetData) const
 	{
 		YAML::Node data = YAML::LoadFile(AssetManager::GetAssetFileSystemPath(assetData.Path).string());
@@ -1737,6 +1760,9 @@ namespace Proof {
 		Count<AudioController> audioController = Count<AudioController>::Create();
 
 		audioController->AudioSource = AssetID(data["AudioSource"].as<uint64_t>());
+		audioController->MixerKey.AudioMixer = AssetID(data["AudioMixer"].as<uint64_t>(0));
+		audioController->MixerKey.MixerGroupID = UUID(data["AudioMixerGroup"].as<uint64_t>(0));
+		
 
 		// Pitch
 		audioController->MinPitch = data["MinPitch"].as<float>(audioController->MinPitch);
@@ -1798,6 +1824,7 @@ namespace Proof {
 		out << YAML::Key << "ShiftVerticesToOrigin" << YAML::Value << meshCollider->ShiftVerticesToOrigin;
 		out << YAML::Key << "AlwaysShareShape" << YAML::Value << meshCollider->AlwaysShareShape;
 		out << YAML::Key << "CollisionComplexity" << YAML::Value << EnumReflection::EnumString(meshCollider->CollisionComplexity);
+
 
 		out << YAML::EndMap;
 		std::ofstream stream(AssetManager::GetAssetFileSystemPath(assetData.Path).string());

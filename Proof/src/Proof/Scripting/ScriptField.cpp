@@ -9,6 +9,18 @@
 
 namespace Proof
 {
+	void FieldStorage::CopyFrom(const Count<FieldStorageBase>& other)
+	{
+		Count<FieldStorage> fieldStorage = other.As<FieldStorage>();
+
+		Buffer valueBuffer = fieldStorage->GetValueBuffer();
+
+		m_DataBuffer.Release();
+		m_DataBuffer = Buffer::Copy(valueBuffer);
+
+		if (m_RuntimeInstance != nullptr)
+			SetValueRuntime(m_DataBuffer.Data);
+	}
 
     bool FieldStorage::GetValueRuntime(Buffer& outBuffer) const
     {

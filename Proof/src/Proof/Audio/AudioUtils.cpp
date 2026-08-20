@@ -5,6 +5,7 @@
 #include "Proof/Asset/AssetManager.h"
 #include "Audio.h"
 #include "AudioController.h"
+#include "AudioMixer.h"
 #include "Proof/Math/Random.h"
 
 namespace Proof::Utils {
@@ -22,6 +23,16 @@ namespace Proof::Utils {
             return soundConfig;
 
         soundConfig.Aduio = audioController->AudioSource.GetAsset<Audio>();
+
+        Count<AudioMixerGroup> mixerGroup = nullptr;
+        if (audioController->MixerKey.AudioMixer.IsValid())
+            mixerGroup = audioController->MixerKey.AudioMixer.GetAsset<AudioMixer>()->TryGetGroup(audioController->MixerKey.MixerGroupID);
+            
+        if (mixerGroup != nullptr)
+            soundConfig.Mixer = mixerGroup;
+        else
+            soundConfig.Mixer = nullptr;
+        
 
         soundConfig.VolumeMultiplier = component.VolumeMultiplier;
         soundConfig.PitchMultiplier = component.PitchMultiplier * Random::Real(audioController->MinPitch,audioController->MaxPitch);

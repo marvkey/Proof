@@ -4335,14 +4335,14 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		auto storageWeakCountIt = VariableSetStorage::GetAllStorageSets().find(variable.SetStorageHandle);
 		if (storageWeakCountIt == VariableSetStorage::GetAllStorageSets().end())
 		{
-			PF_ERROR("SetValue � No storage found with handle {}", variable.SetStorageHandle);
+			PF_ERROR("SetValue No storage found with handle {}", variable.SetStorageHandle);
 			return;
 		}
 
 		auto storageWeakCount = storageWeakCountIt->second;
 		if (!storageWeakCount.IsValid())
 		{
-			PF_ERROR("SetValue � Storage handle {} is invalid", variable.SetStorageHandle);
+			PF_ERROR("SetValue Storage handle {} is invalid", variable.SetStorageHandle);
 			return;
 		}
 
@@ -4350,7 +4350,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!storage->HasVariable(variable.VariableUUID))
 		{
-			PF_ERROR("SetValue � Variable UUID {} not found in storage {}", variable.VariableUUID, variable.SetStorageHandle);
+			PF_ERROR("SetValue Variable UUID {} not found in storage {}", variable.VariableUUID, variable.SetStorageHandle);
 			return;
 		}
 
@@ -4373,14 +4373,14 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		auto storageWeakCountIt = VariableSetStorage::GetAllStorageSets().find(variable.SetStorageHandle);
 		if (storageWeakCountIt == VariableSetStorage::GetAllStorageSets().end())
 		{
-			PF_ERROR("GetValue � No storage found with handle {}", variable.SetStorageHandle);
+			PF_ERROR("GetValue No storage found with handle {}", variable.SetStorageHandle);
 			return nullptr;
 		}
 
 		auto storageWeakCount = storageWeakCountIt->second;
 		if (!storageWeakCount.IsValid())
 		{
-			PF_ERROR("GetValue � Storage handle {} is invalid", variable.SetStorageHandle);
+			PF_ERROR("GetValue Storage handle {} is invalid", variable.SetStorageHandle);
 			return nullptr;
 		}
 
@@ -4388,7 +4388,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 
 		if (!storage->HasVariable(variable.VariableUUID))
 		{
-			PF_ERROR("GetValue � Variable UUID {} not found in storage {}", variable.VariableUUID, variable.SetStorageHandle);
+			PF_ERROR("GetValue Variable UUID {} not found in storage {}", variable.VariableUUID, variable.SetStorageHandle);
 			return nullptr;
 		}
 

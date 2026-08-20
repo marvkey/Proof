@@ -461,6 +461,7 @@ namespace Proof
 
 						Count<Prefab> prefab = CreateAsset<Prefab>(entity.GetName());
 						prefab->SetEntity(entity);
+						AssetManager::SaveAsset(prefab->GetID());// need ot save again
 					}
 					ImGui::EndDragDropTarget();
 				}

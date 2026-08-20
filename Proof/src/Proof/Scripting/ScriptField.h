@@ -289,21 +289,8 @@ namespace Proof
 			}
 		}
 
-		virtual void CopyFrom(const Count<FieldStorageBase>& other)
-		{
-			Count<FieldStorage> fieldStorage = other.As<FieldStorage>();
-
-			if (m_RuntimeInstance != nullptr)
-			{
-				Buffer valueBuffer = fieldStorage->GetValueBuffer();
-				SetValueRuntime(valueBuffer.Data);
-			}
-			else
-			{
-				m_DataBuffer.Release();
-				m_DataBuffer = Buffer::Copy(fieldStorage->m_DataBuffer);
-			}
-		}
+		virtual void CopyFrom(const Count<FieldStorageBase>& other);
+		
 
 		virtual Buffer GetValueBuffer() const override
 		{

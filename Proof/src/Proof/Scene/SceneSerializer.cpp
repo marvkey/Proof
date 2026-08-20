@@ -823,6 +823,7 @@ namespace Proof
 				out << YAML::Key << "PitchMultiplier" << YAML::Key << audioComponent.PitchMultiplier;
 				out << YAML::Key << "Looping" << YAML::Key << audioComponent.Looping;
 				out << YAML::Key << "PlayOnAwake" << YAML::Key << audioComponent.PlayOnAwake;
+				out << YAML::Key << "DeleteOnFinished" << YAML::Key << audioComponent.DeleteOnFinished;
 				/*
 				out << YAML::Key << "MasterReverbSend" << YAML::Key << audioComponent.MasterReverbSend;
 				out << YAML::Key << "LowPassFilter" << YAML::Key << audioComponent.LowPassFilter;
@@ -1377,7 +1378,7 @@ namespace Proof
 
 					src.Visible = meshComponent["Visible"].as<bool>(true);
 					//src.SetMesh( meshComponent["MeshAssetPointerID"].as<uint64_t>());
-					if (meshComponent["MaterialTable"])
+					if (meshComponent["MaterialTable"] && AssetManager::HasAsset(src.m_MeshID))
 					{
 						Count<MaterialTable> matTable  = Count<MaterialTable>::CreateFrom(AssetManager::GetAsset<Mesh>(src.m_MeshID)->GetMaterialTable());
 
@@ -1918,6 +1919,7 @@ namespace Proof
 					ac.PitchMultiplier = audioComponent["PitchMultiplier"].as<float>();
 					ac.Looping = audioComponent["Looping"].as<bool>();
 					ac.PlayOnAwake = audioComponent["PlayOnAwake"].as<bool>();
+					ac.DeleteOnFinished = audioComponent["DeleteOnFinished"].as<bool>(false);
 					/*
 					ac.MasterReverbSend = audioComponent["MasterReverbSend"].as<float>();
 					ac.LowPassFilter = audioComponent["LowPassFilter"].as<float>();

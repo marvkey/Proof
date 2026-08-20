@@ -12,8 +12,42 @@
 #include "Proof/Utils/VariableSystem/Variable.h"
 #include "Proof/Utils/Curve.h"
 #include "Proof/Renderer/Colors.h"
+#include "Proof/Asset/AssetManager.h"
+#include "Proof/Scene/Material.h"
+
 namespace Proof
-{ 
+{
+
+	static bool CanSaveAsset(AssetID id)
+	{
+		if (!AssetManager::HasAsset(id))
+			return false;
+
+		if (AssetManager::GetAssetInfo(id).RuntimeAsset)
+		{
+			if (!AssetManager::IsDefaultAsset(id))
+				return false;
+		}
+
+		return true;
+	}
+
+
+	static bool CanSaveAsset(Count<Asset> asset)
+	{
+		if (!AssetManager::HasAsset(asset))
+			return false;
+
+		if (AssetManager::GetAssetInfo(asset).RuntimeAsset)
+		{
+			if (!AssetManager::IsDefaultAsset(asset->GetID()))
+				return false;
+		}
+
+		return true;
+	}
+
+
 	static void SerializeInputCustomizer(YAML::Emitter& out, Count<class InputCustomizer> inputCustomizer)
 	{
 		out << YAML::BeginMap; // Customizers
@@ -1218,5 +1252,51 @@ namespace Proof
 
 			curve.AddColorKey(color, time);
 		}
+	}
+
+	void SerializeCommon::SerelizeMaterialTable(YAML::Emitter& out, Count<class MaterialTable> table)
+	{
+		out << YAML::Key << "MaterialTable"; 
+		out << YAML::BeginSeq;//MaterialTbale 
+		for (auto& [index, material] : table->GetMaterials())
+		{
+
+			if (!CanSaveAsset(material.As<Asset>()))
+				continue;
+			out << YAML::BeginMap;// material
+
+			// we nned th "" for some reason 
+			out << YAML::Key << "Material" << YAML::Key << "";
+							
+			//id of 0 means default material
+			out << YAML::Key << "AssetID" << YAML::Value << material.As<Asset>()->GetID();
+			out << YAML::Key << "Index" << YAML::Value << index;
+
+			out << YAML::EndMap;// material
+
+		}
+		out << YAML::EndSeq; // matrailTable
+	}
+
+	Count<class MaterialTable> SerializeCommon::LoadMaterialTable(const YAML::Node& node, Count<class MaterialTable> sourceTable)
+	{
+		if (node["MaterialTable"])
+		{
+			Count<MaterialTable> matTable  = sourceTable == nullptr? Count<MaterialTable>::Create() : Count<MaterialTable>::CreateFrom(sourceTable);
+
+			for (auto mat : node["MaterialTable"])
+			{
+				AssetID id = mat["AssetID"].as<uint64_t>();
+				uint32_t index = mat["Index"].as<uint32_t>();
+				if (AssetManager::HasAsset(id))
+				{
+					matTable->SetMaterial(index, AssetManager::GetAsset<Material>(id));
+				}
+			}
+
+			return matTable;
+		}
+
+		return nullptr;
 	}
 }

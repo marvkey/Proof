@@ -209,7 +209,8 @@ namespace Proof
 
         PF_CORE_ASSERT(sphere);
 
-        meshComponent.MaterialTable->SetMaterial(0, material);
+        if (material->IsDefaultPbrShader())
+            meshComponent.MaterialTable->SetMaterial(0, material);
 
         FrameCameraToBounds(sphere->GetBoundingBox());
     }

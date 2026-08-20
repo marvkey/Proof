@@ -7,14 +7,13 @@
 
 namespace Proof
 {
-
-	struct AudioMixerGroupKey
+	struct AudioMixerMeterNode
 	{
-		AssetKey<AssetType::AudioMixer> AudioMixer;
-		UUID MixerGroupID = 0;
+		ma_node_base Base{};
+		std::atomic<float> CurrentLevel = 0.0f;
+		ma_uint32 Channels = 0;
 	};
-
-   // Tod add effects, low pass, echo, (https://www.youtube.com/watch?v=IxHPzrEq1Tc&t=215s)
+	
 	class AudioMixerGroup : public RefCounted
 	{
 	public:
@@ -35,6 +34,11 @@ namespace Proof
 
 		const std::vector<UUID>& GetChildren() const { return m_Children; }
 
+		float GetCurrentLevel() const
+		{
+			return m_MeterNode.CurrentLevel.load(std::memory_order_relaxed);
+		}
+
 		ma_sound_group* GetNativeGroup() { return &m_Group; }
 		const ma_sound_group* GetNativeGroup() const { return &m_Group; }
 
@@ -51,6 +55,7 @@ namespace Proof
 
 		ma_sound_group m_Group{};
 		Count<class AudioEffectTable> m_EffectTable = nullptr;
+		AudioMixerMeterNode m_MeterNode{};
 
 		friend class AudioMixer;
 		friend class AudioMixerAssetSerilizer;
@@ -73,17 +78,17 @@ namespace Proof
 
 		bool HasGroup(UUID groupID) const;
 
-		Count<AudioMixerGroup> GetGroup(UUID groupID) const;
-		Count<AudioMixerGroup> GetGroup(const std::string& name) const;
+		Count<AudioMixerGroup> TryGetGroup(UUID groupID) const;
+		Count<AudioMixerGroup> TryGetGroup(const std::string& name) const;
 
-		Count<AudioMixerGroup> GetMasterGroup() const { return GetGroup(m_MasterGroupID); }
+		Count<AudioMixerGroup> GetMasterGroup() const { return TryGetGroup(m_MasterGroupID); }
 		UUID GetMasterGroupID() const { return m_MasterGroupID; }
 
 		const std::unordered_map<UUID, Count<AudioMixerGroup>>& GetGroups() const { return m_Groups; }
 
 		bool IsDescendant(UUID groupID, UUID potentialDescendantID) const
 		{
-			Count<AudioMixerGroup> group = GetGroup(groupID);
+			Count<AudioMixerGroup> group = TryGetGroup(groupID);
 
 			if (!group)
 				return false;
@@ -108,8 +113,8 @@ namespace Proof
 			if (groupID == newParentID)
 				return false;
 
-			Count<AudioMixerGroup> group = GetGroup(groupID);
-			Count<AudioMixerGroup> newParent = GetGroup(newParentID);
+			Count<AudioMixerGroup> group = TryGetGroup(groupID);
+			Count<AudioMixerGroup> newParent = TryGetGroup(newParentID);
 
 			if (!group || !newParent)
 				return false;
@@ -117,7 +122,7 @@ namespace Proof
 			if (IsDescendant(groupID, newParentID))
 				return false;
 
-			Count<AudioMixerGroup> oldParent = GetGroup(group->m_ParentID);
+			Count<AudioMixerGroup> oldParent = TryGetGroup(group->m_ParentID);
 
 			if (oldParent)
 			{

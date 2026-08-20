@@ -1,12 +1,20 @@
 #pragma once
+#include "Proof/Asset/AssetTypes.h"
 namespace Proof
 {
 	struct SoundConfiguration;
 	struct AudioComponent;
 	struct AudioTransform;
 	struct TransformComponent;
+
+	struct AudioMixerGroupKey
+	{
+		AssetKey<AssetType::AudioMixer> AudioMixer;
+		UUID MixerGroupID = 0;
+	};
 	namespace Utils 
 	{
+		
 
 		SoundConfiguration AudioComponentToSoundConfig(const AudioComponent& component);
 

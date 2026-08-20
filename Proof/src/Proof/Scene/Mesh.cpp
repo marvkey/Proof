@@ -246,6 +246,25 @@ namespace Proof
         m_SubMeshes.front().BoundingBox = m_BoundingBox;
     }
 
+    bool MeshSource::NodeHasAnySubMesh(uint32_t nodeIndex)
+    {
+        if (m_Nodes.size() <= nodeIndex)
+            return false;
+
+        MeshNode& node = m_Nodes.at(nodeIndex);
+
+        if (!node.Submeshes.empty())
+            return true;
+
+        for (auto& childNode : node.Children)
+        {
+            if (NodeHasAnySubMesh(childNode))
+                return true;
+        }
+
+        return false;
+    }
+
     bool MeshSource::NodeHasSubMesh(uint32_t nodeIndex, uint32_t subMeshIndex)
     {
         if (m_Nodes.size() <= nodeIndex)
@@ -514,6 +533,13 @@ namespace Proof
         m_MaterialTable = Count<MaterialTable>::CreateFrom(meshSource->GetMaterials());
         SetSubMeshes(subMeshes);
     }
+
+    void DynamicMesh::SetSubMeshesExact(const std::vector<uint32_t>& submeshes)
+    {
+        m_SubMeshes = submeshes;
+        ArrangeMaterialTable();
+    }
+
     void DynamicMesh::SetSubMeshes(const std::vector<uint32_t>& submesh)
     {
         if (!submesh.empty())
@@ -670,6 +696,12 @@ namespace Proof
         }
 
         return Count<Mesh>::Create(name, combinedVertices, combinedIndices);
+    }
+
+    void Mesh::SetSubMeshesExact(const std::vector<uint32_t>& submeshes)
+    {
+        m_SubMeshes = submeshes;
+        ArrangeMaterialTable();
     }
 
     void MeshBase::SetTransform(const glm::mat4& transform)

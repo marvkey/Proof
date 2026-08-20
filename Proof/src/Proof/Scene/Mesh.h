@@ -150,6 +150,7 @@ namespace Proof
 
         const SubMesh& GetSubMesh(uint32_t index)const { return m_SubMeshes.at(index); };
 
+        bool NodeHasAnySubMesh(uint32_t nodeIndex);
         bool NodeHasSubMesh(uint32_t nodeIndex, uint32_t subMeshIndex);
         bool NodeHasSubAnyMesh(uint32_t nodeIndex, const std::vector<uint32_t>& subMeshMap);
         void DisableNodeSubMeshes(uint32_t nodeIndex, std::vector<uint32_t>& subMeshMap);
@@ -224,6 +225,7 @@ namespace Proof
         // doesnt have a reference to meshes as submesh just crewates a list from the GetSubmehses
         virtual std::vector<SubMesh> GetSubMeshesAsSubMesh();
         virtual void SetSubMeshes(const std::vector<uint32_t>& submeshes = {})= 0;
+        virtual void SetSubMeshesExact(const std::vector<uint32_t>& submeshes = {})= 0;
         virtual Count<MeshSource> GetMeshSource() = 0;
 
 
@@ -270,6 +272,7 @@ namespace Proof
             return m_Name;
         }
         static Count<Mesh> CombineMeshes(const std::string& name, const std::vector<Count<Mesh>>& source);
+        virtual void SetSubMeshesExact(const std::vector<uint32_t>& submeshes = {});
 
         void Reset(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes = {});
         void Reset(const std::string& name, std::vector<Vertex> vertices, std::vector<Index>indices);
@@ -303,6 +306,7 @@ namespace Proof
         friend class Renderer3DPBR;
         friend class SceneRendererUI;
         friend class MeshWorkShop;
+        friend class MeshAssetSerializer;
 
     };
 
@@ -316,6 +320,8 @@ namespace Proof
         bool HasSkeleton() { return m_MeshSource && m_MeshSource->HasSkeleton(); }
 
         void Reset(Count<MeshSource> meshSource, const std::vector<uint32_t>& subMeshes = {});
+        virtual void SetSubMeshesExact(const std::vector<uint32_t>& submeshes = {});
+
         void SetSubMeshes(const std::vector<uint32_t>& submeshes = {});
         Count<MeshSource> GetMeshSource() {return m_MeshSource;}
 
@@ -331,7 +337,7 @@ namespace Proof
         std::vector<uint32_t> m_SubMeshes;
         Count<MaterialTable> m_MaterialTable;
         Count<MeshSource> m_MeshSource;
-
+        friend class DynamicMeshAssetSerializer;
     };
 
     

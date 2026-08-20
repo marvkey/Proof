@@ -1469,7 +1469,7 @@ namespace Proof
 	{
 
 		PauseRigidBodyOnConstruct();
-
+		
 		Entity newEntity = CreateEntity(entity.GetName());
 		CopyEntityHierarchy(entity, newEntity, this, includeChildren, false);
 
@@ -1563,6 +1563,18 @@ namespace Proof
 		BuildMeshBoneEntityIds(entity, entity);
 		BuildAnimationBoneEntityIds(entity, entity);
 	}
+
+	void World::UnPauseScriptBodyOnConstruct()
+	{
+		m_ScriptOnConstruct = true;
+
+		for(auto& e : m_ScriptBodyWaitingList)
+			m_ScriptWorld->InstantiateScriptEntity(e);
+			
+
+		m_ScriptBodyWaitingList.clear();
+	}
+
 	void World::BuildMeshBoneEntityIds(Entity entity, Entity rootEntity)
 	{
 		PF_PROFILE_FUNC();
@@ -1724,7 +1736,7 @@ namespace Proof
 
 		Entity entity = prefab->GetBaseEntity();
 		PauseRigidBodyOnConstruct();
-
+		
 		Entity newEntity = CreateEntity(name);
 		CopyEntityHierarchy(entity, newEntity, this, true, false);
 
@@ -1868,7 +1880,7 @@ namespace Proof
 		m_GameMode->End();
 
 		m_GameMode = nullptr;
-		//m_Registry.clear(); // some components hold a shred refrence to the world sowe need to get rid of them
+		m_Registry.clear(); // some components hold a shred refrence to the world sowe need to get rid of them
 	}
 
 	void World::DeleteEntity(class Entity ent, bool deleteChildren , float time)

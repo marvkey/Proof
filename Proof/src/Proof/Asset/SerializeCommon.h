@@ -32,5 +32,8 @@ namespace Proof
 
 		static void SerializeGradientColor(YAML::Emitter& out, const std::string& name, const struct ColorGradient& curve);
 		static void LoadGradientColor(const YAML::Node& node, const std::string& name, struct ColorGradient& curve);
+
+		static void SerelizeMaterialTable(YAML::Emitter& out, Count< class MaterialTable> table);
+		static Count<class MaterialTable> LoadMaterialTable(const YAML::Node& node, Count<class MaterialTable> sourceTable = nullptr);
 	};
 }

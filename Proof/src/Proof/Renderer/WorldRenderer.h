@@ -350,7 +350,8 @@ namespace Proof
 		Count<RenderPass> m_SkyBoxPass;
 		Count<RenderPass> m_CompositePass;
 
-		Count<FrameBuffer> m_PostProcessFrameBuffer;
+		Count<FrameBuffer> m_PostProcessFrameBufferA;
+		Count<FrameBuffer> m_PostProcessFrameBufferB;
 		Count<RenderMaterial> m_CompositeMaterial;
 		Count<FrameBuffer> m_ExternalCompositeFrameBuffer;
 		//AO

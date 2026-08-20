@@ -18,6 +18,7 @@
 #include "UIVariable.h"
 
 #pragma region AssetsInclude
+#include "Proof/Audio/AudioMixer.h"
 #include "Proof/Scene/Mesh.h"
 #include "Proof/Physics/PhysicsMaterial.h"
 #include "Proof/Physics/MeshCollider.h"
@@ -303,6 +304,100 @@ namespace Proof::UI
 		UI::HandleModified(modified);
 		return modified;
 	}
+
+	bool AttributeAudioMixerGroupKeyReference(const std::string& label, AudioMixerGroupKey& mixerGroupKey,const PropertyAssetReferenceSettings& settings)
+	{
+		bool modified = false;
+
+		AssetID previousMixerID = mixerGroupKey.AudioMixer.GetAssetID();
+
+		if (UI::AttributeAssetKeyReference(label, mixerGroupKey.AudioMixer, settings))
+			modified = true;
+
+		AssetID mixerID = mixerGroupKey.AudioMixer.GetAssetID();
+
+		if (mixerID == 0)
+		{
+			if (mixerGroupKey.MixerGroupID.Get() != 0)
+			{
+				mixerGroupKey.MixerGroupID = 0;
+				modified = true;
+			}
+
+			UI::PushItemDisabled();
+
+			std::vector<std::string> emptyGroups = { "None" };
+			UI::Combo("Mixer Group", emptyGroups, "None");
+
+			UI::PopItemDisabled();
+
+			UI::HandleModified(modified);
+			return modified;
+		}
+
+		Count<AudioMixer> mixer = AssetManager::GetAsset<AudioMixer>(mixerID);
+
+		if (!mixer)
+		{
+			UI::PushItemDisabled();
+
+			std::vector<std::string> emptyGroups = { "Invalid Mixer" };
+			UI::Combo("Mixer Group", emptyGroups, "Invalid Mixer");
+
+			UI::PopItemDisabled();
+
+			UI::HandleModified(modified);
+			return modified;
+		}
+
+		if (previousMixerID != mixerID || !mixer->HasGroup(mixerGroupKey.MixerGroupID))
+		{
+			mixerGroupKey.MixerGroupID = mixer->GetMasterGroupID();
+			modified = true;
+		}
+
+		std::vector<std::string> groupNames;
+		std::vector<UUID> groupIDs;
+
+		Count<AudioMixerGroup> masterGroup = mixer->GetMasterGroup();
+
+		if (masterGroup)
+		{
+			groupNames.push_back(masterGroup->GetName());
+			groupIDs.push_back(masterGroup->GetID());
+		}
+
+		for (const auto& [groupID, group] : mixer->GetGroups())
+		{
+			if (!group)
+				continue;
+
+			if (groupID == mixer->GetMasterGroupID())
+				continue;
+
+			groupNames.push_back(group->GetName());
+			groupIDs.push_back(groupID);
+		}
+
+		std::string currentGroupName = "None";
+
+		Count<AudioMixerGroup> currentGroup = mixer->TryGetGroup(mixerGroupKey.MixerGroupID);
+
+		if (currentGroup)
+			currentGroupName = currentGroup->GetName();
+
+		auto [changed, selectedIndex, selectedName] = UI::Combo("Mixer Group", groupNames, currentGroupName);
+
+		if (changed && selectedIndex >= 0 && selectedIndex < groupIDs.size())
+		{
+			mixerGroupKey.MixerGroupID = groupIDs[selectedIndex];
+			modified = true;
+		}
+
+		UI::HandleModified(modified);
+		return modified;
+	}
+
 	bool AttributeAssetKeyReference(const std::string& label, DynamicAssetKey& assetKey, const PropertyAssetReferenceSettings& settings)
 	{
 		AssetID id = assetKey.GetAssetID();
@@ -716,7 +811,7 @@ namespace Proof::UI
 		}
 
 		for (auto clear : clearMaterials)
-			sourceMaterialTable->RemoveMaterial(clear);
+			materialTable->RemoveMaterial(clear);
 
 		HandleModified(modified);
 		return modified;

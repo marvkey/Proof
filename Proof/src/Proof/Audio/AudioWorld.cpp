@@ -168,6 +168,8 @@ namespace Proof
 				Count<Sound> sounds = m_Runtime.WorldSounds[audioEntity.GetUUID()];
 				if (!sounds->IsPlaying())   // dont want to update audio soudn while playing because it ranodmize puthc and while playign the ptihc weill be chainging
 					UpdateAudio(audioEntity.GetUUID(), Utils::AudioComponentToSoundConfig(audioComponent));
+
+			
 				UpdateAudioTransform(audioEntity.GetUUID(), transform);
 
 				auto physicsActor = world->GetPhysicsWorld()->GetActor(audioEntity);
@@ -181,6 +183,9 @@ namespace Proof
 				{
 					UpdateAudioVelocity(audioEntity.GetUUID(), glm::vec3{ 0 });
 				}
+
+				if (sounds->IsFinished() && audioComponent.PlayOnAwake && audioComponent.Looping == false)
+					world->DeleteEntity(audioEntity);
 			}
 		}
 	}

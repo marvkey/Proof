@@ -327,18 +327,21 @@ namespace Proof
         scriptEngineData.ScriptHandle = instanceHandle;
 
         bool alreadyExist = false;
+
         if (m_EntityClassesStorage.contains(entity.GetUUID()))
         {
-            alreadyExist = true;
             ScriptClassMetaData* classMetaData = m_EntityClassesStorage.at(entity.GetUUID()).GetClassMetaData(classFullName);
             if (classMetaData)
             {
+                alreadyExist = true;
                 classMetaData->ScriptHandle = instanceHandle;
 
                 for (auto& [fieldName, fieldStorage] : classMetaData->Fields)
                 {
-                    if (fieldStorage)
-                        fieldStorage->SetRuntimeInstance(instanceHandle);
+                    if (!fieldStorage)
+                        continue;
+
+                    fieldStorage->SetRuntimeInstance(instanceHandle);
                 }
             }
         }
@@ -649,6 +652,16 @@ namespace Proof
                     {
                         if (classFields.GetClassMetaData(className)->Fields.contains(fieldName))
                         {
+                            if (className == "CrossyBro.TrainLane")
+                            {
+                                if (fieldStorage.As<FieldStorage>()!= nullptr)
+                                {
+                                    PF_ENGINE_WARN("TRAIN COPY SOURCE - Src:{} Dst:{} {}:{}",
+                                        srcEntity.GetUUID().Get(),
+                                        dstEntity.GetUUID().Get(),fieldName,
+                                        fieldStorage.As<FieldStorage>()->GetValue<float>());
+                                }
+                            }
                             classFields.GetClassMetaData(className)->Fields[fieldName]->CopyFrom(fieldStorage);
                         }
                         else
