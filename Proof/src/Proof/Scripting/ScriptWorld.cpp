@@ -652,16 +652,6 @@ namespace Proof
                     {
                         if (classFields.GetClassMetaData(className)->Fields.contains(fieldName))
                         {
-                            if (className == "CrossyBro.TrainLane")
-                            {
-                                if (fieldStorage.As<FieldStorage>()!= nullptr)
-                                {
-                                    PF_ENGINE_WARN("TRAIN COPY SOURCE - Src:{} Dst:{} {}:{}",
-                                        srcEntity.GetUUID().Get(),
-                                        dstEntity.GetUUID().Get(),fieldName,
-                                        fieldStorage.As<FieldStorage>()->GetValue<float>());
-                                }
-                            }
                             classFields.GetClassMetaData(className)->Fields[fieldName]->CopyFrom(fieldStorage);
                         }
                         else

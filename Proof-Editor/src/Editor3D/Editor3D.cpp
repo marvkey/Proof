@@ -727,12 +727,26 @@ namespace Proof
 				break;
 		}
 		*/
+		/*
 		if (openNewWorld)
 		{
 			openNewWorld = false;
 			SetWorldEdit();
 			OpenWorld(newWorldID);
 			PlayWorld();
+		}
+		*/
+
+
+
+		if (openNewWorld)
+		{
+			openNewWorld = false;
+
+			if (m_ActiveWorld->GetState() == WorldState::Play)
+				TransitionPlayWorld(newWorldID);
+			else
+				OpenWorld(newWorldID);
 		}
 	}
 	void Editore3D::OnImGuiDraw() 
@@ -1933,40 +1947,7 @@ namespace Proof
 		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
 		AssetEditorPanel::SetSceneContext(m_ActiveWorld);
 	}
-	void Editore3D::OpenWorld(AssetID ID)
-	{
 
-		if (m_ActiveWorld != nullptr)
-		{
-			if (m_ActiveWorld->GetState() != WorldState::Edit)
-				SetWorldEdit();
-
-			bool val =Save();
-			if (val == false)
-				return;
-		}
-		
-
-		AssetInfo assetInfo = AssetManager::GetAssetInfo(ID);
-
-		auto fullPath = AssetManager::GetAssetFileSystemPath(assetInfo.Path);
-		Count<World> world = Count<World>::Create();
-
-		SceneSerializer serializer(world);
-		serializer.DeSerilizeText(fullPath.string());
-
-		m_EditorWorld = world;
-		m_ActiveWorld = m_EditorWorld;
-
-		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
-		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
-		AssetEditorPanel::SetSceneContext(m_ActiveWorld);
-
-		SelectionManager::DeselectAll();
-
-		m_ActiveWorld->SetWorldTransitionCallback([this](AssetID id) { openNewWorld = true; newWorldID = id; });
-
-	}
 	std::string GetCPUName()
 	{
 		const char* cpuName = std::getenv("PROCESSOR_IDENTIFIER");
@@ -2466,6 +2447,107 @@ namespace Proof
 		m_ActiveWorld->SetWorldTransitionCallback([this](AssetID id) { openNewWorld = true; newWorldID = id; });
 
 	}
+
+	void Editore3D::OpenWorld(AssetID ID)
+	{
+
+		if (m_ActiveWorld != nullptr)
+		{
+			if (m_ActiveWorld->GetState() != WorldState::Edit)
+				SetWorldEdit();
+
+			bool val =Save();
+			if (val == false)
+				return;
+		}
+		
+
+		AssetInfo assetInfo = AssetManager::GetAssetInfo(ID);
+
+		auto fullPath = AssetManager::GetAssetFileSystemPath(assetInfo.Path);
+		Count<World> world = Count<World>::Create();
+
+		SceneSerializer serializer(world);
+		serializer.DeSerilizeText(fullPath.string());
+
+		m_EditorWorld = world;
+		m_ActiveWorld = m_EditorWorld;
+
+		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
+		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
+		AssetEditorPanel::SetSceneContext(m_ActiveWorld);
+
+		SelectionManager::DeselectAll();
+
+		m_ActiveWorld->SetWorldTransitionCallback([this](AssetID id) { openNewWorld = true; newWorldID = id; });
+
+	}
+
+	void Editore3D::TransitionPlayWorld(AssetID ID)
+	{
+		PF_PROFILE_FUNC();
+
+		if (!AssetManager::HasAssetAndAssetType(ID, AssetType::World))
+			return;
+
+		PF_CORE_ASSERT(m_ActiveWorld);
+		PF_CORE_ASSERT(m_ActiveWorld->GetState() == WorldState::Play);
+
+		SelectionManager::DeselectAll();
+
+		// Keep old runtime world alive during the transition
+		Count<World> oldPlayWorld = m_ActiveWorld;
+
+		// End this runtime world while preserving persistent runtime data
+		oldPlayWorld->EndRuntime(true);
+
+
+		// Load the next world DIRECTLY as a new runtime world.
+		// Do NOT touch m_EditorWorld.
+		AssetInfo assetInfo = AssetManager::GetAssetInfo(ID);
+		auto fullPath = AssetManager::GetAssetFileSystemPath(assetInfo.Path);
+
+		Count<World> newPlayWorld = Count<World>::Create();
+
+		SceneSerializer serializer(newPlayWorld);
+		serializer.DeSerilizeText(fullPath.string());
+
+
+		// Transfer persistent entities + persistent subsystems
+		// old runtime world -> new runtime world
+		oldPlayWorld->TransferWorld(newPlayWorld);
+
+
+		// New runtime world becomes active
+		m_ActiveWorld = newPlayWorld;
+		m_ActiveWorld->m_CurrentState = WorldState::Play;
+
+
+		m_ActiveWorld->SetWorldTransitionCallback([this](AssetID id)
+		{
+			openNewWorld = true;
+			newWorldID = id;
+		});
+
+
+		// Start the newly loaded runtime world
+		m_ActiveWorld->StartRuntime();
+
+
+		// Editor panels should now look at the current runtime world
+		s_EditorData->PanelManager->SetWorldContext(m_ActiveWorld);
+		s_EditorData->EditorWorkspaceManager->SetWorldContext(m_ActiveWorld);
+		AssetEditorPanel::SetSceneContext(m_ActiveWorld);
+
+
+		// Input delegate is already bound.
+		// Just update the world it points to.
+		tenareaxWorld = m_ActiveWorld;
+
+
+		PF_EC_INFO("World Transition {}", m_ActiveWorld->GetName());
+	}
+
 	void Editore3D::SimulateWorld() 
 	{
 		s_PlayTimer.Reset();

@@ -5,8 +5,6 @@
 #include "PhysicsShapes.h"
 namespace Proof
 {
-
-
 	class Entity;
 	class PhysicsActor : public PhysicsActorBase
 	{

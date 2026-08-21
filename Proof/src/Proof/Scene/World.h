@@ -90,7 +90,7 @@ namespace Proof {
 		// using scripts
 		virtual void StartRuntime(RuntimeConfiguration runtimeConfig = RuntimeConfiguration());
 		// using scripts
-		virtual void EndRuntime();
+		virtual void EndRuntime(bool keepPersistentData = false);
 		void OnUpdateRuntime(FrameTime DeltaTime);
 
 		void OnUpdateEditor(FrameTime DeltaTime);
@@ -161,7 +161,7 @@ namespace Proof {
 		const std::unordered_map<UUID, Entity>& GetEntities() { return m_EntitiesMap; };
 
 		bool OnElevatedKeyEvent(const ElevatedInputKeyParams& keyParams);
-		void OnWorldTransition(AssetID id);
+		void RequestWorldTransition(AssetID id);
 		void SetWorldTransitionCallback(const std::function<void(AssetID)>& callback) { m_OnWorldTransitionCallback = callback; }
 		Count<class DebugRenderer> GetDebugRenderer() { return m_DebugRenderer; }
 		Count<class ImmediateRenderer> GetImmediateRenderer() { return m_ImmediateRenderer; }
@@ -175,6 +175,8 @@ namespace Proof {
 
 		void BuildBoneEntityIds(Entity entity);
 
+
+		void TransferWorld(Count<World> world);
 	private:
 		RuntimeConfiguration m_RuntimeConfig;
 
@@ -222,6 +224,9 @@ namespace Proof {
 		void BuildAnimationBoneEntityIds(Entity entity, Entity rootEntity);
 
 		void CalculateUIPosition(Count<class Renderer2D> renderer2D);
+
+		void ChangeEntityID(Entity enitty, UUID dstID);
+		void RestoreEntityIDs(Entity srcEntity, Entity dstEntity);
 	private:
 
 		Count<class AudioWorld> m_AudioWorld;
@@ -238,7 +243,8 @@ namespace Proof {
 
 		Count<class GameMode> m_GameMode;
 		std::string Name = "DefaultWorld";
-		std::unordered_map<UUID, Entity>m_EntitiesMap ;
+		std::unordered_map<UUID, Entity> m_EntitiesMap;
+		std::unordered_set<UUID> m_PersistentEntites;
 
 		friend class SceneHierachyPanel;
 		friend class Entity;

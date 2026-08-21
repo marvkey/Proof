@@ -827,6 +827,16 @@ namespace Proof
 		BoidFlockComponent(const BoidFlockComponent&);
 		Count< class BoidFlock> Flock;
 	};
+
+	// does not destory when the scne is loaded
+	struct PersistentComponent
+	{
+	public:
+		PersistentComponent(const PersistentComponent&) = default;
+		PersistentComponent() = default;
+		uint8_t Reserved = 0;    // emtt needs some data to hold a component
+
+	};
 	template<class ... Component>
 	struct ComponentGroup {
 
@@ -836,7 +846,7 @@ namespace Proof
 		MeshComponent,DynamicMeshComponent, SkyLightComponent, DirectionalLightComponent, PointLightComponent,SpotLightComponent, CameraComponent, CharacterControllerComponent,
 		BoxColliderComponent, SphereColliderComponent, CapsuleColliderComponent,MeshColliderComponent, RigidBodyComponent, // rigid body should be here due to if we spawn entity we want to check if it has any collider then we add rigidbody on it
 		ScriptComponent, TextComponent,PlayerStartComponent, PlayerInputComponent, PlayerHUDComponent, ParticleEffectComponent, AudioComponent, AudioListenerComponent,
-		WaterComponent, BuoyancyComponent, TerrainComponent, WorldHUDComponent, PostProcessVolumeComponent, BoidFlockComponent>;
+		WaterComponent, BuoyancyComponent, TerrainComponent, WorldHUDComponent, PostProcessVolumeComponent, BoidFlockComponent,PersistentComponent>;
 	
 
 	using LightComponnet = ComponentGroup<SkyLightComponent, DirectionalLightComponent, PointLightComponent, SpotLightComponent>;

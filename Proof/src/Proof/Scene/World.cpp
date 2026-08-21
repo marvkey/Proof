@@ -1278,7 +1278,7 @@ namespace Proof
 				terrainComponent.Terrain->Update(DeltaTime,transform);
 			}
 		}
-		m_PhysicsWorld->Simulate(DeltaTime);
+		m_PhysicsWorld->OnUpdate(DeltaTime);
 #if 0
 		{
 			ForEachEnitityWith<ParticleEffectComponent>([&](Entity entity)
@@ -1439,7 +1439,7 @@ namespace Proof
 		return returnValue;
 	}
 
-	void World::OnWorldTransition(AssetID id)
+	void World::RequestWorldTransition(AssetID id)
 	{
 		if (!AssetManager::HasAssetAndAssetType(id, AssetType::World))
 			return;
@@ -1564,16 +1564,60 @@ namespace Proof
 		BuildAnimationBoneEntityIds(entity, entity);
 	}
 
-	void World::UnPauseScriptBodyOnConstruct()
+	void World::TransferWorld(Count<World> newWorld)
 	{
-		m_ScriptOnConstruct = true;
+		PF_PROFILE_FUNC();
 
-		for(auto& e : m_ScriptBodyWaitingList)
-			m_ScriptWorld->InstantiateScriptEntity(e);
-			
+		PF_CORE_ASSERT(newWorld);
+		PF_CORE_ASSERT(newWorld.Get() != this);
 
-		m_ScriptBodyWaitingList.clear();
+		auto persistentEntities = GetAllEntitiesWith<PersistentComponent>();
+
+		for (auto e : persistentEntities)
+		{
+			Entity persistentEntity = { e, this };
+
+			// If one of its parents is persistent, it will already be copied
+			// as part of that parent's hierarchy.
+			bool hasPersistentParent = false;
+
+			Entity parent = persistentEntity.GetParent();
+
+			while (parent)
+			{
+				if (parent.HasComponent<PersistentComponent>())
+				{
+					hasPersistentParent = true;
+					break;
+				}
+
+				parent = parent.GetParent();
+			}
+
+			if (hasPersistentParent)
+				continue;
+
+			// CreateEntity already copies all sub entities.
+			Entity newEntity = newWorld->CreateEntity(persistentEntity, true);
+
+			// Make the copied hierarchy use the exact same UUIDs
+			// as the persistent hierarchy from this World.
+			newWorld->RestoreEntityIDs(persistentEntity, newEntity);
+		}
+
+		newWorld->m_PhysicsWorld = m_PhysicsWorld;
+		newWorld->m_AudioWorld = m_AudioWorld;
+
+		m_PhysicsWorld = nullptr;
+		m_AudioWorld = nullptr;
+
+		if (newWorld->m_PhysicsWorld)
+			newWorld->m_PhysicsWorld->SetContext(newWorld.Get());
+
+		if (newWorld->m_AudioWorld)
+			newWorld->m_AudioWorld->SetContext(newWorld.Get());
 	}
+
 
 	void World::BuildMeshBoneEntityIds(Entity entity, Entity rootEntity)
 	{
@@ -1614,6 +1658,83 @@ namespace Proof
 	void World::CalculateUIPosition(Count<class Renderer2D> renderer2D)
 	{
 			
+	}
+
+	void World::ChangeEntityID(Entity entity, UUID newID)
+	{
+		
+		PF_CORE_ASSERT(entity);
+
+		UUID oldID = entity.GetUUID();
+
+		if (oldID == newID)
+			return;
+
+		PF_CORE_ASSERT(!HasEntity(newID), "Entity with ID already exists");
+
+		// Update the parent's reference to this entity.
+		if (entity.HasParent())
+		{
+			Entity parent = TryGetEntityWithUUID(entity.GetParentUUID());
+
+			if (parent)
+			{
+				auto& children = parent.Children();
+
+				for (auto& childID : children)
+				{
+					if (childID == oldID)
+					{
+						childID = newID;
+						break;
+					}
+				}
+			}
+		}
+
+		// Update every child's reference to this entity.
+		for (UUID childID : entity.Children())
+		{
+			Entity child = TryGetEntityWithUUID(childID);
+
+			if (child)
+				child.GetComponent<HierarchyComponent>().ParentHandle = newID;
+		}
+
+		// Update the World's UUID lookup.
+		m_EntitiesMap.erase(oldID);
+
+		// Change the actual IDComponent.
+		entity.GetComponent<IDComponent>().m_ID = newID;
+
+		m_EntitiesMap[newID] = entity;
+	}
+
+	void World::RestoreEntityIDs(Entity srcEntity, Entity dstEntity)
+	{
+		auto srcChildren = srcEntity.Children();
+		auto dstChildren = dstEntity.Children();
+
+		PF_CORE_ASSERT(srcChildren.size() == dstChildren.size());
+
+		// Save these before changing IDs because the hierarchy currently
+		// references the generated destination IDs.
+		std::vector<Entity> srcChildEntities;
+		std::vector<Entity> dstChildEntities;
+
+		srcChildEntities.reserve(srcChildren.size());
+		dstChildEntities.reserve(dstChildren.size());
+
+		for (size_t i = 0; i < srcChildren.size(); i++)
+		{
+			srcChildEntities.push_back(srcEntity.GetCurrentWorld()->GetEntity(srcChildren[i]));
+			dstChildEntities.push_back(GetEntity(dstChildren[i]));
+		}
+
+		ChangeEntityID(dstEntity, srcEntity.GetUUID());
+
+		for (size_t i = 0; i < srcChildEntities.size(); i++)
+			RestoreEntityIDs(srcChildEntities[i], dstChildEntities[i]);
 	}
 
 	Entity World::CreateEntity(Count<class DynamicMesh> mesh, bool generateCollider)
@@ -1824,10 +1945,12 @@ namespace Proof
 	
 		m_GameMode->Start();
 
-		m_PhysicsWorld = Count<PhysicsWorld>::Create(this);
-		m_AudioWorld = Count<AudioWorld>::Create(this);
-		m_AudioWorld->BeginRuntime();
-		m_PhysicsWorld->StartWorld();
+		if (!m_PhysicsWorld)
+			m_PhysicsWorld = Count<PhysicsWorld>::Create(this);
+		if (!m_AudioWorld)
+			m_AudioWorld = Count<AudioWorld>::Create(this);
+		m_AudioWorld->StartRuntime();
+		m_PhysicsWorld->StartRuntime();
 
 
 		m_Registry.on_construct<RigidBodyComponent>().connect<&World::OnRigidBodyComponentCreate>(this);
@@ -1857,7 +1980,7 @@ namespace Proof
 		//config.Gravity = { 0,-9.8f,0 };// for multiplayer scene
 
 	}
-	void World::EndRuntime() {
+	void World::EndRuntime(bool keepPersistanetData) {
 
 
 		m_ScriptWorld->EndRuntime();
@@ -1871,16 +1994,18 @@ namespace Proof
 		m_Registry.on_construct<AudioComponent>().disconnect(this);
 		m_Registry.on_destroy<AudioComponent>().disconnect(this);
 		
-		m_PhysicsWorld->EndWorld();
-		m_PhysicsWorld = nullptr;
+		m_PhysicsWorld->EndRuntime();
+		if (!keepPersistanetData)
+			m_PhysicsWorld = nullptr;
 
 		m_AudioWorld->EndRuntime();
-		m_AudioWorld = nullptr;
+		if (!keepPersistanetData)
+			m_AudioWorld = nullptr;
 
 		m_GameMode->End();
 
 		m_GameMode = nullptr;
-		m_Registry.clear(); // some components hold a shred refrence to the world sowe need to get rid of them
+		//m_Registry.clear(); // some components hold a shred refrence to the world sowe need to get rid of them
 	}
 
 	void World::DeleteEntity(class Entity ent, bool deleteChildren , float time)

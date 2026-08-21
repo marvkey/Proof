@@ -690,219 +690,296 @@ namespace Proof
 	}
 	void SceneHierachyPanel::OnImGuiRender(const char* dsiplayName, bool& isOpen)
 	{
-		if (isOpen == false)
-			return;
+		 if (isOpen == false)
+        return;
 
-		PF_PROFILE_FUNC();
+	    PF_PROFILE_FUNC();
 
-		UI::ScopedID customID(GetCustomPushID().Get());
+	    UI::ScopedID customID(GetCustomPushID().Get());
 
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
+	    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0,0 });
 
-		if (ImGui::Begin(dsiplayName, &isOpen));
-		{
-			m_IsFocused = ImGui::IsWindowFocused();
-			m_IsHovered = ImGui::IsWindowHovered();
+	    if (ImGui::Begin(dsiplayName, &isOpen));
+	    {
+	        m_IsFocused = ImGui::IsWindowFocused();
+	        m_IsHovered = ImGui::IsWindowHovered();
 
-			float availableHeight = ImGui::GetContentRegionAvail().y;
+	        float availableHeight = ImGui::GetContentRegionAvail().y;
 
-			const float splitterHeight = 6.0f;
-			const float minimumPanelHeight = 100.0f;
+	        const float splitterHeight = 6.0f;
+	        const float minimumPanelHeight = 100.0f;
 
-			float maximumHierarchyHeight = std::max(minimumPanelHeight, availableHeight - minimumPanelHeight - splitterHeight);
+	        float maximumHierarchyHeight = std::max(minimumPanelHeight, availableHeight - minimumPanelHeight - splitterHeight);
 
-			m_HierarchyHeight = std::clamp(m_HierarchyHeight, minimumPanelHeight, maximumHierarchyHeight);
+	        m_HierarchyHeight = std::clamp(m_HierarchyHeight, minimumPanelHeight, maximumHierarchyHeight);
 
 
-			/*
-				HIERARCHY
-			---------
-			Resizable top section containing the entity search and hierarchy.
-		*/
-			ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0,0,0,1 });
+	        /*
+	            HIERARCHY
+	            ---------
 
-			ImGui::BeginChild("Child Herieachy", { ImGui::GetContentRegionAvail().x,m_HierarchyHeight });
+	            Resizable top section containing the entity search and hierarchy.
+	        */
+	        ImGui::PushStyleColor(ImGuiCol_ChildBg, { 0,0,0,1 });
 
+	        ImGui::BeginChild("Child Herieachy", { ImGui::GetContentRegionAvail().x,m_HierarchyHeight });
 
-			/*
-				ENTITY SEARCH
-				-------------
 
-				If the search box is empty we draw the normal hierarchy.
+	        /*
+	            ENTITY SEARCH
+	            -------------
 
-				When searching we check every entity directly so deeply nested
-				entities can still be found without opening all of their parents.
-			*/
-			ImGui::SetNextItemWidth(-1.0f);
+	            If the search box is empty we draw the normal hierarchy.
 
-			ImGui::InputTextWithHint("##EntitySearch", "Search Entity...", m_EntitySearchBuffer, sizeof(m_EntitySearchBuffer));
+	            When searching we check every entity directly so deeply nested
+	            entities can still be found without opening all of their parents.
+	        */
+	        ImGui::SetNextItemWidth(-1.0f);
 
-			m_SearchingEntities = m_EntitySearchBuffer[0] != '\0';
+	        ImGui::InputTextWithHint("##EntitySearch", "Search Entity...", m_EntitySearchBuffer, sizeof(m_EntitySearchBuffer));
 
-			ImGui::Separator();
+	        m_SearchingEntities = m_EntitySearchBuffer[0] != '\0';
 
+	        ImGui::Separator();
 
-			if (ImGui::BeginPopupContextWindow(0))
-			{
-				CreateEntityMenu();
-				ImGui::EndPopup();
-			}
 
+	        if (ImGui::BeginPopupContextWindow(0))
+	        {
+	            CreateEntityMenu();
+	            ImGui::EndPopup();
+	        }
 
-			{
-				m_WindowHoveredorFocus = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
 
+	        {
+	            m_WindowHoveredorFocus = ImGui::IsWindowHovered() || ImGui::IsWindowFocused();
 
-				if (m_SearchingEntities)
-				{
-					std::string search = m_EntitySearchBuffer;
 
-					std::transform(search.begin(), search.end(), search.begin(), [](unsigned char c)
-						{
-							return (char)std::tolower(c);
-						});
+	            if (m_SearchingEntities)
+	            {
+	                std::string search = m_EntitySearchBuffer;
 
+	                std::transform(search.begin(), search.end(), search.begin(), [](unsigned char c)
+	                {
+	                    return (char)std::tolower(c);
+	                });
 
-					for (auto [id, entity] : m_ActiveWorld->GetEntities())
-					{
-						std::string entityName = entity.GetComponent<TagComponent>().Tag;
 
-						std::transform(entityName.begin(), entityName.end(), entityName.begin(), [](unsigned char c)
-							{
-								return (char)std::tolower(c);
-							});
+	                bool hasPersistentEntities = false;
 
+	                // normal matching entities
+	                for (auto [id, entity] : m_ActiveWorld->GetEntities())
+	                {
+	                    std::string entityName = entity.GetComponent<TagComponent>().Tag;
 
-						if (entityName.find(search) != std::string::npos)
-							DrawEntityNode(entity);
-					}
-				}
-				else
-				{
-					for (auto [id, entity] : m_ActiveWorld->GetEntities())
-					{
-						if (entity.HasParent() == false)
-							DrawEntityNode(entity);
-					}
-				}
+	                    std::transform(entityName.begin(), entityName.end(), entityName.begin(), [](unsigned char c)
+	                    {
+	                        return (char)std::tolower(c);
+	                    });
 
+	                    if (entityName.find(search) == std::string::npos)
+	                        continue;
 
-				if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false)
-				{
-					if (m_IsWorld)
-						SelectionManager::DeselectAll();
-					else
-						AssetSelectionManager::DeselectAll(AssetSelectionContext::Prefab, m_PrefabID);
-				}
-			}
+	                    if (m_IsWorld && entity.IsPersistent())
+	                    {
+	                        hasPersistentEntities = true;
+	                        continue;
+	                    }
 
+	                    DrawEntityNode(entity);
+	                }
 
-			ImGui::EndChild();
 
+	                // persistent matching entities
+	                if (m_IsWorld && hasPersistentEntities)
+	                {
+	                    ImGui::Spacing();
+	                    ImGui::Separator();
+	                    ImGui::Spacing();
 
-			/*
-				Keep your existing entity drop behavior.
+	                    for (auto [id, entity] : m_ActiveWorld->GetEntities())
+	                    {
+	                        if (!entity.IsPersistent())
+	                            continue;
 
-				Dropping an entity into the hierarchy background unparents it.
-			*/
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity"))
-				{
-					Entity Data = *(const Entity*)payload->Data;
-					Data.Unparent();
-				}
+	                        std::string entityName = entity.GetComponent<TagComponent>().Tag;
 
-				ImGui::EndDragDropTarget();
-			}
+	                        std::transform(entityName.begin(), entityName.end(), entityName.begin(), [](unsigned char c)
+	                        {
+	                            return (char)std::tolower(c);
+	                        });
 
+	                        if (entityName.find(search) != std::string::npos)
+	                            DrawEntityNode(entity);
+	                    }
+	                }
+	            }
+	            else
+	            {
+	                bool hasPersistentEntities = false;
 
-			ImGui::PopStyleColor();
 
+	                // normal root entities
+	                for (auto [id, entity] : m_ActiveWorld->GetEntities())
+	                {
+	                    if (entity.HasParent())
+	                        continue;
 
-			/*
-				HIERARCHY / PROPERTIES SPLITTER
-				--------------------------------
+	                    if (m_IsWorld && entity.IsPersistent())
+	                    {
+	                        hasPersistentEntities = true;
+	                        continue;
+	                    }
 
-				The InvisibleButton gives the splitter a larger 6 pixel hit area
-				so it is easy to grab.
+	                    DrawEntityNode(entity);
+	                }
 
-				We then draw a visible 1 pixel line through the center.
 
-				The line uses ImGui's built in separator colors so it matches the
-				rest of the editor:
+	                // persistent root entities
+	                if (m_IsWorld && hasPersistentEntities)
+	                {
+	                    ImGui::Spacing();
+	                    ImGui::Separator();
+	                    ImGui::Spacing();
 
-					ImGuiCol_Separator
-					ImGuiCol_SeparatorHovered
-					ImGuiCol_SeparatorActive
-			*/
-			ImGui::InvisibleButton("##HierarchyPropertiesSplitter", ImVec2(-1.0f, splitterHeight));
+	                    for (auto [id, entity] : m_ActiveWorld->GetEntities())
+	                    {
+	                        if (entity.HasParent())
+	                            continue;
 
-			ImVec2 splitterMin = ImGui::GetItemRectMin();
-			ImVec2 splitterMax = ImGui::GetItemRectMax();
+	                        if (!entity.IsPersistent())
+	                            continue;
 
-			ImU32 splitterColor = ImGui::GetColorU32(ImGuiCol_Separator);
+	                        DrawEntityNode(entity);
+	                    }
+	                }
+	            }
 
-			if (ImGui::IsItemActive())
-				splitterColor = ImGui::GetColorU32(ImGuiCol_SeparatorActive);
-			else if (ImGui::IsItemHovered())
-				splitterColor = ImGui::GetColorU32(ImGuiCol_SeparatorHovered);
 
-			float splitterY = (splitterMin.y + splitterMax.y) * 0.5f;
+	            if (ImGui::IsMouseDown(0) && ImGui::IsWindowHovered() && ImGui::IsAnyItemHovered() == false)
+	            {
+	                if (m_IsWorld)
+	                    SelectionManager::DeselectAll();
+	                else
+	                    AssetSelectionManager::DeselectAll(AssetSelectionContext::Prefab, m_PrefabID);
+	            }
+	        }
 
-			ImGui::GetWindowDrawList()->AddLine(ImVec2(splitterMin.x, splitterY), ImVec2(splitterMax.x, splitterY), splitterColor, 1.0f);
 
+	        ImGui::EndChild();
 
-			if (ImGui::IsItemHovered() || ImGui::IsItemActive())
-				ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
 
+	        /*
+	            Keep your existing entity drop behavior.
 
-			if (ImGui::IsItemActive())
-			{
-				m_HierarchyHeight += ImGui::GetIO().MouseDelta.y;
+	            Dropping an entity into the hierarchy background unparents it.
+	        */
+	        if (ImGui::BeginDragDropTarget())
+	        {
+	            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("SceneEntity"))
+	            {
+	                Entity Data = *(const Entity*)payload->Data;
+	                Data.Unparent();
+	            }
 
-				float maxHeight = std::max(minimumPanelHeight, availableHeight - minimumPanelHeight - splitterHeight);
+	            ImGui::EndDragDropTarget();
+	        }
 
-				m_HierarchyHeight = std::clamp(m_HierarchyHeight, minimumPanelHeight, maxHeight);
-			}
 
+	        ImGui::PopStyleColor();
 
-			/*
-				PROPERTIES
-				----------
 
-				Takes all of the remaining space underneath the hierarchy.
-			*/
-			ImGui::BeginChild("Properties", ImGui::GetContentRegionAvail());
+	        /*
+	            HIERARCHY / PROPERTIES SPLITTER
+	            --------------------------------
 
-			{
-				if (m_IsWorld)
-				{
-					if (SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0)
-					{
-						auto entity = m_ActiveWorld->GetEntity(SelectionManager::GetSelections(SelectionContext::Scene).front());
+	            The InvisibleButton gives the splitter a larger 6 pixel hit area
+	            so it is easy to grab.
 
-						DrawComponent(entity);
-					}
-				}
-				else
-				{
-					if (AssetSelectionManager::HasSelections(AssetSelectionContext::Prefab, m_PrefabID))
-					{
-						auto entity = m_ActiveWorld->GetEntity(AssetSelectionManager::GetSelections(AssetSelectionContext::Prefab, m_PrefabID).front());
+	            We then draw a visible 1 pixel line through the center.
 
-						DrawComponent(entity);
-					}
-				}
-			}
+	            The line uses ImGui's built in separator colors so it matches the
+	            rest of the editor:
 
-			ImGui::EndChild();
-		}
+	                ImGuiCol_Separator
+	                ImGuiCol_SeparatorHovered
+	                ImGuiCol_SeparatorActive
+	        */
+	        ImGui::InvisibleButton("##HierarchyPropertiesSplitter", ImVec2(-1.0f, splitterHeight));
 
+	        ImVec2 splitterMin = ImGui::GetItemRectMin();
+	        ImVec2 splitterMax = ImGui::GetItemRectMax();
 
-		ImGui::End();
+	        ImU32 splitterColor = ImGui::GetColorU32(ImGuiCol_Separator);
 
-		ImGui::PopStyleVar();
+	        if (ImGui::IsItemActive())
+	            splitterColor = ImGui::GetColorU32(ImGuiCol_SeparatorActive);
+	        else if (ImGui::IsItemHovered())
+	            splitterColor = ImGui::GetColorU32(ImGuiCol_SeparatorHovered);
+
+	        float splitterY = (splitterMin.y + splitterMax.y) * 0.5f;
+
+	        ImGui::GetWindowDrawList()->AddLine(
+	            ImVec2(splitterMin.x, splitterY),
+	            ImVec2(splitterMax.x, splitterY),
+	            splitterColor,
+	            1.0f
+	        );
+
+
+	        if (ImGui::IsItemHovered() || ImGui::IsItemActive())
+	            ImGui::SetMouseCursor(ImGuiMouseCursor_ResizeNS);
+
+
+	        if (ImGui::IsItemActive())
+	        {
+	            m_HierarchyHeight += ImGui::GetIO().MouseDelta.y;
+
+	            float maxHeight = std::max(minimumPanelHeight, availableHeight - minimumPanelHeight - splitterHeight);
+
+	            m_HierarchyHeight = std::clamp(m_HierarchyHeight, minimumPanelHeight, maxHeight);
+	        }
+
+
+	        /*
+	            PROPERTIES
+	            ----------
+
+	            Takes all of the remaining space underneath the hierarchy.
+	        */
+	        ImGui::BeginChild("Properties", ImGui::GetContentRegionAvail());
+
+	        {
+	            if (m_IsWorld)
+	            {
+	                if (SelectionManager::GetSelectionCount(SelectionContext::Scene) > 0)
+	                {
+	                    auto entity = m_ActiveWorld->GetEntity(
+	                        SelectionManager::GetSelections(SelectionContext::Scene).front()
+	                    );
+
+	                    DrawComponent(entity);
+	                }
+	            }
+	            else
+	            {
+	                if (AssetSelectionManager::HasSelections(AssetSelectionContext::Prefab, m_PrefabID))
+	                {
+	                    auto entity = m_ActiveWorld->GetEntity(
+	                        AssetSelectionManager::GetSelections(AssetSelectionContext::Prefab, m_PrefabID).front()
+	                    );
+
+	                    DrawComponent(entity);
+	                }
+	            }
+	        }
+
+	        ImGui::EndChild();
+	    }
+
+
+	    ImGui::End();
+
+	    ImGui::PopStyleVar();
 	}
 	
 	bool  SceneHierachyPanel::CreateEntityMenu(Entity owner) {
@@ -1145,6 +1222,21 @@ namespace Proof
 							ImGui::PopID();
 							return;
 						}
+					}
+				}
+
+				if (!entity.IsPersistent())
+				{
+					if (ImGui::MenuItem("Make Persistent"))
+					{
+						entity.AddComponent<PersistentComponent>();
+					}
+				}
+				else
+				{
+					if (ImGui::MenuItem("Remove Persistent"))
+					{
+						entity.RemoveComponent<PersistentComponent>();
 					}
 				}
 			}

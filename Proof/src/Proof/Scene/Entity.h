@@ -40,6 +40,11 @@ namespace Proof{
 		bool HasAnyComponent()const {
 			return m_World->m_Registry.any<T...>(m_EntityHandle);
 		}
+
+		bool IsPersistent()
+		{
+			return m_World->m_Registry.has<PersistentComponent>(m_EntityHandle);
+		}
 		template<class T,typename... Args>
 		T& AddComponent(Args&&... args) {
 			if (HasComponent<T>() == true) {

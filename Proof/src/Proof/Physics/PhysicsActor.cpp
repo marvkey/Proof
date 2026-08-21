@@ -39,7 +39,6 @@ namespace Proof
 		:
 		PhysicsActorBase(world, PhysicsControllerType::Actor,entity)
 	{
-		
 		if (!m_Entity.HasComponent<RigidBodyComponent>())
 			PF_CORE_ASSERT(false, "Needs rigid body to be a physics Actor");
 		
@@ -479,8 +478,6 @@ namespace Proof
 		rigidBody.Kinematic = isKinematic;
 		m_RigidActor->is<physx::PxRigidDynamic>()->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, isKinematic);
 	}
-
-	
 
 	void PhysicsActor::SetGravityEnabled(const bool enableGravity)
 	{

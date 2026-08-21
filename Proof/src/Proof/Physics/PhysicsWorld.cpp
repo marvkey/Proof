@@ -15,642 +15,684 @@
 
 #include "Proof/Scene/WaterSystem/BuoyancyActor.h"
 namespace Proof {
-	physx::PxFilterFlags shaderControl(
-		physx::PxFilterObjectAttributes attributes0,
-		physx::PxFilterData filterData0,
-		physx::PxFilterObjectAttributes attributes1,
-		physx::PxFilterData filterData1,
-		physx::PxPairFlags& pairFlags,
-		const void* constantBlock,
-		physx::PxU32 constantBlockSize)
-	{
-		/*
-		physx::PxFilterData filterData;
-		filterData.word0 = layerInfo.CollidesValue;
-		filterData.word1 = layerInfo.CollidesWith;
-		filterData.word2 = (uint32_t)collisionDetection;
-		filterData.word3 = layerInfo.LayerID;
-		*/
+    physx::PxFilterFlags shaderControl(
+       physx::PxFilterObjectAttributes attributes0,
+       physx::PxFilterData filterData0,
+       physx::PxFilterObjectAttributes attributes1,
+       physx::PxFilterData filterData1,
+       physx::PxPairFlags& pairFlags,
+       const void* constantBlock,
+       physx::PxU32 constantBlockSize)
+    {
+       /*
+       physx::PxFilterData filterData;
+       filterData.word0 = layerInfo.CollidesValue;
+       filterData.word1 = layerInfo.CollidesWith;
+       filterData.word2 = (uint32_t)collisionDetection;
+       filterData.word3 = layerInfo.LayerID;
+       */
 #if 1
-		if (!PhysicsLayerManager::ShouldCollide(filterData0.word3, filterData1.word3))
-			return physx::PxFilterFlag::eSUPPRESS;
+       if (!PhysicsLayerManager::ShouldCollide(filterData0.word3, filterData1.word3))
+          return physx::PxFilterFlag::eSUPPRESS;
 
-		if (physx::PxFilterObjectIsTrigger(attributes0) || physx::PxFilterObjectIsTrigger(attributes1))
-		{
-			pairFlags = physx::PxPairFlag::eTRIGGER_DEFAULT;
-			pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
-			return physx::PxFilterFlag::eDEFAULT;
-		}
+       if (physx::PxFilterObjectIsTrigger(attributes0) || physx::PxFilterObjectIsTrigger(attributes1))
+       {
+          pairFlags = physx::PxPairFlag::eTRIGGER_DEFAULT;
+          pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
+          return physx::PxFilterFlag::eDEFAULT;
+       }
 
-		pairFlags = physx::PxPairFlag::eCONTACT_DEFAULT;
-		pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
+       pairFlags = physx::PxPairFlag::eCONTACT_DEFAULT;
+       pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
 
-		if (filterData0.word2 == (uint32_t)CollisionDetectionType::Discrete || filterData1.word2 == (uint32_t)CollisionDetectionType::Discrete)
-		{
-			pairFlags |= physx::PxPairFlag::eDETECT_DISCRETE_CONTACT;
-		}
+       if (filterData0.word2 == (uint32_t)CollisionDetectionType::Discrete || filterData1.word2 == (uint32_t)CollisionDetectionType::Discrete)
+       {
+          pairFlags |= physx::PxPairFlag::eDETECT_DISCRETE_CONTACT;
+       }
 
-		if (filterData0.word2 == (uint32_t)CollisionDetectionType::Continuous || filterData1.word2 == (uint32_t)CollisionDetectionType::Continuous)
-		{
-			pairFlags |= physx::PxPairFlag::eDETECT_CCD_CONTACT;
-			pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_CCD;
-		}
+       if (filterData0.word2 == (uint32_t)CollisionDetectionType::Continuous || filterData1.word2 == (uint32_t)CollisionDetectionType::Continuous)
+       {
+          pairFlags |= physx::PxPairFlag::eDETECT_CCD_CONTACT;
+          pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_CCD;
+       }
 
-		if ((filterData0.word0 & filterData1.word1) || (filterData1.word0 & filterData0.word1))
-		{
-			pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_FOUND;
-			pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_LOST;
-			return physx::PxFilterFlag::eDEFAULT;
-		}
+       if ((filterData0.word0 & filterData1.word1) || (filterData1.word0 & filterData0.word1))
+       {
+          pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_FOUND;
+          pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_LOST;
+          return physx::PxFilterFlag::eDEFAULT;
+       }
 
-		return physx::PxFilterFlag::eSUPPRESS;
+       return physx::PxFilterFlag::eSUPPRESS;
 #else
-		PX_UNUSED(constantBlock);
-		PX_UNUSED(constantBlockSize);
-		// let triggers through
-		if (physx::PxFilterObjectIsTrigger(attributes0) || physx::PxFilterObjectIsTrigger(attributes1))
-		{
-			pairFlags = physx::PxPairFlag::eTRIGGER_DEFAULT;
-			return physx::PxFilterFlags();
-		}
+       PX_UNUSED(constantBlock);
+       PX_UNUSED(constantBlockSize);
+       // let triggers through
+       if (physx::PxFilterObjectIsTrigger(attributes0) || physx::PxFilterObjectIsTrigger(attributes1))
+       {
+          pairFlags = physx::PxPairFlag::eTRIGGER_DEFAULT;
+          return physx::PxFilterFlags();
+       }
 
-		pairFlags |= physx::PxPairFlag::eCONTACT_DEFAULT;
-		pairFlags |= physx::PxPairFlag::eTRIGGER_DEFAULT;
-		pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
-		pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_CCD;
+       pairFlags |= physx::PxPairFlag::eCONTACT_DEFAULT;
+       pairFlags |= physx::PxPairFlag::eTRIGGER_DEFAULT;
+       pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS;
+       pairFlags |= physx::PxPairFlag::eNOTIFY_TOUCH_CCD;
 
-		return physx::PxFilterFlags();
+       return physx::PxFilterFlags();
 #endif
 
-	}
-	PhysicsWorld::PhysicsWorld(Count<class World> world)
-		:
-		m_World(world)
-	{
-		ScopeTimer copeTimer("Initialized physics world ");
-		physx::PxSceneDesc sceneDesc(PhysicsEngine::GetPhysics()->getTolerancesScale());
+    }
+    PhysicsWorld::PhysicsWorld(Count<class World> world)
+       :
+       m_World(world)
+    {
+       ScopeTimer copeTimer("Initialized physics world ");
+       physx::PxSceneDesc sceneDesc(PhysicsEngine::GetPhysics()->getTolerancesScale());
 
 
-		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD | physx::PxSceneFlag::eENABLE_PCM;
-		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
-		sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ENHANCED_DETERMINISM;
+       sceneDesc.flags |= physx::PxSceneFlag::eENABLE_CCD | physx::PxSceneFlag::eENABLE_PCM;
+       sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ACTIVE_ACTORS;
+       sceneDesc.flags |= physx::PxSceneFlag::eENABLE_ENHANCED_DETERMINISM;
 
-		const PhysicsSettings& engineSettings = PhysicsEngine::GetSettings();
-		sceneDesc.gravity = PhysXUtils::ToPhysXVector(engineSettings.Gravity);
-		sceneDesc.broadPhaseType = PhysXUtils::ProofToPhysXBroadphaseType(engineSettings.BroadPhaseType);
-		sceneDesc.frictionType = PhysXUtils::ProofToPhysXFrictionType(engineSettings.FrictionModel);
+       const PhysicsSettings& engineSettings = PhysicsEngine::GetSettings();
+       sceneDesc.gravity = PhysXUtils::ToPhysXVector(engineSettings.Gravity);
+       sceneDesc.broadPhaseType = PhysXUtils::ProofToPhysXBroadphaseType(engineSettings.BroadPhaseType);
+       sceneDesc.frictionType = PhysXUtils::ProofToPhysXFrictionType(engineSettings.FrictionModel);
 
-		sceneDesc.cpuDispatcher = PhysicsEngine::GetCpuDispatcher();
-		sceneDesc.simulationEventCallback = &m_CollisionCallback;
-		sceneDesc.filterShader = shaderControl;
-		sceneDesc.bounceThresholdVelocity = engineSettings.BounceThresholdVelocity;
+       sceneDesc.cpuDispatcher = PhysicsEngine::GetCpuDispatcher();
+       sceneDesc.simulationEventCallback = &m_CollisionCallback;
+       sceneDesc.filterShader = shaderControl;
+       sceneDesc.bounceThresholdVelocity = engineSettings.BounceThresholdVelocity;
 
-		PF_CORE_ASSERT(sceneDesc.isValid());
+       PF_CORE_ASSERT(sceneDesc.isValid());
 
-		m_PhysXScene = PhysicsEngine::GetPhysics()->createScene(sceneDesc);
-		physx::PxPvdSceneClient* pvdClient = m_PhysXScene->getScenePvdClient();
+       m_PhysXScene = PhysicsEngine::GetPhysics()->createScene(sceneDesc);
+       m_PhysXControllerManager = PxCreateControllerManager(*m_PhysXScene);
+       CreateRegions();
 
-		m_PhysXControllerManager = PxCreateControllerManager(*m_PhysXScene);
-		CreateRegions();
+    }
 
-	}
+    PhysicsWorld::~PhysicsWorld()
+    {
+       Shutdown();
+    }
 
-	PhysicsWorld::~PhysicsWorld()
-	{
-	}
-	bool lastAdvance = true;
-	void PhysicsWorld::Simulate(float dt)
-	{
-		PF_PROFILE_FUNC();
+    void PhysicsWorld::SetContext(class World* world)
+    {
+       WorldSubSystem::SetContext(world);
+       m_World = WeakCount<World>(world);
+       
 
-		m_BoidManager->OnUpdate(dt);
-		if (m_World->IsPlaying() && lastAdvance)
-		{
-			for (auto& [Id, actor] : m_Actors)
-				actor->PreSimulate(m_SubStepSize);
-		}
+    }
 
-	
+    void PhysicsWorld::StartRuntime()
+    {
+       WorldSubSystem::StartRuntime();
 
-		bool advance = Advance(dt);
+       PF_PROFILE_FUNC();
 
-		lastAdvance = advance;
-		if (advance)
-		{
-			uint32_t numberActors = 0;
-			physx::PxActor** activeActors = m_PhysXScene->getActiveActors(numberActors);
+       auto world = m_World.Lock();
 
-			for (uint32_t i = 0; i < numberActors; i++)
-			{
-				// NOTE: controller is in physics scene is this right 
-				Count<PhysicsActorBase> actor = (PhysicsActorBase*)activeActors[i]->userData;
-				if (actor && !actor->IsSleeping())
-				{
-					actor->SyncTransform();
-				}
-			}
-		}
+       for (auto [id,actor] : m_PersistentActors)
+       {
+          switch (actor->GetType())
+          {
+          case PhysicsControllerType::Actor:
+             m_Actors[id] = actor.As<PhysicsActor>();
+             break;
+          }
+       }
+       world->ForEachEnitityWith<RigidBodyComponent>([&](Entity entity)
+          {
+             CreateActor(entity);
+          });
 
-		// TODO disable in runtime
-		m_PhysXScene->getSimulationStatistics(m_SimulationStats);
+       world->ForEachEnitityWith<CharacterControllerComponent>([&](Entity entity)
+          {
+             CreateController(entity);
+          });
 
-	}
-	glm::vec3 PhysicsWorld::GetGravity() const
-	{
-		return PhysXUtils::FromPhysXVector(m_PhysXScene->getGravity());
-	}
-	void PhysicsWorld::SetGravity(const glm::vec3& gravity)
-	{
-		m_PhysXScene->setGravity(PhysXUtils::ToPhysXVector(gravity));
-	}
-	bool PhysicsWorld::HasActor(Entity entity)
-	{
-		return m_Actors.contains(entity.GetUUID());
-	}
-	Count<PhysicsActor> PhysicsWorld::CreateActor(Entity entity)
-	{
-		PF_PROFILE_FUNC();
-		auto existingActor = GetActor(entity);
-		if (existingActor)
-			return existingActor;
+       world->ForEachEnitityWith<BuoyancyComponent>([&](Entity entity)
+          {
+             CreateBuoyancyActor(entity);
+          });
 
-		if (!entity.HasComponent<RigidBodyComponent>())
-		{
-			PF_ENGINE_ERROR("Cannot add Physics Actor without RigidBody");
-			return nullptr;
-		}
-		Count<PhysicsWorld> instance = this;
-		Count<PhysicsActor> actor = Count<PhysicsActor>::Create(instance, entity);
-		m_Actors[entity.GetUUID()] = actor;
-		return actor;
-	}
-	Count<PhysicsActor> PhysicsWorld::GetActor(Entity entity)
-	{
-		UUID entityID = entity.GetUUID();
-		if (const auto iter = m_Actors.find(entityID); iter != m_Actors.end())
-			return iter->second;
+    
+       m_BoidManager = Count<BoidManager>::Create(this);
+    }
 
-		return nullptr;
-	}
+    void PhysicsWorld::EndRuntime()
+    {
+       WorldSubSystem::EndRuntime();
+       auto world = m_World.Lock();
 
-	Count<class BuoyancyActor> PhysicsWorld::CreateBuoyancyActor(Entity entity)
-	{
-		if (!HasActor(entity))
-		{
-			PF_EC_ERROR("Cannot create buoyancy actor Entity: {}, withtout a rigid body", entity.GetName());
-			PF_CORE_ASSERT(false);
-			return nullptr;
-		}
-		Count<BuoyancyActor> actor = Count<BuoyancyActor>::Create(entity);
-		m_BuoyancyActors[entity.GetUUID()] = actor;
-		return actor;
-	}
+       m_PersistentActors.clear();
+       auto  persistentEntites = world->GetAllEntitiesWith<RigidBodyComponent, PersistentComponent>();
+       for (auto e : persistentEntites)
+       {
+          Entity persitentEntity = { e, world.Get() };
+          if (m_Actors.contains(persitentEntity.GetUUID()))
+             m_PersistentActors[persitentEntity.GetUUID()] = m_Actors[persitentEntity.GetUUID()];
+       }
 
-	Count<class BuoyancyActor> PhysicsWorld::GetBuoyancyActor(Entity entity)
-	{
-		if (m_BuoyancyActors.contains(entity.GetUUID()))
-			return m_BuoyancyActors[entity.GetUUID()];
+       // release all rigid bodies before we release teh scene
+       m_BoidManager = nullptr;
+       m_BuoyancyActors.clear();
+       m_Actors.clear();
+       m_Controllers.clear();
+    }
 
-		return nullptr;
-	}
+    void PhysicsWorld::OnUpdate(float dt)
+    {
+       WorldSubSystem::OnUpdate(dt);
+       Simulate(dt);
+    }
 
-	void PhysicsWorld::RemoveActor(Entity entity)
-	{
-		PF_CORE_ASSERT(HasActor(entity), " Does not contain actor");
-		m_Actors.erase(entity.GetUUID());
-	}
-	bool PhysicsWorld::HasController(Entity entity)
-	{
-		return m_Controllers.contains(entity.GetUUID());
-	}
-	Count<class PhysicsController> PhysicsWorld::CreateController(Entity entity)
-	{
-		PF_PROFILE_FUNC();
-		auto existingController = GetController(entity);
-		if (existingController)
-			return existingController;
+    void PhysicsWorld::Shutdown()
+    {
+       WorldSubSystem::Shutdown();
+       m_PhysXControllerManager->release();
+       m_PhysXScene->release();
+       if (m_RegionBounds)
+          pdelete[] m_RegionBounds;
+    }
 
-		if (!entity.HasComponent<CharacterControllerComponent>())
-		{
-			PF_ENGINE_ERROR("Cannot add Physics Actor without CharacterController");
-			return nullptr;
-		}
-		Count<PhysicsWorld> instance = this;
-		Count<PhysicsController> controller = Count<PhysicsController>::Create(instance, entity);
-		m_Controllers[entity.GetUUID()] = controller;
-		return controller;
-	}
-	Count<class PhysicsController> PhysicsWorld::GetController(Entity entity)
-	{
-		UUID entityID = entity.GetUUID();
-		if (const auto iter = m_Controllers.find(entityID); iter != m_Controllers.end())
-			return iter->second;
+    bool lastAdvance = true;
+    void PhysicsWorld::Simulate(float dt)
+    {
+       PF_PROFILE_FUNC();
 
-		return nullptr;
-	}
-	void PhysicsWorld::RemoveController(Entity entity)
-	{
-		PF_CORE_ASSERT(HasController(entity), " Does not contain actor");
-		m_Controllers.erase(entity.GetUUID());
-	}
-	void PhysicsWorld::StartWorld()
-	{
-		PF_PROFILE_FUNC();
+       auto world = m_World.Lock();
+       m_BoidManager->OnUpdate(dt);
+       if (world->IsPlaying() && lastAdvance)
+       {
+          for (auto& [Id, actor] : m_Actors)
+             actor->PreSimulate(m_SubStepSize);
+       }
 
-		m_World->ForEachEnitityWith<RigidBodyComponent>([&](Entity entity)
-			{
-				CreateActor(entity);
-			});
+       bool advance = Advance(dt);
 
-		m_World->ForEachEnitityWith<CharacterControllerComponent>([&](Entity entity)
-			{
-				CreateController(entity);
-			});
+       lastAdvance = advance;
+       if (advance)
+       {
+          uint32_t numberActors = 0;
+          physx::PxActor** activeActors = m_PhysXScene->getActiveActors(numberActors);
 
-		m_World->ForEachEnitityWith<BuoyancyComponent>([&](Entity entity)
-			{
-				CreateBuoyancyActor(entity);
-			});
+          for (uint32_t i = 0; i < numberActors; i++)
+          {
+             // NOTE: controller is in physics scene is this right 
+             Count<PhysicsActorBase> actor = (PhysicsActorBase*)activeActors[i]->userData;
+             if (actor && !actor->IsSleeping())
+             {
+                actor->SyncTransform();
+             }
+          }
+       }
 
-		m_BoidManager = Count<BoidManager>::Create(this);
-			
+       // TODO disable in runtime
+       m_PhysXScene->getSimulationStatistics(m_SimulationStats);
 
-	}
-	void PhysicsWorld::EndWorld()
-	{
-		// release all rigid bodies before we release teh scene
-		m_BoidManager = nullptr;
-		m_BuoyancyActors.clear();
-		m_Actors.clear();
-		m_Controllers.clear();
-		m_PhysXControllerManager->release();
-		m_PhysXScene->release();
+    }
+    glm::vec3 PhysicsWorld::GetGravity() const
+    {
+       return PhysXUtils::FromPhysXVector(m_PhysXScene->getGravity());
+    }
+    void PhysicsWorld::SetGravity(const glm::vec3& gravity)
+    {
+       m_PhysXScene->setGravity(PhysXUtils::ToPhysXVector(gravity));
+    }
+    bool PhysicsWorld::HasActor(Entity entity)
+    {
+       return m_Actors.contains(entity.GetUUID());
+    }
+    Count<PhysicsActor> PhysicsWorld::CreateActor(Entity entity)
+    {
+       PF_PROFILE_FUNC();
+       auto existingActor = GetActor(entity);
+       if (existingActor)
+          return existingActor;
 
-		m_PhysXScene = nullptr;
-		m_World = nullptr;
-		if (m_RegionBounds)
-			pdelete[] m_RegionBounds;
-	}
-	bool PhysicsWorld::Advance(float deltaTime)
-	{
+       if (!entity.HasComponent<RigidBodyComponent>())
+       {
+          PF_ENGINE_ERROR("Cannot add Physics Actor without RigidBody");
+          return nullptr;
+       }
+       Count<PhysicsWorld> instance = this;
+       Count<PhysicsActor> actor = Count<PhysicsActor>::Create(instance, entity);
+       m_Actors[entity.GetUUID()] = actor;
+       return actor;
+    }
+    Count<PhysicsActor> PhysicsWorld::GetActor(Entity entity)
+    {
+       UUID entityID = entity.GetUUID();
+       if (const auto iter = m_Actors.find(entityID); iter != m_Actors.end())
+          return iter->second;
 
-		static auto callTriggerMethod = [](const char* methodName, Entity mainEntity, Entity b)
-		{
-				if (!mainEntity.IsValid() || !b.IsValid())
-					return;
-			if (!mainEntity.HasComponent<ScriptComponent>())
-				return;
+       return nullptr;
+    }
 
-			const auto& sc = mainEntity.GetComponent<ScriptComponent>();
+    Count<class BuoyancyActor> PhysicsWorld::CreateBuoyancyActor(Entity entity)
+    {
+       if (!HasActor(entity))
+       {
+          PF_EC_ERROR("Cannot create buoyancy actor Entity: {}, withtout a rigid body", entity.GetName());
+          PF_CORE_ASSERT(false);
+          return nullptr;
+       }
+       Count<BuoyancyActor> actor = Count<BuoyancyActor>::Create(entity);
+       m_BuoyancyActors[entity.GetUUID()] = actor;
+       return actor;
+    }
 
-			Count<ScriptWorld> scriptWorld = mainEntity.GetCurrentWorld()->GetScriptWorld();
-			if (!scriptWorld)
-				return;
+    Count<class BuoyancyActor> PhysicsWorld::GetBuoyancyActor(Entity entity)
+    {
+       if (m_BuoyancyActors.contains(entity.GetUUID()))
+          return m_BuoyancyActors[entity.GetUUID()];
 
-			if (!scriptWorld->IsEntityScriptInstantiated(mainEntity))
-				return;
+       return nullptr;
+    }
 
-			for (const auto& scriptMetaData : sc.GetScriptMetadates())
-			{
-				if (ScriptEngine::IsModuleValid(scriptMetaData.ClassName))
-				{
-					ScriptEngine::CallMethod(scriptMetaData.GetInstance(), methodName, b.GetUUID());
-				}
-			}
-		};
+    void PhysicsWorld::RemoveActor(Entity entity)
+    {
+       PF_CORE_ASSERT(HasActor(entity), " Does not contain actor");
+       m_Actors.erase(entity.GetUUID());
+    }
+    bool PhysicsWorld::HasController(Entity entity)
+    {
+       return m_Controllers.contains(entity.GetUUID());
+    }
+    Count<class PhysicsController> PhysicsWorld::CreateController(Entity entity)
+    {
+       PF_PROFILE_FUNC();
+       auto existingController = GetController(entity);
+       if (existingController)
+          return existingController;
 
-		SubStepStrategy(deltaTime);
+       if (!entity.HasComponent<CharacterControllerComponent>())
+       {
+          PF_ENGINE_ERROR("Cannot add Physics Actor without CharacterController");
+          return nullptr;
+       }
+       Count<PhysicsWorld> instance = this;
+       Count<PhysicsController> controller = Count<PhysicsController>::Create(instance, entity);
+       m_Controllers[entity.GetUUID()] = controller;
+       return controller;
+    }
+    Count<class PhysicsController> PhysicsWorld::GetController(Entity entity)
+    {
+       UUID entityID = entity.GetUUID();
+       if (const auto iter = m_Controllers.find(entityID); iter != m_Controllers.end())
+          return iter->second;
+
+       return nullptr;
+    }
+    void PhysicsWorld::RemoveController(Entity entity)
+    {
+       PF_CORE_ASSERT(HasController(entity), " Does not contain actor");
+       m_Controllers.erase(entity.GetUUID());
+    }
+    bool PhysicsWorld::Advance(float deltaTime)
+    {
+
+      auto world = m_World.Lock();
+       static auto callTriggerMethod = [](const char* methodName, Entity mainEntity, Entity b)
+       {
+             if (!mainEntity.IsValid() || !b.IsValid())
+                return;
+          if (!mainEntity.HasComponent<ScriptComponent>())
+             return;
+
+          const auto& sc = mainEntity.GetComponent<ScriptComponent>();
+
+          Count<ScriptWorld> scriptWorld = mainEntity.GetCurrentWorld()->GetScriptWorld();
+          if (!scriptWorld)
+             return;
+
+          if (!scriptWorld->IsEntityScriptInstantiated(mainEntity))
+             return;
+
+          for (const auto& scriptMetaData : sc.GetScriptMetadates())
+          {
+             if (ScriptEngine::IsModuleValid(scriptMetaData.ClassName))
+             {
+                ScriptEngine::CallMethod(scriptMetaData.GetInstance(), methodName, b.GetUUID());
+             }
+          }
+       };
+
+       SubStepStrategy(deltaTime);
 #if 0
-		if (m_Accumulator > m_SubStepSize)
-			m_Accumulator = 0.0f;
+       if (m_Accumulator > m_SubStepSize)
+          m_Accumulator = 0.0f;
 
-		m_Accumulator += deltaTime;
-		if (m_Accumulator < m_SubStepSize)
-		{
-			m_NumSubSteps = 0;
-		}
-		else
-		{
-			m_NumSubSteps = glm::min(static_cast<uint32_t>(m_Accumulator / m_SubStepSize), c_MaxSubSteps);
-			m_Accumulator -= (float)m_NumSubSteps * m_SubStepSize;
+       m_Accumulator += deltaTime;
+       if (m_Accumulator < m_SubStepSize)
+       {
+          m_NumSubSteps = 0;
+       }
+       else
+       {
+          m_NumSubSteps = glm::min(static_cast<uint32_t>(m_Accumulator / m_SubStepSize), c_MaxSubSteps);
+          m_Accumulator -= (float)m_NumSubSteps * m_SubStepSize;
 
 
-		}
+       }
 #endif
 
-		for (uint32_t i = 0; i < m_NumSubSteps; i++)
-		{
-			Count<ScriptWorld> scriptWorld = m_World->GetScriptWorld();
-			if (scriptWorld)
-				scriptWorld->OnPhysicsUpdate(PhysicsEngine::GetSettings().PhysicsFixedDeltaTime);
+       for (uint32_t i = 0; i < m_NumSubSteps; i++)
+       {
+          Count<ScriptWorld> scriptWorld = world->GetScriptWorld();
+          if (scriptWorld)
+             scriptWorld->OnPhysicsUpdate(PhysicsEngine::GetSettings().PhysicsFixedDeltaTime);
 
-			// needs to behere bcause the boyancy is not working
-			// cause the physcs is adding more Gravity force in a frame
-			// and our boyancy only adds one force per frame 
-			if (m_World->IsPlaying())
-			{
-				PF_PROFILE_SCOPE_DYNAMIC("Physics update Buoyancy Actors") ;
-					for (auto& [Id, actor] : m_BuoyancyActors)
-						actor->OnPhysicsUpdate(PhysicsEngine::GetSettings().PhysicsFixedDeltaTime);
-			}
-			for (auto& [entityID, controller] : m_Controllers)
-				controller->OnPhysicsUpdate(deltaTime);
+          // needs to behere bcause the boyancy is not working
+          // cause the physcs is adding more Gravity force in a frame
+          // and our boyancy only adds one force per frame 
+          if (world->IsPlaying())
+          {
+             PF_PROFILE_SCOPE_DYNAMIC("Physics update Buoyancy Actors") ;
+                for (auto& [Id, actor] : m_BuoyancyActors)
+                   actor->OnPhysicsUpdate(PhysicsEngine::GetSettings().PhysicsFixedDeltaTime);
+          }
+          for (auto& [entityID, controller] : m_Controllers)
+             controller->OnPhysicsUpdate(deltaTime);
 
-			m_PhysXScene->simulate(m_SubStepSize);
-			m_PhysXScene->fetchResults(true);
-		}
-			
-		if (m_NumSubSteps > 0)
-		{
+          m_PhysXScene->simulate(m_SubStepSize);
+          m_PhysXScene->fetchResults(true);
+       }
+          
+       if (m_NumSubSteps > 0)
+       {
 
-			PF_PROFILE_FUNC("Physics Trigger check");
-			//trigger objects still give persistent event if they are sleeping
-			for (auto& [triggerActorID, triggerActorData] : m_CollisionCallback.TriggersActors) 
-			{
-				for (auto& [otherTriggerID, triggerData] : triggerActorData)
-				{
-					if (triggerData.ReadyToCallPersist == false)
-					{
-						triggerData.ReadyToCallPersist = true;
-						continue;
-					}
+          PF_PROFILE_FUNC("Physics Trigger check");
+          //trigger objects still give persistent event if they are sleeping
+          for (auto& [triggerActorID, triggerActorData] : m_CollisionCallback.TriggersActors) 
+          {
+             for (auto& [otherTriggerID, triggerData] : triggerActorData)
+             {
+                if (triggerData.ReadyToCallPersist == false)
+                {
+                   triggerData.ReadyToCallPersist = true;
+                   continue;
+                }
 
-					Entity trigerEntity = m_World->TryGetEntityWithUUID(triggerActorID);
-					Entity otherTriggerEntity = m_World->TryGetEntityWithUUID(otherTriggerID);
+                Entity trigerEntity = world->TryGetEntityWithUUID(triggerActorID);
+                Entity otherTriggerEntity = world->TryGetEntityWithUUID(otherTriggerID);
 
-					callTriggerMethod("OnTriggerStayInternal", trigerEntity, otherTriggerEntity);
-					callTriggerMethod("OnTriggerStayInternal", trigerEntity, otherTriggerEntity);
-					//PF_INFO("trigger Actor {} on overlap by {}", triggerData.TriggerActor->GetEntity().GetName(), triggerData.OverlapTrigger->GetEntity().GetName());
-				}
-			}
-		}
-		return m_NumSubSteps != 0;
+                callTriggerMethod("OnTriggerStayInternal", trigerEntity, otherTriggerEntity);
+                callTriggerMethod("OnTriggerStayInternal", trigerEntity, otherTriggerEntity);
+                //PF_INFO("trigger Actor {} on overlap by {}", triggerData.TriggerActor->GetEntity().GetName(), triggerData.OverlapTrigger->GetEntity().GetName());
+             }
+          }
+       }
+       return m_NumSubSteps != 0;
 
-	}
-	void PhysicsWorld::SubStepStrategy(float deltaTime)
-	{
-		if (m_Accumulator > m_SubStepSize)
-			m_Accumulator = 0.0f;
+    }
+    void PhysicsWorld::SubStepStrategy(float deltaTime)
+    {
+       if (m_Accumulator > m_SubStepSize)
+          m_Accumulator = 0.0f;
 
-		m_Accumulator += deltaTime;
-		if (m_Accumulator < m_SubStepSize)
-		{
-			m_NumSubSteps = 0;
-			return;
-		}
+       m_Accumulator += deltaTime;
+       if (m_Accumulator < m_SubStepSize)
+       {
+          m_NumSubSteps = 0;
+          return;
+       }
 
-		m_NumSubSteps = glm::min(static_cast<uint32_t>(m_Accumulator / m_SubStepSize), c_MaxSubSteps);
-		m_Accumulator -= (float)m_NumSubSteps * m_SubStepSize;
-	}
-	void PhysicsWorld::CreateRegions()
-	{
-		const PhysicsSettings& settings = PhysicsEngine::GetSettings();
+       m_NumSubSteps = glm::min(static_cast<uint32_t>(m_Accumulator / m_SubStepSize), c_MaxSubSteps);
+       m_Accumulator -= (float)m_NumSubSteps * m_SubStepSize;
+    }
+    void PhysicsWorld::CreateRegions()
+    {
+       const PhysicsSettings& settings = PhysicsEngine::GetSettings();
 
-		if (settings.BroadPhaseType == BroadphaseType::AutomaticBoxPrune)
-			return;
-		if (m_RegionBounds)
-			pdelete[] m_RegionBounds;
+       if (settings.BroadPhaseType == BroadphaseType::AutomaticBoxPrune)
+          return;
+       if (m_RegionBounds)
+          pdelete[] m_RegionBounds;
 
-		m_RegionBounds = pnew physx::PxBounds3[settings.WorldBoundsSubdivisions * settings.WorldBoundsSubdivisions];
-		physx::PxBounds3 globalBounds(PhysXUtils::ToPhysXVector(settings.WorldBoundsMin), PhysXUtils::ToPhysXVector(settings.WorldBoundsMax));
-		uint32_t regionCount = physx::PxBroadPhaseExt::createRegionsFromWorldBounds(m_RegionBounds, globalBounds, settings.WorldBoundsSubdivisions);
+       m_RegionBounds = pnew physx::PxBounds3[settings.WorldBoundsSubdivisions * settings.WorldBoundsSubdivisions];
+       physx::PxBounds3 globalBounds(PhysXUtils::ToPhysXVector(settings.WorldBoundsMin), PhysXUtils::ToPhysXVector(settings.WorldBoundsMax));
+       uint32_t regionCount = physx::PxBroadPhaseExt::createRegionsFromWorldBounds(m_RegionBounds, globalBounds, settings.WorldBoundsSubdivisions);
 
-		for (uint32_t i = 0; i < regionCount; i++)
-		{
-			physx::PxBroadPhaseRegion region;
-			region.bounds = m_RegionBounds[i];
-			m_PhysXScene->addBroadPhaseRegion(region);
-		}
+       for (uint32_t i = 0; i < regionCount; i++)
+       {
+          physx::PxBroadPhaseRegion region;
+          region.bounds = m_RegionBounds[i];
+          m_PhysXScene->addBroadPhaseRegion(region);
+       }
 
-	}
-	class CustomQueryFilterCallbackEntity : public physx::PxQueryFilterCallback
-	{
-	public:
-		CustomQueryFilterCallbackEntity(const std::unordered_set<uint64_t>& ignoreEntities)
-			:m_IgnoreEntities(ignoreEntities)
-		{
-		}
+    }
+    class CustomQueryFilterCallbackEntity : public physx::PxQueryFilterCallback
+    {
+    public:
+       CustomQueryFilterCallbackEntity(const std::unordered_set<uint64_t>& ignoreEntities)
+          :m_IgnoreEntities(ignoreEntities)
+       {
+       }
 
-		virtual physx::PxQueryHitType::Enum preFilter(
-			const physx::PxFilterData& filterData,
-			const physx::PxShape* shape,
-			const physx::PxRigidActor* actor,
-			physx::PxHitFlags& queryFlags) override
-		{
-			Count<PhysicsActorBase> physicsActor = (PhysicsActorBase*)actor->userData;
-			// Check if the entity should be ignored
-			if (m_IgnoreEntities.contains(physicsActor->GetEntity().GetUUID().Get()))
-			{
-				return physx::PxQueryHitType::eNONE; // block not intrested
-			}
+       virtual physx::PxQueryHitType::Enum preFilter(
+          const physx::PxFilterData& filterData,
+          const physx::PxShape* shape,
+          const physx::PxRigidActor* actor,
+          physx::PxHitFlags& queryFlags) override
+       {
+          Count<PhysicsActorBase> physicsActor = (PhysicsActorBase*)actor->userData;
+          // Check if the entity should be ignored
+          if (m_IgnoreEntities.contains(physicsActor->GetEntity().GetUUID().Get()))
+          {
+             return physx::PxQueryHitType::eNONE; // block not intrested
+          }
 
-			// Otherwise, allow it to be hit
-			return physx::PxQueryHitType::eBLOCK;
-		}
+          // Otherwise, allow it to be hit
+          return physx::PxQueryHitType::eBLOCK;
+       }
 
-		virtual physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit)
-		{
-				return physx::PxQueryHitType::eBLOCK; 
-		};
-	private:
-		const std::unordered_set<uint64_t>& m_IgnoreEntities;
-	};
-	class CustomQueryFilterCallback : public physx::PxQueryFilterCallback
-	{
-	public:
-		// Example: Ignore specific objects or layers dynamically
-		CustomQueryFilterCallback(uint32_t allowedLayer)
-			: m_Allowedlayer(allowedLayer)
-		{
-		}
+       virtual physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit)
+       {
+             return physx::PxQueryHitType::eBLOCK; 
+       };
+    private:
+       const std::unordered_set<uint64_t>& m_IgnoreEntities;
+    };
+    class CustomQueryFilterCallback : public physx::PxQueryFilterCallback
+    {
+    public:
+       // Example: Ignore specific objects or layers dynamically
+       CustomQueryFilterCallback(uint32_t allowedLayer)
+          : m_Allowedlayer(allowedLayer)
+       {
+       }
 
-		// Called before PhysX processes a potential hit
-		virtual physx::PxQueryHitType::Enum preFilter(
-			const physx::PxFilterData& filterData,
-			const physx::PxShape* shape,
-			const physx::PxRigidActor* actor,
-			physx::PxHitFlags& queryFlags) override
-		{
-			Count<PhysicsActorBase> physicsActor = (PhysicsActorBase*)actor->userData;
+       // Called before PhysX processes a potential hit
+       virtual physx::PxQueryHitType::Enum preFilter(
+          const physx::PxFilterData& filterData,
+          const physx::PxShape* shape,
+          const physx::PxRigidActor* actor,
+          physx::PxHitFlags& queryFlags) override
+       {
+          Count<PhysicsActorBase> physicsActor = (PhysicsActorBase*)actor->userData;
 
-			switch (physicsActor->GetType())
-			{
-				case PhysicsControllerType::Actor:
-				{
-					// Access the layer ID of the shape's filter data
-					uint32_t layerID = shape->getQueryFilterData().word3;
+          switch (physicsActor->GetType())
+          {
+             case PhysicsControllerType::Actor:
+             {
+                // Access the layer ID of the shape's filter data
+                uint32_t layerID = shape->getQueryFilterData().word3;
 
-					// Example: Ignore shapes with a specific layer ID
-					if (m_Allowedlayer == physicsActor.As<PhysicsActor>()->GetEntity().GetComponent<RigidBodyComponent>().PhysicsLayerID)
-					{
-						return physx::PxQueryHitType::eBLOCK; // Ignore this shape
-					}
-				}
-					break;
-				default:
-					PF_CORE_ASSERT(false);
-					break;
-			}
-			
+                // Example: Ignore shapes with a specific layer ID
+                if (m_Allowedlayer == physicsActor.As<PhysicsActor>()->GetEntity().GetComponent<RigidBodyComponent>().PhysicsLayerID)
+                {
+                   return physx::PxQueryHitType::eBLOCK; // Ignore this shape
+                }
+             }
+                break;
+             default:
+                PF_CORE_ASSERT(false);
+                break;
+          }
+          
 
-			return physx::PxQueryHitType::eNONE; // Default behavior
-		}
+          return physx::PxQueryHitType::eNONE; // Default behavior
+       }
 
-		virtual physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit)
-		{
-			return physx::PxQueryHitType::eBLOCK; 
-		};
-
-
-	private:
-		uint32_t m_Allowedlayer; // Example: Layer to ignore
-	};
-
-	bool PhysicsWorld::RayCast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit, const std::string & layerName)
-	{
-		PF_PROFILE_FUNC();
-
-		physx::PxRaycastBuffer hitInfo;
-		bool result;
-		// means consider all layers
-		if (layerName.empty())
-		{
-			result = m_PhysXScene->raycast(PhysXUtils::ToPhysXVector(origin), PhysXUtils::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo);
-
-		}
-		else
-		{
-			if (!PhysicsLayerManager::IsLayerValid(layerName))
-			{
-				return false;
-			}
+       virtual physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit)
+       {
+          return physx::PxQueryHitType::eBLOCK; 
+       };
 
 
-			const PhysicsLayer& layer = PhysicsLayerManager::GetLayer(layerName);
-			CustomQueryFilterCallback customFilter(layer.LayerID);
+    private:
+       uint32_t m_Allowedlayer; // Example: Layer to ignore
+    };
 
-			physx::PxQueryFilterData filter = physx::PxQueryFilterData();
-			filter.flags |= physx::PxQueryFlag::ePREFILTER;
-			result = m_PhysXScene->raycast(PhysXUtils::ToPhysXVector(origin), PhysXUtils::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo, physx::PxHitFlag::eDEFAULT, filter,&customFilter);
-		}
+    bool PhysicsWorld::RayCast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit, const std::string & layerName)
+    {
+       PF_PROFILE_FUNC();
+
+       physx::PxRaycastBuffer hitInfo;
+       bool result;
+       // means consider all layers
+       if (layerName.empty())
+       {
+          result = m_PhysXScene->raycast(PhysXUtils::ToPhysXVector(origin), PhysXUtils::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo);
+
+       }
+       else
+       {
+          if (!PhysicsLayerManager::IsLayerValid(layerName))
+          {
+             return false;
+          }
 
 
-		if (result)
-		{
-			physx::PxRaycastHit& closestHit = hitInfo.block;
+          const PhysicsLayer& layer = PhysicsLayerManager::GetLayer(layerName);
+          CustomQueryFilterCallback customFilter(layer.LayerID);
 
-			Count<PhysicsActorBase> object = (PhysicsActorBase*)closestHit.actor->userData;
-			outHit->HitEntity = object->GetEntity().GetUUID();
-			outHit->Position = PhysXUtils::FromPhysXVector(closestHit.position);
-			outHit->Normal = PhysXUtils::FromPhysXVector(closestHit.normal);
-			outHit->Distance = closestHit.distance;
-			outHit->HitCollider = (ColliderShape*)(closestHit.shape->userData);
-			return result;
-		}
+          physx::PxQueryFilterData filter = physx::PxQueryFilterData();
+          filter.flags |= physx::PxQueryFlag::ePREFILTER;
+          result = m_PhysXScene->raycast(PhysXUtils::ToPhysXVector(origin), PhysXUtils::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo, physx::PxHitFlag::eDEFAULT, filter,&customFilter);
+       }
 
-		return result;
-	}
-	bool PhysicsWorld::RayCast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit, const std::unordered_set<uint64_t>& ignoreIDs)
-	{
-		PF_PROFILE_FUNC();
 
-		physx::PxRaycastBuffer hitInfo;
-		bool result;
-		CustomQueryFilterCallbackEntity customFilter(ignoreIDs);
+       if (result)
+       {
+          physx::PxRaycastHit& closestHit = hitInfo.block;
 
-		physx::PxQueryFilterData filter = physx::PxQueryFilterData();
-		filter.flags |= physx::PxQueryFlag::ePREFILTER;
-		result = m_PhysXScene->raycast(PhysXUtils::ToPhysXVector(origin), PhysXUtils::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo, physx::PxHitFlag::eDEFAULT, filter, &customFilter);
+          Count<PhysicsActorBase> object = (PhysicsActorBase*)closestHit.actor->userData;
+          outHit->HitEntity = object->GetEntity().GetUUID();
+          outHit->Position = PhysXUtils::FromPhysXVector(closestHit.position);
+          outHit->Normal = PhysXUtils::FromPhysXVector(closestHit.normal);
+          outHit->Distance = closestHit.distance;
+          outHit->HitCollider = (ColliderShape*)(closestHit.shape->userData);
+          return result;
+       }
 
-		if (result)
-		{
-			physx::PxRaycastHit& closestHit = hitInfo.block;
+       return result;
+    }
+    bool PhysicsWorld::RayCast(const glm::vec3& origin, const glm::vec3& direction, float maxDistance, RaycastHit* outHit, const std::unordered_set<uint64_t>& ignoreIDs)
+    {
+       PF_PROFILE_FUNC();
 
-			Count<PhysicsActorBase> object = (PhysicsActorBase*)closestHit.actor->userData;
-			outHit->HitEntity = object->GetEntity().GetUUID();
-			outHit->Position = PhysXUtils::FromPhysXVector(closestHit.position);
-			outHit->Normal = PhysXUtils::FromPhysXVector(closestHit.normal);
-			outHit->Distance = closestHit.distance;
-			outHit->HitCollider = (ColliderShape*)(closestHit.shape->userData);
-			return result;
-		}
+       physx::PxRaycastBuffer hitInfo;
+       bool result;
+       CustomQueryFilterCallbackEntity customFilter(ignoreIDs);
 
-		return result;
-	}
-	bool PhysicsWorld::SphereCast(const glm::vec3& origin, const glm::vec3& direction, float radius, float maxDistance, RaycastHit* outHit)
-	{
-		PF_PROFILE_FUNC();
+       physx::PxQueryFilterData filter = physx::PxQueryFilterData();
+       filter.flags |= physx::PxQueryFlag::ePREFILTER;
+       result = m_PhysXScene->raycast(PhysXUtils::ToPhysXVector(origin), PhysXUtils::ToPhysXVector(glm::normalize(direction)), maxDistance, hitInfo, physx::PxHitFlag::eDEFAULT, filter, &customFilter);
 
-		physx::PxSweepBuffer sweepBuffer;
-		bool result = m_PhysXScene->sweep(physx::PxSphereGeometry(radius), physx::PxTransform(PhysXUtils::ToPhysXVector(origin)),
-			PhysXUtils::ToPhysXVector(glm::normalize(direction)), maxDistance, sweepBuffer);
+       if (result)
+       {
+          physx::PxRaycastHit& closestHit = hitInfo.block;
 
-		if (result)
-		{
-			physx::PxSweepHit& closestHit = sweepBuffer.block;
+          Count<PhysicsActorBase> object = (PhysicsActorBase*)closestHit.actor->userData;
+          outHit->HitEntity = object->GetEntity().GetUUID();
+          outHit->Position = PhysXUtils::FromPhysXVector(closestHit.position);
+          outHit->Normal = PhysXUtils::FromPhysXVector(closestHit.normal);
+          outHit->Distance = closestHit.distance;
+          outHit->HitCollider = (ColliderShape*)(closestHit.shape->userData);
+          return result;
+       }
 
-			Count<PhysicsActorBase> object = (PhysicsActorBase*)closestHit.actor->userData;
-			outHit->HitEntity = object->GetEntity().GetUUID();
-			outHit->Position = PhysXUtils::FromPhysXVector(closestHit.position);
-			outHit->Normal = PhysXUtils::FromPhysXVector(closestHit.normal);
-			outHit->Distance = closestHit.distance;
-			outHit->HitCollider = (ColliderShape*)(closestHit.shape->userData);
-			return result;
-		}
+       return result;
+    }
+    bool PhysicsWorld::SphereCast(const glm::vec3& origin, const glm::vec3& direction, float radius, float maxDistance, RaycastHit* outHit)
+    {
+       PF_PROFILE_FUNC();
 
-		return result;
-	}
-	bool PhysicsWorld::OverlapBox(const glm::vec3& origin, const glm::vec3& halfSize, std::array<OverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t& count)
-	{
-		return OverlapGeometry(origin, physx::PxBoxGeometry(halfSize.x, halfSize.y, halfSize.z), buffer, count);
-	}
+       physx::PxSweepBuffer sweepBuffer;
+       bool result = m_PhysXScene->sweep(physx::PxSphereGeometry(radius), physx::PxTransform(PhysXUtils::ToPhysXVector(origin)),
+          PhysXUtils::ToPhysXVector(glm::normalize(direction)), maxDistance, sweepBuffer);
 
-	void PhysicsWorld::AddRadialImpulse(const glm::vec3& origin, float radius, float strength, EFalloffMode falloff, bool velocityChange)
-	{
-		PF_PROFILE_FUNC();
-		std::array<OverlapHit, OVERLAP_MAX_COLLIDERS> overlappedColliders;
-		memset(overlappedColliders.data(), 0, OVERLAP_MAX_COLLIDERS * sizeof(OverlapHit));
+       if (result)
+       {
+          physx::PxSweepHit& closestHit = sweepBuffer.block;
 
-		uint32_t count = 0;
-		if (!OverlapSphere(origin, radius, overlappedColliders, count))
-			return;
+          Count<PhysicsActorBase> object = (PhysicsActorBase*)closestHit.actor->userData;
+          outHit->HitEntity = object->GetEntity().GetUUID();
+          outHit->Position = PhysXUtils::FromPhysXVector(closestHit.position);
+          outHit->Normal = PhysXUtils::FromPhysXVector(closestHit.normal);
+          outHit->Distance = closestHit.distance;
+          outHit->HitCollider = (ColliderShape*)(closestHit.shape->userData);
+          return result;
+       }
 
-		for (uint32_t i = 0; i < count; i++)
-		{
-			auto actorBase = overlappedColliders[i].Actor;
-			if (actorBase->GetType() == PhysicsControllerType::Actor)
-			{
-				auto actor = actorBase.As<PhysicsActor>();
-				if (actor->IsDynamic() && !actor->IsKinematic())
-					actor->AddRadialImpulse(origin, radius, strength, falloff, velocityChange);
-			}
-		}
-	}
+       return result;
+    }
+    bool PhysicsWorld::OverlapBox(const glm::vec3& origin, const glm::vec3& halfSize, std::array<OverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t& count)
+    {
+       return OverlapGeometry(origin, physx::PxBoxGeometry(halfSize.x, halfSize.y, halfSize.z), buffer, count);
+    }
 
-	bool PhysicsWorld::OverlapSphere(const glm::vec3& origin, float radius, std::array<OverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t& count)
-	{
-		return OverlapGeometry(origin, physx::PxSphereGeometry(radius), buffer, count);
-	}
+    void PhysicsWorld::AddRadialImpulse(const glm::vec3& origin, float radius, float strength, EFalloffMode falloff, bool velocityChange)
+    {
+       PF_PROFILE_FUNC();
+       std::array<OverlapHit, OVERLAP_MAX_COLLIDERS> overlappedColliders;
+       memset(overlappedColliders.data(), 0, OVERLAP_MAX_COLLIDERS * sizeof(OverlapHit));
 
-	bool PhysicsWorld::OverlapGeometry(const glm::vec3& origin, const physx::PxGeometry& geometry, std::array<OverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t& count)
-	{
-		PF_PROFILE_FUNC();
+       uint32_t count = 0;
+       if (!OverlapSphere(origin, radius, overlappedColliders, count))
+          return;
 
-		physx::PxOverlapBuffer buf(m_OverlapBuffer.data(), OVERLAP_MAX_COLLIDERS);
-		physx::PxTransform pose = PhysXUtils::ToPhysXTransform(glm::translate(glm::mat4(1.0f), origin));
+       for (uint32_t i = 0; i < count; i++)
+       {
+          auto actorBase = overlappedColliders[i].Actor;
+          if (actorBase->GetType() == PhysicsControllerType::Actor)
+          {
+             auto actor = actorBase.As<PhysicsActor>();
+             if (actor->IsDynamic() && !actor->IsKinematic())
+                actor->AddRadialImpulse(origin, radius, strength, falloff, velocityChange);
+          }
+       }
+    }
 
-		bool result = m_PhysXScene->overlap(geometry, pose, buf);
-		if (result)
-		{
-			count = buf.nbTouches > OVERLAP_MAX_COLLIDERS ? OVERLAP_MAX_COLLIDERS : buf.nbTouches;
+    bool PhysicsWorld::OverlapSphere(const glm::vec3& origin, float radius, std::array<OverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t& count)
+    {
+       return OverlapGeometry(origin, physx::PxSphereGeometry(radius), buffer, count);
+    }
 
-			for (uint32_t i = 0; i < count; i++)
-			{
-				buffer[i].Actor = (PhysicsActorBase*)m_OverlapBuffer[i].actor->userData;
-				buffer[i].Shape = (ColliderShape*)m_OverlapBuffer[i].shape->userData;
-			}
-		}
+    bool PhysicsWorld::OverlapGeometry(const glm::vec3& origin, const physx::PxGeometry& geometry, std::array<OverlapHit, OVERLAP_MAX_COLLIDERS>& buffer, uint32_t& count)
+    {
+       PF_PROFILE_FUNC();
 
-		return result;
-	}
+       physx::PxOverlapBuffer buf(m_OverlapBuffer.data(), OVERLAP_MAX_COLLIDERS);
+       physx::PxTransform pose = PhysXUtils::ToPhysXTransform(glm::translate(glm::mat4(1.0f), origin));
+
+       bool result = m_PhysXScene->overlap(geometry, pose, buf);
+       if (result)
+       {
+          count = buf.nbTouches > OVERLAP_MAX_COLLIDERS ? OVERLAP_MAX_COLLIDERS : buf.nbTouches;
+
+          for (uint32_t i = 0; i < count; i++)
+          {
+             buffer[i].Actor = (PhysicsActorBase*)m_OverlapBuffer[i].actor->userData;
+             buffer[i].Shape = (ColliderShape*)m_OverlapBuffer[i].shape->userData;
+          }
+       }
+
+       return result;
+    }
 }

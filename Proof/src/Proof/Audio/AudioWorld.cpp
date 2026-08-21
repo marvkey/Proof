@@ -17,254 +17,307 @@
 
 namespace Proof
 {
+    AudioWorld::AudioWorld(World* world)
+        : m_World(world)
+    {
+        SetContext(world);
+    }
+
+    AudioWorld::~AudioWorld()
+    {
+        Shutdown();
+    }
+
+    void AudioWorld::SetContext(World* world)
+    {
+        WorldSubSystem::SetContext(world);
+        m_World = world;
+    }
+
+    Count<Sound> AudioWorld::AddAudio(Entity entity)
+    {
+        PF_CORE_ASSERT(entity);
+        auto& audioComp = entity.GetComponent<AudioComponent>();
+
+        Count<Sound> sound;
+
+        if (audioComp.AudioController.IsValid())
+        {
+            SoundConfiguration soundConfig = Utils::AudioComponentToSoundConfig(audioComp);
+            sound = Count<Sound>::Create(soundConfig);
+
+            auto world = m_World.Lock();
+
+            if (world)
+            {
+                auto transform = Utils::TransformToAudioTransform(world->GetWorldSpaceTransformComponent(entity));
+                sound->SetTransform(transform);
+
+                auto physicsActor = world->GetPhysicsWorld()->GetActor(entity);
+
+                if (physicsActor && physicsActor->IsDynamic())
+                    sound->SetVelocity(physicsActor->GetLinearVelocity());
+                else
+                    sound->SetVelocity(glm::vec3{ 0 });
+            }
 
+            if (audioComp.PlayOnAwake)
+                sound->Play();
+        }
+        else
+        {
+            sound = Count<Sound>::Create();
+        }
 
-	AudioWorld::AudioWorld(World* world)
-		: m_World(world)
-	{
+        m_Runtime.WorldSounds[entity.GetUUID()] = sound;
 
-	}
+        return sound;
+    }
 
-	Count<Sound> AudioWorld::AddAudio(Entity entity)
-	{
-		PF_CORE_ASSERT(entity);
-		auto& audioComp = entity.GetComponent<AudioComponent>();
+    void AudioWorld::InstantiateAudioSource(Entity entity)
+    {
+        AddAudio(entity);
+    }
 
-		Count<Sound> sound;
+    void AudioWorld::DeleteAudioSource(Entity entity)
+    {
+        PF_CORE_ASSERT(entity);
+        auto& audioComp = entity.GetComponent<AudioComponent>();
 
-		if (audioComp.AudioController.IsValid())
-		{
-			SoundConfiguration soundConfig = Utils::AudioComponentToSoundConfig(audioComp);
-			sound = Count<Sound>::Create(soundConfig);
+        if (m_Runtime.WorldSounds.contains(entity.GetUUID()))
+            m_Runtime.WorldSounds.erase(entity.GetUUID());
+    }
 
-			auto world = m_World.Lock();
+    void AudioWorld::StartRuntime()
+    {
+        WorldSubSystem::StartRuntime();
 
-			if (world)
-			{
-				auto transform = Utils::TransformToAudioTransform(world->GetWorldSpaceTransformComponent(entity));
-				sound->SetTransform(transform);
+        auto world = m_World.Lock();
 
-				auto physicsActor = world->GetPhysicsWorld()->GetActor(entity);
+        if (!world)
+            return;
 
-				if (physicsActor && physicsActor->IsDynamic())
-					sound->SetVelocity(physicsActor->GetLinearVelocity());
-				else
-					sound->SetVelocity(glm::vec3{ 0 });
-			}
+        for (auto& [id, sound] : m_PersistentSounds)
+        {
+            m_Runtime.WorldSounds[id] = sound;
+        }
 
-			if (audioComp.PlayOnAwake)
-				sound->Play();
-		}
-		else
-		{
-			sound = Count<Sound>::Create();
-		}
+        auto view = world->GetAllEntitiesWith<AudioComponent>();
 
-		m_Runtime.WorldSounds[entity.GetUUID()] = sound;
+        for (auto e : view)
+        {
+            Entity entity{ e, world.Get() };
 
-		return sound;
-	}
+            if (!m_Runtime.WorldSounds.contains(entity.GetUUID()))
+                AddAudio(entity)->m_UUID = entity.GetUUID();
+        }
 
-	void AudioWorld::InstantiateAudioSource(class Entity entity)
-	{
-		AddAudio(entity);
-	}
+      
+        m_Runtime.AudioListeners[0] = Count<AudioListenerActor>::Create();
+        m_Runtime.AudioListeners[0]->m_IndexPosition = 0;
 
-	void AudioWorld::DeleteAudioSource(class Entity entity)
-	{
-		PF_CORE_ASSERT(entity);
-		auto& audioComp = entity.GetComponent<AudioComponent>();
-		if (m_Runtime.WorldSounds.contains(entity.GetUUID()))
-			m_Runtime.WorldSounds.erase(entity.GetUUID());
-	}
+        m_Runtime.AudioListenersCount++;
+    }
 
-	void AudioWorld::BeginRuntime()
-	{
-		auto world = m_World.Lock();
+    void AudioWorld::EndRuntime()
+    {
+        WorldSubSystem::EndRuntime();
 
-		if (!world)
-			return;
+        auto world = m_World.Lock();
 
-		auto view = world->GetAllEntitiesWith<AudioComponent>();
+        m_PersistentSounds.clear();
+        if (world)
+        {
+            auto persistentEntities = world->GetAllEntitiesWith<AudioComponent, PersistentComponent>();
 
-		for (auto e : view)
-		{
-			Entity entity{ e, world.Get() };
+            for (auto e : persistentEntities)
+            {
+                Entity persistentEntity = { e, world.Get() };
 
-			AddAudio(entity)->m_UUID = entity.GetUUID();
-		}
+                if (m_Runtime.WorldSounds.contains(persistentEntity.GetUUID()))
+                    m_PersistentSounds[persistentEntity.GetUUID()] = m_Runtime.WorldSounds[persistentEntity.GetUUID()];
+            }
+        }
 
-		m_Runtime.AudioListeners[0] = Count<AudioListenerActor>::Create();
-		m_Runtime.AudioListeners[0]->m_IndexPosition = 0;
+        m_Runtime = {};
+    }
 
-		m_Runtime.AudioListenersCount++;
-	}
+    void AudioWorld::TransferToWorld(class World* newWorld)
+    {
+        WorldSubSystem::TransferToWorld(newWorld);
+        m_World  = WeakCount<World>(newWorld);
 
-	void AudioWorld::OnUpdate(float deltaTime)
-	{
-		PF_PROFILE_FUNC();
+    }
 
-		auto world = m_World.Lock();
+    void AudioWorld::Shutdown()
+    {
+        WorldSubSystem::Shutdown();
 
-		if (!world)
-			return;
+        m_Runtime = {};
+        m_PersistentSounds.clear();
 
-		for (auto& [id, sound] : m_Runtime.WorldSounds)
-		{
-			sound->Update(deltaTime);
-		}
+        m_World = nullptr;
+    }
 
-		{
-			PF_PROFILE_FUNC("AudioWorld::OnUpdate - AudioListener");
+    void AudioWorld::OnUpdate(float deltaTime)
+    {
+        WorldSubSystem::OnUpdate(deltaTime);
 
-			Entity listener;
-
-			auto view = world->GetAllEntitiesWith<AudioListenerComponent>();
-
-			for (auto e : view)
-			{
-				Entity check = { e, world.Get() };
-				auto& listenerComponent = check.GetComponent<AudioListenerComponent>();
-
-				if (listenerComponent.Active)
-				{
-					listener = check;
-
-					auto transform = Utils::TransformToAudioTransform(world->GetWorldSpaceTransformComponent(listener));
-
-					UpdateListenerPosition(transform);
-					UpdateListenerConeAttenuation(listenerComponent.ConeInnerAngleInRadians, listenerComponent.ConeOuterAngleInRadians, listenerComponent.ConeOuterGain);
-
-					auto physicsActor = world->GetPhysicsWorld()->GetActor(listener);
-
-					if (physicsActor)
-					{
-						if (physicsActor->IsDynamic())
-							UpdateAudioListenerVelocity(physicsActor->GetLinearVelocity());
-					}
-					else
-					{
-						UpdateAudioListenerVelocity(glm::vec3{ 0 });
-					}
-
-					break;
-				}
-			}
-		}
-
-		{
-
-			PF_PROFILE_FUNC("AudioWorld::OnUpdate - Audio");
-
-			auto view = world->GetAllEntitiesWith<AudioComponent>();
-
-			for (auto e : view)
-			{
-				Entity audioEntity = { e, world.Get() };
-
-				auto& audioComponent = audioEntity.GetComponent<AudioComponent>();
-				auto transform = Utils::TransformToAudioTransform(world->GetWorldSpaceTransformComponent(audioEntity));
-
-				Count<Sound> sounds = m_Runtime.WorldSounds[audioEntity.GetUUID()];
-				if (!sounds->IsPlaying())   // dont want to update audio soudn while playing because it ranodmize puthc and while playign the ptihc weill be chainging
-					UpdateAudio(audioEntity.GetUUID(), Utils::AudioComponentToSoundConfig(audioComponent));
-
-			
-				UpdateAudioTransform(audioEntity.GetUUID(), transform);
-
-				auto physicsActor = world->GetPhysicsWorld()->GetActor(audioEntity);
-
-				if (physicsActor)
-				{
-					if (physicsActor->IsDynamic())
-						UpdateAudioVelocity(audioEntity.GetUUID(), physicsActor->GetLinearVelocity());
-				}
-				else
-				{
-					UpdateAudioVelocity(audioEntity.GetUUID(), glm::vec3{ 0 });
-				}
-
-				if (sounds->IsFinished() && audioComponent.PlayOnAwake && audioComponent.Looping == false)
-					world->DeleteEntity(audioEntity);
-			}
-		}
-	}
-
-	void AudioWorld::EndRuntime()
-	{
-		m_Runtime = {};
-	}
-
-	void AudioWorld::UpdateListenerPosition(const AudioTransform& transform)
-	{
-		m_Runtime.AudioListeners[0]->UpdateTransform(transform);
-	}
-
-	void AudioWorld::UpdateListenerConeAttenuation(float innerAngleRadians, float outerAngleRadians, float outerGrain)
-	{
-		m_Runtime.AudioListeners[0]->UpdateConeListener(innerAngleRadians, outerAngleRadians, outerGrain);
-	}
-
-	void AudioWorld::UpdateAudioListenerVelocity(const glm::vec3& velocity)
-	{
-		m_Runtime.AudioListeners[0]->UpdateVelocity(velocity);
-	}
-
-	void AudioWorld::UpdateAudio(UUID soundId, const SoundConfiguration& soundConfiguration)
-	{
-		auto world = m_World.Lock();
-
-		if (!world)
-			return;
-
-		if (!m_Runtime.WorldSounds.contains(soundId))
-		{
-			PF_ENGINE_ERROR("Trying to update entity {} doesnt have sound ", world->GetEntity(soundId).GetName());
-			return;
-		}
-
-		auto sound = m_Runtime.WorldSounds[soundId];
-		sound->UpdateDataSource(soundConfiguration);
-	}
-
-	void AudioWorld::UpdateAudioTransform(UUID soundId, const AudioTransform& transform)
-	{
-		auto world = m_World.Lock();
-
-		if (!world)
-			return;
-
-		if (!m_Runtime.WorldSounds.contains(soundId))
-		{
-			PF_ENGINE_ERROR("Trying to update entity {} doesnt have sound ", world->GetEntity(soundId).GetName());
-			return;
-		}
-
-		auto sound = m_Runtime.WorldSounds[soundId];
-		sound->SetTransform(transform);
-	}
-
-	void AudioWorld::UpdateAudioVelocity(UUID soundId, const glm::vec3& velocity)
-	{
-		auto world = m_World.Lock();
-
-		if (!world)
-			return;
-
-		if (!m_Runtime.WorldSounds.contains(soundId))
-		{
-			PF_ENGINE_ERROR("Trying to update entity {} doesnt have sound ", world->GetEntity(soundId).GetName());
-			return;
-		}
-
-		auto sound = m_Runtime.WorldSounds[soundId];
-		sound->SetVelocity(velocity);
-	}
-
-	bool AudioWorld::HasSoundID(UUID hasSoundId)
-	{
-		return m_Runtime.WorldSounds.contains(hasSoundId);
-	}
+        PF_PROFILE_FUNC();
 
+        auto world = m_World.Lock();
 
+        if (!world)
+            return;
+
+        for (auto& [id, sound] : m_Runtime.WorldSounds)
+        {
+            sound->Update(deltaTime);
+        }
+
+        {
+            PF_PROFILE_FUNC("AudioWorld::OnUpdate - AudioListener");
+
+            Entity listener;
+
+            auto view = world->GetAllEntitiesWith<AudioListenerComponent>();
+
+            for (auto e : view)
+            {
+                Entity check = { e, world.Get() };
+                auto& listenerComponent = check.GetComponent<AudioListenerComponent>();
+
+                if (listenerComponent.Active)
+                {
+                    listener = check;
+
+                    auto transform = Utils::TransformToAudioTransform(world->GetWorldSpaceTransformComponent(listener));
+
+                    UpdateListenerPosition(transform);
+                    UpdateListenerConeAttenuation(listenerComponent.ConeInnerAngleInRadians, listenerComponent.ConeOuterAngleInRadians, listenerComponent.ConeOuterGain);
+
+                    auto physicsActor = world->GetPhysicsWorld()->GetActor(listener);
+
+                    if (physicsActor)
+                    {
+                        if (physicsActor->IsDynamic())
+                            UpdateAudioListenerVelocity(physicsActor->GetLinearVelocity());
+                    }
+                    else
+                    {
+                        UpdateAudioListenerVelocity(glm::vec3{ 0 });
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        {
+            PF_PROFILE_FUNC("AudioWorld::OnUpdate - Audio");
+
+            auto view = world->GetAllEntitiesWith<AudioComponent>();
+
+            for (auto e : view)
+            {
+                Entity audioEntity = { e, world.Get() };
+
+                auto& audioComponent = audioEntity.GetComponent<AudioComponent>();
+                auto transform = Utils::TransformToAudioTransform(world->GetWorldSpaceTransformComponent(audioEntity));
+
+                Count<Sound> sounds = m_Runtime.WorldSounds[audioEntity.GetUUID()];
+
+                if (!sounds->IsPlaying())   // dont want to update audio soudn while playing because it ranodmize puthc and while playign the ptihc weill be chainging
+                    UpdateAudio(audioEntity.GetUUID(), Utils::AudioComponentToSoundConfig(audioComponent));
+
+                UpdateAudioTransform(audioEntity.GetUUID(), transform);
+
+                auto physicsActor = world->GetPhysicsWorld()->GetActor(audioEntity);
+
+                if (physicsActor)
+                {
+                    if (physicsActor->IsDynamic())
+                        UpdateAudioVelocity(audioEntity.GetUUID(), physicsActor->GetLinearVelocity());
+                }
+                else
+                {
+                    UpdateAudioVelocity(audioEntity.GetUUID(), glm::vec3{ 0 });
+                }
+
+                if (sounds->IsFinished() && audioComponent.PlayOnAwake && audioComponent.Looping == false)
+                    world->DeleteEntity(audioEntity);
+            }
+        }
+    }
+
+    void AudioWorld::UpdateListenerPosition(const AudioTransform& transform)
+    {
+        m_Runtime.AudioListeners[0]->UpdateTransform(transform);
+    }
+
+    void AudioWorld::UpdateListenerConeAttenuation(float innerAngleRadians, float outerAngleRadians, float outerGrain)
+    {
+        m_Runtime.AudioListeners[0]->UpdateConeListener(innerAngleRadians, outerAngleRadians, outerGrain);
+    }
+
+    void AudioWorld::UpdateAudioListenerVelocity(const glm::vec3& velocity)
+    {
+        m_Runtime.AudioListeners[0]->UpdateVelocity(velocity);
+    }
+
+    void AudioWorld::UpdateAudio(UUID soundId, const SoundConfiguration& soundConfiguration)
+    {
+        auto world = m_World.Lock();
+
+        if (!world)
+            return;
+
+        if (!m_Runtime.WorldSounds.contains(soundId))
+        {
+            PF_ENGINE_ERROR("Trying to update entity {} doesnt have sound ", world->GetEntity(soundId).GetName());
+            return;
+        }
+
+        auto sound = m_Runtime.WorldSounds[soundId];
+        sound->UpdateDataSource(soundConfiguration);
+    }
+
+    void AudioWorld::UpdateAudioTransform(UUID soundId, const AudioTransform& transform)
+    {
+        auto world = m_World.Lock();
+
+        if (!world)
+            return;
+
+        if (!m_Runtime.WorldSounds.contains(soundId))
+        {
+            PF_ENGINE_ERROR("Trying to update entity {} doesnt have sound ", world->GetEntity(soundId).GetName());
+            return;
+        }
+
+        auto sound = m_Runtime.WorldSounds[soundId];
+        sound->SetTransform(transform);
+    }
+
+    void AudioWorld::UpdateAudioVelocity(UUID soundId, const glm::vec3& velocity)
+    {
+        auto world = m_World.Lock();
+
+        if (!world)
+            return;
+
+        if (!m_Runtime.WorldSounds.contains(soundId))
+        {
+            PF_ENGINE_ERROR("Trying to update entity {} doesnt have sound ", world->GetEntity(soundId).GetName());
+            return;
+        }
+
+        auto sound = m_Runtime.WorldSounds[soundId];
+        sound->SetVelocity(velocity);
+    }
+
+    bool AudioWorld::HasSoundID(UUID hasSoundId)
+    {
+        return m_Runtime.WorldSounds.contains(hasSoundId);
+    }
 }

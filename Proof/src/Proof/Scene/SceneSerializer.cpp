@@ -555,6 +555,7 @@ namespace Proof
 				out << YAML::EndMap; // SphereColliderComponent
 			}
 		}
+
 		{
 			if (entity.HasComponent<CapsuleColliderComponent>()) {
 
@@ -1153,6 +1154,19 @@ namespace Proof
 				
 			}
 		}
+
+			//PersistentComponnet
+		{
+			if (entity.HasComponent<PersistentComponent>())
+			{
+				out << YAML::Key << "PersistentComponent";
+				out << YAML::BeginMap; //PersistentComponent
+				out <<YAML::Key<<"JustData" << 0;
+				out << YAML::EndMap; //PersistentComponent
+			}
+		}
+
+
 		out << YAML::EndMap; // entity
 	}
 
@@ -2317,6 +2331,15 @@ namespace Proof
 					component.ConeInnerAngleInRadians = audioListenerComponent["ConeInnerAngleInRadians"].as<float>();
 					component.ConeOuterAngleInRadians = audioListenerComponent["ConeOuterAngleInRadians"].as<float>();
 					component.ConeOuterGain = audioListenerComponent["ConeOuterGain"].as<float>();
+				}
+			}
+
+			// persistent
+			{
+				auto persistentComponent = entity["PersistentComponent"];
+				if (persistentComponent)
+				{
+					auto& component = NewEntity.AddComponent<PersistentComponent>();
 				}
 			}
 		

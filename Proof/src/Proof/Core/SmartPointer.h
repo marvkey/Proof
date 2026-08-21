@@ -435,80 +435,124 @@ namespace Proof {
 	class WeakCount
 	{
 	public:
-		WeakCount() :m_Instance(nullptr) {};
+	    WeakCount() : m_Instance(nullptr) {};
 
-		constexpr WeakCount(nullptr_t) noexcept : m_Instance(nullptr) {}
+	    constexpr WeakCount(nullptr_t) noexcept : m_Instance(nullptr) {}
 
-		template <class T = T, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0 >
-		WeakCount(T* instance)
-			: m_Instance(instance)
-		{
-		}
+	    template <class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
+	    WeakCount(Type* instance)
+	        : m_Instance(instance)
+	    {
+	    }
 
-		WeakCount(const WeakCount& _Other) noexcept {
-			this->CopyConstructor(_Other); // same type, no conversion
-		}
+	    WeakCount(const WeakCount& _Other) noexcept
+	    {
+	        this->CopyConstructor(_Other);
+	    }
 
-		template <class _Ty2, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0>
-		WeakCount(const Count<_Ty2>& _Other) noexcept {
-			this->CopyConstructor(_Other.Get()); // shared_ptr keeps resource alive during conversion
-		}
+	    template <class _Ty2, std::enable_if_t<Is_Compatible<_Ty2, T>::value, int> = 0>
+	    WeakCount(const Count<_Ty2>& _Other) noexcept
+	        : m_Instance(_Other.Get())
+	    {
+	    }
 
-		template <class _Ty2, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0>
-		WeakCount(const WeakCount<_Ty2>& _Other) noexcept {
-			this->CopyConstructor(_Other); // same type, no conversion
-		}
+	    template <class _Ty2, std::enable_if_t<Is_Compatible<_Ty2, T>::value, int> = 0>
+	    WeakCount(const WeakCount<_Ty2>& _Other) noexcept
+	    {
+	        this->CopyConstructor(_Other);
+	    }
 
-		WeakCount(WeakCount&& _Other) noexcept {
-			this->CopyConstructor(_STD move(_Other));
-		}
+	    WeakCount(WeakCount&& _Other) noexcept
+	    {
+	        this->MoveConstructor(_STD move(_Other));
+	    }
 
-		template <class _Ty2, std::enable_if_t<std::is_base_of<RefCounted, T>::value, int> = 0>
-		WeakCount(WeakCount<_Ty2>&& _Other) noexcept {
-			this->CopyConstructor(_STD move(_Other));
-		}
+	    template <class _Ty2, std::enable_if_t<Is_Compatible<_Ty2, T>::value, int> = 0>
+	    WeakCount(WeakCount<_Ty2>&& _Other) noexcept
+	    {
+	        this->MoveConstructor(_STD move(_Other));
+	    }
 
-		WeakCount& operator=(const WeakCount& _Right) noexcept {
-			WeakCount(_Right).Swap(*this);
-			return *this;
-		}
+	    WeakCount& operator=(const WeakCount& _Right) noexcept
+	    {
+	        WeakCount(_Right).Swap(*this);
+	        return *this;
+	    }
 
-		template <class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
-		WeakCount& operator=(const WeakCount<Type>& _Right) noexcept {
-			WeakCount(_Right).Swap(*this);
-			return *this;
-		}
+	    template <class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
+	    WeakCount& operator=(const WeakCount<Type>& _Right) noexcept
+	    {
+	        WeakCount(_Right).Swap(*this);
+	        return *this;
+	    }
 
-		WeakCount& operator=(WeakCount&& _Right) noexcept {
-			WeakCount(_STD move(_Right)).Swap(*this);
-			return *this;
-		}
+	    template <class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
+	    WeakCount& operator=(const Count<Type>& _Right) noexcept
+	    {
+	        WeakCount(_Right).Swap(*this);
+	        return *this;
+	    }
 
-		template <class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
-		WeakCount& operator=(WeakCount<Type>&& _Right) noexcept {
-			WeakCount(_STD move(_Right)).Swap(*this);
-			return *this;
-		}
+	    WeakCount& operator=(WeakCount&& _Right) noexcept
+	    {
+	        WeakCount(_STD move(_Right)).Swap(*this);
+	        return *this;
+	    }
 
-		bool IsValid()const { return m_Instance != nullptr ? RefUtils::IsLive((void*)m_Instance) : false; }
-		operator bool()const { return IsValid(); };
+	    template <class Type, std::enable_if_t<Is_Compatible<Type, T>::value, int> = 0>
+	    WeakCount& operator=(WeakCount<Type>&& _Right) noexcept
+	    {
+	        WeakCount(_STD move(_Right)).Swap(*this);
+	        return *this;
+	    }
 
-		Count<T> Lock() const { // convert to shared_ptr
-			if (!IsValid())
-				return nullptr;
-			return Count<T>(m_Instance);
-		}
+	    WeakCount& operator=(nullptr_t) noexcept
+	    {
+	        m_Instance = nullptr;
+	        return *this;
+	    }
+
+	    bool IsValid() const
+	    {
+	        return m_Instance != nullptr ? RefUtils::IsLive((void*)m_Instance) : false;
+	    }
+
+	    operator bool() const
+	    {
+	        return IsValid();
+	    }
+
+	    Count<T> Lock() const
+	    {
+	        if (!IsValid())
+	            return nullptr;
+
+	        return Count<T>(m_Instance);
+	    }
+
 	private:
-		template <class _Ty2>
-		void CopyConstructor(const WeakCount<_Ty2>& other) noexcept {
-			m_Instance = other.m_Instance;
-		}
-		void Swap(WeakCount& _Right) noexcept { // swap pointers
-			std::swap(m_Instance, _Right.m_Instance);
-		}
-		friend class WeakCount;
+	    template <class _Ty2>
+	    void CopyConstructor(const WeakCount<_Ty2>& other) noexcept
+	    {
+	        m_Instance = other.m_Instance;
+	    }
 
-		T* m_Instance = nullptr;
+	    template <class _Ty2>
+	    void MoveConstructor(WeakCount<_Ty2>&& other) noexcept
+	    {
+	        m_Instance = other.m_Instance;
+	        other.m_Instance = nullptr;
+	    }
+
+	    void Swap(WeakCount& _Right) noexcept
+	    {
+	        std::swap(m_Instance, _Right.m_Instance);
+	    }
+
+	    template<class>
+	    friend class WeakCount;
+
+	    T* m_Instance = nullptr;
 	};
 
 

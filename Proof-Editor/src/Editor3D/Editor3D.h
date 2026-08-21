@@ -108,6 +108,8 @@ namespace Proof {
 		static Editore3D* s_Instance;
 	private:
 		void OpenWorld(AssetID ID);
+		void TransitionPlayWorld(AssetID ID);
+
 		void UI_StatisticsPanel();
 		void UI_HandleAssetDrop();
 		void UI_ShowCreateNewMeshPopup();

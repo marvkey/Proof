@@ -339,7 +339,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 		//	return true;
 		//}
 
-		world->OnWorldTransition(worldID);
+		world->RequestWorldTransition(worldID);
 
 		return true;
 	}
@@ -347,7 +347,7 @@ SCRIPT_FUNC_COMPONENT_CHECK(Component,returnValue)
 	{
 		Count<World> world = ScriptEngine::GetWorldContext();
 		PF_CORE_ASSERT(world, "world is nullptr");
-		world->OnWorldTransition(world->GetID());
+		world->RequestWorldTransition(world->GetID());
 
 	}
 	static uint64_t World_TryFindEntityByTag(MonoString* classFullName)

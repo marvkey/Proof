@@ -2,6 +2,8 @@
 
 #include "Proof/Core/Core.h"
 #include "Proof/Core/UUID.h"
+#include "Proof/Scene/WorldSubSystem.h"
+
 #include "AudioTools.h"
 #include "Proof/Scene/World.h"
 
@@ -10,15 +12,21 @@
 
 namespace Proof
 {
-	class AudioWorld : public RefCounted
+	class AudioWorld : public WorldSubSystem
 	{
 	public:
 		AudioWorld(class World* world);
+		virtual ~AudioWorld() override;
 
-		void OnUpdate(float deltaTime);
+		void SetContext(class World* world) override;
 
-		void BeginRuntime();
-		void EndRuntime();
+		void OnUpdate(float deltaTime) override;
+
+		void StartRuntime() override;
+		void EndRuntime() override;
+
+		void TransferToWorld(class World* world);
+		void Shutdown() override;
 
 		void UpdateListenerPosition(const AudioTransform& transform);
 		void UpdateListenerConeAttenuation(float innerAngleRadians = 6.283185f, float outerAngleRadians = 6.283185f, float outerGrain = 0.0f);
@@ -30,9 +38,9 @@ namespace Proof
 
 		bool HasSoundID(UUID hasSoundId);
 
-		
-		 void InstantiateAudioSource(class Entity entity);
-		 void DeleteAudioSource(class Entity entity);
+		void InstantiateAudioSource(class Entity entity);
+		void DeleteAudioSource(class Entity entity);
+
 	private:
 		Count<class Sound> AddAudio(class Entity entity);
 
@@ -45,5 +53,7 @@ namespace Proof
 			std::array<Count<class AudioListenerActor>, 4> AudioListeners;
 			uint32_t AudioListenersCount = 0;
 		} m_Runtime;
+
+		std::unordered_map<UUID, Count<class Sound>> m_PersistentSounds;
 	};
 }
